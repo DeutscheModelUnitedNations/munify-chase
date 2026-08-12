@@ -200,10 +200,64 @@ function readSpeakersList(cache: Cache, id: string): SpeakersListSnapshot | null
  * offline ordering "stops reacting". Densifying mirrors the server's 0-based
  * dense scheme, so for an already-dense list it is a no-op (no cache churn).
  */
-function densifySpeakers<T extends { id: string; position: number }>(speakers: T[]): T[] {
+export function densifySpeakers<T extends { id: string; position: number }>(speakers: T[]): T[] {
 	return [...speakers]
 		.sort(compareSpeakers)
 		.map((s, i) => (s.position === i ? s : { ...s, position: i }));
+}
+
+/**
+ * Shared by optimistic.removeSpeakerOnList/selfRemoveFromSpeakersList AND their
+ * updates.Mutation counterparts (see below) — computes the speakers list with
+ * `removedId` filtered out and positions shifted, reading straight from cache so
+ * it never depends on the mutation's own `result` (which local demo mode can't
+ * shape correctly for this mutation — see the updates.Mutation entries).
+ * Idempotent: if `removedId` is already absent (e.g. a repeat invocation for the
+ * same logical call — see ensureId's doc comment above), returns the list as-is
+ * instead of re-applying the position shift a second time.
+ */
+function removeSpeakerFromList(
+	cache: Cache,
+	speakersListId: string,
+	removedId: string,
+	removedPosition: number
+): { id: string; speakers: SpeakerEntry[] } | null {
+	const list = readEntity<{ id: string; speakers: SpeakerEntry[] }>(
+		cache,
+		ADD_SPEAKER_LIST_FRAGMENT,
+		{ __typename: 'Speakerslist', id: speakersListId }
+	);
+	if (!list?.speakers) return null;
+
+	const alreadyRemoved = !list.speakers.some((s) => s.id === removedId);
+	const remaining = alreadyRemoved
+		? list.speakers
+		: list.speakers
+				.filter((s) => s.id !== removedId)
+				.map((s) => (s.position > removedPosition ? { ...s, position: s.position - 1 } : s));
+
+	return { id: list.id, speakers: densifySpeakers(remaining) };
+}
+
+/**
+ * Resolves the calling user's own entry on a speakers list — shared by
+ * optimistic.selfRemoveFromSpeakersList and its updates.Mutation counterpart, so
+ * both agree on exactly which entry "self" refers to.
+ */
+function findOwnSpeakerEntry(cache: Cache, speakersListId: string): SpeakerEntry | null {
+	const list = readSpeakersList(cache, speakersListId);
+	if (!list?.agendaItem?.committee) return null;
+	const conferenceId = list.agendaItem.committee.conferenceId ?? null;
+	const self = findSelfConferenceUser(cache, conferenceId);
+	if (!self) return null;
+	const speakers = list.speakers ?? [];
+	return (
+		speakers.find(
+			(s) =>
+				(self.committeeMemberId && s.committeeMemberId === self.committeeMemberId) ||
+				(self.conferenceMemberId && s.conferenceMemberId === self.conferenceMemberId)
+		) ?? null
+	);
 }
 
 // ---------------------------------------------------------------------------
@@ -216,6 +270,20 @@ export const optimistic: OptimisticMutationConfig = {
 	// -------------------------------------------------------------------------
 	createAgendaItem: (args) => {
 		const id = ensureId(args);
+		const speakersListId = (args.speakersListId as string | undefined) ?? nanoid();
+		const commentListId = (args.commentListId as string | undefined) ?? nanoid();
+		const agendaItem = { __typename: 'Agendaitem' as const, id };
+		const baseSpeakersList = {
+			agendaItemId: id,
+			agendaItem,
+			timeLeft: 0,
+			startTimestamp: null,
+			isClosed: false,
+			phase: 'SPEECH' as const,
+			speakers: [],
+			createdAt: new Date(),
+			updatedAt: null
+		};
 		return {
 			__typename: 'Agendaitem',
 			id,
@@ -223,7 +291,22 @@ export const optimistic: OptimisticMutationConfig = {
 			committeeId: args.committeeId as string,
 			committee: { __typename: 'Committee', id: args.committeeId as string },
 			isActive: false,
-			speakersList: [],
+			speakersList: [
+				{
+					__typename: 'Speakerslist',
+					id: speakersListId,
+					type: 'SPEAKERS_LIST',
+					speakingTime: 180,
+					...baseSpeakersList
+				},
+				{
+					__typename: 'Speakerslist',
+					id: commentListId,
+					type: 'COMMENT_LIST',
+					speakingTime: 30,
+					...baseSpeakersList
+				}
+			],
 			createdAt: new Date(),
 			updatedAt: null
 		};
@@ -1100,45 +1183,57 @@ export const optimistic: OptimisticMutationConfig = {
 		);
 		const speakers: SpeakerEntry[] = list?.speakers ?? [];
 
-		// Mirror server position semantics: when caller passes a position, every entry
-		// with position >= newPosition shifts up by 1; otherwise we append at the end.
-		const explicit = typeof args.position === 'number' ? (args.position as number) : null;
-		const position = explicit ?? speakers.length;
-
 		const newId = ensureId(args);
 
-		const shifted = speakers.map((s) => {
-			if (explicit !== null && s.position >= explicit) return { ...s, position: s.position + 1 };
-			return s;
-		});
+		// Idempotency guard: this handler can run more than once for the same logical
+		// call — withLocalDemoMutationCommits re-invokes it (with the same args, so the
+		// same newId) to backfill the committeeMember/conferenceMember link once local
+		// demo's "real" result lands (see ensureId's doc comment above for the general
+		// multi-invocation issue). Without this guard, re-running the append below would
+		// push the SAME speaker into the list a second time — a duplicate entity key in
+		// the cache, which crashes Svelte's keyed each block on render.
+		const existing = speakers.find((s) => s.id === newId);
 
-		const added = {
-			__typename: 'Speakeronlist',
-			id: newId,
-			position,
-			committeeMemberId: (args.committeeMemberId as string | undefined) ?? null,
-			conferenceMemberId: (args.conferenceMemberId as string | undefined) ?? null
-		};
+		let finalPosition = existing?.position;
+		if (!existing) {
+			// Mirror server position semantics: when caller passes a position, every entry
+			// with position >= newPosition shifts up by 1; otherwise we append at the end.
+			const explicit = typeof args.position === 'number' ? (args.position as number) : null;
+			const position = explicit ?? speakers.length;
 
-		// Densify so the cache stays a dense 0..n-1 sequence even when a prior offline
-		// edit left it drifted; this also settles the new entry's final position.
-		const updatedSpeakers = densifySpeakers([...shifted, added]);
-		const finalPosition = updatedSpeakers.find((s) => s.id === newId)?.position ?? position;
+			const shifted = speakers.map((s) => {
+				if (explicit !== null && s.position >= explicit) return { ...s, position: s.position + 1 };
+				return s;
+			});
 
-		// Write the parent list with the recomputed speaker positions so the cache sees
-		// the new ordering immediately without waiting for `updates` to fire.
-		if (list) {
-			cache.writeFragment(SPEAKER_LIST_WITH_SPEAKERS, {
-				__typename: 'Speakerslist',
-				id: list.id,
-				speakers: updatedSpeakers.map((s) => ({
-					__typename: 'Speakeronlist',
-					id: s.id,
-					position: s.position,
-					committeeMemberId: s.committeeMemberId ?? null,
-					conferenceMemberId: s.conferenceMemberId ?? null
-				}))
-			} as unknown as Record<string, unknown>);
+			const added = {
+				__typename: 'Speakeronlist',
+				id: newId,
+				position,
+				committeeMemberId: (args.committeeMemberId as string | undefined) ?? null,
+				conferenceMemberId: (args.conferenceMemberId as string | undefined) ?? null
+			};
+
+			// Densify so the cache stays a dense 0..n-1 sequence even when a prior offline
+			// edit left it drifted; this also settles the new entry's final position.
+			const updatedSpeakers = densifySpeakers([...shifted, added]);
+			finalPosition = updatedSpeakers.find((s) => s.id === newId)?.position ?? position;
+
+			// Write the parent list with the recomputed speaker positions so the cache sees
+			// the new ordering immediately without waiting for `updates` to fire.
+			if (list) {
+				cache.writeFragment(SPEAKER_LIST_WITH_SPEAKERS, {
+					__typename: 'Speakerslist',
+					id: list.id,
+					speakers: updatedSpeakers.map((s) => ({
+						__typename: 'Speakeronlist',
+						id: s.id,
+						position: s.position,
+						committeeMemberId: s.committeeMemberId ?? null,
+						conferenceMemberId: s.conferenceMemberId ?? null
+					}))
+				} as unknown as Record<string, unknown>);
+			}
 		}
 
 		let committeeMember = null;
@@ -1227,7 +1322,7 @@ export const optimistic: OptimisticMutationConfig = {
 		return {
 			__typename: 'Speakeronlist',
 			id: newId,
-			position: finalPosition,
+			position: finalPosition ?? speakers.length,
 			speakersListId: args.speakersListId,
 			speakersList: { __typename: 'Speakerslist', id: args.speakersListId as string },
 			overwriteName: null,
@@ -1255,22 +1350,18 @@ export const optimistic: OptimisticMutationConfig = {
 		);
 		if (!target?.speakersListId) return null;
 
-		// Use the minimal fragment — we only need id+position for re-sequencing.
-		const list = readEntity<{ id: string; speakers: SpeakerEntry[] }>(
+		const updated = removeSpeakerFromList(
 			cache,
-			ADD_SPEAKER_LIST_FRAGMENT,
-			{ __typename: 'Speakerslist', id: target.speakersListId }
+			target.speakersListId,
+			args.speakerOnListId as string,
+			target.position
 		);
-		if (!list?.speakers) return null;
-
-		const remaining = list.speakers
-			.filter((s) => s.id !== args.speakerOnListId)
-			.map((s) => (s.position > target.position ? { ...s, position: s.position - 1 } : s));
+		if (!updated) return null;
 
 		return {
 			__typename: 'Speakerslist',
-			id: target.speakersListId,
-			speakers: densifySpeakers(remaining).map((s) => ({
+			id: updated.id,
+			speakers: updated.speakers.map((s) => ({
 				__typename: 'Speakeronlist',
 				id: s.id,
 				position: s.position
@@ -1408,27 +1499,21 @@ export const optimistic: OptimisticMutationConfig = {
 		};
 	},
 	selfRemoveFromSpeakersList: (args, cache) => {
-		const list = readSpeakersList(cache, args.speakersListId as string);
-		if (!list?.agendaItem?.committee) return null;
-		const conferenceId = list.agendaItem.committee.conferenceId ?? null;
-		const self = findSelfConferenceUser(cache, conferenceId);
-		if (!self) return null;
-		const speakers = list.speakers ?? [];
-		const own = speakers.find(
-			(s) =>
-				(self.committeeMemberId && s.committeeMemberId === self.committeeMemberId) ||
-				(self.conferenceMemberId && s.conferenceMemberId === self.conferenceMemberId)
-		);
+		const own = findOwnSpeakerEntry(cache, args.speakersListId as string);
 		if (!own) return null;
 
-		const remaining = speakers
-			.filter((s) => s.id !== own.id)
-			.map((s) => (s.position > own.position ? { ...s, position: s.position - 1 } : s));
+		const updated = removeSpeakerFromList(
+			cache,
+			args.speakersListId as string,
+			own.id,
+			own.position
+		);
+		if (!updated) return null;
 
 		return {
 			__typename: 'Speakerslist',
-			id: args.speakersListId,
-			speakers: densifySpeakers(remaining).map((s) => ({
+			id: updated.id,
+			speakers: updated.speakers.map((s) => ({
 				__typename: 'Speakeronlist',
 				id: s.id,
 				position: s.position
@@ -2410,22 +2495,81 @@ export const updates: UpdatesConfig = {
 				])
 			} as Record<string, unknown>);
 		},
-		// removeSpeakerOnList: no updates handler needed.
-		// The mutation returns the updated parent Speakerslist (speakers array already
-		// renumbered), so the link from Speakerslist.speakers is corrected by the
-		// mutation result write. cache.invalidate was previously called here to clean up
-		// the deleted Speakeronlist entity, but it caused a double RC decrement bug:
-		//   1. invalidate() writes undefined to xxx.committeeMember (in the write layer)
-		//      → decrements Committeemember:cm1's RC by 1
-		//   2. gc() later reads from the BASE layer (unsquashed) where xxx.committeeMember
-		//      is still cm1 → decrements cm1's RC a second time → cm1 hits RC=0 → GC'd
-		// This briefly removed cm1 from the store, causing committee.members to return
-		// null data for that delegate on the next render, producing the visible page flicker.
-		// The deleted entity is naturally GC'd by the normal RC=0 path without invalidate.
+		// For a real backend, the mutation returns the updated parent Speakerslist
+		// (speakers array already renumbered), so the automatic mutation-result write
+		// alone used to be enough — no explicit handler needed. Local demo mode breaks
+		// that assumption: its generic result echo only has the mutation's own args
+		// (`{ speakerOnListId }`), with no `id`/`speakers` to normalize, so the echoed
+		// "real" result targets a bogus entity and the removal never reaches the base
+		// cache layer once the optimistic layer tears down — the removed speaker
+		// silently reappears at the head of the queue. Recomputing from cache directly
+		// (like addSpeakerOnList's handler already does) works for both cases and
+		// doesn't depend on `result` at all. This does NOT call cache.invalidate() on the
+		// removed entity — an earlier version did, to clean up the deleted Speakeronlist,
+		// but that caused a double refcount-decrement (invalidate() nulled its
+		// committeeMember link in the write layer, then gc() re-read the still-linked
+		// BASE layer and decremented the committee member's refcount a second time,
+		// briefly GC'ing a delegate that was still present elsewhere). Only rewriting the
+		// parent's `speakers` link array avoids that; the removed entity itself is
+		// naturally GC'd once nothing else references it.
+		removeSpeakerOnList: (_result, args, cache) => {
+			const target = readEntity<{ id: string; speakersListId: string; position: number }>(
+				cache,
+				gql`
+					fragment RemoveSpeakerSourceUpdate on Speakeronlist {
+						id
+						speakersListId
+						position
+					}
+				`,
+				{ __typename: 'Speakeronlist', id: args.speakerOnListId as string }
+			);
+			if (!target?.speakersListId) return;
+
+			const updated = removeSpeakerFromList(
+				cache,
+				target.speakersListId,
+				args.speakerOnListId as string,
+				target.position
+			);
+			if (!updated) return;
+
+			cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
+				__typename: 'Speakerslist',
+				id: updated.id,
+				speakers: updated.speakers.map((s) => ({
+					__typename: 'Speakeronlist',
+					id: s.id,
+					position: s.position
+				}))
+			} as Record<string, unknown>);
+		},
 
 		// ---------------------------------------------------------------
 		// votingSession
 		// ---------------------------------------------------------------
+		selfRemoveFromSpeakersList: (_result, args, cache) => {
+			const own = findOwnSpeakerEntry(cache, args.speakersListId as string);
+			if (!own) return;
+
+			const updated = removeSpeakerFromList(
+				cache,
+				args.speakersListId as string,
+				own.id,
+				own.position
+			);
+			if (!updated) return;
+
+			cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
+				__typename: 'Speakerslist',
+				id: updated.id,
+				speakers: updated.speakers.map((s) => ({
+					__typename: 'Speakeronlist',
+					id: s.id,
+					position: s.position
+				}))
+			} as Record<string, unknown>);
+		},
 		startVotingSession: (result, args, cache) => {
 			const created = (result as Record<string, Record<string, unknown>>).startVotingSession;
 			if (!created?.id) return;

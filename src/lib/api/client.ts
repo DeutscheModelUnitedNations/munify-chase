@@ -454,7 +454,10 @@ if (browser) {
 
 	const wsClient = createWSClient({
 		url: '/api/graphql',
-		shouldRetry: () => true,
+		// The offline demo conference never has a real OIDC session, so the standalone
+		// WS server (src/api/websocket.ts) always rejects its handshake with "Must be
+		// logged in" — retrying that forever would just spin a permanent reconnect loop.
+		shouldRetry: () => !isLocalConferenceActive(),
 		on: {
 			connected: () => {
 				if (pendingErrorTimer !== null) {

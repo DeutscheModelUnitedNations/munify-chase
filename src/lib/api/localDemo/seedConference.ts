@@ -9,6 +9,7 @@ import type {
 import worldCountries from 'world-countries';
 import { calculateMajority } from '$lib/utils/majorities';
 import { LOCAL_CONFERENCE_ID, isLocalConferenceActive } from '$lib/state/localDemo.svelte';
+import { densifySpeakers } from '../optimisticUpdateHandlers';
 import { schema } from '../rumbleClient/schema';
 
 const now = new Date();
@@ -67,7 +68,7 @@ type LocalDemoRepresentation = {
 	alpha3Code: string | null;
 	faIcon: string | null;
 	regionalGroup: string | null | undefined;
-};
+} & Record<string, unknown>;
 
 const localDemoCommitteeMembers: {
 	__typename: 'Committeemember';
@@ -81,7 +82,7 @@ const localDemoCommitteeMembers: {
 	representation: delegationRepresentation(alpha2Code)
 }));
 
-const localDemoNsaRepresentation = {
+const localDemoNsaRepresentation: LocalDemoRepresentation = {
 	__typename: 'Representation' as const,
 	id: 'representation-icrc',
 	type: 'NSA' as const,
@@ -92,7 +93,7 @@ const localDemoNsaRepresentation = {
 	regionalGroup: null
 };
 
-const localDemoUnRepresentation = {
+const localDemoUnRepresentation: LocalDemoRepresentation = {
 	__typename: 'Representation' as const,
 	id: 'representation-un-secretariat',
 	type: 'UN' as const,
@@ -109,6 +110,14 @@ localDemoCommitteeMembers.push({
 	present: true,
 	representation: localDemoNsaRepresentation
 });
+
+/** Every `Representation` under the demo conference (delegations, NSAs, the UN
+ * secretariat) — mutable/persisted, grown via createRepresentation on the config
+ * page's Delegations/NSA tabs. See persistLocalDemoRepresentations. */
+const localDemoRepresentations: LocalDemoRepresentation[] = [
+	...localDemoCommitteeMembers.map((m) => m.representation),
+	localDemoUnRepresentation
+];
 
 const localDemoUniqueConferenceMembers = [
 	{
@@ -128,16 +137,6 @@ const localDemoAgendaItem = {
 	title: 'General Debate'
 };
 
-/** Referenced from within a speakers list's own `agendaItem { committee { ... } }`
- * sub-selection (see speakers-list/+page.svelte) — kept separate from
- * `localDemoCommittee` below since that object isn't defined yet at this point. */
-const localDemoSpeakersListCommitteeRef = {
-	__typename: 'Committee' as const,
-	id: 'localcommittee',
-	allowDelegationsToAddThemselvesToSpeakersList: true,
-	conferenceId: LOCAL_CONFERENCE_ID
-};
-
 const localDemoSpeakersList = {
 	__typename: 'Speakerslist' as const,
 	id: 'localspeakerslist',
@@ -148,7 +147,15 @@ const localDemoSpeakersList = {
 	startTimestamp: null as Date | null,
 	phase: 'SPEECH' as const,
 	speakers: [] as unknown[],
-	agendaItem: { ...localDemoAgendaItem, committee: localDemoSpeakersListCommitteeRef }
+	agendaItem: {
+		...localDemoAgendaItem,
+		committee: {
+			__typename: 'Committee' as const,
+			id: 'localcommittee',
+			allowDelegationsToAddThemselvesToSpeakersList: true,
+			conferenceId: LOCAL_CONFERENCE_ID
+		}
+	}
 };
 
 const localDemoCommentList = {
@@ -157,69 +164,148 @@ const localDemoCommentList = {
 	type: 'COMMENT_LIST' as const
 };
 
-const localDemoCommittee = {
-	__typename: 'Committee' as const,
+type LocalDemoAgendaItemEntry = {
+	__typename: 'Agendaitem';
+	id: string;
+	title: string;
+	speakersList: unknown[];
+};
+
+type LocalDemoCommittee = {
+	__typename: 'Committee';
+	id: string;
+	name: string;
+	abbreviation: string;
+	activeAgendaItem: LocalDemoAgendaItemEntry | null;
+	activeAgendaItemId: string | null;
+	agendaItems: LocalDemoAgendaItemEntry[];
+	activeRollCallSession: { __typename: 'Rollcallsession'; id: string } | null;
+	activeVotingSession: { __typename: 'Votingsession'; id: string } | null;
+	activeVotingSessionId: string | null;
+	activeDraftResolutionId: string | null;
+	activeDraftResolution: { __typename: 'Resolutionpaper'; id: string } | null;
+	activeAmendmentId: string | null;
+	activeAmendment: { __typename: 'Amendment'; id: string } | null;
+	members: unknown[];
+	status: string;
+	statusHeadline: string;
+	statusUntil: Date;
+	stateOfDebate: string | null;
+	lastResolutionAdoptionDate: Date | null;
+	whiteboardContent: string | null;
+	showWhiteboard: boolean;
+	allowDelegationsToAddThemselvesToSpeakersList: boolean;
+	amendmentSubmissionOpen: boolean;
+	amendmentSponsoringOpen: boolean;
+	supportReevaluationOpen: boolean;
+	currentOperativeIndex: number;
+	presentationLayout: string;
+	presentationRootFontSize: number;
+	presentationResolutionFontSize: number;
+	displayRegionalGroups: boolean;
+	totalPresent: number;
+	simpleMajority: number;
+	twoThirdsMajority: number;
+	conferenceId: string;
+	conference: Record<string, unknown>;
+} & Record<string, unknown>;
+
+/** Builds a fresh committee with sensible defaults — used both for the seeded default
+ * committee below and for any committee createCommittee's local-demo effect adds later. */
+function makeLocalDemoCommittee(
+	overrides: Partial<LocalDemoCommittee> & { id: string; name: string; abbreviation: string }
+): LocalDemoCommittee {
+	return {
+		__typename: 'Committee',
+		activeAgendaItem: null,
+		activeAgendaItemId: null,
+		agendaItems: [],
+		activeRollCallSession: null,
+		activeVotingSession: null,
+		activeVotingSessionId: null,
+		activeDraftResolutionId: null,
+		activeDraftResolution: null,
+		activeAmendmentId: null,
+		activeAmendment: null,
+		members: [],
+		status: 'SUSPENSION',
+		statusHeadline: '',
+		statusUntil: new Date(),
+		stateOfDebate: null,
+		lastResolutionAdoptionDate: null,
+		whiteboardContent: null,
+		showWhiteboard: true,
+		allowDelegationsToAddThemselvesToSpeakersList: false,
+		amendmentSubmissionOpen: true,
+		amendmentSponsoringOpen: true,
+		supportReevaluationOpen: false,
+		currentOperativeIndex: 0,
+		presentationLayout: 'default',
+		presentationRootFontSize: 16,
+		presentationResolutionFontSize: 16,
+		displayRegionalGroups: false,
+		totalPresent: 0,
+		simpleMajority: 0,
+		twoThirdsMajority: 0,
+		conferenceId: LOCAL_CONFERENCE_ID,
+		conference: {
+			__typename: 'Conference',
+			id: LOCAL_CONFERENCE_ID,
+			hasModeratedCaucus: false,
+			uniqueConferenceMembers: localDemoUniqueConferenceMembers
+		},
+		...overrides
+	};
+}
+
+const localDemoCommittee: LocalDemoCommittee = makeLocalDemoCommittee({
 	id: 'localcommittee',
 	name: 'General Assembly',
 	abbreviation: 'GA',
 	activeAgendaItem: {
 		...localDemoAgendaItem,
-		speakersList: [localDemoSpeakersList, localDemoCommentList] as unknown[]
-	} as { __typename: 'Agendaitem'; id: string; title: string; speakersList: unknown[] } | null,
-	activeAgendaItemId: localDemoAgendaItem.id as string | null,
-	// Same shape as `activeAgendaItem` (rather than a smaller `{id, title}` stub) so a newly
-	// selected item — restored from localStorage by loadPersistedLocalDemoAgendaItems, or
-	// pushed by createAgendaItem's localDemoExtraMutationEffects entry — can be assigned
-	// straight into `activeAgendaItem` without a shape mismatch.
+		speakersList: [localDemoSpeakersList, localDemoCommentList]
+	},
+	activeAgendaItemId: localDemoAgendaItem.id,
 	agendaItems: [
 		{
 			...localDemoAgendaItem,
-			speakersList: [localDemoSpeakersList, localDemoCommentList] as unknown[]
+			speakersList: [localDemoSpeakersList, localDemoCommentList]
 		}
-	] as { __typename: 'Agendaitem'; id: string; title: string; speakersList: unknown[] }[],
-	activeRollCallSession: null as { __typename: 'Rollcallsession'; id: string } | null,
-	activeVotingSession: null as { __typename: 'Votingsession'; id: string } | null,
-	activeVotingSessionId: null as string | null,
-	activeDraftResolutionId: null as string | null,
-	activeDraftResolution: null as { __typename: 'Resolutionpaper'; id: string } | null,
-	activeAmendmentId: null as string | null,
-	activeAmendment: null as { __typename: 'Amendment'; id: string } | null,
+	],
 	members: localDemoCommitteeMembers,
-	status: 'FORMAL' as const,
+	status: 'FORMAL',
 	statusHeadline: 'In session',
 	statusUntil: new Date(now.getTime() + 60 * 60 * 1000),
-	stateOfDebate: null,
-	lastResolutionAdoptionDate: null,
-	whiteboardContent: null,
-	showWhiteboard: true,
 	allowDelegationsToAddThemselvesToSpeakersList: true,
-	amendmentSubmissionOpen: true,
-	amendmentSponsoringOpen: true,
-	supportReevaluationOpen: false,
-	currentOperativeIndex: 0,
-	presentationLayout: 'default',
-	presentationRootFontSize: 16,
-	presentationResolutionFontSize: 16,
-	displayRegionalGroups: false,
 	totalPresent: localDemoTotalPresent,
 	simpleMajority: calculateMajority(localDemoTotalPresent, 'simple'),
-	twoThirdsMajority: calculateMajority(localDemoTotalPresent, 'twoThirds'),
-	conference: {
-		__typename: 'Conference' as const,
-		id: LOCAL_CONFERENCE_ID,
-		hasModeratedCaucus: false,
-		uniqueConferenceMembers: localDemoUniqueConferenceMembers
-	}
-};
+	twoThirdsMajority: calculateMajority(localDemoTotalPresent, 'twoThirds')
+});
+
+/** Every committee under the demo conference — mutable/persisted, grown/shrunk via
+ * createCommittee/deleteCommittee on the config page's Committees tab. Kept as the SAME
+ * array instance referenced by `localDemoConference.committees` (mutated in place, never
+ * reassigned) so both stay in sync automatically. See persistLocalDemoCommittees. */
+const localDemoCommittees: LocalDemoCommittee[] = [localDemoCommittee];
 
 const localDemoConference = {
 	__typename: 'Conference' as const,
 	id: LOCAL_CONFERENCE_ID,
 	title: 'Local Demo Conference',
+	pressWebsite: null as string | null,
 	location: 'This device (offline)',
 	startDate: now,
 	endDate: new Date(now.getTime() + 24 * 60 * 60 * 1000),
-	committees: [localDemoCommittee]
+	hasModeratedCaucus: false,
+	logoSvg: null as string | null,
+	committees: localDemoCommittees,
+	// The Users tab (inviting/managing OTHER conference users) doesn't make sense in a
+	// single-device offline demo — the config page hides that tab entirely, but the
+	// query still selects `users`, so it needs *some* answer rather than `undefined`.
+	users: [] as unknown[],
+	representations: localDemoRepresentations,
+	members: localDemoUniqueConferenceMembers
 };
 
 /**
@@ -241,12 +327,20 @@ const localDemoRollCallSessions: Record<string, unknown>[] = [];
  * fresh "network" result from resolveLocalDemoRootField, and that fresh result
  * — always the original seed data — overwrites whatever a mutation had
  * previously committed to the cache.
+ *
+ * Committee/Representation entries are rebuilt from scratch on load by
+ * loadPersistedLocalDemoCommittees/loadPersistedLocalDemoRepresentations, since those
+ * collections can grow/shrink — see the "Committee:"/"Representation:" prefix sweep in
+ * each loader.
  */
 const localDemoEntitiesById = new Map<string, Record<string, unknown>>([
 	[`Conference:${localDemoConference.id}`, localDemoConference],
 	[`Committee:${localDemoCommittee.id}`, localDemoCommittee],
 	...localDemoCommitteeMembers.map(
 		(member) => [`Committeemember:${member.id}`, member] as [string, Record<string, unknown>]
+	),
+	...localDemoRepresentations.map(
+		(rep) => [`Representation:${rep.id}`, rep] as [string, Record<string, unknown>]
 	)
 ]);
 
@@ -281,9 +375,10 @@ function persistLocalDemoState() {
 }
 
 /**
- * Restores whatever persistLocalDemoState last saved, run once at module load so every seed
- * entity only ever starts from its hardcoded defaults on the true first-ever visit — any later
- * load picks up right where the previous session left off.
+ * Restores whatever persistLocalDemoState last saved. Run *after* the committees/
+ * representations collections have been restored to their persisted shape (see bottom of
+ * this file) so a scalar edit (e.g. a renamed committee) can find that committee already
+ * registered in localDemoEntitiesById, not just the hardcoded defaults.
  */
 function loadPersistedLocalDemoState() {
 	if (typeof localStorage === 'undefined') return;
@@ -309,8 +404,6 @@ function loadPersistedLocalDemoState() {
 		}
 	}
 }
-
-loadPersistedLocalDemoState();
 
 const LOCAL_DEMO_ROLL_CALL_SESSIONS_KEY = 'chase-local-demo-roll-call-sessions';
 const ROLL_CALL_SESSION_DATE_FIELDS = ['createdAt', 'updatedAt', 'completedAt'] as const;
@@ -358,59 +451,172 @@ function loadPersistedLocalDemoRollCallSessions() {
 	}
 }
 
-loadPersistedLocalDemoRollCallSessions();
+const LOCAL_DEMO_COMMITTEES_KEY = 'chase-local-demo-committees';
+// Every Date-typed field that can appear anywhere inside a committee (including nested
+// speakers-list entries) — JSON round-trips these as strings, so they need reviving.
+const COMMITTEE_DATE_FIELDS = new Set([
+	'statusUntil',
+	'lastResolutionAdoptionDate',
+	'startTimestamp'
+]);
 
-const LOCAL_DEMO_AGENDA_ITEMS_KEY = 'chase-local-demo-agenda-items';
+function committeeDateReviver(key: string, value: unknown) {
+	return typeof value === 'string' && COMMITTEE_DATE_FIELDS.has(key) ? new Date(value) : value;
+}
 
 /**
  * `persistLocalDemoState` only patches *scalar* fields already present on a seed entity —
- * `Committee.agendaItems` (a list that grows via createAgendaItem) and `.activeAgendaItem`
- * (a relation, not a scalar) both fall outside that, so they need their own round-trip here,
- * same idea as persistLocalDemoRollCallSessions.
+ * `Committee.agendaItems`/`.members` (lists that grow via createAgendaItem/
+ * createCommitteeMember) and `.activeAgendaItem` (a relation, not a scalar) all fall
+ * outside that, as does the very existence of a committee (grown/shrunk via
+ * createCommittee/deleteCommittee) — so the whole committees collection round-trips here
+ * instead, same idea as persistLocalDemoRollCallSessions.
  */
-function persistLocalDemoAgendaItems() {
+function persistLocalDemoCommittees() {
 	if (typeof localStorage === 'undefined') return;
 	try {
-		localStorage.setItem(
-			LOCAL_DEMO_AGENDA_ITEMS_KEY,
-			JSON.stringify({
-				agendaItems: localDemoCommittee.agendaItems,
-				activeAgendaItemId: localDemoCommittee.activeAgendaItemId
-			})
-		);
+		localStorage.setItem(LOCAL_DEMO_COMMITTEES_KEY, JSON.stringify(localDemoCommittees));
 	} catch {
 		// Best-effort only — see persistLocalDemoState.
 	}
 }
 
-function loadPersistedLocalDemoAgendaItems() {
+function loadPersistedLocalDemoCommittees() {
 	if (typeof localStorage === 'undefined') return;
 	let raw: string | null;
 	try {
-		raw = localStorage.getItem(LOCAL_DEMO_AGENDA_ITEMS_KEY);
+		raw = localStorage.getItem(LOCAL_DEMO_COMMITTEES_KEY);
 	} catch {
 		return;
 	}
 	if (!raw) return;
-	let persisted: { agendaItems?: unknown; activeAgendaItemId?: string | null };
+	let persisted: LocalDemoCommittee[];
+	try {
+		persisted = JSON.parse(raw, committeeDateReviver);
+	} catch {
+		return;
+	}
+	if (!Array.isArray(persisted) || persisted.length === 0) return;
+
+	localDemoCommittees.length = 0;
+	localDemoCommittees.push(...persisted);
+	for (const key of [...localDemoEntitiesById.keys()]) {
+		if (key.startsWith('Committee:')) localDemoEntitiesById.delete(key);
+	}
+	for (const committee of localDemoCommittees) {
+		localDemoEntitiesById.set(`Committee:${committee.id}`, committee);
+	}
+}
+
+const LOCAL_DEMO_REPRESENTATIONS_KEY = 'chase-local-demo-representations';
+
+/**
+ * Same idea as persistLocalDemoCommittees — the existence of a representation (grown/
+ * shrunk via createRepresentation/deleteRepresentation on the config page's Delegations/
+ * NSA tabs) isn't a scalar field on any single entity, so the whole collection round-trips.
+ */
+function persistLocalDemoRepresentations() {
+	if (typeof localStorage === 'undefined') return;
+	try {
+		localStorage.setItem(LOCAL_DEMO_REPRESENTATIONS_KEY, JSON.stringify(localDemoRepresentations));
+	} catch {
+		// Best-effort only — see persistLocalDemoState.
+	}
+}
+
+function loadPersistedLocalDemoRepresentations() {
+	if (typeof localStorage === 'undefined') return;
+	let raw: string | null;
+	try {
+		raw = localStorage.getItem(LOCAL_DEMO_REPRESENTATIONS_KEY);
+	} catch {
+		return;
+	}
+	if (!raw) return;
+	let persisted: LocalDemoRepresentation[];
 	try {
 		persisted = JSON.parse(raw);
 	} catch {
 		return;
 	}
-	if (Array.isArray(persisted.agendaItems)) {
-		localDemoCommittee.agendaItems = persisted.agendaItems as typeof localDemoCommittee.agendaItems;
+	if (!Array.isArray(persisted) || persisted.length === 0) return;
+
+	localDemoRepresentations.length = 0;
+	localDemoRepresentations.push(...persisted);
+	for (const key of [...localDemoEntitiesById.keys()]) {
+		if (key.startsWith('Representation:')) localDemoEntitiesById.delete(key);
 	}
-	if (typeof persisted.activeAgendaItemId === 'string' || persisted.activeAgendaItemId === null) {
-		localDemoCommittee.activeAgendaItemId = persisted.activeAgendaItemId;
-		localDemoCommittee.activeAgendaItem = persisted.activeAgendaItemId
-			? (localDemoCommittee.agendaItems.find((item) => item.id === persisted.activeAgendaItemId) ??
-				null)
-			: null;
+	for (const rep of localDemoRepresentations) {
+		localDemoEntitiesById.set(`Representation:${rep.id}`, rep);
 	}
 }
 
-loadPersistedLocalDemoAgendaItems();
+// Order matters: restore the growable collections (and re-register their entities into
+// localDemoEntitiesById) BEFORE patching scalar fields onto whatever's now registered —
+// otherwise a scalar edit to a committee/representation created in an earlier session
+// would find nothing to patch yet and silently be dropped.
+loadPersistedLocalDemoCommittees();
+loadPersistedLocalDemoRepresentations();
+loadPersistedLocalDemoState();
+loadPersistedLocalDemoRollCallSessions();
+
+type LocalDemoSpeaker = { id: string; position: number } & Record<string, unknown>;
+type LocalDemoSpeakersListEntity = {
+	__typename?: string;
+	id: string;
+	speakers: LocalDemoSpeaker[];
+} & Record<string, unknown>;
+
+/** Finds a committee by id across the live committees collection. */
+function findLocalDemoCommittee(committeeId: string): LocalDemoCommittee | undefined {
+	return localDemoCommittees.find((c) => c.id === committeeId);
+}
+
+/** Finds a speakers list by id across every committee's every agenda item's `speakersList`
+ * — the seeded default pair (`localDemoSpeakersList`/`localDemoCommentList`) as well as any
+ * list belonging to a TOP created at runtime via createAgendaItem's own effect below. */
+function findLocalDemoSpeakersList(
+	speakersListId: string
+): LocalDemoSpeakersListEntity | undefined {
+	for (const committee of localDemoCommittees) {
+		for (const agendaItem of committee.agendaItems) {
+			const list = (agendaItem.speakersList as LocalDemoSpeakersListEntity[] | undefined)?.find(
+				(l) => l.id === speakersListId
+			);
+			if (list) return list;
+		}
+	}
+	return undefined;
+}
+
+/**
+ * Like createAgendaItem's own effect, `commitLocalDemoEntity` skips `Speakerslist.speakers`
+ * entirely (it's a 'list' field), so a newly added/removed/moved speaker only ever lives in
+ * graphcache's own cache — never in the seed snapshot the "committee"/"conference" queries
+ * fall back to for any query operation that hasn't been freshly answered yet (a different
+ * page's differently-shaped query, or this same page's query after a reload). Without these
+ * effects that stale, always-empty seed snapshot silently overwrites whatever the cache
+ * already holds, which is what makes speakers vanish or reappear duplicated.
+ */
+function addLocalDemoSpeaker(speakersListId: string, speaker: LocalDemoCommittableEntity) {
+	if (!speaker.id) return;
+	const list = findLocalDemoSpeakersList(speakersListId);
+	if (!list) return;
+	if (list.speakers.some((s) => s.id === speaker.id)) return;
+	list.speakers.push(speaker as LocalDemoSpeaker);
+	persistLocalDemoCommittees();
+}
+
+/** Replaces a list's speakers with `incoming` (id + position only, as produced by the
+ * remove/self-remove optimistic handlers), preserving each surviving speaker's existing
+ * richer fields (committeeMember, representation, etc.) rather than discarding them. */
+function replaceLocalDemoSpeakers(speakersListId: string, incoming: LocalDemoSpeaker[]) {
+	const list = findLocalDemoSpeakersList(speakersListId);
+	if (!list) return;
+	const byId = new Map(list.speakers.map((s) => [s.id, s]));
+	list.speakers = incoming.map((s) => ({ ...(byId.get(s.id) ?? {}), ...s }));
+	persistLocalDemoCommittees();
+}
 
 /**
  * Not a real backend mutation — client.ts intercepts any operation whose
@@ -470,12 +676,10 @@ export const localDemoConferenceUpdates: UpdatesConfig['Mutation'] = {
 /**
  * Extra local-demo-only side effects that run *alongside* (not instead of) a mutation's
  * real `updates` handler — see withLocalDemoMutationCommits, which calls both. Needed for
- * `rollCallSessions` (presence page's "past roll calls" history): unlike committee/
- * conference, there's no single well-known entity whose in-place mutation this root-level
- * list could passively pick up just by being kept correct in the cache, so it's tracked
- * here directly. `startRollCallSession`'s and `completeRollCallSession`'s real handlers
- * (which set/clear `Committee.activeRollCallSession`) still run first via the real
- * `updates.Mutation` map — this only ever adds to what they already do.
+ * list-typed fields (see fieldKind/commitLocalDemoEntity): unlike a single well-known
+ * entity's own scalar fields, a *list*'s membership (which committees/representations/
+ * agenda items/speakers exist) isn't picked up by the generic committer, so it's tracked
+ * here directly, mirroring addToList's cache-side append/remove semantics.
  */
 const localDemoExtraMutationEffects: Record<
 	string,
@@ -494,23 +698,162 @@ const localDemoExtraMutationEffects: Record<
 		session.completedAt = new Date();
 		persistLocalDemoRollCallSessions();
 	},
+	// ---------------------------------------------------------------
+	// committee.ts
+	// ---------------------------------------------------------------
+	createCommittee: (_args, [entity]) => {
+		if (!entity?.id) return;
+		if (findLocalDemoCommittee(entity.id as string)) return;
+		const committee = makeLocalDemoCommittee({
+			id: entity.id as string,
+			name: entity.name as string,
+			abbreviation: entity.abbreviation as string
+		});
+		localDemoCommittees.push(committee);
+		localDemoEntitiesById.set(`Committee:${committee.id}`, committee);
+		persistLocalDemoCommittees();
+	},
+	deleteCommittee: (args) => {
+		const id = args.id as string;
+		const index = localDemoCommittees.findIndex((c) => c.id === id);
+		if (index === -1) return;
+		localDemoCommittees.splice(index, 1);
+		localDemoEntitiesById.delete(`Committee:${id}`);
+		persistLocalDemoCommittees();
+	},
+	// ---------------------------------------------------------------
+	// committeeMember.ts — assigning/unassigning a delegation to a committee
+	// ---------------------------------------------------------------
+	createCommitteeMember: (args, [entity]) => {
+		if (!entity?.id) return;
+		const committee = findLocalDemoCommittee(args.committeeId as string);
+		if (!committee) return;
+		if ((committee.members as { id: string }[]).some((m) => m.id === entity.id)) return;
+		committee.members.push(entity);
+		persistLocalDemoCommittees();
+	},
+	deleteCommitteeMember: (args) => {
+		const id = args.id as string;
+		for (const committee of localDemoCommittees) {
+			const index = (committee.members as { id: string }[]).findIndex((m) => m.id === id);
+			if (index !== -1) {
+				committee.members.splice(index, 1);
+				persistLocalDemoCommittees();
+				return;
+			}
+		}
+	},
+	// ---------------------------------------------------------------
+	// representation.ts
+	// ---------------------------------------------------------------
+	createRepresentation: (_args, [entity]) => {
+		if (!entity?.id) return;
+		if (localDemoRepresentations.some((r) => r.id === entity.id)) return;
+		localDemoRepresentations.push(entity as LocalDemoRepresentation);
+		localDemoEntitiesById.set(`Representation:${entity.id}`, entity);
+		persistLocalDemoRepresentations();
+	},
+	deleteRepresentation: (args) => {
+		const id = args.id as string;
+		const index = localDemoRepresentations.findIndex((r) => r.id === id);
+		if (index === -1) return;
+		localDemoRepresentations.splice(index, 1);
+		localDemoEntitiesById.delete(`Representation:${id}`);
+		// Mirror the server's cascade: drop any committee membership pointing at this
+		// representation, same as updates.Mutation.deleteRepresentation's cache-side cascade.
+		let committeesChanged = false;
+		for (const committee of localDemoCommittees) {
+			const before = committee.members.length;
+			committee.members = (committee.members as { representation: { id: string } }[]).filter(
+				(m) => m.representation?.id !== id
+			);
+			if (committee.members.length !== before) committeesChanged = true;
+		}
+		persistLocalDemoRepresentations();
+		if (committeesChanged) persistLocalDemoCommittees();
+	},
+	// ---------------------------------------------------------------
+	// agendaItem.ts
+	// ---------------------------------------------------------------
 	// `commitLocalDemoEntity` only patches scalars/singular relations onto the seed objects —
 	// a list field like Committee.agendaItems needs append semantics instead (mirroring
 	// addToList's cache-side behavior), so any `committee` query — a different page's, or this
 	// same page's after a reload, see resolveLocalDemoRootField — sees the new item too, not
 	// just whatever graphcache's own cache happened to already have.
-	createAgendaItem: (_args, [entity]) => {
+	createAgendaItem: (args, [entity]) => {
 		if (!entity?.id) return;
-		if (localDemoCommittee.agendaItems.some((item) => item.id === entity.id)) return;
-		localDemoCommittee.agendaItems.push({
+		const committee = findLocalDemoCommittee(args.committeeId as string);
+		if (!committee) return;
+		if (committee.agendaItems.some((item) => item.id === entity.id)) return;
+		committee.agendaItems.push({
 			__typename: 'Agendaitem',
 			id: entity.id as string,
 			title: entity.title as string,
-			// Matches optimistic.createAgendaItem's own assumption for a brand new item —
-			// the real handler creates two rows for it, but nothing here has read them yet.
-			speakersList: []
+			// optimistic.createAgendaItem now builds the two child speakersList rows
+			// (client-supplied ids), so the committed entity already carries them.
+			speakersList: (entity.speakersList as unknown[]) ?? []
 		});
-		persistLocalDemoAgendaItems();
+		persistLocalDemoCommittees();
+	},
+	addSpeakerOnList: (args, [entity]) => {
+		if (!entity) return;
+		addLocalDemoSpeaker(args.speakersListId as string, entity);
+	},
+	selfAddToSpeakersList: (args, [entity]) => {
+		if (!entity) return;
+		addLocalDemoSpeaker(args.speakersListId as string, entity);
+	},
+	// removeSpeakerOnList/selfRemoveFromSpeakersList's optimistic handlers already return the
+	// full recomputed Speakerslist (id + densified speakers), so there's no separate args-based
+	// list id to look up — the produced entity's own id IS the speakersListId.
+	removeSpeakerOnList: (_args, [entity]) => {
+		if (!entity?.id) return;
+		replaceLocalDemoSpeakers(entity.id as string, (entity.speakers as LocalDemoSpeaker[]) ?? []);
+	},
+	selfRemoveFromSpeakersList: (_args, [entity]) => {
+		if (!entity?.id) return;
+		replaceLocalDemoSpeakers(entity.id as string, (entity.speakers as LocalDemoSpeaker[]) ?? []);
+	},
+	moveSpeakerToPosition: (_args, [entity]) => {
+		if (!entity?.id) return;
+		const speakersListId = entity.speakersListId as string | undefined;
+		const targetPosition = entity.position as number | undefined;
+		if (!speakersListId || typeof targetPosition !== 'number') return;
+
+		const list = findLocalDemoSpeakersList(speakersListId);
+		if (!list) return;
+		const currentPosition = list.speakers.find((s) => s.id === entity.id)?.position;
+		if (currentPosition === undefined || currentPosition === targetPosition) return;
+
+		// Mirror optimistic.moveSpeakerToPosition's shift semantics.
+		const shifted = list.speakers.map((s) => {
+			if (s.id === entity.id) return { ...s, position: targetPosition };
+			if (targetPosition > currentPosition) {
+				if (s.position > currentPosition && s.position <= targetPosition) {
+					return { ...s, position: s.position - 1 };
+				}
+			} else if (s.position >= targetPosition && s.position < currentPosition) {
+				return { ...s, position: s.position + 1 };
+			}
+			return s;
+		});
+		list.speakers = densifySpeakers(shifted);
+		persistLocalDemoCommittees();
+	},
+	updateSpeakerOnList: (_args, [entity]) => {
+		if (!entity?.id) return;
+		for (const committee of localDemoCommittees) {
+			for (const agendaItem of committee.agendaItems) {
+				for (const list of (agendaItem.speakersList as LocalDemoSpeakersListEntity[] | undefined) ??
+					[]) {
+					const speaker = list.speakers.find((s) => s.id === entity.id);
+					if (!speaker) continue;
+					speaker.overwriteName = entity.overwriteName ?? null;
+					persistLocalDemoCommittees();
+					return;
+				}
+			}
+		}
 	}
 };
 
@@ -620,8 +963,9 @@ function computeLocalDemoCannedAnswer(
 			return { conferences: [localDemoConference] };
 		case 'committee': {
 			const id = (variables as { id?: string } | null | undefined)?.id;
-			if (id !== undefined && id !== localDemoCommittee.id) return undefined;
-			return { committee: localDemoCommittee };
+			const match = id !== undefined ? findLocalDemoCommittee(id) : localDemoCommittees[0];
+			if (!match) return undefined;
+			return { committee: match };
 		}
 		default:
 			return undefined;
@@ -672,12 +1016,27 @@ function commitLocalDemoEntity(cache: Cache, entity: LocalDemoCommittableEntity 
 
 	const scalarFieldNames: string[] = [];
 	const relationFieldNames: string[] = [];
+	const emptyListFieldNames: string[] = [];
 	for (const key of Object.keys(fields)) {
 		const kind = fieldKind(__typename, key);
 		if (kind === 'object') relationFieldNames.push(key);
 		else if (kind === 'scalar') scalarFieldNames.push(key);
-		// 'list' fields need append semantics (see addToList) — committing them here would
-		// clobber the list with just this mutation's own view of it, so they're skipped.
+		else if (
+			kind === 'list' &&
+			Array.isArray(fields[key]) &&
+			(fields[key] as unknown[]).length === 0
+		) {
+			// A genuinely empty list (e.g. a brand-new Committee's `members: []`) is safe to
+			// link directly — there's nothing to clobber yet. A non-empty list still needs
+			// addToList-style append semantics instead (committing it here would clobber the
+			// list with just this mutation's own view of it), so those stay skipped. Without
+			// this, a newly created entity's list field is never written at all unless the
+			// mutation's OWN selection set happened to ask for it — any query with a broader
+			// selection than that (e.g. a page listing every committee's members) can't
+			// resolve the new entity from cache and, offline, never gets a network round trip
+			// to fill the gap either, so the new entity silently never appears anywhere.
+			emptyListFieldNames.push(key);
+		}
 	}
 
 	if (scalarFieldNames.length > 0) {
@@ -703,6 +1062,10 @@ function commitLocalDemoEntity(cache: Cache, entity: LocalDemoCommittableEntity 
 		);
 	}
 
+	for (const key of emptyListFieldNames) {
+		cache.link({ __typename, id: entity.id as string }, key, []);
+	}
+
 	// Keep the seed's own snapshot in sync too — see localDemoEntitiesById — so a *different*
 	// page's first-ever (and therefore genuinely fresh-answered, see resolveLocalDemoRootField)
 	// query for this entity sees the change instead of the original hardcoded relation.
@@ -715,16 +1078,20 @@ function commitLocalDemoEntity(cache: Cache, entity: LocalDemoCommittableEntity 
 
 	// `optimistic.updateCommittee` only produces a minimal `{__typename, id}` stub for
 	// activeAgendaItem (it doesn't know the item's title/speakersList) — swap in the full
-	// entry from `agendaItems` (which does) so this stays in the same shape as every other
-	// agenda item the seed hands out, and persist it (see persistLocalDemoAgendaItems' doc
-	// comment for why this can't go through the generic scalar snapshot above).
+	// entry from that committee's own `agendaItems` (which does) so this stays in the same
+	// shape as every other agenda item the seed hands out, and persist it (see
+	// persistLocalDemoCommittees' doc comment for why this can't go through the generic
+	// scalar snapshot above).
 	if (__typename === 'Committee' && relationFieldNames.includes('activeAgendaItem')) {
-		const activeId = (fields.activeAgendaItem as { id?: string } | null)?.id ?? null;
-		localDemoCommittee.activeAgendaItemId = activeId;
-		localDemoCommittee.activeAgendaItem = activeId
-			? (localDemoCommittee.agendaItems.find((item) => item.id === activeId) ?? null)
-			: null;
-		persistLocalDemoAgendaItems();
+		const committee = findLocalDemoCommittee(entity.id as string);
+		if (committee) {
+			const activeId = (fields.activeAgendaItem as { id?: string } | null)?.id ?? null;
+			committee.activeAgendaItemId = activeId;
+			committee.activeAgendaItem = activeId
+				? (committee.agendaItems.find((item) => item.id === activeId) ?? null)
+				: null;
+			persistLocalDemoCommittees();
+		}
 	}
 }
 

@@ -1,4 +1,5 @@
 import { m } from '$lib/paraglide/messages';
+import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 
 export type ConferenceUserRole =
 	'ADMIN' | 'TEAM' | 'DELEGATE' | 'NON_STATE_ACTOR' | 'SPECTATOR' | undefined | null;
@@ -47,6 +48,9 @@ export function buildConferenceNavItems({
 	const isAdmin = role === 'ADMIN' || !!isGlobalAdmin;
 	const isTeamOrAdmin = isAdmin || role === 'TEAM';
 	const isParticipant = role === 'DELEGATE' || role === 'NON_STATE_ACTOR';
+	// Attendance (roll-call/check-in tracking) and statistics both aggregate data across
+	// real devices/sessions that don't exist in the offline demo conference.
+	const isLocalDemo = isLocalConferenceActive();
 
 	const items: NavItem[] = [];
 
@@ -67,28 +71,30 @@ export function buildConferenceNavItems({
 			active: onMissionControl
 		});
 
-		items.push({
-			key: 'attendance',
-			faIcon: 'fa-user-tag',
-			title: m.attendance(),
-			href: `/app/${conferenceId}/attendance`,
-			active:
-				hasRouteSegment(activeRouteId, 'attendance') ||
-				hasRouteSegment(activePathname, 'attendance')
-		});
+		if (!isLocalDemo) {
+			items.push({
+				key: 'attendance',
+				faIcon: 'fa-user-tag',
+				title: m.attendance(),
+				href: `/app/${conferenceId}/attendance`,
+				active:
+					hasRouteSegment(activeRouteId, 'attendance') ||
+					hasRouteSegment(activePathname, 'attendance')
+			});
 
-		items.push({
-			key: 'statistics',
-			faIcon: 'fa-chart-column',
-			title: m.statistics(),
-			href: `/app/${conferenceId}/statistics`,
-			active:
-				hasRouteSegment(activeRouteId, 'statistics') ||
-				hasRouteSegment(activePathname, 'statistics')
-		});
+			items.push({
+				key: 'statistics',
+				faIcon: 'fa-chart-column',
+				title: m.statistics(),
+				href: `/app/${conferenceId}/statistics`,
+				active:
+					hasRouteSegment(activeRouteId, 'statistics') ||
+					hasRouteSegment(activePathname, 'statistics')
+			});
+		}
 	}
 
-	if (isParticipant) {
+	if (isParticipant && !isLocalDemo) {
 		items.push({
 			key: 'statistics',
 			faIcon: 'fa-chart-column',

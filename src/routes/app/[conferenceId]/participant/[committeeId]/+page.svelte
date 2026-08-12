@@ -14,6 +14,7 @@
 	import Majorities from '$lib/components/Majorities.svelte';
 	import ParticipantIdentityCard from '../ParticipantIdentityCard.svelte';
 	import DeviceVoteModal from '$lib/components/voting/DeviceVoteModal.svelte';
+	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 
 	const currentUser = await getCurrentUser();
 	const [conferenceUser] =
@@ -301,22 +302,24 @@
 		{/if}
 
 		<!-- Resolutions Card -->
-		<a
-			class="card bg-base-100 shadow-sm transition hover:shadow-md"
-			href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
-				conferenceId: page.params.conferenceId!,
-				committeeId: page.params.committeeId!
-			})}
-		>
-			<div class="card-body flex-row items-center gap-3 p-4">
-				<i class="fa-duotone fa-file-lines text-2xl"></i>
-				<div class="flex-1">
-					<h2 class="card-title text-lg">{m.resolutions()}</h2>
-					<p class="text-base-content/60 text-sm">{m.resolutionsCardHint()}</p>
+		{#if !isLocalConferenceActive()}
+			<a
+				class="card bg-base-100 shadow-sm transition hover:shadow-md"
+				href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
+					conferenceId: page.params.conferenceId!,
+					committeeId: page.params.committeeId!
+				})}
+			>
+				<div class="card-body flex-row items-center gap-3 p-4">
+					<i class="fa-duotone fa-file-lines text-2xl"></i>
+					<div class="flex-1">
+						<h2 class="card-title text-lg">{m.resolutions()}</h2>
+						<p class="text-base-content/60 text-sm">{m.resolutionsCardHint()}</p>
+					</div>
+					<i class="fas fa-chevron-right opacity-50"></i>
 				</div>
-				<i class="fas fa-chevron-right opacity-50"></i>
-			</div>
-		</a>
+			</a>
+		{/if}
 
 		<!-- Whiteboard Card -->
 		{#if committee.showWhiteboard && committee.whiteboardContent}

@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
 	import {
 		buildConferenceNavItems,
@@ -118,29 +119,31 @@
 			<i class="fa-duotone fa-users size-[1.2em]"></i>
 			<span class="dock-label">{m.committee()}</span>
 		</a>
-		<a
-			href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
-				conferenceId: page.params.conferenceId!,
-				committeeId: page.params.committeeId!
-			})}
-			class:dock-active={page.url.pathname.includes('/papers') &&
-				!page.url.pathname.includes(committee?.activeDraftResolutionId ?? '__none__')}
-		>
-			<i class="fa-duotone fa-file-lines size-[1.2em]"></i>
-			<span class="dock-label">{m.resolutions()}</span>
-		</a>
-		{#if committee?.activeDraftResolutionId}
+		{#if !isLocalConferenceActive()}
 			<a
-				href={resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
+				href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
 					conferenceId: page.params.conferenceId!,
-					committeeId: page.params.committeeId!,
-					paperId: committee.activeDraftResolutionId
+					committeeId: page.params.committeeId!
 				})}
-				class:dock-active={page.url.pathname.includes(committee.activeDraftResolutionId)}
+				class:dock-active={page.url.pathname.includes('/papers') &&
+					!page.url.pathname.includes(committee?.activeDraftResolutionId ?? '__none__')}
 			>
-				<i class="fa-duotone fa-file-pen size-[1.2em]"></i>
-				<span class="dock-label">{m.activeDraftResolution()}</span>
+				<i class="fa-duotone fa-file-lines size-[1.2em]"></i>
+				<span class="dock-label">{m.resolutions()}</span>
 			</a>
+			{#if committee?.activeDraftResolutionId}
+				<a
+					href={resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
+						conferenceId: page.params.conferenceId!,
+						committeeId: page.params.committeeId!,
+						paperId: committee.activeDraftResolutionId
+					})}
+					class:dock-active={page.url.pathname.includes(committee.activeDraftResolutionId)}
+				>
+					<i class="fa-duotone fa-file-pen size-[1.2em]"></i>
+					<span class="dock-label">{m.activeDraftResolution()}</span>
+				</a>
+			{/if}
 		{/if}
 	</div>
 {/if}

@@ -1069,8 +1069,10 @@ export type Mutation = {
     votingSessionId: ID
   }) => Resolutionpaper,
   createAgendaItem: (p: {
+    commentListId?: ID | null | undefined,
     committeeId: ID,
     id?: ID | null | undefined,
+    speakersListId?: ID | null | undefined,
     title: String
   }) => Agendaitem,
   createAmendment: (p: {

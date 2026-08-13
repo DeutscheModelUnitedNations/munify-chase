@@ -74,7 +74,7 @@
 
 	// ---- Committee + conference data (for header) ---------------------------
 	const committees = await client.liveQuery.committees({
-		__args: { where: { resolutionPapers: { id: paperId } } },
+		__args: { where: { resolutionPapers: { id: { eq: paperId } } } },
 		id: true,
 		name: true,
 		abbreviation: true,
@@ -84,7 +84,7 @@
 
 	// ---- Paper metadata (for header) ----------------------------------------
 	const papers = await client.liveQuery.resolutionPapers({
-		__args: { where: { id: paperId } },
+		__args: { where: { id: { eq: paperId } } },
 		id: true,
 		documentNumber: true,
 		updatedAt: true,
@@ -103,7 +103,7 @@
 
 	// ---- Amendment overlays + rejected clauses ------------------------------
 	const amendmentRows = await client.liveQuery.amendments({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		type: true,
 		status: true,
@@ -115,7 +115,7 @@
 		sponsors: { id: true }
 	});
 	const clauseVotes = await client.liveQuery.operativeClauseVotes({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		clauseId: true,
 		vote: { id: true, outcome: true }

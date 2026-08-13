@@ -27,8 +27,8 @@
 		(await client.liveQuery.conferenceUsers({
 			__args: {
 				where: {
-					conference: { id: page.params.conferenceId },
-					user: { id: userId }
+					conference: { id: { eq: page.params.conferenceId } },
+					user: { id: { eq: userId } }
 				}
 			},
 			id: true,

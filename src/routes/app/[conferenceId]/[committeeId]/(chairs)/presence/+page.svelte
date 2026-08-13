@@ -92,7 +92,7 @@
 
 	const pastSessions = await client.liveQuery.rollCallSessions({
 		__args: {
-			where: { committeeId: page.params.committeeId!, completedAt: { isNull: false } },
+			where: { committeeId: { eq: page.params.committeeId! }, completedAt: { isNull: false } },
 			orderBy: { createdAt: 'desc' }
 		},
 		id: true,

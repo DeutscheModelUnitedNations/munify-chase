@@ -14,7 +14,7 @@
 
 	const snapshots = await client.liveQuery.paperContentSnapshots({
 		__args: {
-			where: { paper: { id: paperId } },
+			where: { paper: { id: { eq: paperId } } },
 			orderBy: { createdAt: 'desc' }
 		},
 		id: true,

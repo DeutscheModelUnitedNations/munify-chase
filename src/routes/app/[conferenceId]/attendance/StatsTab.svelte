@@ -17,7 +17,7 @@
 
 	const events = await client.liveQuery.presenceEvents({
 		__args: {
-			where: { committee: { conference: { id: conferenceId } } },
+			where: { committee: { conference: { id: { eq: conferenceId } } } },
 			orderBy: { timestamp: 'asc' }
 		},
 		id: true,

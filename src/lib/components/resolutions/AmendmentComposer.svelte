@@ -71,7 +71,7 @@
 	const team = $derived(isTeam(viewer));
 
 	const members = await client.liveQuery.committeeMembers({
-		__args: { where: { committee: { id: committeeId } } },
+		__args: { where: { committee: { id: { eq: committeeId } } } },
 		id: true,
 		representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
 	});

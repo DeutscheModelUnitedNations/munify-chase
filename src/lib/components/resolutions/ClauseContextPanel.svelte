@@ -68,12 +68,12 @@
 
 	// Lightweight count queries for tab badges (graphcache dedupes with children).
 	const amendments = await client.liveQuery.amendments({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		targetClauseId: true
 	});
 	const comments = await client.liveQuery.resolutionComments({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		clauseId: true
 	});

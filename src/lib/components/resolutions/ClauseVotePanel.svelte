@@ -19,7 +19,7 @@
 		$props();
 
 	const votes = await client.liveQuery.operativeClauseVotes({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		clauseId: true,
 		vote: {

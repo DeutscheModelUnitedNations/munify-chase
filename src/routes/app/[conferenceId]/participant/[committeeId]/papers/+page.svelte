@@ -22,7 +22,10 @@
 	const currentUser = await getCurrentUser();
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
 		__args: {
-			where: { user: { id: currentUser.id ?? '' }, conference: { id: page.params.conferenceId } }
+			where: {
+				user: { id: { eq: currentUser.id ?? '' } },
+				conference: { id: { eq: page.params.conferenceId } }
+			}
 		},
 		id: true,
 		conferenceUserType: true,
@@ -39,7 +42,7 @@
 	});
 
 	const papers = await client.liveQuery.resolutionPapers({
-		__args: { where: { committee: { id: committeeId } } },
+		__args: { where: { committee: { id: { eq: committeeId } } } },
 		id: true,
 		title: true,
 		status: true,

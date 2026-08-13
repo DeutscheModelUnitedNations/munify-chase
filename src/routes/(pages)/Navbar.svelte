@@ -16,7 +16,7 @@
 			class="btn btn-ghost"
 			href={resolve('/app/[conferenceId]/mission-control', { conferenceId: LOCAL_CONFERENCE_ID })}
 		>
-			<i class="fa-duotone fa-flask mr-2 text-xl"></i>
+			<i class="fa-duotone fa-cloud-slash mr-2 text-xl"></i>
 			{m.tryOfflineDemo()}
 		</a>
 		<a class="btn btn-ghost" href={resolve('/app')}>

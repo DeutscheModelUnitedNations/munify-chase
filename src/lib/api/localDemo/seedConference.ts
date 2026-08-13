@@ -277,7 +277,7 @@ const localDemoCommittee: LocalDemoCommittee = makeLocalDemoCommittee({
 	status: 'FORMAL',
 	statusHeadline: 'In session',
 	statusUntil: new Date(now.getTime() + 60 * 60 * 1000),
-	allowDelegationsToAddThemselvesToSpeakersList: true,
+	allowDelegationsToAddThemselvesToSpeakersList: false,
 	totalPresent: localDemoTotalPresent,
 	simpleMajority: calculateMajority(localDemoTotalPresent, 'simple'),
 	twoThirdsMajority: calculateMajority(localDemoTotalPresent, 'twoThirds')

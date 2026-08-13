@@ -5,6 +5,8 @@
 	import TextSection from './TextSection.svelte';
 	import ContactSection from './ContactSection.svelte';
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
+	import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
 
 	let loading = $state(true);
 
@@ -96,6 +98,17 @@
 					>
 						<i class="fas fa-code-branch mr-2"></i>
 						{m.homeContributeButtonLabel()}
+					</a>
+				</TextSection>
+				<TextSection title={m.homeOfflineTitle()} text={m.homeOfflineText()}>
+					<a
+						class="btn btn-primary mt-3"
+						href={resolve('/app/[conferenceId]/mission-control', {
+							conferenceId: LOCAL_CONFERENCE_ID
+						})}
+					>
+						<i class="fa-duotone fa-cloud-slash mr-2"></i>
+						{m.homeOfflineButtonLabel()}
 					</a>
 				</TextSection>
 				<TextSection title={m.homeDocsTitle()} text={m.homeDocsText()}>

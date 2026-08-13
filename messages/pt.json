@@ -1053,6 +1053,7 @@
 	"yjsForbidden": "Não tem acesso a este documento",
 	"yjsLocalOnly": "Apenas local",
 	"yjsOffline": "Offline",
+	"yjsReadOnlyDowngrade": "Este documento agora é somente leitura. Recarregando…",
 	"yjsSynced": "Sincronizado",
 	"yjsSyncing": "A sincronizar…",
 	"you": "Você",

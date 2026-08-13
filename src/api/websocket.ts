@@ -96,6 +96,14 @@ yjsWSS.on('headers', setHeaders);
 	const isGql = url.pathname === '/api/graphql';
 	const isYjs = url.pathname.startsWith('/api/docs');
 
+	// In dev, vite.config.ts's wsPlugin forwards EVERY upgrade on this HTTP server here —
+	// including Vite's own unrelated HMR websocket, which shares the same server/port.
+	// Leave anything that isn't one of our own endpoints alone entirely: falling through
+	// to the auth check below would (for an unauthenticated dev session) throw and
+	// `socket.destroy()` a connection that Vite's own listener may have already upgraded,
+	// racing it into a permanent connect/disconnect loop.
+	if (!isGql && !isYjs) return;
+
 	// Store the raw socket early so the graphql-ws onConnect handler can reach
 	// it when deferred (connection_init) authentication is needed.
 	if (isGql) (req as unknown as Record<string, unknown>)[UPGRADE_SOCKET_FIELD] = socket;
@@ -117,16 +125,13 @@ yjsWSS.on('headers', setHeaders);
 		(req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] =
 			syntheticSvelteRequestEvent;
 		startWSValidityChecker(ctx, socket);
-	} catch (err) {
-		if (!isGql && !isYjs) {
-			console.error('[wss] failed to validate websocket connection', err);
-			socket.destroy();
-			return;
-		}
-		// isGql: allow through — graphql-ws onConnect validates connectionParams
-		//        (Bearer token in the connection_init message).
-		// isYjs: allow through — Hocuspocus onAuthenticate validates the in-band
-		//        Bearer token sent by the client after the upgrade.
+	} catch {
+		// Both remaining branches (isGql/isYjs — anything else already returned above)
+		// allow the upgrade through unauthenticated at this stage:
+		// isGql: graphql-ws's own onConnect validates connectionParams (Bearer token in
+		//        the connection_init message).
+		// isYjs: Hocuspocus's onAuthenticate validates the in-band Bearer token sent by
+		//        the client after the upgrade.
 	}
 
 	if (isGql) {

@@ -4,6 +4,7 @@
 	import Tabs from '../Tabs.svelte';
 	import Combobox from '../Combobox.svelte';
 	import votingNameTemplates from '$lib/data/votingNameTemplates';
+	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 
 	interface Props {
 		voteType: 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED';
@@ -23,15 +24,19 @@
 		onstart
 	}: Props = $props();
 
+	// Device-based voting has each participant vote from their own device — meaningless in
+	// the offline demo, where there's only ever the one device in front of the chair.
 	const voteTypeTabs: {
 		id: 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED';
 		label: string;
 		faIcon: string;
-	}[] = [
-		{ id: 'SHOW_OF_HANDS', label: m.showOfHandsVoting(), faIcon: 'hand-wave' },
-		{ id: 'ROLL_CALL', label: m.rollCallVoting(), faIcon: 'list-check' },
-		{ id: 'DEVICE_BASED', label: m.deviceBasedVoting(), faIcon: 'mobile' }
-	];
+	}[] = $derived(
+		[
+			{ id: 'SHOW_OF_HANDS' as const, label: m.showOfHandsVoting(), faIcon: 'hand-wave' },
+			{ id: 'ROLL_CALL' as const, label: m.rollCallVoting(), faIcon: 'list-check' },
+			{ id: 'DEVICE_BASED' as const, label: m.deviceBasedVoting(), faIcon: 'mobile' }
+		].filter((tab) => tab.id !== 'DEVICE_BASED' || !isLocalConferenceActive())
+	);
 
 	const majorityTabs: {
 		id: VotingMajority;

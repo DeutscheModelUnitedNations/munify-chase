@@ -1046,6 +1046,7 @@
 	"yjsForbidden": "Du hast keinen Zugriff auf dieses Dokument",
 	"yjsLocalOnly": "Nur lokal",
 	"yjsOffline": "Offline",
+	"yjsReadOnlyDowngrade": "Dieses Dokument ist jetzt schreibgeschützt. Wird neu geladen…",
 	"yjsSynced": "Synchronisiert",
 	"yjsSyncing": "Synchronisiere…",
 	"you": "Du",

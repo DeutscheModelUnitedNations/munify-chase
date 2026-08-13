@@ -21,6 +21,7 @@ import {
 } from '$api/services/authHelper';
 import { nativeToRequestEvent } from '$api/services/auth';
 import { OIDC } from '$api/services/OIDC';
+import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from '$lib/api/yjs/statelessMessages';
 
 const PERSIST_DEBOUNCE_MS = 1500;
 
@@ -261,6 +262,19 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 					/* noop */
 				}
 				return;
+			}
+			// Write access lost but read access remains: unlike a full revocation,
+			// don't drop the connection (the user should keep seeing live
+			// updates). The client can't observe `connection.readOnly` flipping
+			// on an open socket by itself, so tell it explicitly — it reloads to
+			// pick up the new state consistently across the whole page, not just
+			// the doc.
+			if (!connection.readOnly && !next.canWrite) {
+				try {
+					connection.sendStateless(READ_ONLY_DOWNGRADE_STATELESS_MESSAGE);
+				} catch (err) {
+					console.error('[yjs] failed to notify client of read-only downgrade', { paperId, err });
+				}
 			}
 			connection.readOnly = !next.canWrite;
 		}, REAUTH_INTERVAL_MS);

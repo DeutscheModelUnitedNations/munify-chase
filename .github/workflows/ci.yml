@@ -196,6 +196,32 @@ jobs:
           echo "  - SENTRY_URL: Your Bugsink instance URL (e.g., https://bugsink.example.com/)"
 
   # ============================================
+  # LAYER 3: DEPLOY (push to main / tag only)
+  # ============================================
+  # Triggers a Dokploy redeploy of the application once the new image has
+  # been built, pushed, and passed the Trivy scan above. Dokploy's per-app
+  # deploy webhook just needs a POST to its URL — the application to
+  # redeploy is encoded in the URL itself, so no body/auth header is needed.
+
+  deploy:
+    if: github.event_name == 'push'
+    needs: [docker-build]
+    runs-on: ubuntu-latest
+    env:
+      DOKPLOY_DEPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_DEPLOY_WEBHOOK_URL }}
+    steps:
+      - name: Trigger Dokploy deployment
+        if: env.DOKPLOY_DEPLOY_WEBHOOK_URL != ''
+        run: curl --fail --silent --show-error -X POST "$DOKPLOY_DEPLOY_WEBHOOK_URL"
+
+      - name: Deploy skipped
+        if: env.DOKPLOY_DEPLOY_WEBHOOK_URL == ''
+        run: |
+          echo "::warning::Dokploy deploy skipped - DOKPLOY_DEPLOY_WEBHOOK_URL not configured"
+          echo "To enable auto-deploy, add the DOKPLOY_DEPLOY_WEBHOOK_URL secret (from the"
+          echo "application's Webhook URL in Dokploy's deployment logs) to this repository."
+
+  # ============================================
   # LAYER 3: RELEASE (tag push only)
   # ============================================
 

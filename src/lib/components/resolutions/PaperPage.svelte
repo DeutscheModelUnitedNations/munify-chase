@@ -79,8 +79,8 @@
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
 		__args: {
 			where: {
-				user: { id: currentUser.id ?? '' },
-				conference: { committees: { resolutionPapers: { id: paperId } } }
+				user: { id: { eq: currentUser.id ?? '' } },
+				conference: { committees: { resolutionPapers: { id: { eq: paperId } } } }
 			}
 		},
 		id: true,
@@ -105,7 +105,7 @@
 	// ---- paper + committee --------------------------------------------------
 	// liveQuery returns a reactive proxy once awaited; args are stable per mount.
 	const papers = await client.liveQuery.resolutionPapers({
-		__args: { where: { id: paperId } },
+		__args: { where: { id: { eq: paperId } } },
 		id: true,
 		title: true,
 		status: true,
@@ -128,7 +128,7 @@
 	const paper = $derived(papers?.[0]);
 
 	const committees = await client.liveQuery.committees({
-		__args: { where: { resolutionPapers: { id: paperId } } },
+		__args: { where: { resolutionPapers: { id: { eq: paperId } } } },
 		id: true,
 		name: true,
 		abbreviation: true,
@@ -154,7 +154,7 @@
 
 	// ---- amendments + votes (overlays / highlighting) -----------------------
 	const amendmentRows = await client.liveQuery.amendments({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		type: true,
 		status: true,
@@ -166,18 +166,18 @@
 		sponsors: { id: true }
 	});
 	const clauseVotes = await client.liveQuery.operativeClauseVotes({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		clauseId: true,
 		vote: { id: true, outcome: true }
 	});
 	const comments = await client.liveQuery.resolutionComments({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		clauseId: true
 	});
 	const reviewItemsForBadges = await client.liveQuery.amendmentReviewItems({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		phase: true,
 		triggerAmendment: { id: true, targetClauseId: true }

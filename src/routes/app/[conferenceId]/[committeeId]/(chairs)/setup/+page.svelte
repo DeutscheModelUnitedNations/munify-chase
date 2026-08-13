@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import Kbd from '$lib/components/Kbd.svelte';
@@ -146,22 +147,27 @@
 					</div>
 					<PresentationSettings committeeId={page.params.committeeId!} />
 				</BasicCard>
-				<BasicCard title={m.allowSelfAddToSpeakersList()}>
-					<p class="mb-4 text-sm opacity-70">{m.allowSelfAddToSpeakersListDescription()}</p>
-					<Tabs
-						activeTab={committee.allowDelegationsToAddThemselvesToSpeakersList}
-						tabs={selfAddTabs}
-						onTabChange={(tab) => {
-							toast.promise(
-								client.mutate.updateCommittee({
-									__args: { id: committee.id, allowDelegationsToAddThemselvesToSpeakersList: tab },
-									id: true
-								}),
-								promiseToastStrings(m.allowSelfAddToSpeakersList(), 'update')
-							);
-						}}
-					/>
-				</BasicCard>
+				{#if !isLocalConferenceActive()}
+					<BasicCard title={m.allowSelfAddToSpeakersList()}>
+						<p class="mb-4 text-sm opacity-70">{m.allowSelfAddToSpeakersListDescription()}</p>
+						<Tabs
+							activeTab={committee.allowDelegationsToAddThemselvesToSpeakersList}
+							tabs={selfAddTabs}
+							onTabChange={(tab) => {
+								toast.promise(
+									client.mutate.updateCommittee({
+										__args: {
+											id: committee.id,
+											allowDelegationsToAddThemselvesToSpeakersList: tab
+										},
+										id: true
+									}),
+									promiseToastStrings(m.allowSelfAddToSpeakersList(), 'update')
+								);
+							}}
+						/>
+					</BasicCard>
+				{/if}
 			</div>
 		</div>
 	</div>

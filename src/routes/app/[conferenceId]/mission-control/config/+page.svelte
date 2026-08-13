@@ -13,6 +13,7 @@
 	import NsaTab from './NsaTab.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
+	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 
@@ -102,8 +103,8 @@
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
 		__args: {
 			where: {
-				conference: { id: page.params.conferenceId },
-				user: { id: currentUser?.id ?? '' }
+				conference: { id: { eq: page.params.conferenceId } },
+				user: { id: { eq: currentUser?.id ?? '' } }
 			}
 		},
 		id: true,
@@ -180,14 +181,16 @@
 				>
 					{m.general()}
 				</button>
-				<button
-					role="tab"
-					class="tab"
-					class:tab-active={activeTab === 'users'}
-					onclick={() => (activeTab = 'users')}
-				>
-					{m.users()}
-				</button>
+				{#if !isLocalConferenceActive()}
+					<button
+						role="tab"
+						class="tab"
+						class:tab-active={activeTab === 'users'}
+						onclick={() => (activeTab = 'users')}
+					>
+						{m.users()}
+					</button>
+				{/if}
 				<button
 					role="tab"
 					class="tab"
@@ -216,7 +219,7 @@
 
 			{#if activeTab === 'general'}
 				<GeneralTab {conference} />
-			{:else if activeTab === 'users'}
+			{:else if activeTab === 'users' && !isLocalConferenceActive()}
 				<UsersTab {conference} {currentUserEmail} />
 			{:else if activeTab === 'committees'}
 				<CommitteesTab conferenceId={conference.id} committees={conference.committees ?? []} />

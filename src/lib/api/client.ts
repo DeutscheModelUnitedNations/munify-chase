@@ -11,31 +11,37 @@ import {
 import { offlineExchange } from '@urql/exchange-graphcache';
 import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
 import { crossTabSyncExchange } from '@m1212e/urql-crosstab-sync';
-import { filter, map, onPush, pipe } from 'wonka';
+import { filter, map, merge, onPush, pipe } from 'wonka';
 import { browser } from '$app/environment';
 import { schema } from './rumbleClient/schema';
-import { optimistic, updates } from './optimisticUpdateHandlers';
+import { optimistic, updates, ensureId } from './optimisticUpdateHandlers';
 import { setWsConnected, DISCONNECT_GRACE_MS } from '$lib/state/connection.svelte';
 import { createClient as createWSClient } from 'graphql-ws';
 import { configPublic } from '$config/public';
 import { getCachedAccessToken } from '$lib/platform/oidc';
+import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
+import {
+	localDemoConferenceUpdates,
+	resolveLocalDemoRootField,
+	seedLocalDemoConference,
+	withLocalDemoMutationCommits
+} from './localDemo/seedConference';
 
 const graphqlUrl = configPublic.PUBLIC_API_URL;
 const wsUrl = graphqlUrl.replace(/^https/, 'wss').replace(/^http/, 'ws');
 
+function getRootFieldName(operation: Operation): string | undefined {
+	for (const def of operation.query.definitions) {
+		if (def.kind === 'OperationDefinition') {
+			const selection = def.selectionSet.selections[0];
+			if (selection?.kind === 'Field') return selection.name.value;
+		}
+	}
+	return undefined;
+}
+
 const exchanges: Exchange[] = [nativeDateExchange];
 
-// The persisted (IndexedDB) cache stores normalized entities shaped by the GraphQL
-// schema at the time they were written. A fixed database name survives across
-// deployments, so a schema change (new fields/enum values/mutations — i.e. every
-// feature release) can leave old cached entities in a shape the current schema
-// doesn't expect. graphcache doesn't detect or migrate this itself: writes for the
-// changed entities keep landing, but reads of them can silently stop reacting,
-// which looks exactly like "the server pushed an update but the UI never re-rendered"
-// — and by design there's no way to ask every user to clear site data after a deploy.
-// Deriving the database name from a hash of the schema means a schema change
-// automatically buckets into a fresh, empty database instead of rehydrating a stale
-// one; the abandoned old database is just inert extra storage, not a correctness risk.
 function hashSchema(schemaObject: unknown): string {
 	const json = JSON.stringify(schemaObject);
 	let hash = 0;
@@ -45,13 +51,6 @@ function hashSchema(schemaObject: unknown): string {
 	return (hash >>> 0).toString(36);
 }
 
-// Every schema-changing deploy abandons the previous hashed database (see hashSchema
-// above) rather than reusing/migrating it, so without cleanup they'd accumulate
-// indefinitely — one orphaned IndexedDB database per schema change, forever. Delete
-// every `chase-cache-*` database that isn't the current one (plus the old fixed-name
-// `chase-cache` from before this versioning existed) on each load. Best-effort: skips
-// silently if the browser lacks `indexedDB.databases()` or a delete is blocked by
-// another open tab — a missed cleanup here just leaves inert storage, not a bug.
 async function cleanupStaleCaches(currentIdbName: string) {
 	if (typeof indexedDB === 'undefined' || typeof indexedDB.databases !== 'function') return;
 	try {
@@ -69,6 +68,182 @@ async function cleanupStaleCaches(currentIdbName: string) {
 	}
 }
 
+function getLocalDemoSeed(op: Operation): unknown {
+	return (op.context as { localDemoSeed?: unknown }).localDemoSeed;
+}
+
+function makeSuccessResult(operation: Operation, data: unknown) {
+	return { operation, data, error: undefined, extensions: undefined, stale: false, hasNext: false };
+}
+
+function makeOfflineErrorResult(operation: Operation) {
+	return {
+		operation,
+		data: undefined,
+		error: new CombinedError({
+			networkError: new Error('network error: local demo conference has no backend')
+		}),
+		extensions: undefined,
+		stale: false,
+		hasNext: false
+	};
+}
+
+/**
+ * A handful of mutations return something shaped nothing like their own args — most notably
+ * bulk-by-id mutations, e.g. `setPresenceForCommitteeMembers(ids, present) -> [Committeemember]`.
+ * Echoing the raw `{ ids, present }` args back as that field's "result" would hand graphcache a
+ * shape it fundamentally can't reinterpret as a list, no matter what `__typename` is attached —
+ * this is the one case needing bespoke reshaping. Everything else just needs a `__typename`
+ * attached (see MUTATION_RETURN_TYPENAMES below) to be a valid single-entity echo.
+ */
+const LOCAL_DEMO_MUTATION_RESULT_SHAPES: Record<
+	string,
+	(variables: Record<string, unknown>) => unknown
+> = {
+	setPresenceForCommitteeMembers: (variables) =>
+		(variables.ids as string[]).map((id) => ({
+			__typename: 'Committeemember',
+			id,
+			present: variables.present
+		})),
+	// `currentMemberIndex` isn't one of this mutation's own args — every new session starts
+	// at 0, matching what its `optimistic` handler already assumes.
+	startRollCallSession: (variables) => ({
+		__typename: 'Rollcallsession',
+		id: variables.id,
+		currentMemberIndex: 0
+	})
+};
+
+function unwrapNamedTypeName(typeRef: {
+	kind: string;
+	name?: string;
+	ofType?: unknown;
+}): string | undefined {
+	let t = typeRef;
+	while (t && (t.kind === 'NON_NULL' || t.kind === 'LIST')) t = t.ofType as typeof t;
+	return t?.name;
+}
+
+/**
+ * Maps every Mutation field to its GraphQL return type's name — used to attach a `__typename` to
+ * the echoed-args fallback below. Object-kind types only; a mutation returning a scalar (Boolean,
+ * ID, ...) has nothing to normalize as an entity, so it's left out and falls back to a bare echo.
+ */
+const MUTATION_RETURN_TYPENAMES: Record<string, string> = (() => {
+	const types = schema.__schema.types;
+	const objectTypeNames = new Set(types.filter((t) => t.kind === 'OBJECT').map((t) => t.name));
+	const mutationType = types.find(
+		(t) => t.kind === 'OBJECT' && t.name === schema.__schema.mutationType?.name
+	);
+	const result: Record<string, string> = {};
+	for (const field of (mutationType && 'fields' in mutationType && mutationType.fields) || []) {
+		const typeName = unwrapNamedTypeName(
+			field.type as { kind: string; name?: string; ofType?: unknown }
+		);
+		if (typeName && objectTypeNames.has(typeName)) result[field.name] = typeName;
+	}
+	return result;
+})();
+
+/**
+ * Mutations under the local conference have no real backend to confirm anything with, so an
+ * error here isn't a transient failure a user should be warned about — it's just the vehicle
+ * component code awaits (often via `toast.promise`, which shows a scary "failed" toast on any
+ * rejection). Resolve successfully instead, echoing the mutation's own args back as its "result"
+ * (with a `__typename` attached so graphcache can actually normalize it) — most mutations in this
+ * app already pass a client-supplied id (offline-first design), so this is a reasonable stand-in
+ * for "yes, that happened" without needing to know the real return type's other fields.
+ */
+function makeLocalDemoMutationResult(operation: Operation) {
+	const fieldName = getRootFieldName(operation);
+	if (!fieldName) return makeSuccessResult(operation, {});
+	const variables = (operation.variables ?? {}) as Record<string, unknown>;
+	const shaped = LOCAL_DEMO_MUTATION_RESULT_SHAPES[fieldName]?.(variables);
+	if (shaped) return makeSuccessResult(operation, { [fieldName]: shaped });
+	const typename = MUTATION_RETURN_TYPENAMES[fieldName];
+	// Many "create" mutations don't pass a client-supplied id (the real server issues one).
+	// `ensureId` is memoized by `variables`'s object identity, so whichever call site — this
+	// echo, the optimistic handler, or `withLocalDemoMutationCommits`'s manual commit — runs
+	// first settles the id, and the rest agree with it instead of each minting their own.
+	const echoed =
+		typename && variables && typeof variables === 'object'
+			? {
+					__typename: typename,
+					...variables,
+					id: (variables.id as string | undefined) ?? ensureId(variables)
+				}
+			: variables;
+	return makeSuccessResult(operation, { [fieldName]: echoed ?? null });
+}
+
+const localDemoExchange: Exchange =
+	({ forward }) =>
+	(ops$) => {
+		const remoteOps$ = pipe(
+			ops$,
+			filter(
+				(op) => op.kind === 'teardown' || (!isLocalConferenceActive() && !getLocalDemoSeed(op))
+			),
+			forward
+		);
+
+		// Answers seedLocalDemoConference (see ./localDemo/seedConference.ts) with its
+		// canned data instead of an error — it's not a real backend mutation, just a
+		// vehicle for getting graphcache to normalize/persist the demo conference.
+		const seedResults$ = pipe(
+			ops$,
+			filter((op) => op.kind !== 'teardown' && !!getLocalDemoSeed(op)),
+			map((op) => makeSuccessResult(op, getLocalDemoSeed(op)))
+		);
+
+		// Queries with a canned answer (see resolveLocalDemoRootField) succeed with that
+		// data instead of falling into the generic offline error below — otherwise every
+		// page under the local conference would render in a permanent error state on a
+		// completely empty, first-ever-load cache. `data === null` means this exact
+		// operation already got its canned answer on a previous run (see
+		// resolveLocalDemoRootField's doc comment) — deliberately excluded here (and from
+		// localOfflineResults$ below) so it neither re-answers nor errors, just defers to
+		// whatever the cache already holds.
+		const queryAnswers$ = pipe(
+			ops$,
+			filter((op) => op.kind === 'query' && isLocalConferenceActive() && !getLocalDemoSeed(op)),
+			map((op) => ({
+				op,
+				data: resolveLocalDemoRootField(getRootFieldName(op), op.variables, op.key)
+			}))
+		);
+
+		const cannedResults$ = pipe(
+			queryAnswers$,
+			filter((x): x is { op: Operation; data: Record<string, unknown> } => !!x.data),
+			map(({ op, data }) => makeSuccessResult(op, data))
+		);
+
+		// See makeLocalDemoMutationResult — mutations resolve successfully rather than
+		// erroring, since there's no real backend to eventually retry against.
+		const mutationResults$ = pipe(
+			ops$,
+			filter((op) => op.kind === 'mutation' && isLocalConferenceActive() && !getLocalDemoSeed(op)),
+			map((op) => makeLocalDemoMutationResult(op))
+		);
+
+		const localOfflineResults$ = pipe(
+			queryAnswers$,
+			filter((x) => x.data === undefined),
+			map(({ op }) => makeOfflineErrorResult(op))
+		);
+
+		return merge([
+			remoteOps$,
+			seedResults$,
+			cannedResults$,
+			mutationResults$,
+			localOfflineResults$
+		]);
+	};
+
 if (browser) {
 	const idbName = `chase-cache-${hashSchema(schema)}`;
 	cleanupStaleCaches(idbName);
@@ -77,11 +252,6 @@ if (browser) {
 		maxAge: 7
 	});
 
-	// graphcache wires its offline-mutation-queue flush to `storage.onOnline`, which
-	// only fires on the browser 'online' event (navigator.onLine). A server/WS-only
-	// outage never toggles navigator.onLine, so the queue would otherwise stall until
-	// the next real network blip. Capture the flush callback(s) graphcache registers
-	// so we can also trigger them on WebSocket reconnect (see wsClient.on.connected).
 	const onlineCallbacks = new Set<() => void>();
 	const baseOnOnline = storage.onOnline?.bind(storage);
 	storage.onOnline = (cb: () => void) => {
@@ -92,10 +262,6 @@ if (browser) {
 		for (const cb of onlineCallbacks) cb();
 	};
 
-	// Track active queries so we can refetch them (network-only) on WS reconnect.
-	// Subscriptions resubscribe themselves via graphql-ws retry, but plain query data
-	// can be stale after an outage. `reexecuteActiveQueries` is assigned once the
-	// exchange runs.
 	const activeQueries = new Map<number, Operation>();
 	let reexecuteActiveQueries = () => {};
 	const trackQueriesExchange: Exchange =
@@ -118,32 +284,6 @@ if (browser) {
 			);
 		};
 
-	// Cross-tab synthetic mutations have two failure modes that wipe their
-	// optimistic layer in the popup tab when the chair's underlying mutation
-	// fails (always, while offline):
-	//
-	//   1. The error result emitted by `crossTabSyncExchange.receiver.results$`
-	//      reaches `offlineExchange`'s offline-error filter. That filter only
-	//      protects the layer when `context.optimistic` is true, and the
-	//      synthetic op `crossTabSyncExchange` creates doesn't set it. The
-	//      result therefore reaches `cacheExchange.updateCacheWithResult`,
-	//      which rolls the layer back.
-	//
-	//   2. Right after delivering the result, `crossTabSyncExchange` also
-	//      unsubscribes the synthetic op's subscription. urql dispatches a
-	//      `teardown` op for it, which `cacheExchange.prepareForwardedOperation`
-	//      handles by calling `noopDataState → reserveLayer → clearLayer` —
-	//      wiping the optimistic layer regardless of the filter.
-	//
-	// Sitting outermost (above `offlineExchange`), this exchange:
-	//   - stamps synthetic remote mutations with `optimistic: true` so the
-	//     offline-error filter catches their error result, and
-	//   - swallows `teardown` ops for those mutations so they never reach
-	//     `cacheExchange` and the layer survives for the lifetime of the
-	//     offline session.
-	//
-	// The popup's modal is therefore driven by the same cache state the chair
-	// writes optimistically, via the normal cross-tab mutation sync.
 	const keepSyntheticOptimisticExchange: Exchange =
 		({ forward }) =>
 		(ops$) => {
@@ -169,6 +309,7 @@ if (browser) {
 			);
 		};
 
+	// order with these MATTERS!
 	exchanges.push(
 		trackQueriesExchange,
 		keepSyntheticOptimisticExchange,
@@ -176,7 +317,20 @@ if (browser) {
 			schema,
 			storage,
 			optimistic,
-			updates,
+			updates: {
+				...updates,
+				Mutation: withLocalDemoMutationCommits(
+					{ ...updates.Mutation, ...localDemoConferenceUpdates },
+					optimistic
+				)
+			},
+			// seedLocalDemoConference isn't a real schema field (see ./localDemo/seedConference.ts)
+			// — graphcache validates `updates`/document fields against the real introspected
+			// schema and warns every time the seed runs otherwise. That mismatch is expected here.
+			logger: (severity, message) => {
+				if (message.includes('seedLocalDemoConference')) return;
+				console[severity](message);
+			},
 			keys: {
 				ConferenceStats: () => null,
 				PersonalStats: () => null,
@@ -196,7 +350,8 @@ if (browser) {
 				SpeakingFairness: () => null
 			}
 		}),
-		crossTabSyncExchange({ channelName: 'chase-cross-tab-sync' })
+		crossTabSyncExchange({ channelName: 'chase-cross-tab-sync' }),
+		localDemoExchange
 	);
 
 	const pendingNonSubscriptions = new Map<
@@ -210,7 +365,10 @@ if (browser) {
 
 	const wsClient = createWSClient({
 		url: wsUrl,
-		shouldRetry: () => true,
+		// The offline demo conference never has a real OIDC session, so the remote WS
+		// server always rejects its handshake with "Must be logged in" — retrying that
+		// forever would just spin a permanent reconnect loop.
+		shouldRetry: () => !isLocalConferenceActive(),
 		connectionParams: () => {
 			const token = getCachedAccessToken();
 			return token ? { Authorization: `Bearer ${token}` } : {};
@@ -226,10 +384,6 @@ if (browser) {
 				wsConnected = true;
 				setWsConnected(true);
 				if (isReconnect) {
-					// The WS came back. navigator.onLine may never have toggled (a
-					// server/WS-only outage), so explicitly flush the offline mutation
-					// queue and refetch active queries to reconcile any state the
-					// subscriptions missed while we were disconnected.
 					flushOfflineQueue();
 					reexecuteActiveQueries();
 				}
@@ -237,20 +391,11 @@ if (browser) {
 			closed: () => {
 				wsConnected = false;
 				setWsConnected(false);
-				// Don't error pending queries/mutations out immediately: graphql-ws's own
-				// retry loop (shouldRetry: () => true) transparently re-sends each in-flight
-				// operation on the same sink once the socket reconnects, so a brief drop
-				// resolves with no error at all. Only if the outage outlasts the grace
-				// window do we give up waiting and surface it as an offline-style error.
 				if (pendingErrorTimer !== null) return;
 				pendingErrorTimer = setTimeout(() => {
 					pendingErrorTimer = null;
 					for (const [, { sink, unsubscribe }] of pendingNonSubscriptions) {
 						unsubscribe();
-						// Surface as an offline-style network error (a CombinedError carrying a
-						// networkError whose message matches graphcache's isOfflineError check)
-						// so an in-flight optimistic mutation is queued for retry on reconnect
-						// instead of being dropped. A plain Error fails that check and is lost.
 						sink.error?.(
 							new CombinedError({
 								networkError: new Error('network error: WebSocket connection lost')
@@ -309,3 +454,7 @@ export const urqlClient = new Client({
 	},
 	requestPolicy: 'cache-and-network'
 });
+
+if (browser) {
+	seedLocalDemoConference(urqlClient);
+}

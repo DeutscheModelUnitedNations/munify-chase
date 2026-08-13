@@ -35,8 +35,8 @@
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
 		__args: {
 			where: {
-				conference: { id: conferenceId },
-				user: { id: currentUser.id ?? '' }
+				conference: { id: { eq: conferenceId } },
+				user: { id: { eq: currentUser.id ?? '' } }
 			}
 		},
 		id: true,

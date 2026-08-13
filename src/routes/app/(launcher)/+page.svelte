@@ -15,7 +15,7 @@
 	const user = await getCurrentUser();
 
 	const conferenceUserData = await client.liveQuery.conferenceUsers({
-		__args: { where: { user: { id: user.id } } },
+		__args: { where: { user: { id: { eq: user.id } } } },
 		id: true,
 		conferenceUserType: true,
 		committeeMemberId: true,

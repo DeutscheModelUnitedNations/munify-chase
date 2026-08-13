@@ -50,7 +50,7 @@
 	}
 
 	const papers = await client.liveQuery.resolutionPapers({
-		__args: { where: { committee: { id: committeeId } } },
+		__args: { where: { committee: { id: { eq: committeeId } } } },
 		id: true,
 		title: true,
 		status: true,
@@ -103,7 +103,7 @@
 		creating = true;
 		try {
 			const members = await client.query.committeeMembers({
-				__args: { where: { committee: { id: committeeId } } },
+				__args: { where: { committee: { id: { eq: committeeId } } } },
 				id: true
 			});
 			if (!members?.length) {

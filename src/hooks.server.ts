@@ -5,7 +5,7 @@ import { paraglideMiddleware } from '$lib/paraglide/server';
 import { sequence } from '@sveltejs/kit/hooks';
 import { OIDC } from '$api/services/OIDC';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
-import { isLocalConferenceActive, LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
+import { isLocalConferencePath } from '$lib/state/localDemo.svelte';
 
 const TAURI_ORIGIN = 'tauri://localhost';
 
@@ -36,7 +36,7 @@ const tauriCors: Handle = async ({ event, resolve }) => {
 // The offline demo conference never has a real OIDC session (it's reachable without
 // logging in at all)
 const oidcOrLocalDemoBypass: Handle = ({ event, resolve }) => {
-	if (event.url.pathname.startsWith(`/app/${LOCAL_CONFERENCE_ID}`)) {
+	if (isLocalConferencePath(event.url.pathname)) {
 		return resolve(event);
 	}
 	return OIDC.handle({ event, resolve });

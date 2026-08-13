@@ -77,7 +77,16 @@ export function ensureId(args: unknown): string {
 	const now = Date.now();
 	const key = JSON.stringify(args);
 	const cached = ensuredIds.get(key);
-	if (cached && cached.expiresAt > now) return cached.id;
+	if (cached) {
+		if (cached.expiresAt > now) return cached.id;
+		ensuredIds.delete(key);
+	}
+
+	// Opportunistic sweep so the map can't grow unbounded over a long editing session —
+	// every entry not read again within its TTL would otherwise sit here until the tab closes.
+	for (const [k, v] of ensuredIds) {
+		if (v.expiresAt <= now) ensuredIds.delete(k);
+	}
 
 	const generated = nanoid();
 	ensuredIds.set(key, { id: generated, expiresAt: now + ENSURE_ID_TTL_MS });

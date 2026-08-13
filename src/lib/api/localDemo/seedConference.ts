@@ -161,7 +161,11 @@ const localDemoSpeakersList = {
 const localDemoCommentList = {
 	...localDemoSpeakersList,
 	id: 'localcommentlist',
-	type: 'COMMENT_LIST' as const
+	type: 'COMMENT_LIST' as const,
+	// Must be a distinct array — spreading localDemoSpeakersList above only copies the
+	// *reference* to its `speakers` array, so without this both lists would alias the
+	// same array and a speaker added to one would silently appear on the other too.
+	speakers: [] as unknown[]
 };
 
 type LocalDemoAgendaItemEntry = {
@@ -465,6 +469,19 @@ function committeeDateReviver(key: string, value: unknown) {
 }
 
 /**
+ * Keeps `Committeemember:<id>` entries in localDemoEntitiesById pointing at the member
+ * objects actually nested inside `committee.members` — commitLocalDemoEntity resolves
+ * mutation targets (e.g. setPresenceForCommitteeMembers) through that map, so a member
+ * object that only exists inside the committee tree (never registered here) would have
+ * its cache write silently dropped from the durable snapshot on the next persist.
+ */
+function registerCommitteeMembers(committee: LocalDemoCommittee) {
+	for (const member of committee.members as { id: string }[]) {
+		localDemoEntitiesById.set(`Committeemember:${member.id}`, member as Record<string, unknown>);
+	}
+}
+
+/**
  * `persistLocalDemoState` only patches *scalar* fields already present on a seed entity —
  * `Committee.agendaItems`/`.members` (lists that grow via createAgendaItem/
  * createCommitteeMember) and `.activeAgendaItem` (a relation, not a scalar) all fall
@@ -501,10 +518,13 @@ function loadPersistedLocalDemoCommittees() {
 	localDemoCommittees.length = 0;
 	localDemoCommittees.push(...persisted);
 	for (const key of [...localDemoEntitiesById.keys()]) {
-		if (key.startsWith('Committee:')) localDemoEntitiesById.delete(key);
+		if (key.startsWith('Committee:') || key.startsWith('Committeemember:')) {
+			localDemoEntitiesById.delete(key);
+		}
 	}
 	for (const committee of localDemoCommittees) {
 		localDemoEntitiesById.set(`Committee:${committee.id}`, committee);
+		registerCommitteeMembers(committee);
 	}
 }
 
@@ -730,6 +750,7 @@ const localDemoExtraMutationEffects: Record<
 		if (!committee) return;
 		if ((committee.members as { id: string }[]).some((m) => m.id === entity.id)) return;
 		committee.members.push(entity);
+		localDemoEntitiesById.set(`Committeemember:${entity.id}`, entity as Record<string, unknown>);
 		persistLocalDemoCommittees();
 	},
 	deleteCommitteeMember: (args) => {
@@ -738,6 +759,7 @@ const localDemoExtraMutationEffects: Record<
 			const index = (committee.members as { id: string }[]).findIndex((m) => m.id === id);
 			if (index !== -1) {
 				committee.members.splice(index, 1);
+				localDemoEntitiesById.delete(`Committeemember:${id}`);
 				persistLocalDemoCommittees();
 				return;
 			}

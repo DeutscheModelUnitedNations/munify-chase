@@ -5,6 +5,7 @@
     "": {
       "name": "munify-chase",
       "dependencies": {
+        "@urql/core": "^6.0.3",
         "chart.js": "^4.5.1",
         "drizzle-kit": "^1.0.0-rc.3",
         "drizzle-orm": "^1.0.0-rc.3",
@@ -68,7 +69,7 @@
         "@types/polka": "^0.5.8",
         "@types/qrcode": "^1.5.6",
         "@types/ws": "^8.18.1",
-        "@urql/exchange-graphcache": "^9.0.0",
+        "@urql/exchange-graphcache": "^9.0.1",
         "@zerodevx/svelte-toast": "^0.9.6",
         "@zxing/browser": "^0.2.0",
         "@zxing/library": "^0.23.0",
@@ -755,7 +756,7 @@
 
     "@urql/core": ["@urql/core@6.0.3", "", { "dependencies": { "@0no-co/graphql.web": "^1.0.13", "wonka": "^6.3.2" } }, "sha512-0F39XWR21+IVLJfsqBvLShvoSzxT6h6wWXwrDhN8j9J+IEVOpQIUNHwpgjsp+2ePzn9aCH+rpDonn3HOAUnn9A=="],
 
-    "@urql/exchange-graphcache": ["@urql/exchange-graphcache@9.0.0", "", { "dependencies": { "@0no-co/graphql.web": "^1.0.13", "@urql/core": "^6.0.1", "wonka": "^6.3.2" }, "peerDependencies": { "@urql/core": "^6.0.0" } }, ""],
+    "@urql/exchange-graphcache": ["@urql/exchange-graphcache@9.0.1", "", { "dependencies": { "@0no-co/graphql.web": "^1.0.13", "@urql/core": "^6.0.2", "wonka": "^6.3.2" } }, "sha512-22V46OIIkJTz8Ex23e95+ZmvgRWqbzH77wpNjdfMknmmhR8bjBFNd24oDoQUI4AbYUhoTKmvAZ5XOBQSsbBzaQ=="],
 
     "@urql/introspection": ["@urql/introspection@1.2.1", "", { "peerDependencies": { "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0" } }, ""],
 
@@ -1781,8 +1782,6 @@
 
     "@lingual/i18n-check/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, ""],
 
-    "@m1212e/rumble/@urql/exchange-graphcache": ["@urql/exchange-graphcache@9.0.1", "", { "dependencies": { "@0no-co/graphql.web": "^1.0.13", "@urql/core": "^6.0.2", "wonka": "^6.3.2" } }, "sha512-22V46OIIkJTz8Ex23e95+ZmvgRWqbzH77wpNjdfMknmmhR8bjBFNd24oDoQUI4AbYUhoTKmvAZ5XOBQSsbBzaQ=="],
-
     "@rollup/plugin-commonjs/is-reference": ["is-reference@1.2.1", "", { "dependencies": { "@types/estree": "*" } }, ""],
 
     "@sveltejs/kit/@types/cookie": ["@types/cookie@0.6.0", "", {}, ""],
@@ -1792,8 +1791,6 @@
     "@typescript-eslint/eslint-plugin/ignore": ["ignore@7.0.5", "", {}, ""],
 
     "@typescript-eslint/typescript-estree/tinyglobby": ["tinyglobby@0.2.17", "", { "dependencies": { "fdir": "^6.5.0", "picomatch": "^4.0.4" } }, ""],
-
-    "@urql/exchange-graphcache/@urql/core": ["@urql/core@6.0.1", "", { "dependencies": { "@0no-co/graphql.web": "^1.0.13", "wonka": "^6.3.2" } }, ""],
 
     "@vitest/mocker/estree-walker": ["estree-walker@3.0.3", "", { "dependencies": { "@types/estree": "^1.0.0" } }, ""],
 

@@ -150,7 +150,11 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 						// nominally incompatible with the project's; the runtime API
 						// the extension uses is identical across both versions.
 						createClient: () =>
-							new Redis(configPrivate.REDIS_URL as string) as unknown as ReturnType<
+							// protocol: 2 — see the matching comment in rumble.ts; keeps ioredis v6 on
+							// the RESP2 wire format the extension's bundled (older) ioredis expects.
+							new Redis(configPrivate.REDIS_URL as string, {
+								protocol: 2
+							}) as unknown as ReturnType<
 								NonNullable<ConstructorParameters<typeof RedisExtension>[0]['createClient']>
 							>
 					})

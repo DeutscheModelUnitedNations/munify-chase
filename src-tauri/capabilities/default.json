@@ -14,7 +14,8 @@
 		"deep-link:allow-is-registered",
 		"deep-link:allow-register",
 		"deep-link:allow-unregister",
-		"process:default"
+		"process:default",
+		"updater:default"
 	],
 	"windows": ["main", "presentation"]
 }

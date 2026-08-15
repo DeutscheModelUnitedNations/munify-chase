@@ -14,6 +14,9 @@
 	import Alert from '$lib/components/Alert/PromiseAlert.svelte';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
 	import Inspect from 'svelte-inspect-value';
+	import { alertDialog } from '$lib/components/Alert/alert';
+	import { checkForUpdates, relaunchApp } from '$lib/platform/updater';
+	import { m } from '$lib/paraglide/messages';
 
 	dayjs.extend(duration);
 
@@ -69,6 +72,21 @@
 			// munify-chase:// URIs to this already-running instance at any time.
 			const { register } = await import('@tauri-apps/plugin-deep-link');
 			await register('munify-chase').catch((e) => console.error('[deep-link] register failed:', e));
+
+			// Silently check for and download an update; only bother the user once
+			// it's ready to apply.
+			checkForUpdates()
+				.then(async (updateReady) => {
+					if (!updateReady) return;
+					const restart = await alertDialog({
+						title: m.updateReadyTitle(),
+						description: m.updateReadyDescription(),
+						cancelText: m.updateReadyLater(),
+						confirmText: m.updateReadyRestart()
+					});
+					if (restart) await relaunchApp();
+				})
+				.catch((e) => console.error('[updater] check failed:', e));
 		}
 	});
 

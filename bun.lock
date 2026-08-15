@@ -28,6 +28,7 @@
         "@ai-sdk/groq": "^4.0.28",
         "@ai-sdk/mistral": "^4.0.29",
         "@ai-sdk/openai": "^4.0.41",
+        "@ai-sdk/openai-compatible": "^3.0.30",
         "@ai-sdk/togetherai": "^3.0.31",
         "@ai-sdk/xai": "^4.0.38",
         "@deutschemodelunitednations/corporate-identity": "^1.1.10",

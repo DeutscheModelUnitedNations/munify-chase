@@ -1,5 +1,6 @@
 import { configPrivate } from '$lib/config/private';
 import { createOpenAI } from '@ai-sdk/openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createVertex } from '@ai-sdk/google-vertex';
@@ -26,6 +27,18 @@ const providers = configPrivate.AI_PROVIDERS?.map((config) => {
 		case 'openai': {
 			const openai = createOpenAI({ apiKey: config.apiKey });
 			return { model: openai(modelName) };
+		}
+		case 'openai-compatible': {
+			if (!config.baseURL) {
+				console.warn('openai-compatible provider requires a baseURL, skipping');
+				return undefined;
+			}
+			const openaiCompatible = createOpenAICompatible({
+				name: 'openai-compatible',
+				baseURL: config.baseURL,
+				apiKey: config.apiKey
+			});
+			return { model: openaiCompatible(modelName) };
 		}
 		case 'anthropic': {
 			const anthropic = createAnthropic({ apiKey: config.apiKey });

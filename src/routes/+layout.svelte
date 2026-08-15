@@ -15,7 +15,7 @@
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
 	import Inspect from 'svelte-inspect-value';
 	import { alertDialog } from '$lib/components/Alert/alert';
-	import { checkForUpdates, relaunchApp } from '$lib/platform/updater';
+	import { checkForUpdate, relaunchApp } from '$lib/platform/updater';
 	import { m } from '$lib/paraglide/messages';
 
 	dayjs.extend(duration);
@@ -73,18 +73,30 @@
 			const { register } = await import('@tauri-apps/plugin-deep-link');
 			await register('munify-chase').catch((e) => console.error('[deep-link] register failed:', e));
 
-			// Silently check for and download an update; only bother the user once
-			// it's ready to apply.
-			checkForUpdates()
-				.then(async (updateReady) => {
-					if (!updateReady) return;
-					const restart = await alertDialog({
-						title: m.updateReadyTitle(),
-						description: m.updateReadyDescription(),
-						cancelText: m.updateReadyLater(),
-						confirmText: m.updateReadyRestart()
+			// Check for an update in the background, but always ask before
+			// downloading/installing — on Linux, installing can trigger a native
+			// pkexec/sudo prompt, so the user needs a heads-up for why it's
+			// showing up rather than being hit with it out of nowhere.
+			checkForUpdate()
+				.then(async (update) => {
+					if (!update) return;
+					const proceed = await alertDialog({
+						title: m.appUpdateTitle(),
+						description: m.appUpdateDescription({
+							version: update.version,
+							currentVersion: update.currentVersion
+						}),
+						cancelText: m.appUpdateLater(),
+						confirmText: m.appUpdateNow()
 					});
-					if (restart) await relaunchApp();
+					if (!proceed) return;
+
+					await toast.promise(update.downloadAndInstall(), {
+						loading: m.appUpdateDownloading(),
+						success: m.appUpdateInstalled(),
+						error: m.appUpdateFailed()
+					});
+					await relaunchApp();
 				})
 				.catch((e) => console.error('[updater] check failed:', e));
 		}

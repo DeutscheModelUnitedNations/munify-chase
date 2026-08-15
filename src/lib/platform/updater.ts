@@ -1,19 +1,16 @@
 import { isTauri } from './index';
+import type { Update } from '@tauri-apps/plugin-updater';
 
 /**
- * Checks GitHub Releases for a newer version and, if one is found, downloads
- * and installs it in the background. Returns true once an update has been
- * installed and is ready to apply on relaunch. No-op outside Tauri.
+ * Checks GitHub Releases for a newer version. Returns the update handle (with
+ * `.version`/`.currentVersion` and `.downloadAndInstall()`) if one is
+ * available, else null. No-op outside Tauri.
  */
-export async function checkForUpdates(): Promise<boolean> {
-	if (!isTauri()) return false;
+export async function checkForUpdate(): Promise<Update | null> {
+	if (!isTauri()) return null;
 
 	const { check } = await import('@tauri-apps/plugin-updater');
-	const update = await check();
-	if (!update) return false;
-
-	await update.downloadAndInstall();
-	return true;
+	return await check();
 }
 
 /** Restarts the app to apply an already-installed update. */

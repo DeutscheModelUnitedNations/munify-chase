@@ -189,3 +189,25 @@ CVE-2026-39822
 CVE-2026-13149
 CVE-2026-14257
 CVE-2026-69152
+
+# encoding/asn1: excessive recursion in Unmarshal - esbuild doesn't parse ASN.1
+CVE-2026-33818
+
+# golang.org/x/net/idna: privilege escalation via incorrect Punycode label processing -
+# esbuild doesn't do IDN/hostname normalization
+CVE-2026-39821
+
+# net/http: unencrypted HTTP/2 connections DoS - esbuild doesn't serve HTTP
+CVE-2026-56853
+
+# html/template: XSS via pathological input - esbuild doesn't render html/template
+CVE-2026-56858
+
+# encoding/xml: DoS via XML decoding recursion depth - esbuild doesn't parse XML
+CVE-2026-56859
+
+# net/url: DoS via quadratic complexity in path parsing - esbuild doesn't parse URLs
+CVE-2026-56860
+
+# crypto/tls: DoS via indefinite KeyUpdate messages - esbuild doesn't do TLS
+CVE-2026-56862

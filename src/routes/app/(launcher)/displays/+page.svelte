@@ -118,6 +118,7 @@
 				locale: true,
 				timezone: true,
 				provisionedByUserId: true,
+				provisionedBy: { id: true, givenName: true, familyName: true, preferredUsername: true },
 				conference: { id: true, title: true },
 				committee: { id: true, abbreviation: true }
 			})
@@ -246,6 +247,26 @@
 		const date = typeof d === 'string' ? new Date(d) : d;
 		return date.toLocaleString();
 	}
+
+	// `provisionedBy` can resolve to null even when `provisionedByUserId` is
+	// set — the user ability's non-admin branches only allow reading someone
+	// who shares a conference with the viewer (see user.ts) — so this always
+	// has a graceful "unknown" fallback rather than assuming the relation
+	// resolved.
+	function fmtProvisionedBy(d: {
+		provisionedByUserId: string | null;
+		provisionedBy?: {
+			givenName: string;
+			familyName: string;
+			preferredUsername: string;
+		} | null;
+	}): string | null {
+		if (!d.provisionedByUserId) return null;
+		const p = d.provisionedBy;
+		if (!p) return m.displaysProvisionedByUnknown();
+		const fullName = [p.givenName, p.familyName].filter(Boolean).join(' ').trim();
+		return fullName || p.preferredUsername;
+	}
 </script>
 
 <svelte:head>
@@ -286,6 +307,11 @@
 												bind:value={draft.name}
 											/>
 											<div class="text-base-content/50 mt-1 font-mono text-xs">{d.id}</div>
+											{#if fmtProvisionedBy(d)}
+												<div class="text-base-content/50 mt-1 text-xs">
+													{m.displaysProvisionedBy({ name: fmtProvisionedBy(d)! })}
+												</div>
+											{/if}
 										</td>
 										<td class="align-top">
 											<div class="flex flex-col gap-2">

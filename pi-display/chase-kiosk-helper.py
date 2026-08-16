@@ -129,6 +129,25 @@ def discover() -> dict:
     return http_get(AUTHORITY)
 
 
+def device_deleted(device_id: str) -> bool:
+    """True only on a definitive 404 from /api/kiosk/status — the
+    displayDevice row is genuinely gone. Deliberately does NOT trigger on
+    `revoked` (that endpoint only ever reports existence, not revocation —
+    see its docstring) or on any network/server error: this gates dropping
+    the refresh token, so a false positive here would force a real,
+    working session back through a full re-pairing for no reason. Fails
+    closed (False) on anything but an explicit 404.
+    """
+    url = f"{BASE_URL}/api/kiosk/status?deviceId={urllib.parse.quote(device_id)}"
+    try:
+        with urllib.request.urlopen(url, timeout=10):
+            return False
+    except urllib.error.HTTPError as e:
+        return e.code == 404
+    except Exception:
+        return False
+
+
 def connectivity_ok() -> bool:
     """Cheap reachability probe. HEAD if accepted, else GET-and-close."""
     try:
@@ -1182,6 +1201,21 @@ def main() -> None:
                         break  # outer loop will re-provision
                 else:
                     consecutive_failures = 0
+                    # Deleting a device (unlike revoking it) means CHASE has
+                    # no record of it left at all — drop the refresh token so
+                    # a stolen/lost Pi can't keep operating on it indefinitely.
+                    # A merely-revoked device keeps its token; the browser's
+                    # own live query already shows the revoked screen for
+                    # that case, nothing to do here.
+                    if device_deleted(device_id):
+                        print(
+                            "chase-kiosk-helper: device deleted server-side, "
+                            "dropping refresh token",
+                            flush=True,
+                        )
+                        state.pop("refresh_token", None)
+                        save_state(state)
+                        break  # outer loop will start a fresh device grant
         except Exception as e:
             # Only `invalid_grant` from Logto means the refresh token is
             # actually dead (revoked / expired / rotated-and-leaked).

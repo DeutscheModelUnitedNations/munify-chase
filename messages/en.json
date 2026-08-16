@@ -344,6 +344,8 @@
 	"displaysNeverSeen": "Never",
 	"displaysPermissionDeniedBody": "You need to be a global admin, or an admin or team member of a conference, to manage displays.",
 	"displaysPermissionDeniedHeadline": "You don't have access to this page",
+	"displaysProvisionedBy": "Paired by {name}",
+	"displaysProvisionedByUnknown": "Paired by an unknown team member",
 	"displaysRestore": "Restore",
 	"displaysRevoke": "Revoke",
 	"displaysSave": "Save",

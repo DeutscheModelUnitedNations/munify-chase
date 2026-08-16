@@ -344,6 +344,8 @@
 	"displaysNeverSeen": "Nie",
 	"displaysPermissionDeniedBody": "Du musst globaler Admin oder Admin bzw. Teammitglied einer Konferenz sein, um Anzeigen zu verwalten.",
 	"displaysPermissionDeniedHeadline": "Kein Zugriff auf diese Seite",
+	"displaysProvisionedBy": "Eingerichtet von {name}",
+	"displaysProvisionedByUnknown": "Eingerichtet von einem unbekannten Teammitglied",
 	"displaysRestore": "Wiederherstellen",
 	"displaysRevoke": "Sperren",
 	"displaysSave": "Speichern",

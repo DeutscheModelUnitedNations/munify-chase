@@ -344,6 +344,8 @@
 	"displaysNeverSeen": "Nunca",
 	"displaysPermissionDeniedBody": "É necessário ser administrador global, ou administrador ou membro da equipa de uma conferência, para gerir telas.",
 	"displaysPermissionDeniedHeadline": "Não tens acesso a esta página",
+	"displaysProvisionedBy": "Configurado por {name}",
+	"displaysProvisionedByUnknown": "Configurado por um membro da equipa desconhecido",
 	"displaysRestore": "Restaurar",
 	"displaysRevoke": "Revogar",
 	"displaysSave": "Guardar",

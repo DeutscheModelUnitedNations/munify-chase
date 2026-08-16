@@ -13,6 +13,11 @@
 	// human input on the appliance; the id is never typed.
 	const deviceId = page.url.searchParams.get('deviceId');
 
+	// TEMPORARY DEBUG: surface registration failures directly on screen —
+	// remove once diagnosed. Kiosks have no devtools/keyboard access, so this
+	// is the only way to see what registerDisplayDevice actually failed with.
+	let debugRegisterError = $state<string | null>(null);
+
 	// Ensure the row exists. Idempotent; only a device-flow (kiosk) session is
 	// allowed to register. Errors (e.g. revoked device) are ignored — the live
 	// query below drives the on-screen state.
@@ -22,8 +27,8 @@
 	if (browser && deviceId) {
 		try {
 			await client.mutate.registerDisplayDevice({ __args: { id: deviceId }, id: true });
-		} catch {
-			// fall through to the live query / pairing screen
+		} catch (err) {
+			debugRegisterError = err instanceof Error ? err.message : JSON.stringify(err);
 		}
 	}
 
@@ -175,5 +180,12 @@
 			</span>
 			<code class="text-2xl font-bold tracking-wider">{deviceId}</code>
 		</div>
+		{#if debugRegisterError}
+			<div
+				class="bg-error/10 text-error max-w-2xl rounded-box p-4 text-center font-mono text-sm break-words"
+			>
+				DEBUG registerDisplayDevice error: {debugRegisterError}
+			</div>
+		{/if}
 	</div>
 {/if}

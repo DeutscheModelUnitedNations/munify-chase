@@ -9,8 +9,30 @@ cd "$(dirname "$0")"
 echo "MUNify CHASE — Pi display image builder"
 echo
 
-read -rp "CHASE base URL (e.g. https://chase.example.org): " BASE_URL
-read -rp "OIDC discovery URL (…/.well-known/openid-configuration): " OIDC_AUTHORITY
+# A base URL missing its scheme (e.g. "chase.example.org" instead of
+# "https://chase.example.org") doesn't fail loudly — chase-kiosk-helper.py
+# embeds it verbatim as the session-bridge form's `action`, and a browser
+# treats a scheme-less action as *relative* to whatever page it's on (the
+# kiosk's own local bootstrap page), silently posting the OIDC tokens back
+# to 127.0.0.1:8081 instead of the real CHASE server. That surfaces on the
+# kiosk screen as an opaque "501 Unsupported method" page with nothing to
+# suggest the actual cause, so this is validated up front instead.
+while true; do
+	read -rp "CHASE base URL (e.g. https://chase.example.org): " BASE_URL
+	case "$BASE_URL" in
+	http://* | https://*) break ;;
+	*) echo "Must start with http:// or https:// — got \"$BASE_URL\"." ;;
+	esac
+done
+
+while true; do
+	read -rp "OIDC discovery URL (…/.well-known/openid-configuration): " OIDC_AUTHORITY
+	case "$OIDC_AUTHORITY" in
+	http://* | https://*) break ;;
+	*) echo "Must start with http:// or https:// — got \"$OIDC_AUTHORITY\"." ;;
+	esac
+done
+
 read -rp "OIDC client id (shared display app): " OIDC_CLIENT_ID
 
 read -rp "SSH access method:

@@ -143,14 +143,18 @@ in
       DeveloperToolsAvailability = 2;
       SSLErrorOverrideAllowed = false;
 
-      # Chromium only ever needs to load the local bootstrap helper page and
-      # the CHASE origin itself (the OIDC device-grant screen is a QR code
-      # for the *operator's phone* to scan, never a page Chromium navigates
-      # to) — block navigation everywhere else as defense in depth against
-      # any future open-redirect or injected-link surfacing a destination
-      # outside those two origins.
-      URLBlocklist = [ "*" ];
-      URLAllowlist = [ "${cfg.baseUrl}/*" "http://127.0.0.1:8081/*" ];
+      # A URLBlocklist/URLAllowlist pair restricting navigation to just the
+      # local bootstrap page + the CHASE origin was tried here as extra
+      # defense-in-depth, but caused two separate real outages: first a
+      # missing-scheme pattern quirk blocked everything including the local
+      # page, and after fixing that, the scheme-exact allowlist entry
+      # (https://) still didn't cover the app's WebSocket subscription
+      # traffic (wss://), silently blocking all GraphQL live-query/mutation
+      # traffic with nothing reaching the backend to even log. Getting
+      # Chromium's URL-filter scheme-matching exactly right isn't something
+      # that can be verified without a real device to test against, and this
+      # wasn't part of the actual ask (popups/prompts, handled by the
+      # policies above) — removed rather than risk a third outage.
     };
 
     # --- Auto-login + Wayland kiosk (cage runs a single Chromium) ---------

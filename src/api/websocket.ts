@@ -112,15 +112,17 @@ yjsWSS.on('headers', setHeaders);
 				return new Response();
 			}
 		});
-		// OIDC.handle only recognizes tokens issued for PUBLIC_OIDC_CLIENT_ID; a
-		// kiosk's device-flow cookies never match that audience and are left
-		// unauthenticated here — same as any other route, see kioskOIDC.ts.
-		// hooks.server.ts runs both handlers in sequence for normal HTTP
-		// requests (OIDC.handle, then the kiosk fallback); this upgrade path
-		// calls OIDC.handle directly instead of going through that `handle`
-		// sequence, so it has to run the same fallback itself, or every kiosk
-		// GraphQL subscription (the entire live-update mechanism /kiosk relies
-		// on) silently fails to authenticate and never reconnects successfully.
+		// kioskOIDCHandle has to run here too, unconditionally, same as it does
+		// after OIDC.handle in hooks.server.ts's `handle` sequence for normal
+		// HTTP requests — see the doc comment on it in kioskOIDC.ts for why it
+		// can't be skipped just because OIDC.handle above already populated
+		// `locals.oidc` (it can, and does, even for kiosk device-flow cookies,
+		// via its introspection fallback — that alone isn't enough to set
+		// isKioskSession). This upgrade path calls OIDC.handle directly
+		// instead of going through that `handle` sequence, so it has to run
+		// the kiosk check itself too, or every kiosk GraphQL subscription (the
+		// entire live-update mechanism /kiosk relies on) would authenticate as
+		// the underlying person's normal, non-read-only session instead.
 		await kioskOIDCHandle({
 			event: syntheticSvelteRequestEvent,
 			resolve: (event) => {

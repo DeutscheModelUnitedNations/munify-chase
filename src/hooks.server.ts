@@ -86,8 +86,9 @@ export const handle: Handle = sequence(
 	kioskOriginScope,
 	tauriCors,
 	OIDC.handle,
-	// Only runs when OIDC.handle above didn't already establish a session —
-	// see kioskOIDC.ts for why the Pi display kiosk needs this.
+	// Runs unconditionally after OIDC.handle, not only as a fallback — see
+	// the doc comment on kioskOIDCHandle in kioskOIDC.ts for why it can't be
+	// gated on whether OIDC.handle already set a session.
 	kioskOIDCHandle,
 	localeRedirect,
 	({ event, resolve }) =>

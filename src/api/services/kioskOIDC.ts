@@ -6,34 +6,39 @@ import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
 import { normalizeOIDCClaims, upsertUserFromClaims } from './OIDC';
 
 /**
- * Fallback token verification for identities @m1212e/sveltekit-oidc's primary
- * `OIDC.handle` doesn't recognize — namely the Pi display kiosk, which signs
- * in through its own separate Logto Application (see pi-display/README.md)
- * via the Device Authorization Grant. Its tokens carry cookie names/shapes
- * identical to a normal session (bridged in by /api/kiosk/session), but an
- * `aud` claim that will never match PUBLIC_OIDC_CLIENT_ID — the library
- * hardcodes a single trusted audience, so those tokens fail its verification
- * and it leaves `locals.oidc` unset for unprotected routes like /kiosk and
- * /api/graphql. This re-attempts verification against OIDC_KIOSK_TRUSTED_AUDIENCES
- * (the display app's client id, and/or a Logto default API resource
- * identifier).
- *
- * Any staff member can sign a Pi into this application with their own
- * credentials — there's no separate shared "display" account. What matters
- * for authorization is not *who* authenticated but *how*: successfully
- * verifying here (as opposed to through the primary OIDC.handle) is proof
- * the request went through the device flow, so `locals.isKioskSession` is
- * set unconditionally on success, regardless of whose identity it is. See
- * authHelper.ts's `isDisplayKiosk()`, the sole consumer of that flag — it
+ * Independently re-verifies every request's tokens against
+ * OIDC_KIOSK_TRUSTED_AUDIENCES (the Pi display kiosk's own separate Logto
+ * Application — see pi-display/README.md — which any staff member can sign
+ * into via the Device Authorization Grant with their own credentials, no
+ * shared "display" account). On success, `locals.isKioskSession` is set —
+ * see authHelper.ts's `isDisplayKiosk()`, the sole consumer of that flag: it
  * forces every ability check for a device-flow session down the same
- * kiosk-scoped, read-only path a real staff member's normal role would
+ * kiosk-scoped, read-only path the underlying person's real role would
  * otherwise unlock, so a Pi stolen from a venue (see the physical-access
  * note in pi-display/README.md) can never be used for more than a kiosk
- * could already do, no matter how privileged the person who provisioned it.
- * This only ever narrows access relative to a normal session — it can't
- * grant anything a plain login wouldn't — so it stays safe even if a
- * deployment's Logto tenant is misconfigured to also allow this application
- * to authenticate through some other, non-device flow.
+ * could already do, no matter how privileged whoever provisioned it is.
+ *
+ * This MUST run unconditionally, never only as a fallback for when the
+ * primary `OIDC.handle` fails to recognize a token — it doesn't reliably
+ * fail. `OIDC.handle`'s own token validation (in @m1212e/sveltekit-oidc)
+ * first tries local JWT verification against PUBLIC_OIDC_CLIENT_ID, but on
+ * failure falls back to RFC 7662 token introspection against the OIDC
+ * provider, which only confirms the token is *active* — it doesn't check
+ * audience at all (reported upstream). A kiosk token is a genuinely valid,
+ * active token (just issued to a different Application), so on providers
+ * that support introspection (Logto does) `OIDC.handle` ends up accepting
+ * it anyway and populating `locals.oidc` with the underlying person's real
+ * identity and roles — silently bypassing kiosk detection entirely if this
+ * only ran when `locals.oidc` was still unset. Kiosk detection is treated
+ * as a security boundary CHASE owns, not something to leave resting on an
+ * unstated, third-party-controlled invariant ("the primary handler always
+ * fails for kiosk tokens") that a future dependency update could silently
+ * break again: running unconditionally and treating a successful
+ * kiosk-audience verification as authoritative regardless of what
+ * `OIDC.handle` already decided means this holds even if that upstream
+ * fallback's behavior changes. Only ever narrows access relative to a
+ * normal session (can't grant anything a plain login wouldn't), so it stays
+ * safe even where it turns out to be redundant.
  *
  * Cookie names ('auth_oidc_*') mirror @m1212e/sveltekit-oidc's default
  * prefix — see the same duplication note in api/kiosk/session/+server.ts.
@@ -86,7 +91,12 @@ async function verify(
 }
 
 export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
-	if (building || event.locals.oidc || trustedAudiences.length === 0) {
+	// Deliberately NOT gated on `event.locals.oidc` already being set — see
+	// the doc comment above. This has to run regardless of what OIDC.handle
+	// decided, and a successful kiosk-audience verification here overrides
+	// whatever it set, since that's the more precise, freshly-verified claim
+	// set for exactly this token.
+	if (building || trustedAudiences.length === 0) {
 		return resolve(event);
 	}
 
@@ -131,8 +141,9 @@ export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
 			}
 		}
 	} catch {
-		// Fallback verification failed — fall through and let the request
-		// proceed unauthenticated, same as the primary OIDC.handle would.
+		// Not a kiosk-audience token (or discovery/verification genuinely
+		// failed) — leave whatever OIDC.handle already decided (if anything)
+		// untouched and fall through.
 	}
 
 	return resolve(event);

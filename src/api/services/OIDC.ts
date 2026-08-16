@@ -58,6 +58,55 @@ export function normalizeOIDCClaims(claims: Record<string, unknown>): Normalized
 	return normalized;
 }
 
+/**
+ * Upserts the `user` row for a normalized OIDC identity, and syncs its name
+ * onto any `conferenceUser` rows already keyed by that email (conferenceUser
+ * is created by email up front, before the person's first login — see the
+ * comment on conferenceUser.userEmail in schema.ts).
+ *
+ * Shared by the normal browser login callback and by kioskOIDC.ts's fallback
+ * verification: both are places a request can first prove an OIDC identity
+ * to CHASE, and `conferenceUser`/ability lookups throughout this codebase
+ * key off `user.id`/`user.email`, so both paths need the same invariant —
+ * "a validated identity always has a `user` row" — to hold.
+ */
+export async function upsertUserFromClaims(normalized: NormalizedOIDCClaims) {
+	if (!normalized.email) {
+		throw new Error('OIDC claim "email" is missing');
+	}
+	const preferredUsername = normalized.preferred_username ?? normalized.email;
+	await db
+		.insert(schema.user)
+		.values({
+			id: normalized.sub,
+			locale: normalized.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
+			preferredUsername,
+			email: normalized.email,
+			familyName: normalized.family_name ?? '',
+			givenName: normalized.given_name ?? ''
+		})
+		.onConflictDoUpdate({
+			target: schema.user.id,
+			set: {
+				locale: normalized.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
+				preferredUsername,
+				email: normalized.email,
+				familyName: normalized.family_name ?? '',
+				givenName: normalized.given_name ?? ''
+			}
+		});
+
+	// Sync full name to cpnf user too
+	const fullName =
+		[normalized.given_name, normalized.family_name].filter(Boolean).join(' ').trim() || null;
+	if (fullName) {
+		await db
+			.update(schema.conferenceUser)
+			.set({ name: fullName })
+			.where(eq(schema.conferenceUser.userEmail, normalized.email));
+	}
+}
+
 export const OIDC = !building
 	? await makeOIDC({
 			development: dev,
@@ -71,41 +120,7 @@ export const OIDC = !building
 			logoutPath: '',
 			allowBearerToken: true,
 			async userLoggedInSuccessfully({ user }) {
-				const normalized = normalizeOIDCClaims(user);
-				if (!normalized.email) {
-					throw new Error('OIDC claim "email" is missing');
-				}
-				const preferredUsername = normalized.preferred_username ?? normalized.email;
-				await db
-					.insert(schema.user)
-					.values({
-						id: normalized.sub,
-						locale: normalized.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
-						preferredUsername,
-						email: normalized.email,
-						familyName: normalized.family_name ?? '',
-						givenName: normalized.given_name ?? ''
-					})
-					.onConflictDoUpdate({
-						target: schema.user.id,
-						set: {
-							locale: normalized.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
-							preferredUsername,
-							email: normalized.email,
-							familyName: normalized.family_name ?? '',
-							givenName: normalized.given_name ?? ''
-						}
-					});
-
-				// Sync full name to cpnf user too
-				const fullName =
-					[normalized.given_name, normalized.family_name].filter(Boolean).join(' ').trim() || null;
-				if (fullName) {
-					await db
-						.update(schema.conferenceUser)
-						.set({ name: fullName })
-						.where(eq(schema.conferenceUser.userEmail, normalized.email));
-				}
+				await upsertUserFromClaims(normalizeOIDCClaims(user));
 			}
 		})
 	: ({} as Awaited<ReturnType<typeof makeOIDC>>);

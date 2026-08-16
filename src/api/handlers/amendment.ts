@@ -8,6 +8,7 @@ import {
 	schemaBuilder
 } from '$api/rumble';
 import {
+	isDisplayKiosk,
 	isParticipantInConference,
 	isTeamInConference,
 	committeeMemberForPaper,
@@ -29,6 +30,13 @@ import type {
 } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
 abilityBuilder.amendment.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return {
+			where: {
+				paper: { committee: { conference: { displayDevices: { revoked: false } } } }
+			}
+		};
+	}
 	return {
 		where: {
 			paper: { committee: isParticipantInConference(ctx) }

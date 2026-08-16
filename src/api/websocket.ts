@@ -10,6 +10,7 @@ import type { IncomingMessage } from 'node:http';
 import { openYjsRoom } from './yjs/wss';
 import { nativeToRequestEvent } from './services/auth';
 import { OIDC } from './services/OIDC';
+import { kioskOIDCHandle } from './services/kioskOIDC';
 import { context, type Context } from './context';
 
 const gqlWSS = new WebSocketServer({ noServer: true });
@@ -105,6 +106,22 @@ yjsWSS.on('headers', setHeaders);
 
 	try {
 		await OIDC.handle({
+			event: syntheticSvelteRequestEvent,
+			resolve: (event) => {
+				syntheticSvelteRequestEvent = event;
+				return new Response();
+			}
+		});
+		// OIDC.handle only recognizes tokens issued for PUBLIC_OIDC_CLIENT_ID; a
+		// kiosk's device-flow cookies never match that audience and are left
+		// unauthenticated here — same as any other route, see kioskOIDC.ts.
+		// hooks.server.ts runs both handlers in sequence for normal HTTP
+		// requests (OIDC.handle, then the kiosk fallback); this upgrade path
+		// calls OIDC.handle directly instead of going through that `handle`
+		// sequence, so it has to run the same fallback itself, or every kiosk
+		// GraphQL subscription (the entire live-update mechanism /kiosk relies
+		// on) silently fails to authenticate and never reconnects successfully.
+		await kioskOIDCHandle({
 			event: syntheticSvelteRequestEvent,
 			resolve: (event) => {
 				syntheticSvelteRequestEvent = event;

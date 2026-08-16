@@ -13,9 +13,9 @@
 	// human input on the appliance; the id is never typed.
 	const deviceId = page.url.searchParams.get('deviceId');
 
-	// Ensure the row exists. Idempotent; only the shared display account
-	// (service_user) is allowed to register. Errors (e.g. revoked device) are
-	// ignored — the live query below drives the on-screen state.
+	// Ensure the row exists. Idempotent; only a device-flow (kiosk) session is
+	// allowed to register. Errors (e.g. revoked device) are ignored — the live
+	// query below drives the on-screen state.
 	//
 	// Client-only: `client.mutate.*` is a SvelteKit remote-function `command`,
 	// which throws if invoked during SSR of a GET request (this page load).
@@ -27,12 +27,18 @@
 		}
 	}
 
-	// A brand-new device's row may not exist yet at SSR time — registration
-	// above only runs client-side (browser-only), so the very first SSR pass
-	// for a never-before-seen deviceId always predates it. This query requires
-	// exactly one matching row and throws otherwise; treat "not found" the
-	// same as "not registered yet" and fall through to the pairing screen,
-	// rather than crashing the whole render.
+	// The filtered *plural* query, not the by-id singular field: the singular
+	// field is non-nullable and throws "not found" when the row doesn't exist
+	// — true both for a brand-new device before registration (registration
+	// above only runs client-side, so the very first SSR pass always predates
+	// it) and for a device an admin deletes from /app/displays later. That
+	// second case matters for a *live* push, not just the initial load: a
+	// GraphQL error on a subscription push gets thrown inside the client's
+	// map() transform and never reaches Svelte's update() callback (nothing
+	// downstream catches it), so the page would keep showing whatever it last
+	// rendered forever instead of reacting to the deletion. A list result has
+	// no such failure mode — deletion just makes it resolve to `[]`, same as
+	// "not registered yet" — so both cases fall out of one unexceptional query.
 	//
 	// A single never-reassigned `const` matters here: `client.liveQuery.*`
 	// returns a Proxy wired to Svelte's createSubscriber — reading a property
@@ -40,44 +46,41 @@
 	// via the server's pubsub. Reassigning a separate $state variable instead
 	// broke that — the page stopped picking up admin changes (committee,
 	// locale, timezone) without a manual reload.
-	const device = deviceId
-		? await (async () => {
-				try {
-					return await client.liveQuery.displayDevice({
-						__args: { id: deviceId },
+	const devices = deviceId
+		? await client.liveQuery.displayDevices({
+				__args: { where: { id: deviceId } },
+				id: true,
+				name: true,
+				revoked: true,
+				conferenceId: true,
+				committeeId: true,
+				locale: true,
+				timezone: true,
+				conference: {
+					id: true,
+					title: true,
+					committees: {
 						id: true,
 						name: true,
-						revoked: true,
-						conferenceId: true,
-						committeeId: true,
-						locale: true,
-						timezone: true,
-						conference: {
+						abbreviation: true,
+						activeAgendaItem: {
 							id: true,
-							title: true,
-							committees: {
-								id: true,
-								name: true,
-								abbreviation: true,
-								activeAgendaItem: {
-									id: true,
-									title: true
-								},
-								status: true,
-								statusHeadline: true,
-								statusUntil: true,
-								stateOfDebate: true,
-								lastResolutionAdoptionDate: true
-							}
-						}
-					});
-				} catch (err) {
-					// Not registered yet — pairing screen below handles a null device.
-					console.error('Failed to load display device', deviceId, err);
-					return null;
+							title: true
+						},
+						status: true,
+						statusHeadline: true,
+						statusUntil: true,
+						stateOfDebate: true,
+						lastResolutionAdoptionDate: true
+					}
 				}
-			})()
-		: null;
+			})
+		: [];
+
+	// Reading `devices[0]` inside $derived still goes through the Proxy's
+	// getter (indexed access included), so this stays reactive to live
+	// pushes exactly like reading a property directly would.
+	let device = $derived(devices[0] ?? null);
 
 	// Kiosk has no UI to pick a language — apply whatever the organizer
 	// assigned in /app/displays. setLocale() writes the paraglide cookie and

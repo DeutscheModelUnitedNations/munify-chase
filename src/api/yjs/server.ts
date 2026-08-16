@@ -15,6 +15,7 @@ import { db, schema } from '../db/db';
 import { configPrivate } from '$config/private';
 import { context, type Context } from '$api/context';
 import {
+	isDisplayKiosk,
 	isParticipantInConference,
 	isPaperEditor,
 	isTeamInConference
@@ -60,6 +61,20 @@ async function authorize(paperId: string, ctx: Context): Promise<AuthResult> {
 		ctx.mustBeLoggedIn();
 	} catch {
 		return { allowed: false, canWrite: false };
+	}
+
+	// Display kiosks are always read-only, scoped the same way the
+	// resolutionPaper/amendment read abilities scope them — a conference
+	// with a non-revoked display device — never the team/author write paths
+	// below.
+	if (isDisplayKiosk(ctx)) {
+		const paper = await db.query.resolutionPaper.findFirst({
+			where: {
+				id: paperId,
+				committee: { conference: { displayDevices: { revoked: false } } }
+			}
+		});
+		return paper ? { allowed: true, canWrite: false } : { allowed: false, canWrite: false };
 	}
 
 	// Read access to paper and paper existence

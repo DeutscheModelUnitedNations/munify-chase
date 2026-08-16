@@ -83,15 +83,74 @@ in
     networking.wireless.enable = false;
     networking.firewall.trustedInterfaces = [ cfg.wlanInterface ];
 
-    # Belt-and-suspenders against the Translate bubble: `--disable-features=
-    # Translate,TranslateUI` alone kept resurfacing it, because recent
-    # Chromium re-derives the "offer to translate" heuristic from the
-    # profile's translate prefs regardless of that switch. The managed
-    # policy is the one mechanism Chromium documents as authoritative here
-    # (enterprise policy, evaluated before/independent of profile prefs and
-    # of --incognito) — see chromeenterprise.google/policies/#TranslateEnabled.
+    # Lock Chromium down as hard as possible so nothing it ever grows —
+    # today or in some future version — gets a chance to pop a bubble/prompt
+    # over the display. Command-line switches (--disable-features=X, etc.)
+    # are the wrong primary tool for this: as the Translate case below shows,
+    # Chromium routinely re-derives UI heuristics from profile prefs
+    # independent of the switch that supposedly turned the feature off.
+    # Enterprise managed policy is the one mechanism Chromium documents as
+    # authoritative — evaluated ahead of/independent of profile prefs and of
+    # --incognito — so every prompt-shaped surface is disabled here instead,
+    # not just Translate. See chromeenterprise.google/policies/ for each key.
     environment.etc."chromium/policies/managed/chase-kiosk.json".text = builtins.toJSON {
       TranslateEnabled = false;
+
+      # Permission-prompt bubbles: deny every one outright (2 = block) rather
+      # than leaving them on "ask", so a future site feature never gets a
+      # chance to surface a request bubble in the first place.
+      DefaultNotificationsSetting = 2;
+      DefaultGeolocationSetting = 2;
+      DefaultMediaStreamSetting = 2;
+      DefaultSensorsSetting = 2;
+      DefaultSerialGuardSetting = 2;
+      DefaultWebUsbGuardSetting = 2;
+      DefaultWebHidGuardSetting = 2;
+      DefaultWebBluetoothGuardSetting = 2;
+      DefaultFileSystemReadGuardSetting = 2;
+      DefaultFileSystemWriteGuardSetting = 2;
+      DefaultPopupsSetting = 2;
+      DefaultInsecureContentSetting = 2;
+      AudioCaptureAllowed = false;
+      VideoCaptureAllowed = false;
+
+      # Account/profile/sync surfaces: this Chromium is a single anonymous
+      # kiosk session with no Google account, ever — deny sign-in so nothing
+      # ever offers to sync, add a person, or switch to guest mode.
+      BrowserSignin = 0;
+      SyncDisabled = true;
+      BrowserAddPersonEnabled = false;
+      BrowserGuestModeEnabled = false;
+      PasswordManagerEnabled = false;
+      AutofillAddressEnabled = false;
+      AutofillCreditCardEnabled = false;
+      SpellcheckEnabled = false;
+      SearchSuggestEnabled = false;
+      AlternateErrorPagesEnabled = false;
+
+      # First-run/update/default-browser nags — irrelevant on an appliance
+      # that never sees a human pick Chromium, but each is its own bubble.
+      DefaultBrowserSettingEnabled = false;
+      MetricsReportingEnabled = false;
+      BuiltInDnsClientEnabled = false;
+      CommandLineFlagSecurityWarningsEnabled = false;
+
+      # Downloads/extensions/devtools: this kiosk never needs to save a
+      # file, install anything, or be debugged locally — block the actions
+      # instead of just hiding their UI, so there's nothing left to prompt.
+      DownloadRestrictions = 3;
+      ExtensionInstallBlocklist = [ "*" ];
+      DeveloperToolsAvailability = 2;
+      SSLErrorOverrideAllowed = false;
+
+      # Chromium only ever needs to load the local bootstrap helper page and
+      # the CHASE origin itself (the OIDC device-grant screen is a QR code
+      # for the *operator's phone* to scan, never a page Chromium navigates
+      # to) — block navigation everywhere else as defense in depth against
+      # any future open-redirect or injected-link surfacing a destination
+      # outside those two origins.
+      URLBlocklist = [ "*" ];
+      URLAllowlist = [ "${cfg.baseUrl}/*" "http://127.0.0.1:8081/*" ];
     };
 
     # --- Auto-login + Wayland kiosk (cage runs a single Chromium) ---------

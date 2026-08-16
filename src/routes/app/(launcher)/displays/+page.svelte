@@ -8,15 +8,16 @@
 	import { promiseToastStrings } from '$lib/utils/toast';
 
 	const user = await getCurrentUser();
-	// The shared Pi kiosk account (`service_user`) can end up here if someone
-	// signs into a regular browser with it by mistake. Checked first and
-	// treated as an absolute veto below: some staff-owned accounts also
-	// happen to satisfy the global-admin domain/email whitelist, and several
-	// ability rules (conference.ts, committee.ts) check `service_user`
-	// before checking admin status, so a ctx that's both ends up with an
-	// inconsistent, half-kiosk-scoped read filter if this page tries to
-	// treat it as an admin. Kiosk identity always wins here — this page
-	// must never run the admin queries below for it, full stop.
+	// Any staff member — including a global/conference admin — can end up
+	// here through a kiosk (device-flow) session rather than their normal
+	// browser login, e.g. testing the device grant flow themselves. Checked
+	// first and treated as an absolute veto below: the underlying account
+	// may well be a real admin, but several ability rules (conference.ts,
+	// committee.ts) check isDisplayKiosk() before checking admin status, so
+	// a ctx that's both ends up with an inconsistent, half-kiosk-scoped read
+	// filter if this page tries to treat it as an admin. Kiosk *session*
+	// always wins here regardless of the person behind it — this page must
+	// never run the admin queries below for it, full stop.
 	const isKioskUser = (await client.query.isDisplayKiosk()) as unknown as boolean;
 	const isGlobalAdminUser = isKioskUser
 		? false
@@ -61,6 +62,25 @@
 		return isGlobalAdminUser || (!!d.conferenceId && myAdminConferenceIds.has(d.conferenceId));
 	}
 
+	// Conferences this user could claim an unassigned device into — mirrors
+	// the server-side ADMIN/TEAM membership check in assignDisplayDevice's
+	// resolver. `conferences` itself (below) is only scoped to *some*
+	// participation (isParticipant), which includes plain delegates/
+	// spectators, so this is a stricter subset of it.
+	const myAdminOrTeamConferenceIds = new Set(
+		(myConferenceRoles ?? [])
+			.filter((cu) => cu.conferenceUserType === 'ADMIN' || cu.conferenceUserType === 'TEAM')
+			.map((cu) => cu.conferenceId)
+	);
+	// Whoever provisioned a still-unassigned device may claim it — see the
+	// same check, resolver-side, in assignDisplayDevice.
+	function canClaim(d: {
+		conferenceId: string | null;
+		provisionedByUserId: string | null;
+	}): boolean {
+		return !isGlobalAdminUser && d.conferenceId === null && d.provisionedByUserId === user.id;
+	}
+
 	const focusId = page.url.searchParams.get('focus');
 
 	const localeLabels: Record<string, string> = { de: 'Deutsch', en: 'English', pt: 'Português' };
@@ -97,6 +117,7 @@
 				lastSeenAt: true,
 				locale: true,
 				timezone: true,
+				provisionedByUserId: true,
 				conference: { id: true, title: true },
 				committee: { id: true, abbreviation: true }
 			})
@@ -139,11 +160,23 @@
 		return (conferences ?? []).find((c) => c.id === conferenceId)?.committees ?? [];
 	}
 
+	// Global admins may assign into any conference; a claiming non-admin only
+	// into one of their own ADMIN/TEAM conferences (see myAdminOrTeamConferenceIds).
+	function conferenceOptionsFor(d: {
+		conferenceId: string | null;
+		provisionedByUserId: string | null;
+	}) {
+		if (isGlobalAdminUser) return conferences ?? [];
+		if (!canClaim(d)) return [];
+		return (conferences ?? []).filter((c) => myAdminOrTeamConferenceIds.has(c.id));
+	}
+
 	let busy = $state<string | null>(null);
 
 	async function save(id: string) {
 		const d = drafts[id];
-		if (!d) return;
+		const device = (devices ?? []).find((x) => x.id === id);
+		if (!d || !device) return;
 		busy = id;
 		const targetName = d.name.trim() || id;
 		try {
@@ -152,12 +185,14 @@
 					__args: {
 						id,
 						name: d.name.trim() === '' ? null : d.name.trim(),
-						// Conference (re)assignment is a global-admin-only action (the
-						// select is disabled for everyone else); omitting the arg
-						// entirely — rather than resending the unchanged value —
-						// keeps conference admins/team members from tripping the
-						// server-side guard on every unrelated settings save.
-						...(isGlobalAdminUser
+						// Conference (re)assignment is normally a global-admin-only
+						// action; the one exception is the device's own provisioner
+						// claiming it while unassigned (canClaim). Everyone else has
+						// the select disabled, so omitting the arg entirely — rather
+						// than resending the unchanged value — keeps them from
+						// tripping the server-side guard on every unrelated
+						// settings save.
+						...(isGlobalAdminUser || canClaim(device)
 							? { conferenceId: d.conferenceId === '' ? null : d.conferenceId }
 							: {}),
 						committeeId: d.committeeId === '' ? null : d.committeeId,
@@ -258,11 +293,13 @@
 													class="select select-sm select-bordered w-56"
 													bind:value={draft.conferenceId}
 													onchange={() => (draft.committeeId = '')}
-													disabled={!isGlobalAdminUser}
-													title={isGlobalAdminUser ? '' : m.displaysConferenceAdminOnly()}
+													disabled={!isGlobalAdminUser && !canClaim(d)}
+													title={isGlobalAdminUser || canClaim(d)
+														? ''
+														: m.displaysConferenceAdminOnly()}
 												>
 													<option value="">{m.displaysSelectConference()}</option>
-													{#each conferences ?? [] as c (c.id)}
+													{#each conferenceOptionsFor(d) as c (c.id)}
 														<option value={c.id}>{c.title}</option>
 													{/each}
 												</select>

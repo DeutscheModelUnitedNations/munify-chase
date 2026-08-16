@@ -3,7 +3,7 @@ import { configPrivate } from '$config/private';
 import { configPublic } from '$config/public';
 import type { Handle } from '@sveltejs/kit';
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
-import { normalizeOIDCClaims } from './OIDC';
+import { normalizeOIDCClaims, upsertUserFromClaims } from './OIDC';
 
 /**
  * Fallback token verification for identities @m1212e/sveltekit-oidc's primary
@@ -16,7 +16,24 @@ import { normalizeOIDCClaims } from './OIDC';
  * and it leaves `locals.oidc` unset for unprotected routes like /kiosk and
  * /api/graphql. This re-attempts verification against OIDC_KIOSK_TRUSTED_AUDIENCES
  * (the display app's client id, and/or a Logto default API resource
- * identifier) so ctx.hasRole() has something to read.
+ * identifier).
+ *
+ * Any staff member can sign a Pi into this application with their own
+ * credentials — there's no separate shared "display" account. What matters
+ * for authorization is not *who* authenticated but *how*: successfully
+ * verifying here (as opposed to through the primary OIDC.handle) is proof
+ * the request went through the device flow, so `locals.isKioskSession` is
+ * set unconditionally on success, regardless of whose identity it is. See
+ * authHelper.ts's `isDisplayKiosk()`, the sole consumer of that flag — it
+ * forces every ability check for a device-flow session down the same
+ * kiosk-scoped, read-only path a real staff member's normal role would
+ * otherwise unlock, so a Pi stolen from a venue (see the physical-access
+ * note in pi-display/README.md) can never be used for more than a kiosk
+ * could already do, no matter how privileged the person who provisioned it.
+ * This only ever narrows access relative to a normal session — it can't
+ * grant anything a plain login wouldn't — so it stays safe even if a
+ * deployment's Logto tenant is misconfigured to also allow this application
+ * to authenticate through some other, non-device flow.
  *
  * Cookie names ('auth_oidc_*') mirror @m1212e/sveltekit-oidc's default
  * prefix — see the same duplication note in api/kiosk/session/+server.ts.
@@ -87,8 +104,9 @@ export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
 		]);
 
 		if (accessPayload || idPayload) {
+			const normalized = normalizeOIDCClaims({ ...accessPayload, ...idPayload });
 			event.locals.oidc = {
-				user: normalizeOIDCClaims({ ...accessPayload, ...idPayload }),
+				user: normalized,
 				accessToken: accessPayload,
 				idToken: idPayload,
 				// The kiosk bridge (/api/kiosk/session) never sets a refresh-token
@@ -97,6 +115,20 @@ export const kioskOIDCHandle: Handle = async ({ event, resolve }) => {
 				refreshToken: undefined,
 				raw: { accessToken, idToken }
 			};
+			event.locals.isKioskSession = true;
+
+			// Mirrors the primary login path's userLoggedInSuccessfully — a
+			// device-flow identity needs the same `user` row (conferenceUser/
+			// ability lookups key off it) even if this staff member has never
+			// opened the normal browser app before. Best-effort: a transient
+			// DB hiccup here shouldn't take down kiosk auth, it would just mean
+			// this identity's own conference memberships aren't resolvable
+			// until the next successful refresh.
+			try {
+				await upsertUserFromClaims(normalized);
+			} catch (e) {
+				console.error('kioskOIDC: failed to upsert user for device-flow identity', e);
+			}
 		}
 	} catch {
 		// Fallback verification failed — fall through and let the request

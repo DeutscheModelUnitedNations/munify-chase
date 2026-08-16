@@ -6,6 +6,10 @@ export const relations = defineRelations(schema, (r) => ({
 		conferenceMemberships: r.many.conferenceUser({
 			from: r.user.email,
 			to: r.conferenceUser.userEmail
+		}),
+		provisionedDisplayDevices: r.many.displayDevice({
+			from: r.user.id,
+			to: r.displayDevice.provisionedByUserId
 		})
 	},
 	conference: {
@@ -96,6 +100,11 @@ export const relations = defineRelations(schema, (r) => ({
 		committee: r.one.committee({
 			from: r.displayDevice.committeeId,
 			to: r.committee.id
+		}),
+		provisionedBy: r.one.user({
+			from: r.displayDevice.provisionedByUserId,
+			to: r.user.id,
+			optional: true
 		})
 	},
 	committeeMember: {

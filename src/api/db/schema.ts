@@ -119,7 +119,13 @@ export const displayDevice = snakeCase.table('display_device', {
 	// Null means "use the app default" (Accept-Language / base locale).
 	locale: displayDeviceLocale(),
 	// IANA timezone name (e.g. "Europe/Berlin"); null means browser/OS default.
-	timezone: text()
+	timezone: text(),
+	// Whoever most recently completed the device flow for this device (see
+	// registerDisplayDevice) — lets that person, not just global admins,
+	// claim it for one of their own ADMIN/TEAM conferences while it's still
+	// unassigned. Set null (not cascaded) if that user is ever deleted, so
+	// the device itself doesn't disappear along with them.
+	provisionedByUserId: text().references(() => user.id, { onDelete: 'set null' })
 });
 
 export const conferenceUserType = pgEnum('conference_user_type', [

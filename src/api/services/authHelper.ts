@@ -21,13 +21,30 @@ export function isGlobalAdmin(ctx: Context) {
 }
 
 /**
- * Shared display-kiosk account (OIDC `service_user` role). All Pi displays
- * authenticate as this one account; per-device scoping is enforced by the
- * deviceId the kiosk queries against a non-revoked `displayDevice` row, not
- * by this shared identity. So read access only checks the role here.
+ * True for any request that authenticated through the Pi display kiosk's
+ * device flow (see kioskOIDC.ts) — any staff member can sign a kiosk in with
+ * their own credentials, there's no separate shared "display" account or
+ * role to grant. What matters is *how* the request authenticated, not *who*
+ * it is.
+ *
+ * This is used two ways, deliberately kept separate:
+ *  - Here, in per-table `read` ability rules, to grant the same
+ *    device-scoped read access a kiosk has always had (unchanged in shape —
+ *    only the underlying signal moved from a shared account's role to the
+ *    session type).
+ *  - As the read-only enforcement boundary itself: `kioskWriteGuard.ts`
+ *    rejects every GraphQL *mutation* for a device-flow session except a
+ *    short explicit allowlist, at the transport layer, before any resolver
+ *    or ability rule runs. That's deliberately a single, structural choke
+ *    point rather than something threaded through every write-side ability
+ *    helper (isGlobalAdmin, isTeamInConference, isAdminInConference, isAdmin,
+ *    …) — a mutation resolver that writes straight through `db`/`tx` without
+ *    consulting those helpers at all (this codebase has had at least one:
+ *    see the setVoteForMember fix) would otherwise stay silently exploitable
+ *    from a stolen kiosk's session even after every helper was patched.
  */
 export function isDisplayKiosk(ctx: Context) {
-	return ctx.hasRole('service_user');
+	return ctx.isKioskSession === true;
 }
 
 export function isTeamInConference(ctx: Context) {

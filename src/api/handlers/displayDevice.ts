@@ -51,11 +51,22 @@ abilityBuilder.displayDevice.allow('update').when((ctx) => {
 	if (isGlobalAdmin(ctx)) {
 		return { where: {} };
 	}
-	// See note on `read` above — conference admins/team members can only
-	// mutate devices already assigned to one of their conferences, not
-	// unassigned ones. Same predicate as `read` so nobody can ever see an
-	// entry they aren't also allowed to edit.
-	return { where: { conferenceId: { isNotNull: true }, ...isTeamInConference(ctx) } };
+	return {
+		where: {
+			OR: [
+				// See note on `read` above — conference admins/team members can
+				// only mutate devices already assigned to one of their
+				// conferences, not unassigned ones. Same predicate as `read` so
+				// nobody can ever see an entry they aren't also allowed to edit.
+				{ conferenceId: { isNotNull: true }, ...isTeamInConference(ctx) },
+				// Lets whoever provisioned a still-unassigned device claim it —
+				// see assignDisplayDevice's resolver for the actual "which
+				// conference" check, which this filter can't express (it only
+				// sees the row's *current* state, not the proposed new value).
+				{ conferenceId: { isNull: true }, provisionedByUserId: ctx.mustBeLoggedIn().sub }
+			]
+		}
+	};
 });
 
 abilityBuilder.displayDevice.allow('delete').when((ctx) => {
@@ -85,9 +96,16 @@ query({
 schemaBuilder.mutationFields((t) => ({
 	/**
 	 * Called by a Pi on first contact. Idempotent upsert by the Pi-generated
-	 * id. Only the shared display account (service_user role) may register.
-	 * Creates the row unassigned; it stays inert (kiosk shows a pairing QR)
-	 * until an organizer assigns it.
+	 * id. Only a device-flow (kiosk) session may register — see
+	 * isDisplayKiosk() and kioskWriteGuard.ts, which this mutation is
+	 * allowlisted in. Creates the row unassigned; it stays inert (kiosk
+	 * shows a pairing QR) until an organizer assigns it.
+	 *
+	 * Also (re)stamps `provisionedByUserId` with whoever is currently signed
+	 * into this device, every call — not insert-only — so it always reflects
+	 * whoever most recently completed the device flow here, not just whoever
+	 * happened to be first. That's who assignDisplayDevice lets do the
+	 * initial conference claim below.
 	 */
 	registerDisplayDevice: t.drizzleField({
 		type: DisplayDeviceRef,
@@ -99,12 +117,13 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('Only display devices may register');
 			}
 
+			const provisionedByUserId = ctx.mustBeLoggedIn().sub;
 			await db
 				.insert(schema.displayDevice)
-				.values({ id: args.id, lastSeenAt: new Date() })
+				.values({ id: args.id, lastSeenAt: new Date(), provisionedByUserId })
 				.onConflictDoUpdate({
 					target: schema.displayDevice.id,
-					set: { lastSeenAt: new Date() }
+					set: { lastSeenAt: new Date(), provisionedByUserId }
 				});
 
 			pubsub.updated(args.id);
@@ -135,17 +154,49 @@ schemaBuilder.mutationFields((t) => ({
 			timezone: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx) => {
-			// Claiming/unassigning a device (including clearing it back to
-			// unassigned) stays a global-admin action — conference admins/team
-			// members may only edit settings on devices already assigned to
-			// their conference. This also prevents a real crash: the `update`
-			// ability only matches rows whose *current* conferenceId already
-			// satisfies `isTeamInConference`, so letting a conference admin
-			// change conferenceId would leave the row outside their own `read`
-			// filter right after the write, and the read-back below would
-			// throw instead of returning the updated row.
+			// Re-assigning or unassigning an *already-claimed* device stays a
+			// global-admin action. The one exception: whoever most recently
+			// provisioned a device (registerDisplayDevice) may perform its
+			// *initial* claim — set conferenceId on a still-unassigned row —
+			// for one of their own ADMIN/TEAM conferences. This is checked here
+			// against the row's current state and the proposed new value
+			// together, which the declarative `update` ability can't do (it
+			// only ever sees the row as it exists right now, never the args) —
+			// that ability just makes sure the write below can even touch this
+			// row, this is "and only into a conference you're allowed to add
+			// devices to".
 			if (args.conferenceId !== undefined && !isGlobalAdmin(ctx)) {
-				throw new GraphQLError('Only global admins can assign or unassign a display device');
+				const device = await db.query.displayDevice.findFirst({
+					where: { id: args.id }
+				});
+				if (!device) {
+					throw new GraphQLError('Display device not found');
+				}
+				if (device.conferenceId !== null) {
+					throw new GraphQLError('Only global admins can reassign or unassign a display device');
+				}
+				const userId = ctx.mustBeLoggedIn().sub;
+				if (device.provisionedByUserId !== userId) {
+					throw new GraphQLError('Only the team member who provisioned this device can claim it');
+				}
+				if (args.conferenceId !== null) {
+					const membership = await db.query.conferenceUser.findFirst({
+						where: {
+							conferenceId: args.conferenceId,
+							conferenceUserType: { in: ['ADMIN', 'TEAM'] },
+							user: { id: userId }
+						}
+					});
+					if (!membership) {
+						throw new GraphQLError('You are not an admin or team member of that conference');
+					}
+				} else {
+					// Clearing an already-unassigned device to `null` is a no-op
+					// a non-admin has no reason to send, and "unassign" is
+					// otherwise an admin-only action — reject it explicitly
+					// rather than silently no-op-ing.
+					throw new GraphQLError('Only global admins can unassign a display device');
+				}
 			}
 
 			const set: Partial<typeof schema.displayDevice.$inferInsert> = {};

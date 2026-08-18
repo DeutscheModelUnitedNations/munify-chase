@@ -1,4 +1,3 @@
-import { error } from '@sveltejs/kit';
 import { db } from '$api/db/db';
 import { isValidNanoid } from '$lib/helpers/nanoid';
 import type { RequestHandler } from './$types';
@@ -27,10 +26,12 @@ import type { RequestHandler } from './$types';
  * back to a fresh device-authorization grant — see main()'s status-check in
  * chase-kiosk-helper.py.
  */
+const NO_STORE = { 'Cache-Control': 'no-store' };
+
 export const GET: RequestHandler = async ({ url }) => {
 	const deviceId = url.searchParams.get('deviceId');
 	if (!deviceId || !isValidNanoid(deviceId)) {
-		throw error(400, 'Missing or invalid deviceId');
+		return new Response('Missing or invalid deviceId', { status: 400, headers: NO_STORE });
 	}
 
 	const device = await db.query.displayDevice.findFirst({
@@ -39,8 +40,8 @@ export const GET: RequestHandler = async ({ url }) => {
 	});
 
 	if (!device) {
-		throw error(404, 'Not found');
+		return new Response('Not found', { status: 404, headers: NO_STORE });
 	}
 
-	return new Response(null, { status: 204 });
+	return new Response(null, { status: 204, headers: NO_STORE });
 };

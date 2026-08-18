@@ -14,7 +14,8 @@
 	// browser/OS default rather than trust it blindly.
 	function isValidTimezone(tz: string): boolean {
 		try {
-			return Intl.supportedValuesOf('timeZone').includes(tz);
+			new Intl.DateTimeFormat('en-US', { timeZone: tz });
+			return true;
 		} catch {
 			return false;
 		}

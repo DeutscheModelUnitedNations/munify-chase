@@ -1,4 +1,11 @@
-import { GraphQLError, Kind, getOperationAST, type FieldNode } from 'graphql';
+import {
+	GraphQLError,
+	Kind,
+	getOperationAST,
+	type DocumentNode,
+	type FragmentDefinitionNode,
+	type SelectionSetNode
+} from 'graphql';
 import type { Plugin } from 'graphql-yoga';
 
 /**
@@ -25,6 +32,41 @@ const KIOSK_MUTATION_ALLOWLIST = new Set([
 	'registerDisplayDevice'
 ]);
 
+/**
+ * Root-level mutation field names reachable from `selectionSet`, resolving
+ * through inline fragments and named fragment spreads — a disallowed field
+ * hidden behind `... on Mutation { ... }` or `...SomeFragment` is exactly as
+ * live as one selected directly, so the allowlist has to see it too.
+ * Fragment names are de-duped as they're visited to stay safe against a
+ * fragment that (directly or transitively) spreads itself.
+ */
+function collectRootFieldNames(document: DocumentNode, selectionSet: SelectionSetNode): string[] {
+	const names: string[] = [];
+	const visitedFragments = new Set<string>();
+
+	const visit = (set: SelectionSetNode) => {
+		for (const selection of set.selections) {
+			if (selection.kind === Kind.FIELD) {
+				names.push(selection.name.value);
+			} else if (selection.kind === Kind.INLINE_FRAGMENT) {
+				visit(selection.selectionSet);
+			} else if (selection.kind === Kind.FRAGMENT_SPREAD) {
+				const fragmentName = selection.name.value;
+				if (visitedFragments.has(fragmentName)) continue;
+				visitedFragments.add(fragmentName);
+				const fragment = document.definitions.find(
+					(d): d is FragmentDefinitionNode =>
+						d.kind === Kind.FRAGMENT_DEFINITION && d.name.value === fragmentName
+				);
+				if (fragment) visit(fragment.selectionSet);
+			}
+		}
+	};
+
+	visit(selectionSet);
+	return names;
+}
+
 export const kioskWriteGuardPlugin: Plugin<{ isKioskSession?: boolean }> = {
 	onExecute({ args, setResultAndStopExecution }) {
 		if (!args.contextValue.isKioskSession) return;
@@ -32,10 +74,9 @@ export const kioskWriteGuardPlugin: Plugin<{ isKioskSession?: boolean }> = {
 		const operation = getOperationAST(args.document, args.operationName ?? undefined);
 		if (!operation || operation.operation !== 'mutation') return;
 
-		const disallowedFields = operation.selectionSet.selections
-			.filter((s): s is FieldNode => s.kind === Kind.FIELD)
-			.map((f) => f.name.value)
-			.filter((name) => !KIOSK_MUTATION_ALLOWLIST.has(name));
+		const disallowedFields = collectRootFieldNames(args.document, operation.selectionSet).filter(
+			(name) => !KIOSK_MUTATION_ALLOWLIST.has(name)
+		);
 
 		if (disallowedFields.length > 0) {
 			setResultAndStopExecution({

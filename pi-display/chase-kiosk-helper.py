@@ -328,23 +328,26 @@ def supports_concurrent_ap_sta() -> bool:
         # Each combination lists one or more independent caps, e.g.
         # "#{ managed } <= 1, #{ AP, mesh point } <= 1" (managed and AP each
         # get their own interface) vs. "#{ managed, AP } <= 1" (they share a
-        # single slot and can't coexist). Evaluate each cap group on its own
-        # rather than unioning all types in the combo together.
+        # single slot and can't coexist). Every cap in the combo applies to
+        # the same active interface set, so *all* of them — not just the
+        # first managed/AP match — have to allow one managed + one AP at
+        # once, and so does the combo's overall "total <= N" limit, if any.
         groups: list[tuple[set[str], int]] = []
         for m in re.finditer(r"#\{([^}]*)\}\s*<=\s*(\d+)", combo):
             types = {t.strip() for t in m.group(1).split(",")}
             groups.append((types, int(m.group(2))))
 
-        managed_group = next((g for g in groups if "managed" in g[0]), None)
-        ap_group = next((g for g in groups if "AP" in g[0]), None)
-        if not managed_group or not ap_group:
+        relevant = [g for g in groups if g[0] & {"managed", "AP"}]
+        if not relevant:
+            continue
+        if not all(cap >= len(types & {"managed", "AP"}) for types, cap in relevant):
             continue
 
-        if managed_group is ap_group:
-            if managed_group[1] >= 2:
-                return True
-        elif managed_group[1] >= 1 and ap_group[1] >= 1:
-            return True
+        total_match = re.search(r"total\s*<=\s*(\d+)", combo)
+        if total_match and int(total_match.group(1)) < 2:
+            continue
+
+        return True
     return False
 
 
@@ -1123,9 +1126,14 @@ def try_captive_portal_bridge(
         print("chase-kiosk-helper:", reason, flush=True)
         return False, reason
 
-    make_qr(CAPTIVE_PORTAL_TRIGGER_URL, QR_TRIGGER_PNG)
-    write_page(captive_portal_bridge_kiosk_page(upstream_ssid, bridge_ssid, bridge_psk))
-    reload_kiosk()
+    try:
+        make_qr(CAPTIVE_PORTAL_TRIGGER_URL, QR_TRIGGER_PNG)
+        write_page(captive_portal_bridge_kiosk_page(upstream_ssid, bridge_ssid, bridge_psk))
+        reload_kiosk()
+    except Exception as e:
+        print("chase-kiosk-helper: bridge screen failed:", repr(e), flush=True)
+        delete_ap_bridge_iface()
+        return False, f"could not show the sign-in instructions for {upstream_ssid} ({e})"
 
     try:
         hotspot_up(
@@ -1298,7 +1306,7 @@ def run_provisioning(state: dict, device_id: str) -> None:
                     # page here previously looked indistinguishable from a
                     # network test that was never attempted at all.
                     print("chase-kiosk-helper: provisioning round failed:", repr(e), flush=True)
-                    error_message = f"Something went wrong testing that network ({e or type(e).__name__}). Retrying — try again in a moment."
+                    error_message = f"Something went wrong testing that network ({str(e) or type(e).__name__}). Retrying — try again in a moment."
                     PortalHandler.last_error = error_message
                     set_provision_status("failed", error_message)
                     try:

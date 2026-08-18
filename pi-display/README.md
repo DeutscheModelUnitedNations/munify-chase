@@ -44,7 +44,7 @@ disk) is preserved across the switch.
 **Wired (Ethernet) works with no extra setup.** `module.nix` only enables
 NetworkManager (`networking.networkmanager.enable = true`) and never
 excludes `eth0` or any other interface from it, so a plugged-in cable gets
-NM's default unmanaged-wired-device behavior: an auto-created DHCP profile
+NM's default managed-wired-device behavior: an auto-created DHCP profile
 that activates on its own. The helper's `connectivity_ok()` probe is a
 plain HTTP HEAD to the OIDC authority — it doesn't care which interface
 carries the route. So on a Pi with a live Ethernet cable, `connectivity_ok()`

@@ -56,6 +56,14 @@ git push --follow-tags
 
 Pre-release tags (`alpha`, `beta`, `rc`) are published as GitHub pre-releases and excluded from the auto-updater.
 
+## Pi display appliance
+
+Headless Raspberry Pi screens can show a live, read-only committee grid for
+a conference. A Pi self-registers, shows a pairing QR until an organizer
+assigns it under `/app/displays`, then renders live data. See
+[`pi-display/README.md`](./pi-display/README.md) for building, pairing, and
+operating the appliance.
+
 ## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to get started.

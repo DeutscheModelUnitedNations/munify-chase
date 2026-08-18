@@ -8,6 +8,13 @@ const schema = z.object({
 		.string()
 		.default('openid profile offline_access email phone identity role custom_data'),
 	OIDC_ROLE_CLAIM: z.optional(z.string()),
+	// Comma-separated list of additional token audiences CHASE should trust
+	// besides PUBLIC_OIDC_CLIENT_ID — e.g. a separate Logto Application used
+	// by the Pi display kiosk's Device Authorization Grant, and/or the API
+	// resource identifier if a default API resource is configured in Logto
+	// (that's the `aud` Logto stamps on JWT access tokens issued without an
+	// explicit `resource` param). See src/api/services/kioskOIDC.ts.
+	OIDC_KIOSK_TRUSTED_AUDIENCES: z.string().optional().default(''),
 	NODE_ENV: z.union([z.literal('development'), z.literal('production'), z.literal('test')]),
 	// TODO
 	OTEL_SERVICE_NAME: z.string().default('MUNIFY-CHASE'),

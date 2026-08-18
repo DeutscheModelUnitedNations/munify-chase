@@ -1,13 +1,20 @@
 import { db, schema } from '$api/db/db';
 import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
-import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
+import {
+	isDisplayKiosk,
+	isTeamInConference,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { nanoidValidation } from '$lib/helpers/nanoid';
 
-abilityBuilder.rollCallSession.allow('read').when((ctx) => ({
-	where: { committee: isParticipantInConference(ctx) }
-}));
+abilityBuilder.rollCallSession.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return { where: { committee: { conference: { displayDevices: { revoked: false } } } } };
+	}
+	return { where: { committee: isParticipantInConference(ctx) } };
+});
 
 abilityBuilder.rollCallSession.allow('update').when((ctx) => ({
 	where: { committee: isTeamInConference(ctx) }

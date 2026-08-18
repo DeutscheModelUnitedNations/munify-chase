@@ -1,10 +1,12 @@
 import { createYoga } from '$api/rumble';
 import { dev } from '$app/environment';
+import { kioskWriteGuardPlugin } from '$api/services/kioskWriteGuard';
 
 import '$api/handlers/register';
 
 const yogaInstance = createYoga({
 	graphqlEndpoint: '/api/graphql',
+	plugins: [kioskWriteGuardPlugin],
 	maskedErrors: !dev,
 	// The deepest query in this app reaches depth 7
 	// (committee → activeAgendaItem → speakersList → speakers → committeeMember → representation → name).

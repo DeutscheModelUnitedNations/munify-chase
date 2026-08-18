@@ -8,6 +8,7 @@ import {
 	schemaBuilder
 } from '$api/rumble';
 import {
+	isDisplayKiosk,
 	isParticipantInConference,
 	isTeamInConference,
 	isPaperAuthor
@@ -49,6 +50,11 @@ abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
 });
 
 abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return {
+			where: { committee: { conference: { displayDevices: { revoked: false } } } }
+		};
+	}
 	return {
 		where: {
 			OR: [

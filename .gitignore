@@ -26,4 +26,11 @@ vite.config.ts.timestamp-*
 .claude
 
 .lazyi18n
+
+# Pi display appliance — builder-generated, never commit secrets
+pi-display/local.nix
+pi-display/result
+pi-display/flake.lock
+pi-display/__pycache__
+
 src-tauri

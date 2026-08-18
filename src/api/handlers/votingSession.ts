@@ -7,23 +7,37 @@ import {
 	pubsub as rumblePubsub,
 	query
 } from '$api/rumble';
-import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
+import {
+	isDisplayKiosk,
+	isTeamInConference,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '$lib/helpers/nanoid';
 
-abilityBuilder.votingSession.allow('read').when((ctx) => ({
-	where: { committee: isParticipantInConference(ctx) }
-}));
+abilityBuilder.votingSession.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return { where: { committee: { conference: { displayDevices: { revoked: false } } } } };
+	}
+	return { where: { committee: isParticipantInConference(ctx) } };
+});
 
 abilityBuilder.votingSession.allow('update').when((ctx) => ({
 	where: { committee: isTeamInConference(ctx) }
 }));
 
-abilityBuilder.votingVote.allow('read').when((ctx) => ({
-	where: { votingSession: { committee: isParticipantInConference(ctx) } }
-}));
+abilityBuilder.votingVote.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return {
+			where: {
+				votingSession: { committee: { conference: { displayDevices: { revoked: false } } } }
+			}
+		};
+	}
+	return { where: { votingSession: { committee: isParticipantInConference(ctx) } } };
+});
 
 abilityBuilder.votingVote.allow('update').when((ctx) => ({
 	where: { votingSession: { committee: isTeamInConference(ctx) } }
@@ -185,13 +199,21 @@ schemaBuilder.mutationFields((t) => ({
 					where: { id: args.sessionId, completedAt: { isNull: true } }
 				});
 				if (!session) throw new GraphQLError('Voting session not found or already completed');
+
+				// This writes votingVote rows directly via `tx`, bypassing the
+				// votingVote `update` ability (chairs only, via isTeamInConference) —
+				// so that check has to happen explicitly here instead. Without it,
+				// any authenticated participant could record/overwrite any member's
+				// vote in a live session.
+				const committee = await tx.query.committee.findFirst(
+					ctx.abilities.committee.filter('update').merge({ where: { id: session.committeeId } })
+						.query.single
+				);
+				if (!committee) throw new GraphQLError('Not allowed to record votes for this committee');
 				// Defense in depth: only accept votes for the session the committee is
 				// currently actively running. Prevents stale clients from writing votes
 				// against a session that's been superseded.
-				const committee = await tx.query.committee.findFirst({
-					where: { id: session.committeeId }
-				});
-				if (committee?.activeVotingSessionId !== args.sessionId) {
+				if (committee.activeVotingSessionId !== args.sessionId) {
 					throw new GraphQLError('Voting session is not the active session for this committee');
 				}
 

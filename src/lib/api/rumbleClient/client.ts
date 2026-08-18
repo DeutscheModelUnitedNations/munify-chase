@@ -354,6 +354,12 @@ export type Committee = {
   currentOperativeIndex: Int,
   customSimpleMajority: Int | null,
   customTwoThirdsMajority: Int | null,
+  displayDevices: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaydeviceOrderInputArgument | null | undefined,
+    where?: DisplaydeviceWhereInputArgument | null | undefined
+  }) => Displaydevice[],
   displayRegionalGroups: Boolean,
   id: ID,
   lastResolutionAdoptionDate: DateTime | null,
@@ -472,6 +478,7 @@ export type CommitteeWhereInputArgument = {
   currentOperativeIndex?: IntWhereInputArgument | null | undefined,
   customSimpleMajority?: IntWhereInputArgument | null | undefined,
   customTwoThirdsMajority?: IntWhereInputArgument | null | undefined,
+  displayDevices?: DisplaydeviceWhereInputArgument | null | undefined,
   displayRegionalGroups?: BooleanWhereInputArgument | null | undefined,
   id?: IDWhereInputArgument | null | undefined,
   lastResolutionAdoptionDate?: DateTimeWhereInputArgument | null | undefined,
@@ -587,6 +594,12 @@ export type Conference = {
     where?: CommitteeWhereInputArgument | null | undefined
   }) => Committee[],
   createdAt: DateTime,
+  displayDevices: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaydeviceOrderInputArgument | null | undefined,
+    where?: DisplaydeviceWhereInputArgument | null | undefined
+  }) => Displaydevice[],
   endDate: Date | null,
   hasModeratedCaucus: Boolean,
   id: ID,
@@ -653,6 +666,7 @@ export type ConferenceWhereInputArgument = {
   OR?: ConferenceWhereInputArgument[] | undefined,
   committees?: CommitteeWhereInputArgument | null | undefined,
   createdAt?: DateTimeWhereInputArgument | null | undefined,
+  displayDevices?: DisplaydeviceWhereInputArgument | null | undefined,
   endDate?: DateWhereInputArgument | null | undefined,
   hasModeratedCaucus?: BooleanWhereInputArgument | null | undefined,
   id?: IDWhereInputArgument | null | undefined,
@@ -873,6 +887,68 @@ export type DelegationSpeakingStats = {
   totalSeconds: Int    
 };
 		
+export type Displaydevice = {
+  committee: (p?: {
+    orderBy?: CommitteeOrderInputArgument | null | undefined,
+    where?: CommitteeWhereInputArgument | null | undefined
+  }) => Committee | null,
+  committeeId: ID | null,
+  conference: (p?: {
+    orderBy?: ConferenceOrderInputArgument | null | undefined,
+    where?: ConferenceWhereInputArgument | null | undefined
+  }) => Conference | null,
+  conferenceId: ID | null,
+  createdAt: DateTime,
+  id: ID,
+  lastSeenAt: DateTime | null,
+  locale: DisplaydevicelocaleEnum | null,
+  name: String | null,
+  provisionedBy: (p?: {
+    orderBy?: UserOrderInputArgument | null | undefined,
+    where?: UserWhereInputArgument | null | undefined
+  }) => User | null,
+  provisionedByUserId: ID | null,
+  revoked: Boolean,
+  timezone: String | null,
+  updatedAt: DateTime | null    
+};
+		
+export type DisplaydeviceOrderInputArgument = {
+  committeeId?: SortingParameter | null | undefined,
+  conferenceId?: SortingParameter | null | undefined,
+  createdAt?: SortingParameter | null | undefined,
+  id?: SortingParameter | null | undefined,
+  lastSeenAt?: SortingParameter | null | undefined,
+  locale?: SortingParameter | null | undefined,
+  name?: SortingParameter | null | undefined,
+  provisionedByUserId?: SortingParameter | null | undefined,
+  revoked?: SortingParameter | null | undefined,
+  timezone?: SortingParameter | null | undefined,
+  updatedAt?: SortingParameter | null | undefined    
+};
+		
+export type DisplaydeviceWhereInputArgument = {
+  AND?: DisplaydeviceWhereInputArgument[] | undefined,
+  NOT?: DisplaydeviceWhereInputArgument | null | undefined,
+  OR?: DisplaydeviceWhereInputArgument[] | undefined,
+  committee?: CommitteeWhereInputArgument | null | undefined,
+  committeeId?: IDWhereInputArgument | null | undefined,
+  conference?: ConferenceWhereInputArgument | null | undefined,
+  conferenceId?: IDWhereInputArgument | null | undefined,
+  createdAt?: DateTimeWhereInputArgument | null | undefined,
+  id?: IDWhereInputArgument | null | undefined,
+  lastSeenAt?: DateTimeWhereInputArgument | null | undefined,
+  locale?: DisplaydevicelocaleEnum | null | undefined,
+  name?: StringWhereInputArgument | null | undefined,
+  provisionedBy?: UserWhereInputArgument | null | undefined,
+  provisionedByUserId?: IDWhereInputArgument | null | undefined,
+  revoked?: BooleanWhereInputArgument | null | undefined,
+  timezone?: StringWhereInputArgument | null | undefined,
+  updatedAt?: DateTimeWhereInputArgument | null | undefined    
+};
+		
+export type DisplaydevicelocaleEnum = "de" | "en" | "pt";
+		
 export type Float = number;
 		
 export type FloatWhereInputArgument = {
@@ -1048,6 +1124,14 @@ export type Mutation = {
     position?: Int | null | undefined,
     speakersListId: ID
   }) => Speakeronlist,
+  assignDisplayDevice: (p: {
+    committeeId?: ID | null | undefined,
+    conferenceId?: ID | null | undefined,
+    id: ID,
+    locale?: DisplaydevicelocaleEnum | null | undefined,
+    name?: String | null | undefined,
+    timezone?: String | null | undefined
+  }) => Displaydevice,
   castDeviceVote: (p: {
     committeeMemberId?: ID | null | undefined,
     id?: ID | null | undefined,
@@ -1161,6 +1245,9 @@ export type Mutation = {
   deleteConferenceUser: (p: {
     id: ID
   }) => Boolean,
+  deleteDisplayDevice: (p: {
+    id: ID
+  }) => Boolean,
   deletePaperShareCode: (p: {
     id: ID
   }) => Boolean,
@@ -1214,6 +1301,9 @@ export type Mutation = {
   regenerateNsaAttendanceCode: (p: {
     conferenceUserId: ID
   }) => Conferenceuser,
+  registerDisplayDevice: (p: {
+    id: ID
+  }) => Displaydevice,
   rejectAmendment: (p: {
     id: ID
   }) => Amendment,
@@ -1254,6 +1344,10 @@ export type Mutation = {
     currentOperativeIndex?: Int | null | undefined,
     supportReevaluationOpen?: Boolean | null | undefined
   }) => Committee,
+  setDisplayDeviceRevoked: (p: {
+    id: ID,
+    revoked: Boolean
+  }) => Displaydevice,
   setPresenceForCommitteeMembers: (p: {
     ids: ID[],
     present: Boolean,
@@ -1759,7 +1853,17 @@ export type Query = {
     where?: ConferenceWhereInputArgument | null | undefined
   }) => Conference[],
   currentUserClaims: () => UserClaims,
+  displayDevice: (p: {
+    id: ID
+  }) => Displaydevice,
+  displayDevices: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaydeviceOrderInputArgument | null | undefined,
+    where?: DisplaydeviceWhereInputArgument | null | undefined
+  }) => Displaydevice[],
   hasAiProviders: Boolean,
+  isDisplayKiosk: Boolean,
   isGlobalAdmin: Boolean,
   myStats: (p: {
     conferenceId: ID
@@ -2428,6 +2532,15 @@ export type Subscription = {
     orderBy?: ConferenceOrderInputArgument | null | undefined,
     where?: ConferenceWhereInputArgument | null | undefined
   }) => Conference[],
+  displayDevice: (p: {
+    id: ID
+  }) => Displaydevice,
+  displayDevices: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaydeviceOrderInputArgument | null | undefined,
+    where?: DisplaydeviceWhereInputArgument | null | undefined
+  }) => Displaydevice[],
   operativeClauseVote: (p: {
     id: ID
   }) => Operativeclausevote,
@@ -2579,6 +2692,12 @@ export type User = {
   id: ID,
   locale: String | null,
   preferredUsername: String,
+  provisionedDisplayDevices: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: DisplaydeviceOrderInputArgument | null | undefined,
+    where?: DisplaydeviceWhereInputArgument | null | undefined
+  }) => Displaydevice[],
   updatedAt: DateTime | null    
 };
 		
@@ -2614,6 +2733,7 @@ export type UserWhereInputArgument = {
   id?: IDWhereInputArgument | null | undefined,
   locale?: StringWhereInputArgument | null | undefined,
   preferredUsername?: StringWhereInputArgument | null | undefined,
+  provisionedDisplayDevices?: DisplaydeviceWhereInputArgument | null | undefined,
   updatedAt?: DateTimeWhereInputArgument | null | undefined    
 };
 		
@@ -2785,7 +2905,7 @@ export const client = {
    */
   liveQuery: makeLiveQuery<Query>({
 	  urqlClient,
-	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentReviewItem", "amendmentReviewItems", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceEvent", "presenceEvents", "representation", "representations", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "rollCallSession", "rollCallSessions", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users", "votingSession", "votingSessions", "votingVote", "votingVotes"]),
+	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentReviewItem", "amendmentReviewItems", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "displayDevice", "displayDevices", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceEvent", "presenceEvents", "representation", "representations", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "rollCallSession", "rollCallSessions", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users", "votingSession", "votingSessions", "votingVote", "votingVotes"]),
 		schema,
   }),
   /**

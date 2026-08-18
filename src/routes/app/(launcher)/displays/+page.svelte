@@ -166,9 +166,18 @@
 	function conferenceOptionsFor(d: {
 		conferenceId: string | null;
 		provisionedByUserId: string | null;
+		conference?: { id: string; title: string } | null;
 	}) {
 		if (isGlobalAdminUser) return conferences ?? [];
-		if (!canClaim(d)) return [];
+		if (!canClaim(d)) {
+			// Locked (view-only) select for this viewer — still show the
+			// device's own already-assigned conference as its one option
+			// (from the device row itself, not the separate `conferences`
+			// list, which is scoped to conferences *this* viewer has a role
+			// in and may not include it) so the dropdown reflects reality
+			// instead of rendering blank.
+			return d.conference ? [d.conference] : [];
+		}
 		return (conferences ?? []).filter((c) => myAdminOrTeamConferenceIds.has(c.id));
 	}
 

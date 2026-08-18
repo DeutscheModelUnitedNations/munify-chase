@@ -98,10 +98,13 @@
 	});
 
 	// Where an organizer assigns this device. Route groups like (launcher) do
-	// not appear in the URL, so the path is /app/displays.
-	const pairUrl = deviceId
-		? `${page.url.origin}/app/displays?focus=${encodeURIComponent(deviceId)}`
-		: '';
+	// not appear in the URL, so the path is /app/displays. The QR encodes
+	// ?focus=<deviceId> so a scan lands highlighted on the right row; the
+	// plain-text fallback below drops that query param — nobody is going to
+	// type it by hand, and the Device ID box further down already covers
+	// finding the row manually once they're on the page.
+	const pairUrlBase = deviceId ? `${page.url.origin}/app/displays` : '';
+	const pairUrl = deviceId ? `${pairUrlBase}?focus=${encodeURIComponent(deviceId)}` : '';
 	const qrDataUrl = deviceId
 		? await QRCode.toDataURL(pairUrl, { width: 480, margin: 1, errorCorrectionLevel: 'M' })
 		: null;
@@ -168,12 +171,12 @@
 			{#if qrDataUrl}
 				<img src={qrDataUrl} alt="QR" class="bg-base-100 size-[480px] rounded-2xl p-4 shadow-sm" />
 			{/if}
-			{#if pairUrl}
+			{#if pairUrlBase}
 				<div class="flex flex-col items-center gap-1">
 					<span class="text-base-content/50 text-xs font-bold uppercase tracking-widest">
 						{m.displayPairUrl()}
 					</span>
-					<code class="text-base-content/80 text-sm break-all">{pairUrl}</code>
+					<code class="text-base-content/80 text-sm break-all">{pairUrlBase}</code>
 				</div>
 			{/if}
 		{/if}

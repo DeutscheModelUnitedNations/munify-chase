@@ -19,7 +19,7 @@
 	let { paperId, selectedClauseId, viewer }: Props = $props();
 
 	const comments = await client.liveQuery.resolutionComments({
-		__args: { where: { paper: { id: paperId } }, orderBy: { createdAt: 'asc' } },
+		__args: { where: { paper: { id: { eq: paperId } } }, orderBy: { createdAt: 'asc' } },
 		id: true,
 		content: true,
 		clauseId: true,
@@ -262,8 +262,7 @@
 					e.preventDefault();
 					send();
 				}
-			}}
-		></textarea>
+			}}></textarea>
 		<div class="flex items-center justify-between gap-2">
 			{#if canTeamOnly}
 				<label

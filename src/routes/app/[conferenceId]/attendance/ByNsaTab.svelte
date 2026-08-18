@@ -14,7 +14,7 @@
 	const nsaUsers = await client.liveQuery.conferenceUsers({
 		__args: {
 			where: {
-				conference: { id: conferenceId },
+				conference: { id: { eq: conferenceId } },
 				conferenceUserType: 'NON_STATE_ACTOR'
 			}
 		},
@@ -30,7 +30,7 @@
 
 	const allEvents = await client.liveQuery.presenceEvents({
 		__args: {
-			where: { committee: { conference: { id: conferenceId } } },
+			where: { committee: { conference: { id: { eq: conferenceId } } } },
 			orderBy: { timestamp: 'desc' }
 		},
 		id: true,

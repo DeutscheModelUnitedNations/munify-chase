@@ -107,6 +107,19 @@ CVE-2026-24842
 CVE-2026-26960
 CVE-2026-29786
 
+# node-tar: DoS via gzip bomb / malformed archive header — same rationale as above.
+# Confirmed this `tar` isn't from our own bun.lock at all (absent from it entirely) —
+# it's bundled inside node:lts-slim's own npm install (/usr/local/lib/node_modules/npm/
+# node_modules/tar), which the release image never invokes (CMD only runs drizzle-kit
+# migrate + node server.js, no npm).
+CVE-2026-59873
+CVE-2026-59874
+
+# ip-address: inconsistent parsing leading to SSRF - same rationale as the node-tar
+# entries above: bundled inside node:lts-slim's own npm install
+# (npm/node_modules/ip-address), never invoked by the release image at runtime.
+CVE-2026-69192
+
 # TODO: Remove these ignores once fixed
 
 # TODO: glob command injection - Already fixed in bun.lock (10.5.0+)
@@ -173,3 +186,28 @@ CVE-2026-12151
 CVE-2026-27145
 
 CVE-2026-39822
+CVE-2026-13149
+CVE-2026-14257
+CVE-2026-69152
+
+# encoding/asn1: excessive recursion in Unmarshal - esbuild doesn't parse ASN.1
+CVE-2026-33818
+
+# golang.org/x/net/idna: privilege escalation via incorrect Punycode label processing -
+# esbuild doesn't do IDN/hostname normalization
+CVE-2026-39821
+
+# net/http: unencrypted HTTP/2 connections DoS - esbuild doesn't serve HTTP
+CVE-2026-56853
+
+# html/template: XSS via pathological input - esbuild doesn't render html/template
+CVE-2026-56858
+
+# encoding/xml: DoS via XML decoding recursion depth - esbuild doesn't parse XML
+CVE-2026-56859
+
+# net/url: DoS via quadratic complexity in path parsing - esbuild doesn't parse URLs
+CVE-2026-56860
+
+# crypto/tls: DoS via indefinite KeyUpdate messages - esbuild doesn't do TLS
+CVE-2026-56862

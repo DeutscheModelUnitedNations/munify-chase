@@ -47,7 +47,7 @@
 	}: Props = $props();
 
 	const allReviewItems = await client.liveQuery.amendmentReviewItems({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		phase: true,
 		aiObsolete: true,
@@ -146,7 +146,7 @@
 	});
 
 	const amendments = await client.liveQuery.amendments({
-		__args: { where: { paper: { id: paperId } }, orderBy: { createdAt: 'asc' } },
+		__args: { where: { paper: { id: { eq: paperId } } }, orderBy: { createdAt: 'asc' } },
 		id: true,
 		type: true,
 		status: true,

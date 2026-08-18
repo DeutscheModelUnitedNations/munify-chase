@@ -6,6 +6,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { OIDC } from '$api/services/OIDC';
 import { kioskOIDCHandle } from '$api/services/kioskOIDC';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
+import { isLocalConferencePath } from '$lib/state/localDemo.svelte';
 
 const TAURI_ORIGIN = 'tauri://localhost';
 const KIOSK_BOOTSTRAP_ORIGIN = 'http://127.0.0.1:8081';
@@ -60,6 +61,15 @@ const tauriCors: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
+// The offline demo conference never has a real OIDC session (it's reachable without
+// logging in at all)
+const oidcOrLocalDemoBypass: Handle = ({ event, resolve }) => {
+	if (isLocalConferencePath(event.url.pathname)) {
+		return resolve(event);
+	}
+	return OIDC.handle({ event, resolve });
+};
+
 const nonBaseLocales = locales.filter((l) => l !== baseLocale);
 
 /** Redirect locale-prefixed URLs to bare paths, setting the cookie instead. */
@@ -85,8 +95,8 @@ const localeRedirect: Handle = ({ event, resolve }) => {
 export const handle: Handle = sequence(
 	kioskOriginScope,
 	tauriCors,
-	OIDC.handle,
-	// Runs unconditionally after OIDC.handle, not only as a fallback — see
+	oidcOrLocalDemoBypass,
+	// Runs unconditionally after oidcOrLocalDemoBypass, not only as a fallback — see
 	// the doc comment on kioskOIDCHandle in kioskOIDC.ts for why it can't be
 	// gated on whether OIDC.handle already set a session.
 	kioskOIDCHandle,

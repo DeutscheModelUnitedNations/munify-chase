@@ -5,6 +5,8 @@
 	import TextSection from './TextSection.svelte';
 	import ContactSection from './ContactSection.svelte';
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
+	import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
 
 	let loading = $state(true);
 
@@ -78,6 +80,44 @@
 			<CardSection />
 
 			<div
+				class="mx-4 flex flex-col items-center gap-4 rounded-box border-2 border-primary bg-base-100 p-8 text-center shadow-lg lg:mx-20 lg:p-12"
+			>
+				<h2 class="font-serif text-3xl font-bold text-base-content lg:text-4xl">
+					{m.homeDocsTitle()}
+				</h2>
+				<p class="text-md max-w-2xl leading-normal text-base-content lg:text-lg">
+					{m.homeDocsText()}
+				</p>
+				<a class="btn btn-primary mt-2" href="https://munify.cloud/chase" target="_blank">
+					<i class="fas fa-book mr-2"></i>
+					{m.homeDocsButtonLabel()}
+				</a>
+				<div class="flex flex-wrap justify-center gap-2">
+					<a
+						class="btn btn-outline btn-sm"
+						href="https://munify.cloud/chase/user-manual/chair/getting-started"
+						target="_blank"
+					>
+						{m.homeDocsChairLabel()}
+					</a>
+					<a
+						class="btn btn-outline btn-sm"
+						href="https://munify.cloud/chase/user-manual/participant/getting-started"
+						target="_blank"
+					>
+						{m.homeDocsParticipantLabel()}
+					</a>
+					<a
+						class="btn btn-outline btn-sm"
+						href="https://munify.cloud/chase/user-manual/admin/getting-started"
+						target="_blank"
+					>
+						{m.homeDocsAdminLabel()}
+					</a>
+				</div>
+			</div>
+
+			<div
 				class="align-items-start flex flex-col gap-2 p-4 lg:grid lg:flex-none lg:gap-10 lg:p-20"
 				style="grid-template-columns: auto 1fr;"
 			>
@@ -98,34 +138,16 @@
 						{m.homeContributeButtonLabel()}
 					</a>
 				</TextSection>
-				<TextSection title={m.homeDocsTitle()} text={m.homeDocsText()}>
-					<a class="btn btn-primary mt-3" href="https://munify.cloud/chase" target="_blank">
-						<i class="fas fa-book mr-2"></i>
-						{m.homeDocsButtonLabel()}
+				<TextSection title={m.homeOfflineTitle()} text={m.homeOfflineText()}>
+					<a
+						class="btn btn-primary mt-3"
+						href={resolve('/app/[conferenceId]/mission-control', {
+							conferenceId: LOCAL_CONFERENCE_ID
+						})}
+					>
+						<i class="fa-duotone fa-cloud-slash mr-2"></i>
+						{m.homeOfflineButtonLabel()}
 					</a>
-					<div class="mt-2 flex flex-wrap justify-center gap-2 lg:justify-start">
-						<a
-							class="btn btn-outline btn-sm"
-							href="https://munify.cloud/chase/user-manual/chair/getting-started"
-							target="_blank"
-						>
-							{m.homeDocsChairLabel()}
-						</a>
-						<a
-							class="btn btn-outline btn-sm"
-							href="https://munify.cloud/chase/user-manual/delegate/getting-started"
-							target="_blank"
-						>
-							{m.homeDocsDelegateLabel()}
-						</a>
-						<a
-							class="btn btn-outline btn-sm"
-							href="https://munify.cloud/chase/user-manual/admin/getting-started"
-							target="_blank"
-						>
-							{m.homeDocsAdminLabel()}
-						</a>
-					</div>
 				</TextSection>
 				<TextSection title={m.homeHostingTitle()} text={m.homeHostingText()}>
 					<a class="btn btn-primary mt-3" href="mailto:vorstand@dmun.de">

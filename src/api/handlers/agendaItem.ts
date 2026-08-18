@@ -46,6 +46,8 @@ schemaBuilder.mutationFields((t) => {
 			type: ref,
 			args: {
 				id: t.arg.id().validate(nanoidValidation),
+				speakersListId: t.arg.id().validate(nanoidValidation),
+				commentListId: t.arg.id().validate(nanoidValidation),
 				title: t.arg({ type: 'String', required: true }),
 				committeeId: t.arg({ type: 'ID', required: true })
 			},
@@ -73,14 +75,14 @@ schemaBuilder.mutationFields((t) => {
 
 					await tx.insert(schema.speakersList).values({
 						agendaItemId: res.id,
-						id: nanoid(),
+						id: args.speakersListId ?? nanoid(),
 						type: 'SPEAKERS_LIST',
 						speakingTime: 180
 					});
 
 					await tx.insert(schema.speakersList).values({
 						agendaItemId: res.id,
-						id: nanoid(),
+						id: args.commentListId ?? nanoid(),
 						type: 'COMMENT_LIST',
 						speakingTime: 30
 					});

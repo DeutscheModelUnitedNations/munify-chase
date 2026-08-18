@@ -22,6 +22,7 @@ import {
 } from '$api/services/authHelper';
 import { nativeToRequestEvent } from '$api/services/auth';
 import { OIDC } from '$api/services/OIDC';
+import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from '$lib/api/yjs/statelessMessages';
 
 const PERSIST_DEBOUNCE_MS = 1500;
 
@@ -165,7 +166,11 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 						// nominally incompatible with the project's; the runtime API
 						// the extension uses is identical across both versions.
 						createClient: () =>
-							new Redis(configPrivate.REDIS_URL as string) as unknown as ReturnType<
+							// protocol: 2 — see the matching comment in rumble.ts; keeps ioredis v6 on
+							// the RESP2 wire format the extension's bundled (older) ioredis expects.
+							new Redis(configPrivate.REDIS_URL as string, {
+								protocol: 2
+							}) as unknown as ReturnType<
 								NonNullable<ConstructorParameters<typeof RedisExtension>[0]['createClient']>
 							>
 					})
@@ -272,6 +277,19 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 					/* noop */
 				}
 				return;
+			}
+			// Write access lost but read access remains: unlike a full revocation,
+			// don't drop the connection (the user should keep seeing live
+			// updates). The client can't observe `connection.readOnly` flipping
+			// on an open socket by itself, so tell it explicitly — it reloads to
+			// pick up the new state consistently across the whole page, not just
+			// the doc.
+			if (!connection.readOnly && !next.canWrite) {
+				try {
+					connection.sendStateless(READ_ONLY_DOWNGRADE_STATELESS_MESSAGE);
+				} catch (err) {
+					console.error('[yjs] failed to notify client of read-only downgrade', { paperId, err });
+				}
 			}
 			connection.readOnly = !next.canWrite;
 		}, REAUTH_INTERVAL_MS);

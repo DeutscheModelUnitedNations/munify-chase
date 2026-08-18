@@ -17,6 +17,7 @@
 	import VotingModal from '$lib/components/voting/VotingModal.svelte';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import { openPresentationWindow } from '$lib/state/presentationWindow.svelte';
+	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 
 	interface Props {
 		children: Snippet;
@@ -158,15 +159,21 @@
 			}),
 			key: 'voting'
 		},
-		{
-			icon: 'fa-file-lines',
-			label: () => m.resolutions(),
-			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
-				conferenceId,
-				committeeId
-			}),
-			key: 'resolutions'
-		}
+		// The resolutions feature (drafting, clause votes, amendments) has no offline
+		// equivalent — hide it entirely for the offline demo conference.
+		...(isLocalConferenceActive()
+			? []
+			: [
+					{
+						icon: 'fa-file-lines',
+						label: () => m.resolutions(),
+						href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+							conferenceId,
+							committeeId
+						}),
+						key: 'resolutions'
+					}
+				])
 	]);
 
 	function isActive(key: string) {
@@ -210,12 +217,14 @@
 					);
 					break;
 				case 'alt+5':
-					goto(
-						resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
-							conferenceId,
-							committeeId
-						})
-					);
+					if (!isLocalConferenceActive()) {
+						goto(
+							resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
+								conferenceId,
+								committeeId
+							})
+						);
+					}
 					break;
 			}
 		});
@@ -353,7 +362,7 @@
 			>
 		</a>
 	{/each}
-	{#if committee?.activeDraftResolutionId}
+	{#if committee?.activeDraftResolutionId && !isLocalConferenceActive()}
 		<a
 			href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
 				conferenceId,

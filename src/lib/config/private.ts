@@ -36,7 +36,8 @@ const schema = z.object({
 			z.array(
 				z.object({
 					model: z.string(),
-					apiKey: z.string().optional()
+					apiKey: z.string().optional(),
+					baseURL: z.string().optional()
 				})
 			)
 		)

@@ -9,8 +9,10 @@ import ValidationPlugin from '@pothos/plugin-validation';
 
 let eventTarget: ReturnType<typeof createRedisEventTarget> | undefined;
 if (configPrivate.REDIS_URL) {
-	const publishClient = new Redis(configPrivate.REDIS_URL);
-	const subscribeClient = new Redis(configPrivate.REDIS_URL);
+	// ioredis v6 defaults to the RESP3 wire protocol, which changes reply shapes for some
+	// commands — pin the previously-default RESP2 protocol to keep behavior unchanged.
+	const publishClient = new Redis(configPrivate.REDIS_URL, { protocol: 2 });
+	const subscribeClient = new Redis(configPrivate.REDIS_URL, { protocol: 2 });
 
 	eventTarget = createRedisEventTarget({
 		publishClient,

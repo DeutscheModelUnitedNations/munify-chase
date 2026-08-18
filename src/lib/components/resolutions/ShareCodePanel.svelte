@@ -11,7 +11,7 @@
 	let { paperId }: Props = $props();
 
 	const codes = await client.liveQuery.paperShareCodes({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		code: true,
 		permission: true

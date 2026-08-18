@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
+	import { nanoid } from '$lib/helpers/nanoid';
 	import { m } from '$lib/paraglide/messages';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import toast from 'svelte-french-toast';
@@ -41,7 +42,27 @@
 		if (!title) return;
 
 		await toast.promise(
-			client.mutate.createAgendaItem({ __args: { committeeId, title }, id: true, title: true }),
+			client.mutate.createAgendaItem({
+				__args: {
+					id: nanoid(),
+					speakersListId: nanoid(),
+					commentListId: nanoid(),
+					committeeId,
+					title
+				},
+				id: true,
+				title: true,
+				speakersList: {
+					id: true,
+					agendaItemId: true,
+					type: true,
+					speakingTime: true,
+					timeLeft: true,
+					isClosed: true,
+					phase: true,
+					startTimestamp: true
+				}
+			}),
 			promiseToastStrings(m.agendaItem(), 'create')
 		);
 	};

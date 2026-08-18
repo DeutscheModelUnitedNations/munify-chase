@@ -21,6 +21,7 @@
 	import { isDelegationMember, isUNMember } from '$lib/helpers/distinguishConferenceMembers';
 	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
 	import NsaAttendanceCard from './NsaAttendanceCard.svelte';
+	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -91,7 +92,7 @@
 
 	const pastSessions = await client.liveQuery.rollCallSessions({
 		__args: {
-			where: { committeeId: page.params.committeeId!, completedAt: { isNull: false } },
+			where: { committeeId: { eq: page.params.committeeId! }, completedAt: { isNull: false } },
 			orderBy: { createdAt: 'desc' }
 		},
 		id: true,
@@ -222,7 +223,9 @@
 				</BasicCard>
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
-				<NsaAttendanceCard conferenceId={committee.conference!.id} committeeId={committee.id} />
+				{#if !isLocalConferenceActive()}
+					<NsaAttendanceCard conferenceId={committee.conference!.id} committeeId={committee.id} />
+				{/if}
 				<BasicCard title={m.delegations()}>
 					{#each countries as member (member.id)}
 						{@const rep = member.representation}

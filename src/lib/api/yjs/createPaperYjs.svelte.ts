@@ -28,6 +28,9 @@ import type {
 	PresenceAdapter,
 	PresenceUser
 } from '@deutschemodelunitednations/munify-resolution-editor';
+import toast from 'svelte-french-toast';
+import { m } from '$lib/paraglide/messages';
+import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from './statelessMessages';
 
 export type YjsConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error';
 
@@ -143,6 +146,18 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 				terminalError = true;
 				connectionState = 'error';
 				socket.disconnect();
+			}
+		},
+		// Server kept the connection open (read access remains) but revoked write
+		// access. A reload is the simplest way to land the whole page — editor
+		// controls, canEdit, everything — in a consistent read-only state,
+		// instead of threading a live readOnly flag through the editor props.
+		onStateless: ({ payload }) => {
+			if (payload === READ_ONLY_DOWNGRADE_STATELESS_MESSAGE) {
+				toast(m.yjsReadOnlyDowngrade());
+				setTimeout(() => {
+					window.location.reload();
+				}, 3000);
 			}
 		}
 	});

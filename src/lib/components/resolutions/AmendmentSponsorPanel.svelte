@@ -28,7 +28,7 @@
 	}: Props = $props();
 
 	const sponsors = await client.liveQuery.amendmentSponsors({
-		__args: { where: { amendment: { id: amendmentId } } },
+		__args: { where: { amendment: { id: { eq: amendmentId } } } },
 		id: true,
 		amendmentId: true,
 		committeeMember: {
@@ -60,7 +60,7 @@
 	);
 
 	const members = await client.liveQuery.committeeMembers({
-		__args: { where: { committee: { id: committeeId } } },
+		__args: { where: { committee: { id: { eq: committeeId } } } },
 		id: true,
 		representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
 	});

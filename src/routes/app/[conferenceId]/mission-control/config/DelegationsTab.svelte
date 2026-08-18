@@ -2,6 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
+	import { nanoid } from '$lib/helpers/nanoid';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import Flag from '$lib/components/Flag.svelte';
@@ -63,6 +64,7 @@
 			await toast.promise(
 				client.mutate.createRepresentation({
 					__args: {
+						id: nanoid(),
 						conferenceId,
 						type: 'DELEGATION',
 						alpha2Code: country.alpha2Code,

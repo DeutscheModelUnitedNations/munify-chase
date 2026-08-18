@@ -19,7 +19,7 @@
 	let { paperId, committeeId, paperStatus, viewer }: Props = $props();
 
 	const sponsors = await client.liveQuery.paperSponsors({
-		__args: { where: { paper: { id: paperId } } },
+		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
 		committeeMember: {
 			id: true,
@@ -51,7 +51,7 @@
 
 	// Chair-only member picker (queried always; shown only to team).
 	const members = await client.liveQuery.committeeMembers({
-		__args: { where: { committee: { id: committeeId } } },
+		__args: { where: { committee: { id: { eq: committeeId } } } },
 		id: true,
 		representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
 	});

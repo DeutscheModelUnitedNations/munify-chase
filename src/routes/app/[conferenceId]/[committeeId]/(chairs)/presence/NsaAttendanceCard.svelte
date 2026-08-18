@@ -19,7 +19,7 @@
 	// event per user client-side.
 	const allEvents = await client.liveQuery.presenceEvents({
 		__args: {
-			where: { committee: { conference: { id: conferenceId } }, type: 'NSA_SCAN' },
+			where: { committee: { conference: { id: { eq: conferenceId } } }, type: 'NSA_SCAN' },
 			orderBy: { timestamp: 'desc' }
 		},
 		id: true,

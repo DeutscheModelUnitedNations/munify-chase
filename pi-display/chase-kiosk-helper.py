@@ -36,19 +36,13 @@ REFRESH_MARGIN = int(os.environ.get("REFRESH_MARGIN", "120"))
 WLAN_IFACE = os.environ.get("WLAN_IFACE", "wlan0")
 PROVISION_HTTP_PORT = int(os.environ.get("PROVISION_HTTP_PORT", "80"))
 PROVISION_PROBE_URL = os.environ.get("PROVISION_PROBE_URL") or AUTHORITY
-# Apple's fixed captive-portal-detection probe: a known plain-text body when
-# there's no portal in the way, anything else (redirect, injected login page)
-# when there is. Used only to give the operator a more specific message —
-# not all portals intercept this specific host, so this can false-negative.
-CAPTIVE_PORTAL_PROBE_URL = os.environ.get(
-    "CAPTIVE_PORTAL_PROBE_URL", "http://captive.apple.com/hotspot-detect.html"
-)
 PROVISION_FAILURE_THRESHOLD = int(os.environ.get("PROVISION_FAILURE_THRESHOLD", "6"))
 PROVISION_PROBE_INTERVAL = int(os.environ.get("PROVISION_PROBE_INTERVAL", "30"))
 QRENCODE = os.environ.get("QRENCODE", "qrencode")
 NMCLI = os.environ.get("NMCLI", "nmcli")
 SYSTEMCTL = os.environ.get("SYSTEMCTL", "systemctl")
 IW = os.environ.get("IW", "iw")
+IP = os.environ.get("IP", "ip")
 # Second, virtual radio interface used only while bridging a captive portal
 # (WLAN_IFACE stays joined to the venue network; this one serves the
 # operator's phone). Only ever brought up on hardware that
@@ -60,6 +54,13 @@ INDEX = os.path.join(BOOTSTRAP_DIR, "index.html")
 QR_AUTH_PNG = os.path.join(BOOTSTRAP_DIR, "qr-auth.png")
 QR_WIFI_PNG = os.path.join(BOOTSTRAP_DIR, "qr-wifi.png")
 QR_PORTAL_PNG = os.path.join(BOOTSTRAP_DIR, "qr-portal.png")
+QR_TRIGGER_PNG = os.path.join(BOOTSTRAP_DIR, "qr-trigger.png")
+# Plain-HTTP site built specifically for this exact purpose (checking/
+# triggering captive portals) — a reliable, one-scan way to reach the
+# venue's sign-in page during the AP+STA bridge, rather than relying on a
+# phone's own captive-portal auto-detection heuristics, which iOS in
+# particular doesn't always trigger reliably.
+CAPTIVE_PORTAL_TRIGGER_URL = "http://neverssl.com/"
 
 # Matches src/lib/helpers/nanoid.ts (nolookalikes-safe, printable on screen).
 NANOID_ALPHABET = "6789BCDFGHJKLMNPQRTWbcdfghjkmnpqrtwz"
@@ -167,25 +168,73 @@ def connectivity_ok() -> bool:
         return False
 
 
-_CAPTIVE_PORTAL_EXPECTED_BODY = "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>"
+# Well-known captive-portal-detection probes from three different vendors —
+# the same technique iOS/Android/Windows/macOS themselves use — queried
+# together rather than trusting a single one. Each has its own "no portal"
+# signature (an exact status code, an exact body, or both), since a portal
+# that redirects or rewrites one of these but not another is exactly the
+# false-negative case multiple probes exist to catch. urllib follows
+# redirects automatically, so a 30x to an injected login page still resolves
+# to a non-matching status/body here.
+_CAPTIVE_PORTAL_PROBES = [
+    # (url, expected_status, expected_body_or_None)
+    (
+        "http://captive.apple.com/hotspot-detect.html",
+        200,
+        "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>",
+    ),
+    ("http://connectivitycheck.gstatic.com/generate_204", 204, None),
+    ("http://www.msftconnecttest.com/connecttest.txt", 200, "Microsoft Connect Test"),
+]
+
+
+def _probe_clean(url: str, expected_status: int, expected_body: "str | None") -> "bool | None":
+    """True if this probe's response matches its own "no portal" signature,
+    False if it doesn't (redirect, injected body, wrong status), None if the
+    probe couldn't complete at all (DNS failure, connection reset, timeout)."""
+    try:
+        with urllib.request.urlopen(url, timeout=5) as r:
+            if r.status != expected_status:
+                return False
+            if expected_body is None:
+                return True
+            body = r.read(2048).decode("utf-8", "replace")
+            return expected_body in body
+    except Exception:
+        return None
 
 
 def captive_portal_likely() -> bool:
-    """Best-effort captive-portal detection via Apple's well-known probe.
+    """Best-effort captive-portal detection across several vendors' probes.
 
     Only meaningful to call once nmcli reports a successful WPA handshake +
     DHCP lease but connectivity_ok() still fails — distinguishes "this
     network needs a browser sign-in" from a genuinely dead connection so we
-    can give the operator a more useful message. urllib follows redirects
-    automatically, so a portal that 30x's the probe elsewhere still resolves
-    to non-matching body text here.
+    can give the operator a more useful message. Returns False (no portal)
+    only if every probe that completed came back clean; a single probe
+    reporting interception is enough to call it a portal, since a portal
+    that only intercepts one of these hosts is exactly the case multiple
+    probes exist to catch.
     """
-    try:
-        with urllib.request.urlopen(CAPTIVE_PORTAL_PROBE_URL, timeout=5) as r:
-            body = r.read(2048).decode("utf-8", "replace")
-            return _CAPTIVE_PORTAL_EXPECTED_BODY not in body
-    except Exception:
-        return False
+    results = [_probe_clean(url, status, body) for url, status, body in _CAPTIVE_PORTAL_PROBES]
+    if any(r is False for r in results):
+        return True
+    if all(r is None for r in results):
+        # Every probe failed to even complete. Weaker evidence *against* a
+        # captive portal than a clean non-matching response, not stronger —
+        # plenty of real venue portals (this is the primary target network
+        # for this device) block DNS resolution for anything outside their
+        # own domain entirely, rather than cleanly redirecting the HTTP
+        # request. This is only ever called after connectivity_ok() has
+        # already failed despite a successful WPA handshake + DHCP lease, so
+        # there's already strong reason to suspect a portal — defaulting to
+        # False here would silently send every such network down the
+        # generic "internet access failed" path instead of the
+        # captive-portal-specific one (bridge AP, or the travel-router/
+        # MAC-whitelist advice).
+        return True
+    # At least one probe completed and none reported interception.
+    return False
 
 
 def mac_address() -> str:
@@ -217,6 +266,24 @@ def _wlan_phy() -> "str | None":
         return None
     m = re.search(r"^\s*wiphy (\d+)", res.stdout, re.MULTILINE)
     return f"phy{m.group(1)}" if m else None
+
+
+def wlan_channel_and_band() -> "tuple[int, str] | None":
+    """Channel + nmcli band token (bg|a) WLAN_IFACE's radio is actually
+    tuned to right now, read straight from `iw dev <WLAN_IFACE> info`'s
+    "channel: N (freq MHz)" line. None if it can't be determined (not
+    actually associated yet, iw parsing failure, ...).
+    """
+    try:
+        res = _iw("dev", WLAN_IFACE, "info")
+    except Exception:
+        return None
+    m = re.search(r"channel (\d+) \((\d+) MHz\)", res.stdout)
+    if not m:
+        return None
+    channel = int(m.group(1))
+    freq = int(m.group(2))
+    return channel, ("a" if freq >= 3000 else "bg")
 
 
 def supports_concurrent_ap_sta() -> bool:
@@ -282,25 +349,68 @@ def supports_concurrent_ap_sta() -> bool:
 
 
 def _iface_exists(name: str) -> bool:
-    res = subprocess.run(["ip", "link", "show", name], capture_output=True, text=True, timeout=10)
+    """False both when the interface genuinely doesn't exist and when `ip`
+    itself couldn't be run — this only ever gates whether to (re)create the
+    bridge interface, and creating it is itself guarded, so failing closed
+    here is safe, whereas letting an exception escape isn't: this is called
+    from deep inside the captive-portal bridge path, and an uncaught
+    exception there previously meant the operator's setup screen silently
+    reset with no error shown at all."""
+    try:
+        res = subprocess.run([IP, "link", "show", name], capture_output=True, text=True, timeout=10)
+    except Exception:
+        return False
     return res.returncode == 0
+
+
+def _nm_device_ready(name: str, timeout: float = 8.0, interval: float = 0.5) -> bool:
+    """Poll nmcli until NetworkManager itself reports `name` as a real,
+    usable device rather than "unmanaged" or "unavailable" (or absent
+    entirely). A virtual interface just created via `iw ... interface add`
+    exists at the kernel level immediately, but NetworkManager only learns
+    about it once its own udev/netlink event loop catches up — calling
+    `nmcli device wifi hotspot` before that point reliably fails with
+    "device is not available" even though `ip link show` already sees it.
+    """
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        res = _nmcli("-t", "-f", "DEVICE,STATE", "device", "status", timeout=10)
+        for line in res.stdout.splitlines():
+            device, sep, state = line.partition(":")
+            if sep and device == name and state not in ("unmanaged", "unavailable"):
+                return True
+        time.sleep(interval)
+    return False
 
 
 def ensure_ap_bridge_iface() -> bool:
     """Create AP_BRIDGE_IFACE as a second virtual interface on WLAN_IFACE's
-    radio, in AP mode, leaving WLAN_IFACE itself untouched. Idempotent.
-    Returns False if creation fails (e.g. the hardware lied about
-    supports_concurrent_ap_sta(), or the interface is stuck from a previous
-    crashed run in a state `iw` won't reuse)."""
-    if _iface_exists(AP_BRIDGE_IFACE):
-        return True
-    res = _iw("dev", WLAN_IFACE, "interface", "add", AP_BRIDGE_IFACE, "type", "__ap")
-    return res.returncode == 0
+    radio, in AP mode, leaving WLAN_IFACE itself untouched, and wait for
+    NetworkManager to actually pick it up. Idempotent. Returns False if
+    creation fails (e.g. the hardware lied about supports_concurrent_ap_sta(),
+    or the interface is stuck from a previous crashed run in a state `iw`
+    won't reuse), or if NetworkManager never notices the new device."""
+    if not _iface_exists(AP_BRIDGE_IFACE):
+        try:
+            res = _iw("dev", WLAN_IFACE, "interface", "add", AP_BRIDGE_IFACE, "type", "__ap")
+        except Exception:
+            return False
+        if res.returncode != 0:
+            return False
+    return _nm_device_ready(AP_BRIDGE_IFACE)
 
 
 def delete_ap_bridge_iface() -> None:
-    subprocess.run(["ip", "link", "set", AP_BRIDGE_IFACE, "down"], capture_output=True, timeout=10)
-    _iw("dev", AP_BRIDGE_IFACE, "del")
+    # Best-effort cleanup, always called from a `finally` — must never raise,
+    # or it would replace whatever exception/return was already in flight.
+    try:
+        subprocess.run([IP, "link", "set", AP_BRIDGE_IFACE, "down"], capture_output=True, timeout=10)
+    except Exception:
+        pass
+    try:
+        _iw("dev", AP_BRIDGE_IFACE, "del")
+    except Exception:
+        pass
 
 
 # --- nmcli wrappers ---------------------------------------------------------
@@ -370,6 +480,8 @@ def hotspot_up(
     psk: str,
     ifname: str = WLAN_IFACE,
     connection_name: str = HOTSPOT_CONNECTION,
+    channel: "int | None" = None,
+    band: "str | None" = None,
 ) -> None:
     """Bring up an AP on `ifname`.
 
@@ -379,20 +491,38 @@ def hotspot_up(
     AP_BRIDGE_IFACE, a second virtual interface — WLAN_IFACE's own client
     connection must be left alone there, that's the whole point.
 
+    `channel`/`band` matter only for that bridge case: AP_BRIDGE_IFACE
+    shares one physical radio with WLAN_IFACE, and a single radio can only
+    ever be tuned to one channel — every WiFi chipset's concurrent AP+STA
+    support requires both interfaces to sit on that same channel. Leaving
+    nmcli to pick its own default (which knows nothing about WLAN_IFACE's
+    existing connection) reliably produces an AP whose SSID broadcasts —
+    so it's visible to scan — but whose beacon channel doesn't match where
+    the radio is actually transmitting, so a real client's association
+    just hangs. Passed straight through to nmcli when both are given.
+
     Raises RuntimeError if nmcli could not create the hotspot — callers
     must NOT continue (the portal would bind on an interface that has no
     AP and no clients could ever reach it).
     """
     if ifname == WLAN_IFACE:
         _nmcli("device", "disconnect", WLAN_IFACE, timeout=15)
-    res = _nmcli(
+        # NetworkManager needs a moment to actually free the device after a
+        # disconnect before it'll accept switching it to AP mode — most
+        # visibly right after a failed connect_wifi() at a venue network.
+        # hotspot_up_retrying() also retries, but a real settle delay here
+        # cuts down how often the first attempt needs to fail at all.
+        time.sleep(1)
+    args = [
         "device", "wifi", "hotspot",
         "ifname", ifname,
         "con-name", connection_name,
         "ssid", ssid,
         "password", psk,
-        timeout=30,
-    )
+    ]
+    if channel is not None and band is not None:
+        args += ["channel", str(channel), "band", band]
+    res = _nmcli(*args, timeout=30)
     if res.returncode != 0:
         raise RuntimeError(
             f"nmcli hotspot failed (exit {res.returncode}): "
@@ -412,6 +542,37 @@ def hotspot_up(
             f"nmcli connection up (after disabling WPS) failed "
             f"(exit {res2.returncode}): {(res2.stderr or res2.stdout or '').strip()}"
         )
+
+
+def hotspot_up_retrying(
+    ssid: str,
+    psk: str,
+    ifname: str = WLAN_IFACE,
+    connection_name: str = HOTSPOT_CONNECTION,
+    attempts: int = 5,
+    backoff_seconds: float = 3.0,
+) -> None:
+    """hotspot_up(), retried a few times with a short backoff before giving
+    up. NetworkManager can be briefly unready to switch `ifname` from client
+    to AP mode right after tearing down a connection on it — most visibly,
+    the re-up immediately following a failed connect_wifi() attempt at a
+    venue network, or after the AP+STA bridge iface is torn down — so a
+    single hotspot_up() failure right there isn't necessarily permanent.
+    Callers that reach here after forget_active_wifi() has already dropped
+    the last saved WiFi profile have no working fallback network to give up
+    to, so this is deliberately given a generous budget rather than a quick
+    one. Re-raises the last error if every attempt fails.
+    """
+    last_error: Exception = RuntimeError("unreachable")
+    for attempt in range(1, attempts + 1):
+        try:
+            hotspot_up(ssid, psk, ifname=ifname, connection_name=connection_name)
+            return
+        except Exception as e:
+            last_error = e
+            if attempt < attempts:
+                time.sleep(backoff_seconds)
+    raise last_error
 
 
 def hotspot_down(connection_name: str = HOTSPOT_CONNECTION) -> None:
@@ -436,6 +597,28 @@ def connect_wifi(ssid: str, psk: str) -> tuple[bool, str]:
     if res.returncode == 0:
         return True, "Connected."
     return False, (res.stderr or res.stdout or "Connection failed").strip()
+
+
+def has_saved_wifi_profile() -> bool:
+    """True if NetworkManager has a saved WiFi client profile — active or
+    not — other than this helper's own setup/bridge hotspot connections.
+
+    Used to tell a genuinely fresh device (never provisioned, or just
+    factory-reset) apart from one that has a real venue network to retry:
+    only the latter is worth waiting/retrying for before falling back to
+    the setup AP. TYPE is a fixed nmcli vocabulary with no ':' in it, so
+    partitioning on the first ':' isolates it even though NAME (an SSID,
+    arbitrary) may itself contain escaped colons.
+    """
+    res = _nmcli("-t", "-f", "TYPE,NAME", "connection", "show", timeout=10)
+    for line in res.stdout.splitlines():
+        ctype, sep, rest = line.partition(":")
+        if not sep or ctype != "802-11-wireless":
+            continue
+        name = _nm_unescape(rest)
+        if name not in (HOTSPOT_CONNECTION, BRIDGE_HOTSPOT_CONNECTION):
+            return True
+    return False
 
 
 def forget_active_wifi() -> None:
@@ -489,7 +672,8 @@ def loading_page(msg: str) -> str:
         "<!doctype html><meta charset=utf-8>"
         "<title>CHASE display</title>"
         "<body style='font-family:sans-serif;background:#1d232a;color:#fff;"
-        "display:flex;align-items:center;justify-content:center;height:100vh;margin:0'>"
+        "display:flex;align-items:center;justify-content:center;height:100vh;margin:0;"
+        "cursor:none'>"
         f"<h1>{_esc(msg)}</h1></body>"
     )
 
@@ -501,7 +685,7 @@ def _countdown_page(title: str, detail: str, interval: int) -> str:
         "<!doctype html><meta charset=utf-8><title>CHASE display</title>"
         "<body style='font-family:sans-serif;background:#1d232a;color:#fff;"
         "display:flex;flex-direction:column;align-items:center;justify-content:center;"
-        "height:100vh;margin:0;gap:.5rem'>"
+        "height:100vh;margin:0;gap:.5rem;cursor:none'>"
         f"<h1 style='margin:0'>{_esc(title)}</h1>"
         f"<p id=countdown style='margin:0;opacity:.8'>Retrying in {interval}s</p>"
         f"<p style='margin:0;opacity:.6;font-size:.9rem'>{_esc(detail)}</p>"
@@ -551,12 +735,16 @@ def provisioning_kiosk_page(ssid: str, psk: str, portal_url: str, error: str = "
         "<!doctype html><meta charset=utf-8><title>Set up WiFi</title>"
         "<body style='font-family:sans-serif;background:#1d232a;color:#fff;"
         "margin:0;padding:2rem;display:flex;flex-direction:column;"
-        "align-items:center;justify-content:center;min-height:100vh;gap:1.5rem'>"
-        "<h1 style='margin:0'>This display needs WiFi</h1>"
+        "align-items:center;justify-content:center;min-height:100vh;gap:1.5rem;"
+        "cursor:none'>"
+        "<h1 style='margin:0'>This display needs a network connection</h1>"
         f"{error_html}"
         "<p style='margin:0;opacity:.8;max-width:42rem;text-align:center'>"
         "Scan the left QR with your phone to join this display's setup network, "
         "then scan the right QR to open the captive portal and pick the venue WiFi.</p>"
+        "<p style='margin:0;opacity:.6;max-width:42rem;text-align:center;font-size:.9rem'>"
+        "Or just plug in an Ethernet cable — this screen will clear on its own "
+        "once it's online, no WiFi setup needed.</p>"
         "<div style='display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap;"
         "justify-content:center'>"
         "<div style='display:flex;flex-direction:column;align-items:center;gap:.5rem'>"
@@ -589,7 +777,7 @@ def provisioning_testing_kiosk_page(ssid: str) -> str:
         "<!doctype html><meta charset=utf-8><title>Connecting…</title>"
         "<body style='font-family:sans-serif;background:#1d232a;color:#fff;"
         "display:flex;flex-direction:column;align-items:center;justify-content:center;"
-        "height:100vh;margin:0;gap:1rem'>"
+        "height:100vh;margin:0;gap:1rem;cursor:none'>"
         "<h1 style='margin:0'>Connecting…</h1>"
         f"<p style='opacity:.85;font-size:1.25rem;margin:0'>Trying to join <b>{_esc(ssid)}</b></p>"
         "<p style='opacity:.6;max-width:32rem;text-align:center;margin:0'>"
@@ -609,15 +797,24 @@ def captive_portal_bridge_kiosk_page(upstream_ssid: str, bridge_ssid: str, bridg
         "<body style='font-family:sans-serif;background:#1d232a;color:#fff;"
         "margin:0;padding:2rem;display:flex;flex-direction:column;"
         "align-items:center;justify-content:center;min-height:100vh;gap:1.25rem;"
-        "text-align:center'>"
+        "text-align:center;cursor:none'>"
         f"<h1 style='margin:0'>'{_esc(upstream_ssid)}' needs a sign-in</h1>"
-        "<p style='margin:0;opacity:.8;max-width:36rem'>"
-        "Rejoin this display's setup WiFi with your phone (same network as "
-        "before), then open any website — you should see the sign-in page "
-        f"for <b>{_esc(upstream_ssid)}</b>. Complete it there; this display "
-        "picks up the connection automatically once you're done.</p>"
-        "<img src='qr-wifi.png' style='width:280px;height:280px;background:#fff;"
+        "<p style='margin:0;opacity:.8;max-width:42rem'>"
+        "Scan the left QR with your phone to join this display's setup "
+        "network (same one as before), then scan the right QR — you should "
+        f"land on the sign-in page for <b>{_esc(upstream_ssid)}</b>. "
+        "Complete it there; this display picks up the connection "
+        "automatically once you're done.</p>"
+        "<div style='display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap;"
+        "justify-content:center'>"
+        "<div style='display:flex;flex-direction:column;align-items:center;gap:.5rem'>"
+        "<img src='qr-wifi.png' style='width:260px;height:260px;background:#fff;"
         "padding:1rem;border-radius:1rem'>"
+        "<div style='opacity:.7;font-size:.9rem'>1. Join WiFi</div></div>"
+        "<div style='display:flex;flex-direction:column;align-items:center;gap:.5rem'>"
+        "<img src='qr-trigger.png' style='width:260px;height:260px;background:#fff;"
+        "padding:1rem;border-radius:1rem'>"
+        "<div style='opacity:.7;font-size:.9rem'>2. Open sign-in page</div></div></div>"
         "<div style='font-family:monospace;opacity:.9'>"
         f"<div>Setup network: <b>{_esc(bridge_ssid)}</b></div>"
         f"<div>Password: <b>{_esc(bridge_psk)}</b></div></div>"
@@ -631,9 +828,9 @@ def device_grant_page(verification_uri: str, user_code: str) -> str:
         "<!doctype html><meta charset=utf-8><title>Pair CHASE display</title>"
         "<body style='font-family:sans-serif;background:#1d232a;color:#fff;"
         "display:flex;flex-direction:column;align-items:center;justify-content:center;"
-        "height:100vh;margin:0;gap:1rem'>"
+        "height:100vh;margin:0;gap:1rem;cursor:none'>"
         "<h1>Sign this display in</h1>"
-        "<p>Scan and sign in as the shared CHASE display account.</p>"
+        "<p>Scan and sign in with your own CHASE account.</p>"
         "<img src='qr-auth.png' style='width:420px;height:420px;background:#fff;"
         "padding:1rem;border-radius:1rem'>"
         f"<p>{_esc(verification_uri)}</p>"
@@ -655,7 +852,7 @@ def session_page(tokens: dict, device_id: str) -> str:
     return (
         "<!doctype html><meta charset=utf-8><title>CHASE display</title>"
         "<body onload='document.forms[0].submit()' "
-        "style='background:#1d232a'>"
+        "style='background:#1d232a;cursor:none'>"
         f"<form method=post action=\"{_esc(action)}\">"
         + field("accessToken", tokens.get("access_token"))
         + field("idToken", tokens.get("id_token"))
@@ -891,7 +1088,7 @@ def wifi_qr_payload(ssid: str, psk: str) -> str:
 
 def try_captive_portal_bridge(
     bridge_ssid: str, bridge_psk: str, upstream_ssid: str, timeout_seconds: int = 300
-) -> bool:
+) -> tuple[bool, str]:
     """Bring up AP_BRIDGE_IFACE while WLAN_IFACE stays joined to
     `upstream_ssid`, so the operator can rejoin from their phone and
     complete the venue's captive portal — its redirect applies to the Pi's
@@ -899,32 +1096,54 @@ def try_captive_portal_bridge(
     this bridge, the Pi included, gets full internet access at once.
 
     Only call this after supports_concurrent_ap_sta() and a successful
-    WPA handshake + DHCP lease on WLAN_IFACE. Returns True once
-    connectivity_ok() succeeds, False on timeout or setup failure — in
-    either case the bridge AP is always torn down before returning, WLAN_IFACE
-    is never touched.
+    WPA handshake + DHCP lease on WLAN_IFACE. Returns (True, "") once
+    connectivity_ok() succeeds; (False, reason) on setup failure or timeout
+    — in either case the bridge AP is always torn down before returning,
+    WLAN_IFACE is never touched. The reason matters here more than most:
+    supports_concurrent_ap_sta() reads the *driver's advertised* interface
+    combinations, but real hardware (the Pi's own onboard chip included)
+    is known to not actually honor concurrent AP+STA despite advertising
+    it, so a quick failure right after setup is an expected outcome to be
+    able to show, not just a hypothetical.
     """
-    if not ensure_ap_bridge_iface():
-        print("chase-kiosk-helper: could not create AP bridge interface", flush=True)
-        return False
+    # AP_BRIDGE_IFACE shares WLAN_IFACE's physical radio, which can only be
+    # tuned to one channel — the bridge AP has to sit on whichever channel
+    # WLAN_IFACE is already using for upstream_ssid, or it comes up visibly
+    # in a scan but never lets a real client actually associate. Check this
+    # before creating anything: if it can't be determined, the bridge would
+    # only look like it worked.
+    channel_band = wlan_channel_and_band()
+    if channel_band is None:
+        reason = f"couldn't determine which WiFi channel {upstream_ssid} is on"
+        print("chase-kiosk-helper:", reason, flush=True)
+        return False, reason
 
+    if not ensure_ap_bridge_iface():
+        reason = "could not create the second WiFi interface needed to bridge this portal"
+        print("chase-kiosk-helper:", reason, flush=True)
+        return False, reason
+
+    make_qr(CAPTIVE_PORTAL_TRIGGER_URL, QR_TRIGGER_PNG)
     write_page(captive_portal_bridge_kiosk_page(upstream_ssid, bridge_ssid, bridge_psk))
     reload_kiosk()
 
     try:
-        hotspot_up(bridge_ssid, bridge_psk, ifname=AP_BRIDGE_IFACE, connection_name=BRIDGE_HOTSPOT_CONNECTION)
+        hotspot_up(
+            bridge_ssid, bridge_psk, ifname=AP_BRIDGE_IFACE, connection_name=BRIDGE_HOTSPOT_CONNECTION,
+            channel=channel_band[0], band=channel_band[1],
+        )
     except Exception as e:
         print("chase-kiosk-helper: bridge hotspot_up failed:", repr(e), flush=True)
         delete_ap_bridge_iface()
-        return False
+        return False, f"this WiFi hardware couldn't run a bridge network alongside {upstream_ssid} ({e})"
 
     try:
         deadline = time.time() + timeout_seconds
         while time.time() < deadline:
             if connectivity_ok():
-                return True
+                return True, ""
             time.sleep(3)
-        return False
+        return False, "no one completed the sign-in on the bridge network in time"
     finally:
         try:
             hotspot_down(connection_name=BRIDGE_HOTSPOT_CONNECTION)
@@ -934,113 +1153,173 @@ def try_captive_portal_bridge(
 
 
 def run_provisioning(state: dict, device_id: str) -> None:
-    """Bring up the AP, show the dual-QR screen, wait for /connect success."""
+    """Bring up the AP, show the dual-QR screen, wait for /connect success.
+
+    Loops indefinitely and only ever returns on a successful connection.
+    main() calls this only after forget_active_wifi() has already dropped
+    the last saved WiFi profile, so its own "waiting for network" reconnect
+    loop has nothing left to reconnect to — falling out of here early used
+    to hand control back to it anyway, which meant a guaranteed
+    PROVISION_FAILURE_THRESHOLD * PROVISION_PROBE_INTERVAL (6 * 30s by
+    default) of dead waiting on every hiccup in here (NetworkManager
+    settling slowly after tearing down a just-failed venue connection, an
+    nmcli/iw call raising unexpectedly, ...) before the setup AP ever came
+    back. Every failure below — expected or not — is now logged and
+    retried in place instead.
+    """
     ssid, psk = hotspot_credentials(state, device_id)
     portal_url = f"http://{HOTSPOT_GATEWAY}/"
-    set_provision_status("idle")
 
-    make_qr(wifi_qr_payload(ssid, psk), QR_WIFI_PNG)
-    make_qr(portal_url, QR_PORTAL_PNG)
-    write_page(provisioning_kiosk_page(ssid, psk, portal_url))
-    reload_kiosk()
-
-    try:
-        hotspot_up(ssid, psk)
-    except Exception as e:
-        print("chase-kiosk-helper: hotspot_up failed:", repr(e), flush=True)
-        time.sleep(15)
-        return
-
-    portal_server = serve_portal()
-    try:
-        while True:
-            _provision_event.wait(timeout=300)
-            _provision_event.clear()
-            pending = PortalHandler.pending
-            PortalHandler.pending = None
-            if not pending:
-                continue
-            set_provision_status("testing", f"Testing {pending['ssid']}")
-            # The phone showing the portal loses this display's setup AP the
-            # instant it goes down below, so mirror progress on the kiosk's
-            # own screen too — it's served over loopback, unaffected by wlan0.
-            write_page(provisioning_testing_kiosk_page(pending["ssid"]))
+    while True:
+        try:
+            set_provision_status("idle")
+            make_qr(wifi_qr_payload(ssid, psk), QR_WIFI_PNG)
+            make_qr(portal_url, QR_PORTAL_PNG)
+            write_page(provisioning_kiosk_page(ssid, psk, portal_url))
             reload_kiosk()
 
-            # Tear the hotspot down BEFORE attempting the upstream connect,
-            # otherwise the radio is busy in AP mode and nmcli will refuse.
+            hotspot_up_retrying(ssid, psk)
+        except Exception as e:
+            print("chase-kiosk-helper: hotspot_up failed:", repr(e), flush=True)
+            time.sleep(15)
+            continue
+
+        try:
+            portal_server = serve_portal()
+        except Exception as e:
+            print("chase-kiosk-helper: serve_portal failed:", repr(e), flush=True)
+            time.sleep(15)
+            continue
+
+        try:
+            while True:
+                try:
+                    # Short poll interval (rather than a long wait) so a LAN
+                    # cable plugged in while the QR screen is up gets
+                    # noticed on its own — NetworkManager brings Ethernet up
+                    # and routes through it automatically, with no nmcli
+                    # calls needed from us; connectivity_ok() doesn't care
+                    # which interface it went out over.
+                    _provision_event.wait(timeout=PROVISION_PROBE_INTERVAL)
+                    _provision_event.clear()
+                    pending = PortalHandler.pending
+                    PortalHandler.pending = None
+                    if not pending:
+                        if connectivity_ok():
+                            set_provision_status("success", "Connected")
+                            try:
+                                hotspot_down()
+                            except Exception:
+                                pass
+                            return
+                        continue
+                    set_provision_status("testing", f"Testing {pending['ssid']}")
+                    # The phone showing the portal loses this display's setup
+                    # AP the instant it goes down below, so mirror progress
+                    # on the kiosk's own screen too — it's served over
+                    # loopback, unaffected by wlan0.
+                    write_page(provisioning_testing_kiosk_page(pending["ssid"]))
+                    reload_kiosk()
+
+                    # Tear the hotspot down BEFORE attempting the upstream
+                    # connect, otherwise the radio is busy in AP mode and
+                    # nmcli will refuse.
+                    try:
+                        hotspot_down()
+                    except Exception:
+                        pass
+
+                    ok, msg = connect_wifi(pending["ssid"], pending["psk"])
+                    if ok:
+                        # Wait for DHCP
+                        for _ in range(10):
+                            if connectivity_ok():
+                                set_provision_status("success", "Connected")
+                                return
+                            time.sleep(2)
+                        # Associated + got an IP, but no real internet access
+                        # — likely a venue captive portal. If this radio can
+                        # run AP+STA at once, bridge it: bring up a second AP
+                        # so the operator can complete the portal from their
+                        # phone without WLAN_IFACE ever losing its upstream
+                        # connection.
+                        if captive_portal_likely():
+                            bridge_attempted = supports_concurrent_ap_sta()
+                            bridge_reason = "this WiFi hardware doesn't support running a second network at the same time"
+                            if bridge_attempted:
+                                bridge_ok, bridge_reason = try_captive_portal_bridge(
+                                    ssid, psk, pending["ssid"]
+                                )
+                                if bridge_ok:
+                                    set_provision_status("success", "Connected")
+                                    return
+                            # No AP+STA support, or the bridge attempt
+                            # itself failed/timed out — bridge_reason says
+                            # which, and why, so this doesn't have to be
+                            # chased down in the journal. Best remaining
+                            # fix: join a travel router/hotspot that already
+                            # signed in to this network instead of joining
+                            # it directly (the router absorbs the portal;
+                            # everything behind it, including this display,
+                            # just sees a clean network). Fallback: surface
+                            # the MAC in case venue IT can whitelist it —
+                            # not guaranteed to be offered everywhere.
+                            msg = (
+                                f"Connected to {pending['ssid']}, but it requires an "
+                                "additional sign-in (captive portal) before allowing "
+                                f"internet access. This display couldn't complete it: "
+                                f"{bridge_reason}. Best fix: connect this display to a "
+                                "travel router/hotspot that has already signed in "
+                                "to this network instead. Otherwise, ask venue "
+                                f"staff to whitelist its WiFi hardware address: {mac_address()}"
+                            )
+                        else:
+                            msg = "WiFi connected, but internet access failed."
+
+                    set_provision_status("failed", msg or "Could not connect.")
+                    PortalHandler.last_error = msg or "Could not connect — check password."
+
+                    # Bring the hotspot back so the operator can retry.
+                    hotspot_up_retrying(ssid, psk)
+
+                    # Show the failure on the kiosk's own screen too, same
+                    # reasoning as the "testing" page above — don't rely on
+                    # the phone that started the test still being reachable
+                    # to see it.
+                    write_page(provisioning_kiosk_page(ssid, psk, portal_url, error=PortalHandler.last_error))
+                    reload_kiosk()
+                except Exception as e:
+                    # Anything unexpected here (including hotspot_up_retrying
+                    # exhausting its budget) — log it, show it, and restart
+                    # the whole round from scratch (fresh QR page, fresh
+                    # hotspot_up) rather than falling out to main()'s
+                    # reconnect loop. Must surface something on screen, not
+                    # just to the journal — silently redrawing the plain QR
+                    # page here previously looked indistinguishable from a
+                    # network test that was never attempted at all.
+                    print("chase-kiosk-helper: provisioning round failed:", repr(e), flush=True)
+                    error_message = f"Something went wrong testing that network ({e or type(e).__name__}). Retrying — try again in a moment."
+                    PortalHandler.last_error = error_message
+                    set_provision_status("failed", error_message)
+                    try:
+                        write_page(provisioning_kiosk_page(ssid, psk, portal_url, error=error_message))
+                        reload_kiosk()
+                    except Exception:
+                        pass
+                    time.sleep(10)
+                    break
+        finally:
             try:
-                hotspot_down()
+                portal_server.shutdown()
             except Exception:
                 pass
-
-            ok, msg = connect_wifi(pending["ssid"], pending["psk"])
-            if ok:
-                # Wait for DHCP
-                for _ in range(10):
-                    if connectivity_ok():
-                        set_provision_status("success", "Connected")
-                        return
-                    time.sleep(2)
-                # Associated + got an IP, but no real internet access — likely
-                # a venue captive portal. If this radio can run AP+STA at
-                # once, bridge it: bring up a second AP so the operator can
-                # complete the portal from their phone without WLAN_IFACE
-                # ever losing its upstream connection.
-                if captive_portal_likely():
-                    if supports_concurrent_ap_sta() and try_captive_portal_bridge(
-                        ssid, psk, pending["ssid"]
-                    ):
-                        set_provision_status("success", "Connected")
-                        return
-                    # No AP+STA support, or the operator didn't complete the
-                    # portal within the bridge's timeout. Best remaining fix:
-                    # join a travel router/hotspot that already signed in to
-                    # this network instead of joining it directly (the
-                    # router absorbs the portal; everything behind it,
-                    # including this display, just sees a clean network).
-                    # Fallback: surface the MAC in case venue IT can
-                    # whitelist it — not guaranteed to be offered everywhere.
-                    msg = (
-                        f"Connected to {pending['ssid']}, but it requires an "
-                        "additional sign-in (captive portal) before allowing "
-                        "internet access, which this display couldn't "
-                        "complete. Best fix: connect this display to a "
-                        "travel router/hotspot that has already signed in "
-                        "to this network instead. Otherwise, ask venue "
-                        f"staff to whitelist its WiFi hardware address: {mac_address()}"
-                    )
-                else:
-                    msg = "WiFi connected, but internet access failed."
-
-            set_provision_status("failed", msg or "Could not connect.")
-            PortalHandler.last_error = msg or "Could not connect — check password."
-
-            # Bring the hotspot back so the operator can retry.
+            # shutdown() stops serve_forever but leaves the listening socket
+            # bound; server_close() releases it so the next provisioning
+            # round can rebind on :80 without a TIME_WAIT collision.
             try:
-                hotspot_up(ssid, psk)
-            except Exception as e:
-                print("chase-kiosk-helper: hotspot re-up failed:", repr(e), flush=True)
-                time.sleep(10)
-                return
-
-            # Show the failure on the kiosk's own screen too, same reasoning
-            # as the "testing" page above — don't rely on the phone that
-            # started the test still being reachable to see it.
-            write_page(provisioning_kiosk_page(ssid, psk, portal_url, error=PortalHandler.last_error))
-            reload_kiosk()
-    finally:
-        try:
-            portal_server.shutdown()
-        except Exception:
-            pass
-        # shutdown() stops serve_forever but leaves the listening socket
-        # bound; server_close() releases it so the next provisioning round
-        # can rebind on :80 without a TIME_WAIT collision.
-        try:
-            portal_server.server_close()
-        except Exception:
-            pass
+                portal_server.server_close()
+            except Exception:
+                pass
 
 
 def wait_for_connectivity(max_wait_seconds: int) -> bool:
@@ -1145,14 +1424,43 @@ def main() -> None:
         # 1. Make sure we have upstream connectivity.
         if not connectivity_ok():
             consecutive_failures += 1
-            if consecutive_failures >= PROVISION_FAILURE_THRESHOLD:
+            # A device with no saved WiFi profile at all (first boot, or
+            # just factory-reset) has nothing worth retrying — go straight
+            # to the setup AP instead of burning PROVISION_FAILURE_THRESHOLD
+            # * PROVISION_PROBE_INTERVAL on probes that can only ever fail.
+            # A device that DOES have a saved profile still gets the full
+            # wait/retry budget first, since that profile is worth retrying
+            # (a momentary AP blip, DHCP renewal, etc.).
+            no_saved_network = False
+            if consecutive_failures == 1:
+                try:
+                    no_saved_network = not has_saved_wifi_profile()
+                except Exception as e:
+                    # Can't tell — assume a profile exists (the prior,
+                    # safer behavior: wait/retry rather than possibly
+                    # jumping to the setup AP while still holding a
+                    # perfectly good saved connection).
+                    print("chase-kiosk-helper: has_saved_wifi_profile:", repr(e), flush=True)
+            if no_saved_network or consecutive_failures >= PROVISION_FAILURE_THRESHOLD:
                 # Sustained loss → re-provision. forget_active_wifi() drops
                 # the saved NM connection so the radio is free for AP mode.
                 try:
                     forget_active_wifi()
                 except Exception as e:
                     print("chase-kiosk-helper: forget_active_wifi:", repr(e), flush=True)
-                run_provisioning(state, device_id)
+                # run_provisioning() itself retries every failure it knows
+                # about and is not expected to raise, but forget_active_wifi()
+                # just dropped the only saved WiFi profile — if something
+                # here does raise anyway, falling through to the connectivity
+                # check below would just be a guaranteed
+                # PROVISION_FAILURE_THRESHOLD * PROVISION_PROBE_INTERVAL dead
+                # wait with nothing to reconnect to, so retry calling back in
+                # instead of letting that happen.
+                try:
+                    run_provisioning(state, device_id)
+                except Exception as e:
+                    print("chase-kiosk-helper: run_provisioning crashed:", repr(e), flush=True)
+                    time.sleep(5)
                 consecutive_failures = 0
                 meta = None  # re-discover after a network change
                 continue

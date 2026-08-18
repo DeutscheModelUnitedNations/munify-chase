@@ -44,7 +44,20 @@ abilityBuilder.displayDevice.allow('read').when((ctx) => {
 	// freshly-paired Pi is a global-admin action, and a not-yet-claimed
 	// device must never be shown to (or claimable by) a conference
 	// organizer who happens to be admin/team somewhere else.
-	return { where: { conferenceId: { isNotNull: true }, ...isTeamInConference(ctx) } };
+	//
+	// The one exception is whoever actually paired the device: they need to
+	// see their own still-unassigned row to know pairing succeeded and to
+	// exercise the matching self-claim carve-out on `update` below —
+	// otherwise a freshly-paired Pi is invisible to the person who just
+	// paired it until a global admin assigns it a conference.
+	return {
+		where: {
+			OR: [
+				{ conferenceId: { isNotNull: true }, ...isTeamInConference(ctx) },
+				{ conferenceId: { isNull: true }, provisionedByUserId: ctx.mustBeLoggedIn().sub }
+			]
+		}
+	};
 });
 
 abilityBuilder.displayDevice.allow('update').when((ctx) => {

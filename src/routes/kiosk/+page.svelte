@@ -168,6 +168,14 @@
 			{#if qrDataUrl}
 				<img src={qrDataUrl} alt="QR" class="bg-base-100 size-[480px] rounded-2xl p-4 shadow-sm" />
 			{/if}
+			{#if pairUrl}
+				<div class="flex flex-col items-center gap-1">
+					<span class="text-base-content/50 text-xs font-bold uppercase tracking-widest">
+						{m.displayPairUrl()}
+					</span>
+					<code class="text-base-content/80 text-sm break-all">{pairUrl}</code>
+				</div>
+			{/if}
 		{/if}
 		<div class="bg-base-100 rounded-box flex flex-col items-center gap-1 px-6 py-4 shadow-sm">
 			<span class="text-base-content/50 text-xs font-bold uppercase tracking-widest">
@@ -177,3 +185,22 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	/* The kiosk appliance has no pointer input at all (module.nix disables
+	   every libinput device), but the cage/wlroots compositor still renders
+	   a default cursor sprite regardless — that's a compositor-level
+	   limitation with no reliable fix at that layer (see the open cage
+	   issues on this), so it's suppressed here instead, the one place we
+	   have full control over every pixel shown. :global so it reaches
+	   <html>/<body>, outside this component's own markup; scoped to this
+	   route only (removed automatically when it unmounts) so a normal
+	   browser session elsewhere in the app keeps its cursor. The Pi's own
+	   generated pages (loading/reconnecting/pairing screens shown before
+	   Chromium ever reaches this route) set the same `cursor:none` inline
+	   — see chase-kiosk-helper.py. */
+	:global(html),
+	:global(body) {
+		cursor: none;
+	}
+</style>

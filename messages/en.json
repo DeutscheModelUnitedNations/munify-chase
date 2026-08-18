@@ -323,6 +323,7 @@
 	"displayKioskTitle": "Display",
 	"displayPairBody": "Scan this code in CHASE to assign this display to a committee.",
 	"displayPairHeadline": "Pair this display",
+	"displayPairUrl": "Or open this address",
 	"displayRegionalGroups": "Display Regional Blocs",
 	"displayRevokedBody": "This display has been revoked. Contact the conference organizers.",
 	"displayRevokedHeadline": "Display revoked",

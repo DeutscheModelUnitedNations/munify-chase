@@ -12,6 +12,41 @@ let
       libraries = [ ];
       flakeIgnore = [ "E501" "E722" "W503" ];
     } (builtins.readFile ./chase-kiosk-helper.py);
+
+  # Cage's own source (this pinned v0.2.0) actually does the right thing
+  # already: it only draws a cursor when the Wayland seat has pointer
+  # capability, and hides it (wlr_cursor_unset_image) otherwise. The bug
+  # wasn't cage refusing to hide the cursor — it was our own assumption
+  # about WLR_LIBINPUT_NO_DEVICES: per wlroots' own docs that variable only
+  # "set[s] to 1 to not fail without any input devices" (a startup-failure
+  # check), it does NOT stop libinput from detecting and using a real input
+  # device if one exists — including ones the kernel synthesizes on its own
+  # (e.g. from HDMI-CEC), which is exactly what cage-kiosk/cage#524
+  # describes and recommends udev rules against. See the
+  # `LIBINPUT_IGNORE_DEVICE` rule below — that's the actual fix; this
+  # transparent Xcursor theme is kept only as a harmless second layer in
+  # case some other, non-seat-capability code path (e.g. inside Chromium
+  # itself) ever renders a cursor independent of that.
+  transparentCursorTheme = pkgs.runCommand "chase-kiosk-transparent-cursor" {
+    nativeBuildInputs = [ pkgs.xorg.xcursorgen ];
+    passAsFile = [ "png64" ];
+    # Smallest valid transparent PNG (1x1, alpha 0), base64-encoded.
+    png64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
+  } ''
+    mkdir -p $out/share/icons/transparent/cursors
+    base64 -d "$png64Path" > cursor.png
+    echo "1 0 0 cursor.png" > cursor.cfg
+    xcursorgen cursor.cfg $out/share/icons/transparent/cursors/default
+    for name in left_ptr left_ptr_watch pointer hand hand1 hand2 text xterm \
+                wait watch progress crosshair arrow; do
+      ln -s default "$out/share/icons/transparent/cursors/$name"
+    done
+    cat > $out/share/icons/transparent/index.theme <<THEME
+[Icon Theme]
+Name=transparent
+Comment=Invisible cursor for kiosk mode
+THEME
+  '';
 in
 {
   options.services.chaseKiosk = {
@@ -81,7 +116,30 @@ in
     # No SSID is baked into the image; provisioning happens at first boot.
     networking.networkmanager.enable = true;
     networking.wireless.enable = false;
-    networking.firewall.trustedInterfaces = [ cfg.wlanInterface ];
+    # "ap0" matches chase-kiosk-helper.py's AP_BRIDGE_IFACE default (not
+    # exposed as its own option — it's an internal implementation detail,
+    # only ever created transiently while bridging a captive portal). It
+    # has to be trusted too, or the firewall silently drops the DHCP
+    # exchange to a device joining that bridge network: WPA association
+    # happens at layer 2 (802.11), invisible to an IP-layer firewall, so it
+    # always succeeds regardless of this setting — only DHCP (UDP/IP, on
+    # the new interface) actually gets blocked, which looks exactly like
+    # "joins the network but never gets a working IP" on the client.
+    networking.firewall.trustedInterfaces = [ cfg.wlanInterface "ap0" ];
+
+    # This display has no keyboard/mouse, but the kernel can still present
+    # libinput with an input device it never asked for — a monitor's
+    # HDMI-CEC remote surfaced as a synthetic input device is the common
+    # case (cage-kiosk/cage#524) — and if libinput reports pointer
+    # capability, cage correctly shows a real cursor for it (not a bug,
+    # see the comment on transparentCursorTheme above). WLR_LIBINPUT_NO_
+    # DEVICES doesn't stop that; only telling libinput itself to ignore
+    # every input-subsystem device does, which is also a reasonable
+    # security stance on its own — a bystander plugging in a real USB
+    # keyboard/mouse shouldn't be able to drive a public kiosk.
+    services.udev.extraRules = ''
+      SUBSYSTEM=="input", ENV{LIBINPUT_IGNORE_DEVICE}="1"
+    '';
 
     # Lock Chromium down as hard as possible so nothing it ever grows —
     # today or in some future version — gets a chance to pop a bubble/prompt
@@ -176,6 +234,8 @@ in
         + "http://127.0.0.1:8081/";
     };
     services.cage.environment.WLR_LIBINPUT_NO_DEVICES = "1";
+    services.cage.environment.XCURSOR_THEME = "transparent";
+    services.cage.environment.XCURSOR_PATH = "${transparentCursorTheme}/share/icons";
 
     users.users.kiosk = {
       isNormalUser = true;
@@ -223,19 +283,22 @@ in
         NMCLI = "${pkgs.networkmanager}/bin/nmcli";
         SYSTEMCTL = "${pkgs.systemd}/bin/systemctl";
         IW = "${pkgs.iw}/bin/iw";
+        IP = "${pkgs.iproute2}/bin/ip";
       };
     };
 
     # The helper needs to restart the kiosk unit to re-seed cookies.
     security.polkit.enable = true;
 
-    # `iw` for AP capability probes; `iptables` is pulled in by NM's hotspot
-    # NAT path; `qrencode` for the WIFI: and portal-URL QRs.
+    # `iw` for AP capability probes; `iproute2` for the AP-bridge virtual
+    # interface; `iptables` is pulled in by NM's hotspot NAT path;
+    # `qrencode` for the WIFI: and portal-URL QRs.
     environment.systemPackages = [
       pkgs.chromium
       pkgs.qrencode
       pkgs.networkmanager
       pkgs.iw
+      pkgs.iproute2
       pkgs.iptables
     ];
 

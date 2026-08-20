@@ -14,6 +14,7 @@
 	import Majorities from '$lib/components/Majorities.svelte';
 	import ParticipantIdentityCard from '../ParticipantIdentityCard.svelte';
 	import DeviceVoteModal from '$lib/components/voting/DeviceVoteModal.svelte';
+	import RequestsCard from '$lib/components/requests/RequestsCard.svelte';
 	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 
 	const currentUser = await getCurrentUser();
@@ -299,6 +300,11 @@
 					</div>
 				{/if}
 			{/each}
+		{/if}
+
+		<!-- Requests Card -->
+		{#if isParticipant}
+			<RequestsCard conferenceId={page.params.conferenceId!} committeeId={committee.id} />
 		{/if}
 
 		<!-- Resolutions Card -->

@@ -1865,7 +1865,40 @@ export const optimistic: OptimisticMutationConfig = {
 	restorePaperFromSnapshot: (args) => ({
 		__typename: 'Papercontentsnapshot',
 		id: args.snapshotId
-	})
+	}),
+
+	// -------------------------------------------------------------------------
+	// requestType.ts
+	// -------------------------------------------------------------------------
+	createRequestType: (args) => {
+		const id = ensureId(args);
+		return {
+			__typename: 'Requesttype',
+			id,
+			conferenceId: args.conferenceId as string,
+			conference: { __typename: 'Conference', id: args.conferenceId as string },
+			name: args.name as string,
+			faIcon: (args.faIcon as string | undefined) ?? null,
+			priority: 0,
+			enabled: true,
+			requests: [],
+			createdAt: new Date(),
+			updatedAt: null
+		};
+	},
+	updateRequestType: (args) => {
+		const result: Record<string, unknown> = {
+			__typename: 'Requesttype',
+			id: args.id
+		};
+		for (const field of ['name', 'faIcon', 'priority', 'enabled']) {
+			if ((args as Record<string, unknown>)[field] !== undefined) {
+				result[field] = (args as Record<string, unknown>)[field];
+			}
+		}
+		return result;
+	},
+	deleteRequestType: () => true
 };
 
 // ---------------------------------------------------------------------------
@@ -3123,6 +3156,53 @@ export const updates: UpdatesConfig = {
 					removeFromList(cache, { __typename: 'Resolutionpaper', id: paperId }, 'sponsors', key);
 			}
 			cache.invalidate(sponsor);
+		},
+
+		// ---------------------------------------------------------------
+		// requestType
+		// ---------------------------------------------------------------
+		createRequestType: (result, args, cache) => {
+			const created = (result as Record<string, Record<string, unknown>>).createRequestType;
+			if (!created?.id) return;
+			addToList(
+				cache,
+				{ __typename: 'Conference', id: args.conferenceId as string },
+				'requestTypes',
+				{ __typename: 'Requesttype', id: created.id as string }
+			);
+		},
+		deleteRequestType: (_result, args, cache) => {
+			const requestType = { __typename: 'Requesttype', id: args.id as string };
+			const key = cache.keyOfEntity(requestType);
+			const conferenceId = cache.resolve(requestType, 'conferenceId') as string | undefined;
+			if (key && conferenceId) {
+				removeFromList(cache, { __typename: 'Conference', id: conferenceId }, 'requestTypes', key);
+			}
+			cache.invalidate(requestType);
+		},
+
+		// ---------------------------------------------------------------
+		// request — the "my pending requests" list is a top-level, args-filtered
+		// Query.requests(where: ...) rather than a parent list field, so there's
+		// no single entity to addToList/removeFromList against. Just invalidate
+		// every cached variant of the field so it refetches.
+		// ---------------------------------------------------------------
+		createRequest: (result, _args, cache) => {
+			const created = (result as Record<string, Record<string, unknown>>).createRequest;
+			if (!created?.id) return;
+			for (const f of cache.inspectFields('Query').filter((x) => x.fieldName === 'requests')) {
+				cache.invalidate('Query', 'requests', f.arguments);
+			}
+		},
+		resolveRequest: (_result, _args, cache) => {
+			for (const f of cache.inspectFields('Query').filter((x) => x.fieldName === 'requests')) {
+				cache.invalidate('Query', 'requests', f.arguments);
+			}
+		},
+		withdrawRequest: (_result, _args, cache) => {
+			for (const f of cache.inspectFields('Query').filter((x) => x.fieldName === 'requests')) {
+				cache.invalidate('Query', 'requests', f.arguments);
+			}
 		},
 
 		// ---------------------------------------------------------------

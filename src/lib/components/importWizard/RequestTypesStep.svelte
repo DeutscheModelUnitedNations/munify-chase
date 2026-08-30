@@ -28,8 +28,8 @@
 		data.requestTypes.push({ id: nanoid(), name: '', faIcon: 'fa-flag', enabled: true });
 	}
 
-	function removeRequestType(id: string | undefined) {
-		data.requestTypes = (data.requestTypes ?? []).filter((rt) => rt.id !== id);
+	function removeRequestType(index: number) {
+		data.requestTypes = (data.requestTypes ?? []).filter((_, i) => i !== index);
 	}
 
 	function moveRequestType(index: number, direction: -1 | 1) {
@@ -101,7 +101,7 @@
 					type="button"
 					class="btn join-item text-error"
 					aria-label="Remove request type"
-					onclick={() => removeRequestType(rt.id)}
+					onclick={() => removeRequestType(i)}
 				>
 					<i class="fa-solid fa-trash"></i>
 				</button>

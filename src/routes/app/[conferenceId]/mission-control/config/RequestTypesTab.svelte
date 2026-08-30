@@ -26,18 +26,26 @@
 	let sorted = $derived([...requestTypes].sort((a, b) => a.priority - b.priority));
 	let confirmDeleteOpen = $state(false);
 	let deleteTargetId = $state<string | null>(null);
+	let loadingDefaults = $state(false);
 
 	async function loadDefaults() {
-		const existingNames = new Set(requestTypes.map((rt) => rt.name));
-		for (const rt of getDefaultRequestTypes()) {
-			if (existingNames.has(rt.name)) continue;
-			await toast.promise(
-				client.mutate.createRequestType({
-					__args: { id: nanoid(), conferenceId, name: rt.name, faIcon: rt.faIcon },
-					id: true
-				}),
-				promiseToastStrings(m.requestTypes(), 'create')
-			);
+		if (loadingDefaults) return;
+		loadingDefaults = true;
+		try {
+			const existingNames = requestTypes.map((rt) => rt.name);
+			for (const rt of getDefaultRequestTypes()) {
+				if (existingNames.includes(rt.name)) continue;
+				await toast.promise(
+					client.mutate.createRequestType({
+						__args: { id: nanoid(), conferenceId, name: rt.name, faIcon: rt.faIcon },
+						id: true
+					}),
+					promiseToastStrings(m.requestTypes(), 'create')
+				);
+				existingNames.push(rt.name);
+			}
+		} finally {
+			loadingDefaults = false;
 		}
 	}
 
@@ -126,7 +134,7 @@
 									<button
 										type="button"
 										class="btn btn-ghost btn-xs join-item"
-										aria-label="Move up"
+										aria-label={m.moveUp()}
 										disabled={i === 0}
 										onclick={() => moveRequestType(i, -1)}
 									>
@@ -135,7 +143,7 @@
 									<button
 										type="button"
 										class="btn btn-ghost btn-xs join-item"
-										aria-label="Move down"
+										aria-label={m.moveDown()}
 										disabled={i === sorted.length - 1}
 										onclick={() => moveRequestType(i, 1)}
 									>
@@ -189,7 +197,7 @@
 	</div>
 
 	<div class="mt-6 flex gap-2">
-		<button class="btn btn-primary" onclick={loadDefaults}>
+		<button class="btn btn-primary" disabled={loadingDefaults} onclick={loadDefaults}>
 			<i class="fas fa-wand-magic-sparkles"></i>
 			{m.loadDefaultRequestTypes()}
 		</button>

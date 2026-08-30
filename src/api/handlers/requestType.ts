@@ -58,7 +58,7 @@ schemaBuilder.mutationFields((t) => ({
 					.then(assertFirstEntryExists);
 			});
 
-			pubsub.updated(result.id);
+			pubsub.created();
 
 			return db.query.requestType
 				.findFirst(

@@ -76,6 +76,7 @@ export const committee = snakeCase.table(
 		statusUntil: timestamp({ mode: 'date' }).defaultNow().notNull(),
 		stateOfDebate: text(),
 		allowDelegationsToAddThemselvesToSpeakersList: boolean().notNull().default(false),
+		allowRequests: boolean().notNull().default(false),
 		activeAgendaItemId: text().references(() => agendaItem.id),
 		activeRollCallSessionId: text().references((): AnyPgColumn => rollCallSession.id, {
 			onDelete: 'set null'

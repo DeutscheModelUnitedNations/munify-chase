@@ -65,6 +65,7 @@
 		showWhiteboard: true,
 		whiteboardContent: true,
 		allowDelegationsToAddThemselvesToSpeakersList: true,
+		allowRequests: true,
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
@@ -303,7 +304,7 @@
 		{/if}
 
 		<!-- Requests Card -->
-		{#if isParticipant}
+		{#if isParticipant && committee.allowRequests}
 			<RequestsCard conferenceId={page.params.conferenceId!} committeeId={committee.id} />
 		{/if}
 

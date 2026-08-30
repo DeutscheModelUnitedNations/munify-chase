@@ -153,6 +153,7 @@ const localDemoSpeakersList = {
 			__typename: 'Committee' as const,
 			id: 'localcommittee',
 			allowDelegationsToAddThemselvesToSpeakersList: true,
+			allowRequests: false,
 			conferenceId: LOCAL_CONFERENCE_ID
 		}
 	}
@@ -199,6 +200,7 @@ type LocalDemoCommittee = {
 	whiteboardContent: string | null;
 	showWhiteboard: boolean;
 	allowDelegationsToAddThemselvesToSpeakersList: boolean;
+	allowRequests: boolean;
 	amendmentSubmissionOpen: boolean;
 	amendmentSponsoringOpen: boolean;
 	supportReevaluationOpen: boolean;
@@ -240,6 +242,7 @@ function makeLocalDemoCommittee(
 		whiteboardContent: null,
 		showWhiteboard: true,
 		allowDelegationsToAddThemselvesToSpeakersList: false,
+		allowRequests: false,
 		amendmentSubmissionOpen: true,
 		amendmentSponsoringOpen: true,
 		supportReevaluationOpen: false,

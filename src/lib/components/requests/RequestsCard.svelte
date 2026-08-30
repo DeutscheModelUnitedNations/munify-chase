@@ -18,7 +18,7 @@
 	// src/api/handlers/request.ts), so no explicit "mine" filter is needed here.
 	const myRequests = await client.liveQuery.requests({
 		__args: {
-			where: { committeeId: { eq: committeeId }, status: { eq: 'PENDING' } }
+			where: { committeeId: { eq: committeeId }, status: 'PENDING' }
 		},
 		id: true,
 		status: true,
@@ -37,10 +37,19 @@
 
 	let sortedTypes = $derived([...(requestTypes ?? [])].sort((a, b) => a.priority - b.priority));
 
+	// Only one pending request per type is allowed at a time (see the partial
+	// unique index on request in src/api/db/schema.ts), so hide types the
+	// participant already has an open request for rather than let them pick
+	// one and hit the "already pending" error.
+	let pendingTypeIds = $derived(
+		new Set((myRequests ?? []).map((req) => req.requestType?.id).filter((id) => id !== undefined))
+	);
+	let pickableTypes = $derived(sortedTypes.filter((rt) => !pendingTypeIds.has(rt.id)));
+
 	let pickerOpen = $state(false);
 	let search = $state('');
 	let filteredTypes = $derived(
-		sortedTypes.filter((rt) => rt.name.toLowerCase().includes(search.toLowerCase()))
+		pickableTypes.filter((rt) => rt.name.toLowerCase().includes(search.toLowerCase()))
 	);
 
 	function openPicker() {
@@ -94,10 +103,25 @@
 			<p class="text-base-content/60 text-sm">{m.noPendingRequests()}</p>
 		{/if}
 
-		<button type="button" class="btn btn-primary btn-sm" onclick={openPicker}>
+		<button
+			type="button"
+			class="btn btn-primary btn-sm"
+			disabled={pickableTypes.length === 0}
+			aria-describedby={pickableTypes.length === 0 ? 'no-request-types-hint' : undefined}
+			onclick={openPicker}
+		>
 			<i class="fas fa-hand"></i>
 			{m.makeARequest()}
 		</button>
+		{#if sortedTypes.length === 0}
+			<p id="no-request-types-hint" class="text-base-content/50 text-xs">
+				{m.noRequestTypesConfigured()}
+			</p>
+		{:else if pickableTypes.length === 0}
+			<p id="no-request-types-hint" class="text-base-content/50 text-xs">
+				{m.allRequestTypesPending()}
+			</p>
+		{/if}
 	</div>
 </div>
 

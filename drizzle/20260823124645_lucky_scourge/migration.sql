@@ -1,0 +1,1 @@
+ALTER TABLE "committee" ADD COLUMN "allow_requests" boolean DEFAULT false NOT NULL;

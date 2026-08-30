@@ -3159,7 +3159,12 @@ export const updates: UpdatesConfig = {
 		},
 
 		// ---------------------------------------------------------------
-		// requestType
+		// requestType — mutated both via the Conference.requestTypes parent-list
+		// field (mission-control) and the top-level, args-filtered
+		// Query.requestTypes(where: ...) (RequestsCard's picker), so every
+		// mutation here also has to invalidate the latter or the picker keeps
+		// showing a stale (often empty) list after the chair adds/edits/enables
+		// a type.
 		// ---------------------------------------------------------------
 		createRequestType: (result, args, cache) => {
 			const created = (result as Record<string, Record<string, unknown>>).createRequestType;
@@ -3170,6 +3175,15 @@ export const updates: UpdatesConfig = {
 				'requestTypes',
 				{ __typename: 'Requesttype', id: created.id as string }
 			);
+			for (const f of cache.inspectFields('Query').filter((x) => x.fieldName === 'requestTypes')) {
+				cache.invalidate('Query', 'requestTypes', f.arguments);
+			}
+		},
+		updateRequestType: (_result, args, cache) => {
+			for (const f of cache.inspectFields('Query').filter((x) => x.fieldName === 'requestTypes')) {
+				cache.invalidate('Query', 'requestTypes', f.arguments);
+			}
+			cache.invalidate({ __typename: 'Requesttype', id: args.id as string });
 		},
 		deleteRequestType: (_result, args, cache) => {
 			const requestType = { __typename: 'Requesttype', id: args.id as string };
@@ -3177,6 +3191,9 @@ export const updates: UpdatesConfig = {
 			const conferenceId = cache.resolve(requestType, 'conferenceId') as string | undefined;
 			if (key && conferenceId) {
 				removeFromList(cache, { __typename: 'Conference', id: conferenceId }, 'requestTypes', key);
+			}
+			for (const f of cache.inspectFields('Query').filter((x) => x.fieldName === 'requestTypes')) {
+				cache.invalidate('Query', 'requestTypes', f.arguments);
 			}
 			cache.invalidate(requestType);
 		},

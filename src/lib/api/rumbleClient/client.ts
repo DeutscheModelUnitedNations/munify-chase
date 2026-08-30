@@ -343,6 +343,7 @@ export type Committee = {
     where?: AgendaitemWhereInputArgument | null | undefined
   }) => Agendaitem[],
   allowDelegationsToAddThemselvesToSpeakersList: Boolean,
+  allowRequests: Boolean,
   amendmentSponsoringOpen: Boolean,
   amendmentSubmissionOpen: Boolean,
   conference: (p?: {
@@ -428,6 +429,7 @@ export type CommitteeOrderInputArgument = {
   activeRollCallSessionId?: SortingParameter | null | undefined,
   activeVotingSessionId?: SortingParameter | null | undefined,
   allowDelegationsToAddThemselvesToSpeakersList?: SortingParameter | null | undefined,
+  allowRequests?: SortingParameter | null | undefined,
   amendmentSponsoringOpen?: SortingParameter | null | undefined,
   amendmentSubmissionOpen?: SortingParameter | null | undefined,
   conferenceId?: SortingParameter | null | undefined,
@@ -470,6 +472,7 @@ export type CommitteeWhereInputArgument = {
   activeVotingSessionId?: IDWhereInputArgument | null | undefined,
   agendaItems?: AgendaitemWhereInputArgument | null | undefined,
   allowDelegationsToAddThemselvesToSpeakersList?: BooleanWhereInputArgument | null | undefined,
+  allowRequests?: BooleanWhereInputArgument | null | undefined,
   amendmentSponsoringOpen?: BooleanWhereInputArgument | null | undefined,
   amendmentSubmissionOpen?: BooleanWhereInputArgument | null | undefined,
   conference?: ConferenceWhereInputArgument | null | undefined,
@@ -1358,6 +1361,7 @@ export type Mutation = {
     abbreviation?: String | null | undefined,
     activeAgendaItemId?: ID | null | undefined,
     allowDelegationsToAddThemselvesToSpeakersList?: Boolean | null | undefined,
+    allowRequests?: Boolean | null | undefined,
     displayRegionalGroups?: Boolean | null | undefined,
     id: ID,
     name?: String | null | undefined,

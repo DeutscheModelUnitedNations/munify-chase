@@ -20,11 +20,14 @@ abilityBuilder.request.allow('update').when((ctx) => ({
 	where: { committee: isTeamInConference(ctx) }
 }));
 
-// Only the submitter may withdraw their own request.
+// The submitter may withdraw their own request; chairs may withdraw any
+// request in their committee too.
 abilityBuilder.request.allow('delete').when((ctx) => {
 	const userId = ctx.mustBeLoggedIn().sub;
 	return {
-		where: { conferenceUser: { user: { id: userId } } }
+		where: {
+			OR: [{ committee: isTeamInConference(ctx) }, { conferenceUser: { user: { id: userId } } }]
+		}
 	};
 });
 
@@ -45,6 +48,10 @@ schemaBuilder.mutationFields((t) => ({
 			const committee = await db.query.committee
 				.findFirst({ where: { id: args.committeeId } })
 				.then(assertFindFirstExists);
+
+			if (!committee.allowRequests) {
+				throw new GraphQLError('Requests are not enabled for this committee.');
+			}
 
 			const requestType = await db.query.requestType
 				.findFirst({
@@ -145,6 +152,13 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.where(eq(schema.request.id, args.id));
 
+			// Rumble's auto-generated `requests` LIST field only re-subscribes on
+			// "created"/"removed" pubsub actions (see makePubSubInstance /
+			// registerOnInstance in @m1212e/rumble) - "updated" only wakes up a
+			// subscriber on the singular `request(id)` field. A resolved request
+			// leaves every chair's PENDING list, so it has to fire "removed" (like
+			// withdrawRequest below) for that list to live-update; `updated(id)`
+			// here would silently leave chairs' lists stale until a manual refresh.
 			pubsub.removed();
 
 			return db.query.request

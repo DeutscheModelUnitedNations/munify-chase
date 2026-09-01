@@ -14,6 +14,7 @@
 	import Majorities from '$lib/components/Majorities.svelte';
 	import ParticipantIdentityCard from '../ParticipantIdentityCard.svelte';
 	import DeviceVoteModal from '$lib/components/voting/DeviceVoteModal.svelte';
+	import RequestsCard from '$lib/components/requests/RequestsCard.svelte';
 	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 
 	const currentUser = await getCurrentUser();
@@ -64,6 +65,7 @@
 		showWhiteboard: true,
 		whiteboardContent: true,
 		allowDelegationsToAddThemselvesToSpeakersList: true,
+		allowRequests: true,
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
@@ -299,6 +301,11 @@
 					</div>
 				{/if}
 			{/each}
+		{/if}
+
+		<!-- Requests Card -->
+		{#if isParticipant && committee.allowRequests}
+			<RequestsCard conferenceId={page.params.conferenceId!} committeeId={committee.id} />
 		{/if}
 
 		<!-- Resolutions Card -->

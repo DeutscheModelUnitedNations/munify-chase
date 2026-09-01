@@ -1,10 +1,12 @@
 import { nanoid } from '../../lib/helpers/nanoid';
+import { sql } from 'drizzle-orm';
 import {
 	snakeCase,
 	text,
 	timestamp,
 	date,
 	unique,
+	uniqueIndex,
 	pgEnum,
 	boolean,
 	smallint,
@@ -74,6 +76,7 @@ export const committee = snakeCase.table(
 		statusUntil: timestamp({ mode: 'date' }).defaultNow().notNull(),
 		stateOfDebate: text(),
 		allowDelegationsToAddThemselvesToSpeakersList: boolean().notNull().default(false),
+		allowRequests: boolean().notNull().default(false),
 		activeAgendaItemId: text().references(() => agendaItem.id),
 		activeRollCallSessionId: text().references((): AnyPgColumn => rollCallSession.id, {
 			onDelete: 'set null'
@@ -586,3 +589,58 @@ export const amendmentReviewItem = snakeCase.table('amendment_review_item', {
 	verdictObsolete: boolean(),
 	verdictRewrite: text()
 });
+
+// ----------------------------------------------------------------------------
+// Requests feature
+// ----------------------------------------------------------------------------
+
+export const requestStatus = pgEnum('request_status', ['PENDING', 'RESOLVED', 'WITHDRAWN']);
+
+export const requestType = snakeCase.table(
+	'request_type',
+	{
+		...defaultIdAndTimestamps,
+		conferenceId: text()
+			.notNull()
+			.references(() => conference.id, { onDelete: 'cascade' }),
+		name: text().notNull(),
+		faIcon: text(),
+		// Determines display order in the chair's pending-requests list (natural
+		// hierarchy of request types). Lower sorts first.
+		priority: smallint().notNull(),
+		enabled: boolean().notNull().default(true)
+	},
+	(t) => [unique().on(t.conferenceId, t.name)]
+);
+
+export const request = snakeCase.table(
+	'request',
+	{
+		...defaultIdAndTimestamps,
+		committeeId: text()
+			.notNull()
+			.references(() => committee.id, { onDelete: 'cascade' }),
+		requestTypeId: text()
+			.notNull()
+			.references(() => requestType.id),
+		// Identifies the submitter directly (not via committeeMember) since NSAs
+		// are not permanently bound to a single committee and have no
+		// committeeMember row - see presenceEvent for the same pattern.
+		conferenceUserId: text()
+			.notNull()
+			.references(() => conferenceUser.id, { onDelete: 'cascade' }),
+		status: requestStatus().notNull().default('PENDING'),
+		resolvedByConferenceUserId: text().references(() => conferenceUser.id, {
+			onDelete: 'set null'
+		}),
+		resolvedAt: timestamp()
+	},
+	(t) => [
+		// One active (pending) request per type per person per committee - does not
+		// restrict resolved/withdrawn history, so a person can re-request the same
+		// type after it was resolved or withdrawn.
+		uniqueIndex('request_pending_unique')
+			.on(t.committeeId, t.conferenceUserId, t.requestTypeId)
+			.where(sql`${t.status} = 'PENDING'`)
+	]
+);

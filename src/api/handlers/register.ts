@@ -23,6 +23,8 @@ import './amendment';
 import './amendmentSponsor';
 import './amendmentReviewItem';
 import './operativeClauseVote';
+import './requestType';
+import './request';
 import './ai';
 import './statistics';
 import { building, dev } from '$app/environment';

@@ -413,11 +413,14 @@ if (browser) {
 					optimistic
 				)
 			},
-			// seedLocalDemoConference isn't a real schema field (see ./localDemo/seedConference.ts)
-			// — graphcache validates `updates`/document fields against the real introspected
-			// schema and warns every time the seed runs otherwise. That mismatch is expected here.
+			// Two classes of graphcache noise are expected here and get dropped:
+			// - seedLocalDemoConference isn't a real schema field (see ./localDemo/seedConference.ts),
+			//   so graphcache warns about the `updates`/document mismatch every time the seed runs.
+			// - "No value for field" is a plain cache miss, which is the normal state of an
+			//   offline-first cache before (or without) a server round-trip.
 			logger: (severity, message) => {
 				if (message.includes('seedLocalDemoConference')) return;
+				if (message.includes('No value for field')) return;
 				console[severity](message);
 			},
 			keys: {

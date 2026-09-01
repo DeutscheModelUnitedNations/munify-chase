@@ -100,15 +100,6 @@ async function run(): Promise<AiAssessment> {
 	const maxStorageBinding = adapter.limits.maxStorageBufferBindingSize;
 	const maxStorageBindingMB = maxStorageBinding / (1024 * 1024);
 
-	console.log('[WebLLM] GPU adapter:', {
-		vendor,
-		device,
-		description,
-		backend,
-		maxStorageBufferBindingSize: `${Math.round(maxStorageBindingMB)} MB`,
-		maxBufferSize: `${Math.round(adapter.limits.maxBufferSize / (1024 * 1024))} MB`
-	});
-
 	// Detect software/CPU-only renderers.
 	if (SOFTWARE_BACKEND_PATTERNS.some((p) => adapterStr.includes(p))) {
 		return {
@@ -157,12 +148,7 @@ async function run(): Promise<AiAssessment> {
 
 		const vramNeeded = record.vram_required_MB ?? Infinity;
 
-		console.log(
-			`[WebLLM] Checking ${candidateId}: needs ${Math.round(vramNeeded)} MB, available ${Math.round(maxStorageBindingMB)} MB`
-		);
-
 		if (skipVramCheck || vramNeeded <= maxStorageBindingMB) {
-			console.log(`[WebLLM] Selected model: ${candidateId}`);
 			return {
 				supported: true,
 				reason: '',

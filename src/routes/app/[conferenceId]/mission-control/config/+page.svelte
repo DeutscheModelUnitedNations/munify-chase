@@ -104,7 +104,8 @@
 			name: true,
 			faIcon: true,
 			priority: true,
-			enabled: true
+			enabled: true,
+			delegatesOnly: true
 		}
 	});
 

@@ -108,7 +108,8 @@ const Input = schemaBuilder.inputType('ImportData', {
 						id: t.id(),
 						name: t.string({ required: true }),
 						faIcon: t.string(),
-						enabled: t.boolean()
+						enabled: t.boolean(),
+						delegatesOnly: t.boolean()
 					})
 				})
 			],
@@ -261,7 +262,8 @@ schemaBuilder.mutationFields((t) => ({
 							faIcon: requestType.faIcon,
 							// array order is the natural hierarchy of the request types
 							priority: index,
-							enabled: requestType.enabled ?? true
+							enabled: requestType.enabled ?? true,
+							delegatesOnly: requestType.delegatesOnly ?? false
 						}))
 					);
 				}

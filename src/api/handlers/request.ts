@@ -72,6 +72,10 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
+			if (requestType.delegatesOnly && self.conferenceUserType !== 'DELEGATE') {
+				throw new GraphQLError('This request type is only available to delegates.');
+			}
+
 			// Delegates are seated in one specific committee via committeeMemberId -
 			// keep them from filing requests into a committee they are not part of.
 			// NSAs have no committeeMemberId and may request into any committee of

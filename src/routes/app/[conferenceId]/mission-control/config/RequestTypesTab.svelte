@@ -14,6 +14,7 @@
 		faIcon: string | null;
 		priority: number;
 		enabled: boolean;
+		delegatesOnly: boolean;
 	}
 
 	interface Props {
@@ -37,7 +38,13 @@
 				if (existingNames.includes(rt.name)) continue;
 				await toast.promise(
 					client.mutate.createRequestType({
-						__args: { id: nanoid(), conferenceId, name: rt.name, faIcon: rt.faIcon },
+						__args: {
+							id: nanoid(),
+							conferenceId,
+							name: rt.name,
+							faIcon: rt.faIcon,
+							delegatesOnly: rt.delegatesOnly
+						},
 						id: true
 					}),
 					promiseToastStrings(m.requestTypes(), 'create')
@@ -81,6 +88,13 @@
 		);
 	}
 
+	async function toggleDelegatesOnly(id: string, delegatesOnly: boolean) {
+		await toast.promise(
+			client.mutate.updateRequestType({ __args: { id, delegatesOnly }, id: true }),
+			promiseToastStrings(m.requestTypes(), 'update')
+		);
+	}
+
 	async function moveRequestType(index: number, direction: -1 | 1) {
 		const target = index + direction;
 		if (target < 0 || target >= sorted.length) return;
@@ -118,13 +132,14 @@
 					<th>{m.icon()}</th>
 					<th>{m.name()}</th>
 					<th>{m.enabled()}</th>
+					<th>{m.delegatesOnly()}</th>
 					<th></th>
 				</tr>
 			</thead>
 			<tbody>
 				{#if sorted.length === 0}
 					<tr>
-						<td colspan="6" class="text-base-content/60 text-center">{m.noData()}</td>
+						<td colspan="7" class="text-base-content/60 text-center">{m.noData()}</td>
 					</tr>
 				{:else}
 					{#each sorted as rt, i (rt.id)}
@@ -178,6 +193,15 @@
 									class="toggle toggle-sm"
 									checked={rt.enabled}
 									onchange={(e) => toggleEnabled(rt.id, e.currentTarget.checked)}
+								/>
+							</td>
+							<td>
+								<input
+									type="checkbox"
+									class="toggle toggle-sm"
+									aria-label={m.delegatesOnlyHint()}
+									checked={rt.delegatesOnly}
+									onchange={(e) => toggleDelegatesOnly(rt.id, e.currentTarget.checked)}
 								/>
 							</td>
 							<td>

@@ -20,11 +20,7 @@
 		createdAt: true,
 		requestType: { id: true, name: true, faIcon: true, priority: true },
 		conferenceUser: {
-			id: true,
-			name: true,
-			userEmail: true,
 			committeeMember: {
-				id: true,
 				representation: {
 					type: true,
 					name: true,
@@ -34,7 +30,6 @@
 				}
 			},
 			conferenceMember: {
-				id: true,
 				representation: {
 					type: true,
 					name: true,
@@ -60,11 +55,7 @@
 		updatedAt: true,
 		requestType: { id: true, name: true, faIcon: true },
 		conferenceUser: {
-			id: true,
-			name: true,
-			userEmail: true,
 			committeeMember: {
-				id: true,
 				representation: {
 					type: true,
 					name: true,
@@ -74,7 +65,6 @@
 				}
 			},
 			conferenceMember: {
-				id: true,
 				representation: {
 					type: true,
 					name: true,
@@ -83,8 +73,7 @@
 					faIcon: true
 				}
 			}
-		},
-		resolvedBy: { id: true, name: true, userEmail: true }
+		}
 	});
 
 	type Requester = NonNullable<NonNullable<typeof pendingRequests>[number]['conferenceUser']>;
@@ -97,14 +86,8 @@
 		);
 	}
 
-	// The delegation/NSA name is the primary label; the person's own name (when
-	// set) is shown alongside it for context, but only if it adds information.
 	function requesterLabel(conferenceUser: Requester | null | undefined) {
-		const rep = requesterRepresentation(conferenceUser);
-		const personName = conferenceUser?.name;
-		const primary = rep?.name ?? personName ?? conferenceUser?.userEmail ?? m.unknown();
-		const secondary = personName && personName !== rep?.name ? personName : null;
-		return { primary, secondary };
+		return requesterRepresentation(conferenceUser)?.name ?? m.unknown();
 	}
 
 	let sortedPending = $derived(
@@ -148,7 +131,6 @@
 				{#if sortedPending.length > 0}
 					<ul class="flex flex-col gap-2">
 						{#each sortedPending as req (req.id)}
-							{@const label = requesterLabel(req.conferenceUser)}
 							<li
 								class="bg-base-200 flex flex-wrap items-center gap-3 rounded-lg px-4 py-3 sm:flex-nowrap"
 							>
@@ -160,10 +142,7 @@
 									<div class="flex min-w-0 flex-col">
 										<span class="font-medium">{req.requestType?.name}</span>
 										<span class="text-base-content/60 truncate text-sm">
-											{label.primary}
-											{#if label.secondary}
-												<span class="text-base-content/40">({label.secondary})</span>
-											{/if}
+											{requesterLabel(req.conferenceUser)}
 										</span>
 									</div>
 								</div>
@@ -202,16 +181,12 @@
 					</summary>
 					<ul class="mt-2 flex flex-col gap-1">
 						{#each history as req (req.id)}
-							{@const label = requesterLabel(req.conferenceUser)}
 							<li class="bg-base-200 flex items-center gap-3 rounded-lg px-4 py-2 text-sm">
 								<i class="fas fa-{(req.requestType?.faIcon ?? 'fa-flag').replace('fa-', '')}"></i>
 								<span class="flex-1">{req.requestType?.name}</span>
 								<Flag representation={requesterRepresentation(req.conferenceUser)} size="xs" />
 								<span class="text-base-content/60">
-									{label.primary}
-									{#if label.secondary}
-										<span class="text-base-content/40">({label.secondary})</span>
-									{/if}
+									{requesterLabel(req.conferenceUser)}
 								</span>
 								<span
 									class="badge badge-sm {req.status === 'WITHDRAWN'

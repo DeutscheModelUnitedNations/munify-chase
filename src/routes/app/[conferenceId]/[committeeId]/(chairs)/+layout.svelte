@@ -136,8 +136,6 @@
 		id: true,
 		requestType: { name: true, faIcon: true },
 		conferenceUser: {
-			name: true,
-			userEmail: true,
 			committeeMember: { representation: { name: true } },
 			conferenceMember: { representation: { name: true } }
 		}
@@ -309,7 +307,7 @@
 		const rep =
 			conferenceUser?.committeeMember?.representation ??
 			conferenceUser?.conferenceMember?.representation;
-		return conferenceUser?.name ?? rep?.name ?? conferenceUser?.userEmail ?? m.unknown();
+		return rep?.name ?? m.unknown();
 	}
 
 	$effect(() => {

@@ -26,7 +26,8 @@ schemaBuilder.mutationFields((t) => ({
 			id: t.arg.id().validate(nanoidValidation),
 			conferenceId: t.arg.id({ required: true }),
 			name: t.arg.string({ required: true }),
-			faIcon: t.arg.string()
+			faIcon: t.arg.string(),
+			delegatesOnly: t.arg.boolean()
 		},
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.conference
@@ -52,7 +53,8 @@ schemaBuilder.mutationFields((t) => ({
 						conferenceId: args.conferenceId,
 						name: args.name,
 						faIcon: args.faIcon ?? undefined,
-						priority
+						priority,
+						delegatesOnly: args.delegatesOnly ?? undefined
 					})
 					.returning()
 					.then(assertFirstEntryExists);
@@ -78,7 +80,8 @@ schemaBuilder.mutationFields((t) => ({
 			name: t.arg.string(),
 			faIcon: t.arg.string(),
 			priority: t.arg.int(),
-			enabled: t.arg.boolean()
+			enabled: t.arg.boolean(),
+			delegatesOnly: t.arg.boolean()
 		},
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.requestType
@@ -92,6 +95,8 @@ schemaBuilder.mutationFields((t) => ({
 			if (args.faIcon !== undefined) updateSet.faIcon = args.faIcon;
 			if (args.priority !== undefined && args.priority !== null) updateSet.priority = args.priority;
 			if (args.enabled !== undefined && args.enabled !== null) updateSet.enabled = args.enabled;
+			if (args.delegatesOnly !== undefined && args.delegatesOnly !== null)
+				updateSet.delegatesOnly = args.delegatesOnly;
 
 			if (Object.keys(updateSet).length > 0) {
 				await db

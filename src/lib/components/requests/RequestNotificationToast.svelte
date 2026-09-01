@@ -33,7 +33,12 @@
 			{m.viewRequests()}
 		</a>
 	</div>
-	<button type="button" class="btn btn-ghost btn-xs" onclick={dismiss} aria-label={m.close()}>
+	<button
+		type="button"
+		class="btn btn-ghost btn-xs shrink-0"
+		onclick={dismiss}
+		aria-label={m.close()}
+	>
 		<i class="fas fa-xmark"></i>
 	</button>
 </div>

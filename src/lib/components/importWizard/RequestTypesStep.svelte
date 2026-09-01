@@ -19,13 +19,25 @@
 		const existingNames = new Set(data.requestTypes.map((rt) => rt.name));
 		for (const rt of getDefaultRequestTypes()) {
 			if (existingNames.has(rt.name)) continue;
-			data.requestTypes.push({ id: nanoid(), name: rt.name, faIcon: rt.faIcon, enabled: true });
+			data.requestTypes.push({
+				id: nanoid(),
+				name: rt.name,
+				faIcon: rt.faIcon,
+				enabled: true,
+				delegatesOnly: rt.delegatesOnly
+			});
 		}
 	}
 
 	function addRequestType() {
 		if (!data.requestTypes) data.requestTypes = [];
-		data.requestTypes.push({ id: nanoid(), name: '', faIcon: 'fa-flag', enabled: true });
+		data.requestTypes.push({
+			id: nanoid(),
+			name: '',
+			faIcon: 'fa-flag',
+			enabled: true,
+			delegatesOnly: false
+		});
 	}
 
 	function removeRequestType(index: number) {
@@ -96,6 +108,10 @@
 				<label class="btn join-item gap-2">
 					<input type="checkbox" class="toggle toggle-sm" bind:checked={rt.enabled} />
 					{m.enabled()}
+				</label>
+				<label class="btn join-item gap-2">
+					<input type="checkbox" class="toggle toggle-sm" bind:checked={rt.delegatesOnly} />
+					{m.delegatesOnly()}
 				</label>
 				<button
 					type="button"

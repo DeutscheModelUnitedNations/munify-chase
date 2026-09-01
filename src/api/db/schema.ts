@@ -608,7 +608,9 @@ export const requestType = snakeCase.table(
 		// Determines display order in the chair's pending-requests list (natural
 		// hierarchy of request types). Lower sorts first.
 		priority: smallint().notNull(),
-		enabled: boolean().notNull().default(true)
+		enabled: boolean().notNull().default(true),
+		// Restricts this request type to delegates
+		delegatesOnly: boolean().notNull().default(false)
 	},
 	(t) => [unique().on(t.conferenceId, t.name)]
 );

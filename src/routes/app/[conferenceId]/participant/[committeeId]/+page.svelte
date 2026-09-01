@@ -305,7 +305,11 @@
 
 		<!-- Requests Card -->
 		{#if isParticipant && committee.allowRequests}
-			<RequestsCard conferenceId={page.params.conferenceId!} committeeId={committee.id} />
+			<RequestsCard
+				conferenceId={page.params.conferenceId!}
+				committeeId={committee.id}
+				isDelegate={role === 'DELEGATE'}
+			/>
 		{/if}
 
 		<!-- Resolutions Card -->

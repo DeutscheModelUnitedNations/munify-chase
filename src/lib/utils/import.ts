@@ -88,7 +88,8 @@ export const importDataSchema = z.object({
 				id: z.string().optional(),
 				name: z.string(),
 				faIcon: z.string().optional(),
-				enabled: z.boolean().optional()
+				enabled: z.boolean().optional(),
+				delegatesOnly: z.boolean().optional()
 			})
 		)
 		.optional()

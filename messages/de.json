@@ -289,6 +289,8 @@
 	"delegatePresence": "Delegierte anwesend",
 	"delegatePresenceOverview": "Übersicht Delegierten-Anwesenheit",
 	"delegateStatistics": "Delegierten-Statistik",
+	"delegatesOnly": "Nur Delegierte",
+	"delegatesOnlyHint": "NSAs können diesen Antrag nicht stellen",
 	"delegatesPresentOfTotal": "{present} / {total} Delegierte",
 	"delegatesPresentRightNow": "Aktuell in allen Gremien anwesend",
 	"delegation": "Delegation",

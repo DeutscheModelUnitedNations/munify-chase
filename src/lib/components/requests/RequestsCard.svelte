@@ -9,9 +9,10 @@
 	interface Props {
 		conferenceId: string;
 		committeeId: string;
+		isDelegate: boolean;
 	}
 
-	let { conferenceId, committeeId }: Props = $props();
+	let { conferenceId, committeeId, isDelegate }: Props = $props();
 
 	// Ability-scoped read: a participant only ever gets back requests they
 	// submitted themselves (see abilityBuilder.request.allow('read') in
@@ -22,8 +23,18 @@
 		},
 		id: true,
 		status: true,
-		requestType: { id: true, name: true, faIcon: true }
+		createdAt: true,
+		requestType: { id: true, name: true, faIcon: true, priority: true }
 	});
+
+	// Same order as the chairs' pending-requests list: requestType.priority, then createdAt.
+	let sortedMyRequests = $derived(
+		[...(myRequests ?? [])].sort((a, b) => {
+			const priorityDiff = (a.requestType?.priority ?? 0) - (b.requestType?.priority ?? 0);
+			if (priorityDiff !== 0) return priorityDiff;
+			return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+		})
+	);
 
 	const requestTypes = await client.liveQuery.requestTypes({
 		__args: {
@@ -32,10 +43,16 @@
 		id: true,
 		name: true,
 		faIcon: true,
-		priority: true
+		priority: true,
+		delegatesOnly: true
 	});
 
-	let sortedTypes = $derived([...(requestTypes ?? [])].sort((a, b) => a.priority - b.priority));
+	// NSAs can't file delegates-only request types.
+	let sortedTypes = $derived(
+		[...(requestTypes ?? [])]
+			.filter((rt) => isDelegate || !rt.delegatesOnly)
+			.sort((a, b) => a.priority - b.priority)
+	);
 
 	// Only one pending request per type is allowed at a time (see the partial
 	// unique index on request in src/api/db/schema.ts), so hide types the
@@ -81,9 +98,9 @@
 	<div class="card-body gap-3 p-4">
 		<h2 class="card-title text-lg">{m.requests()}</h2>
 
-		{#if (myRequests ?? []).length > 0}
+		{#if sortedMyRequests.length > 0}
 			<ul class="flex flex-col gap-2">
-				{#each myRequests ?? [] as req (req.id)}
+				{#each sortedMyRequests as req (req.id)}
 					<li class="bg-base-200 flex items-center gap-2 rounded-lg px-3 py-2">
 						<i class="fas fa-{(req.requestType?.faIcon ?? 'fa-flag').replace('fa-', '')}"></i>
 						<span class="flex-1 text-sm">{req.requestType?.name}</span>

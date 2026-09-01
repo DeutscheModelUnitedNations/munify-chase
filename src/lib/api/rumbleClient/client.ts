@@ -1012,6 +1012,7 @@ export type ImportDataRepresentation = {
 };
 		
 export type ImportDataRequestType = {
+  delegatesOnly?: Boolean | null | undefined,
   enabled?: Boolean | null | undefined,
   faIcon?: String | null | undefined,
   id?: ID | null | undefined,
@@ -1173,6 +1174,7 @@ export type Mutation = {
   }) => Request,
   createRequestType: (p: {
     conferenceId: ID,
+    delegatesOnly?: Boolean | null | undefined,
     faIcon?: String | null | undefined,
     id?: ID | null | undefined,
     name: String
@@ -1400,6 +1402,7 @@ export type Mutation = {
     timestamp?: DateTime | null | undefined
   }) => Presenceevent,
   updateRequestType: (p: {
+    delegatesOnly?: Boolean | null | undefined,
     enabled?: Boolean | null | undefined,
     faIcon?: String | null | undefined,
     id: ID,
@@ -2127,6 +2130,7 @@ export type Requesttype = {
   }) => Conference,
   conferenceId: ID,
   createdAt: DateTime,
+  delegatesOnly: Boolean,
   enabled: Boolean,
   faIcon: String | null,
   id: ID,
@@ -2144,6 +2148,7 @@ export type Requesttype = {
 export type RequesttypeOrderInputArgument = {
   conferenceId?: SortingParameter | null | undefined,
   createdAt?: SortingParameter | null | undefined,
+  delegatesOnly?: SortingParameter | null | undefined,
   enabled?: SortingParameter | null | undefined,
   faIcon?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
@@ -2159,6 +2164,7 @@ export type RequesttypeWhereInputArgument = {
   conference?: ConferenceWhereInputArgument | null | undefined,
   conferenceId?: IDWhereInputArgument | null | undefined,
   createdAt?: DateTimeWhereInputArgument | null | undefined,
+  delegatesOnly?: BooleanWhereInputArgument | null | undefined,
   enabled?: BooleanWhereInputArgument | null | undefined,
   faIcon?: StringWhereInputArgument | null | undefined,
   id?: IDWhereInputArgument | null | undefined,

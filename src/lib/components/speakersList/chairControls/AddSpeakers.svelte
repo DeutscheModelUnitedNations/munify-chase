@@ -125,7 +125,6 @@
 		if (!focused) {
 			hotkeys('alt+a, alt+shift+a', (event, handler) => {
 				event.preventDefault();
-				console.log('hotkey', handler.key);
 				switch (handler.key) {
 					case 'alt+a':
 						if (speakersList?.type === 'SPEAKERS_LIST') {

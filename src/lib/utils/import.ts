@@ -79,7 +79,20 @@ export const importDataSchema = z.object({
 			committeeId: z.string(),
 			title: z.string()
 		})
-	)
+	),
+	// Order determines the display priority (natural hierarchy) once loaded -
+	// see requestType.priority.
+	requestTypes: z
+		.array(
+			z.object({
+				id: z.string().optional(),
+				name: z.string(),
+				faIcon: z.string().optional(),
+				enabled: z.boolean().optional(),
+				delegatesOnly: z.boolean().optional()
+			})
+		)
+		.optional()
 });
 
 // export interface ImportData {

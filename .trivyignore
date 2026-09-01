@@ -114,6 +114,7 @@ CVE-2026-29786
 # migrate + node server.js, no npm).
 CVE-2026-59873
 CVE-2026-59874
+CVE-2026-73566
 
 # ip-address: inconsistent parsing leading to SSRF - same rationale as the node-tar
 # entries above: bundled inside node:lts-slim's own npm install

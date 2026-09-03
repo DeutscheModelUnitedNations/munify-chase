@@ -227,6 +227,28 @@ in
       # policies above) — removed rather than risk a third outage.
     };
 
+    # --- Audio (needed for the resolution-adoption "gong", AdoptionConfetti.
+    # svelte) --------------------------------------------------------------
+    # This image had no audio server configured at all before the gong: a
+    # display-only kiosk never needed one. AutoplayAllowlist above only
+    # clears Chromium's *policy* objection to playing sound with no user
+    # gesture — without a running sound server for it to hand audio to,
+    # Chromium's Web Audio output has nowhere to go and just plays into a
+    # null sink, silently. PipeWire is the current NixOS-recommended stack
+    # (replacing standalone PulseAudio) and works under a plain systemd
+    # user session like the one `services.cage`'s autologin creates for
+    # `kiosk` below. Unverified on real hardware — flagging in case the
+    # gong still doesn't come through after this: could be HDMI audio
+    # disabled at the firmware/config.txt level, a chip needing its own
+    # extra config, or the user systemd session not starting the service
+    # the way this assumes.
+    security.rtkit.enable = true;
+    services.pipewire = {
+      enable = true;
+      alsa.enable = true;
+      pulse.enable = true;
+    };
+
     # --- Auto-login + Wayland kiosk (cage runs a single Chromium) ---------
     services.cage = {
       enable = true;

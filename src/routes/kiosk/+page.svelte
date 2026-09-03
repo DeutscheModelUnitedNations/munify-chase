@@ -49,7 +49,7 @@
 	// locale, timezone) without a manual reload.
 	const devices = deviceId
 		? await client.liveQuery.displayDevices({
-				__args: { where: { id: deviceId } },
+				__args: { where: { id: { eq: deviceId } } },
 				id: true,
 				name: true,
 				revoked: true,

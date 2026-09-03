@@ -28,9 +28,13 @@
 
 	interface Props {
 		committeeId: string;
+		// Only the kiosk display sets this — see AdoptionConfetti's playSound
+		// prop for why it's off elsewhere (mission-control, a chair's own
+		// presentation tab).
+		playAdoptionSound?: boolean;
 	}
 
-	let { committeeId }: Props = $props();
+	let { committeeId, playAdoptionSound = false }: Props = $props();
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: committeeId },
@@ -322,6 +326,7 @@
 	<AdoptionConfetti
 		lastAdoptionDate={committee.lastResolutionAdoptionDate}
 		confettiDurationSec={45}
+		playSound={playAdoptionSound}
 	/>
 
 	<RegionalGroups

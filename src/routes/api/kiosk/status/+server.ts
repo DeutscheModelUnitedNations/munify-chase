@@ -2,6 +2,33 @@ import { db } from '$api/db/db';
 import { isValidNanoid } from '$lib/helpers/nanoid';
 import type { RequestHandler } from './$types';
 
+// Unauthenticated + hits the DB on every call, so it's rate-limited per
+// client IP. Real traffic is one paired Pi polling every PROVISION_PROBE_
+// INTERVAL (30s default) — generous headroom above that for NATted venues
+// where many displays can share one public IP.
+const RATE_LIMIT_WINDOW_MS = 1000 * 60;
+const RATE_LIMIT_MAX = 60;
+// In-memory only (matches the pattern in api/handlers/ai.ts); IPs are
+// attacker-controlled unlike that handler's userId keys, so entries are
+// pruned as they expire rather than left to accumulate forever.
+const requestCounts = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimited(ip: string): boolean {
+	const now = Date.now();
+	for (const [key, entry] of requestCounts) {
+		if (now > entry.resetAt) requestCounts.delete(key);
+	}
+
+	const entry = requestCounts.get(ip);
+	if (!entry || now > entry.resetAt) {
+		requestCounts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+		return false;
+	}
+	if (entry.count >= RATE_LIMIT_MAX) return true;
+	entry.count++;
+	return false;
+}
+
 /**
  * Unauthenticated existence check for a single displayDevice row, polled
  * directly by the Pi's Python helper (chase-kiosk-helper.py) — not the
@@ -28,7 +55,11 @@ import type { RequestHandler } from './$types';
  */
 const NO_STORE = { 'Cache-Control': 'no-store' };
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, getClientAddress }) => {
+	if (rateLimited(getClientAddress())) {
+		return new Response('Too many requests', { status: 429, headers: NO_STORE });
+	}
+
 	const deviceId = url.searchParams.get('deviceId');
 	if (!deviceId || !isValidNanoid(deviceId)) {
 		return new Response('Missing or invalid deviceId', { status: 400, headers: NO_STORE });

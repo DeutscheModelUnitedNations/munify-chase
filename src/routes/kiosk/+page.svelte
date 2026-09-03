@@ -2,6 +2,7 @@
 	import QRCode from 'qrcode';
 	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
 	import CommitteePresentation from '$lib/components/presentation/CommitteePresentation.svelte';
+	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
@@ -127,6 +128,23 @@
 			committees: assignedConference.committees ?? []
 		} as unknown as ConferenceData;
 	});
+
+	// Same "most recently adopted, across every committee" pick as
+	// mission-control's AdoptionConfetti — the multi-committee grid has no
+	// single committee's own presentation to attach it to.
+	let adoptingCommittee = $derived.by(() => {
+		const committees = assignedConference?.committees ?? [];
+		return (
+			committees
+				.filter((c) => c.lastResolutionAdoptionDate != null)
+				.sort(
+					(a, b) =>
+						new Date(b.lastResolutionAdoptionDate!).getTime() -
+						new Date(a.lastResolutionAdoptionDate!).getTime()
+				)[0] ?? null
+		);
+	});
+	let mostRecentAdoption = $derived(adoptingCommittee?.lastResolutionAdoptionDate ?? null);
 </script>
 
 <svelte:head>
@@ -145,7 +163,7 @@
 	     above), so switching the assignment to a different committee needs a
 	     fresh instance rather than an in-place prop update. -->
 	{#key presentationCommitteeId}
-		<CommitteePresentation committeeId={presentationCommitteeId} />
+		<CommitteePresentation committeeId={presentationCommitteeId} playAdoptionSound />
 	{/key}
 {:else if gridConference}
 	<div class="bg-base-200 flex min-h-screen flex-col">
@@ -157,6 +175,14 @@
 				<CurrentTime timezone={device?.timezone} />
 			</div>
 		</div>
+		<AdoptionConfetti
+			lastAdoptionDate={mostRecentAdoption}
+			confettiDurationSec={45}
+			showBanner
+			committeeName={adoptingCommittee?.name ?? adoptingCommittee?.abbreviation ?? ''}
+			agendaItem={adoptingCommittee?.activeAgendaItem?.title ?? ''}
+			playSound
+		/>
 		<CommitteeGrid conference={gridConference} environment="SPECTATOR" />
 	</div>
 {:else}

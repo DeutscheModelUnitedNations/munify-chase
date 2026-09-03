@@ -172,6 +172,18 @@ in
       AudioCaptureAllowed = false;
       VideoCaptureAllowed = false;
 
+      # This display's input devices are all disabled (see the udev rule
+      # below), so Chromium can never see the user gesture its default
+      # autoplay policy requires before letting a page's Web Audio API make
+      # sound (the resolution-adoption "gong" — see AdoptionConfetti.svelte
+      # — otherwise plays silently forever on kiosk). A wildcard rather than
+      # an exact-origin pattern deliberately sidesteps the URL-pattern
+      # scheme-matching bugs noted below (URLBlocklist/URLAllowlist) — this
+      # Chromium only ever navigates between the local bootstrap page and
+      # the CHASE origin anyway, so "everywhere" and "those two origins" are
+      # equivalent in practice here.
+      AutoplayAllowlist = [ "*" ];
+
       # Account/profile/sync surfaces: this Chromium is a single anonymous
       # kiosk session with no Google account, ever — deny sign-in so nothing
       # ever offers to sync, add a person, or switch to guest mode.

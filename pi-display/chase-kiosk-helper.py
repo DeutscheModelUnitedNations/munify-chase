@@ -38,6 +38,13 @@ PROVISION_HTTP_PORT = int(os.environ.get("PROVISION_HTTP_PORT", "80"))
 PROVISION_PROBE_URL = os.environ.get("PROVISION_PROBE_URL") or AUTHORITY
 PROVISION_FAILURE_THRESHOLD = int(os.environ.get("PROVISION_FAILURE_THRESHOLD", "6"))
 PROVISION_PROBE_INTERVAL = int(os.environ.get("PROVISION_PROBE_INTERVAL", "30"))
+# Real venue captive portals routinely involve several steps (T&Cs, an email
+# or room-number form, a second confirmation page) beyond just scanning the
+# trigger QR, so this needs real headroom — too short and the bridge AP gets
+# torn down (with a "no one completed the sign-in in time" error shown) while
+# the operator is still mid-flow on their phone, even though the venue portal
+# goes on to authorize the connection a few seconds later once they finish.
+CAPTIVE_PORTAL_BRIDGE_TIMEOUT = int(os.environ.get("CAPTIVE_PORTAL_BRIDGE_TIMEOUT", "900"))
 QRENCODE = os.environ.get("QRENCODE", "qrencode")
 NMCLI = os.environ.get("NMCLI", "nmcli")
 SYSTEMCTL = os.environ.get("SYSTEMCTL", "systemctl")
@@ -804,10 +811,11 @@ def captive_portal_bridge_kiosk_page(upstream_ssid: str, bridge_ssid: str, bridg
         f"<h1 style='margin:0'>'{_esc(upstream_ssid)}' needs a sign-in</h1>"
         "<p style='margin:0;opacity:.8;max-width:42rem'>"
         "Scan the left QR with your phone to join this display's setup "
-        "network (same one as before), then scan the right QR — you should "
-        f"land on the sign-in page for <b>{_esc(upstream_ssid)}</b>. "
-        "Complete it there; this display picks up the connection "
-        "automatically once you're done.</p>"
+        "network (same one as before). Most phones then open the sign-in "
+        f"page for <b>{_esc(upstream_ssid)}</b> on their own within a few "
+        "seconds — if yours doesn't, scan the right QR to open it "
+        "manually. Complete it there; this display picks up the "
+        "connection automatically once you're done.</p>"
         "<div style='display:flex;gap:2rem;align-items:flex-start;flex-wrap:wrap;"
         "justify-content:center'>"
         "<div style='display:flex;flex-direction:column;align-items:center;gap:.5rem'>"
@@ -817,10 +825,12 @@ def captive_portal_bridge_kiosk_page(upstream_ssid: str, bridge_ssid: str, bridg
         "<div style='display:flex;flex-direction:column;align-items:center;gap:.5rem'>"
         "<img src='qr-trigger.png' style='width:260px;height:260px;background:#fff;"
         "padding:1rem;border-radius:1rem'>"
-        "<div style='opacity:.7;font-size:.9rem'>2. Open sign-in page</div></div></div>"
+        "<div style='opacity:.7;font-size:.9rem'>2. Open sign-in page "
+        "(usually automatic)</div></div></div>"
         "<div style='font-family:monospace;opacity:.9'>"
         f"<div>Setup network: <b>{_esc(bridge_ssid)}</b></div>"
-        f"<div>Password: <b>{_esc(bridge_psk)}</b></div></div>"
+        f"<div>Password: <b>{_esc(bridge_psk)}</b></div>"
+        f"<div>Sign-in page: <b>{_esc(CAPTIVE_PORTAL_TRIGGER_URL)}</b></div></div>"
         "<script>setTimeout(()=>location.reload(),5000)</script>"
         "</body>"
     )
@@ -1090,7 +1100,10 @@ def wifi_qr_payload(ssid: str, psk: str) -> str:
 
 
 def try_captive_portal_bridge(
-    bridge_ssid: str, bridge_psk: str, upstream_ssid: str, timeout_seconds: int = 300
+    bridge_ssid: str,
+    bridge_psk: str,
+    upstream_ssid: str,
+    timeout_seconds: int = CAPTIVE_PORTAL_BRIDGE_TIMEOUT,
 ) -> tuple[bool, str]:
     """Bring up AP_BRIDGE_IFACE while WLAN_IFACE stays joined to
     `upstream_ssid`, so the operator can rejoin from their phone and
@@ -1148,7 +1161,20 @@ def try_captive_portal_bridge(
     try:
         deadline = time.time() + timeout_seconds
         while time.time() < deadline:
-            if connectivity_ok():
+            # connectivity_ok() alone isn't enough here: it only probes
+            # PROVISION_PROBE_URL (the OIDC authority, one specific
+            # third-party domain). Real venue portals routinely open general
+            # internet access to a client before that particular domain is
+            # reachable — session/firewall state on enterprise gateways is
+            # often synced across the venue's infrastructure with its own
+            # lag, and a bespoke identity-provider host has never been
+            # specifically fast-tracked by that portal the way the
+            # widely-used OS-vendor captive-portal-check endpoints have
+            # been. captive_portal_likely() probes exactly those endpoints,
+            # so treat "no portal detected" as success too — otherwise the
+            # bridge can sit here until timeout_seconds even though the
+            # operator's phone (and this Pi) already have working internet.
+            if connectivity_ok() or not captive_portal_likely():
                 return True, ""
             time.sleep(3)
         return False, "no one completed the sign-in on the bridge network in time"

@@ -33,6 +33,7 @@
 	const totalUn = $derived(
 		data.representations.filter((r) => r.representationType === 'UN').length
 	);
+	const totalRequestTypes = $derived((data.requestTypes ?? []).length);
 
 	const validations = $derived.by<Validation[]>(() => {
 		const v: Validation[] = [];
@@ -146,6 +147,15 @@
 			<div>
 				<div class="font-mono text-2xl leading-none font-bold">{totalUn}</div>
 				<div class="text-base-content/60 text-xs">{m.statUnActors()}</div>
+			</div>
+		</div>
+		<div class="card bg-base-100 border-base-content/10 flex-row items-center gap-3 border p-4">
+			<div class="bg-primary/15 text-primary grid h-11 w-11 place-items-center rounded-lg text-xl">
+				<i class="fa-solid fa-hand"></i>
+			</div>
+			<div>
+				<div class="font-mono text-2xl leading-none font-bold">{totalRequestTypes}</div>
+				<div class="text-base-content/60 text-xs">{m.requestTypes()}</div>
 			</div>
 		</div>
 	</div>

@@ -17,6 +17,7 @@
 	import CommitteesStep from '$lib/components/importWizard/CommitteesStep.svelte';
 	import DelegationsStep from '$lib/components/importWizard/DelegationsStep.svelte';
 	import ActorsStep from '$lib/components/importWizard/ActorsStep.svelte';
+	import RequestTypesStep from '$lib/components/importWizard/RequestTypesStep.svelte';
 	import ReviewStep from '$lib/components/importWizard/ReviewStep.svelte';
 
 	type ImportData = z.infer<typeof importDataSchema>;
@@ -35,6 +36,7 @@
 		m.committees(),
 		m.delegations(),
 		m.actorsTitle(),
+		m.requestTypes(),
 		m.editStep()
 	]);
 
@@ -100,7 +102,8 @@
 				regionalGroup: transformRegionalGroup(nation.unRegionalGroup)
 			})),
 			conferenceMembers: [],
-			committeeMembers: []
+			committeeMembers: [],
+			requestTypes: []
 		} as unknown as ImportData;
 		step = 1;
 	}
@@ -287,6 +290,8 @@
 		{:else if step === 4 && importData}
 			<ActorsStep bind:data={importData} />
 		{:else if step === 5 && importData}
+			<RequestTypesStep bind:data={importData} />
+		{:else if step === 6 && importData}
 			<ReviewStep
 				data={importData}
 				{isAdmin}
@@ -299,7 +304,7 @@
 	</main>
 
 	<!-- Footer nav -->
-	{#if step > 0 && step < 5}
+	{#if step > 0 && step < 6}
 		<footer
 			class="bg-base-100/90 border-base-content/10 sticky bottom-0 flex items-center justify-between gap-4 border-t px-6 py-3 backdrop-blur"
 		>
@@ -308,10 +313,10 @@
 				{m.back()}
 			</button>
 			<div class="text-base-content/55 text-sm">
-				{m.stepXofY({ current: step, total: 5 })}
+				{m.stepXofY({ current: step, total: 6 })}
 			</div>
 			<button class="btn btn-primary" onclick={() => (step = step + 1)}>
-				{step === 4 ? m.goToReview() : m.forward()}
+				{step === 5 ? m.goToReview() : m.forward()}
 				<i class="fa-solid fa-arrow-right"></i>
 			</button>
 		</footer>

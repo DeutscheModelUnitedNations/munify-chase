@@ -343,6 +343,7 @@ export type Committee = {
     where?: AgendaitemWhereInputArgument | null | undefined
   }) => Agendaitem[],
   allowDelegationsToAddThemselvesToSpeakersList: Boolean,
+  allowRequests: Boolean,
   amendmentSponsoringOpen: Boolean,
   amendmentSubmissionOpen: Boolean,
   conference: (p?: {
@@ -374,6 +375,12 @@ export type Committee = {
   presentationLayout: String,
   presentationResolutionFontSize: Int,
   presentationRootFontSize: Int,
+  requests: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RequestOrderInputArgument | null | undefined,
+    where?: RequestWhereInputArgument | null | undefined
+  }) => Request[],
   resolutionPapers: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -422,6 +429,7 @@ export type CommitteeOrderInputArgument = {
   activeRollCallSessionId?: SortingParameter | null | undefined,
   activeVotingSessionId?: SortingParameter | null | undefined,
   allowDelegationsToAddThemselvesToSpeakersList?: SortingParameter | null | undefined,
+  allowRequests?: SortingParameter | null | undefined,
   amendmentSponsoringOpen?: SortingParameter | null | undefined,
   amendmentSubmissionOpen?: SortingParameter | null | undefined,
   conferenceId?: SortingParameter | null | undefined,
@@ -464,6 +472,7 @@ export type CommitteeWhereInputArgument = {
   activeVotingSessionId?: IDWhereInputArgument | null | undefined,
   agendaItems?: AgendaitemWhereInputArgument | null | undefined,
   allowDelegationsToAddThemselvesToSpeakersList?: BooleanWhereInputArgument | null | undefined,
+  allowRequests?: BooleanWhereInputArgument | null | undefined,
   amendmentSponsoringOpen?: BooleanWhereInputArgument | null | undefined,
   amendmentSubmissionOpen?: BooleanWhereInputArgument | null | undefined,
   conference?: ConferenceWhereInputArgument | null | undefined,
@@ -482,6 +491,7 @@ export type CommitteeWhereInputArgument = {
   presentationLayout?: StringWhereInputArgument | null | undefined,
   presentationResolutionFontSize?: IntWhereInputArgument | null | undefined,
   presentationRootFontSize?: IntWhereInputArgument | null | undefined,
+  requests?: RequestWhereInputArgument | null | undefined,
   resolutionPapers?: ResolutionpaperWhereInputArgument | null | undefined,
   rollCallSessions?: RollcallsessionWhereInputArgument | null | undefined,
   showWhiteboard?: BooleanWhereInputArgument | null | undefined,
@@ -605,6 +615,12 @@ export type Conference = {
     orderBy?: RepresentationOrderInputArgument | null | undefined,
     where?: RepresentationWhereInputArgument | null | undefined
   }) => Representation[],
+  requestTypes: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RequesttypeOrderInputArgument | null | undefined,
+    where?: RequesttypeWhereInputArgument | null | undefined
+  }) => Requesttype[],
   startDate: Date | null,
   title: String,
   uniqueConferenceMembers: (p?: {
@@ -661,6 +677,7 @@ export type ConferenceWhereInputArgument = {
   members?: ConferencememberWhereInputArgument | null | undefined,
   pressWebsite?: StringWhereInputArgument | null | undefined,
   representations?: RepresentationWhereInputArgument | null | undefined,
+  requestTypes?: RequesttypeWhereInputArgument | null | undefined,
   startDate?: DateWhereInputArgument | null | undefined,
   title?: StringWhereInputArgument | null | undefined,
   updatedAt?: DateTimeWhereInputArgument | null | undefined,
@@ -760,6 +777,18 @@ export type Conferenceuser = {
     orderBy?: PresenceeventOrderInputArgument | null | undefined,
     where?: PresenceeventWhereInputArgument | null | undefined
   }) => Presenceevent[],
+  requests: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RequestOrderInputArgument | null | undefined,
+    where?: RequestWhereInputArgument | null | undefined
+  }) => Request[],
+  resolvedRequests: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RequestOrderInputArgument | null | undefined,
+    where?: RequestWhereInputArgument | null | undefined
+  }) => Request[],
   triggeredPresenceEvents: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -802,6 +831,8 @@ export type ConferenceuserWhereInputArgument = {
   name?: StringWhereInputArgument | null | undefined,
   paperEditorships?: PapereditorWhereInputArgument | null | undefined,
   presenceEvents?: PresenceeventWhereInputArgument | null | undefined,
+  requests?: RequestWhereInputArgument | null | undefined,
+  resolvedRequests?: RequestWhereInputArgument | null | undefined,
   triggeredPresenceEvents?: PresenceeventWhereInputArgument | null | undefined,
   updatedAt?: DateTimeWhereInputArgument | null | undefined,
   user?: UserWhereInputArgument | null | undefined,
@@ -933,6 +964,7 @@ export type ImportData = {
   id: ID,
   location?: String | null | undefined,
   representations?: ImportDataRepresentation[] | undefined,
+  requestTypes?: ImportDataRequestType[] | undefined,
   startDate?: Date | null | undefined,
   title: String    
 };
@@ -977,6 +1009,14 @@ export type ImportDataRepresentation = {
   name?: String | null | undefined,
   regionalGroup?: RegionalgroupEnum | null | undefined,
   representationType: RepresentationtypeEnum    
+};
+		
+export type ImportDataRequestType = {
+  delegatesOnly?: Boolean | null | undefined,
+  enabled?: Boolean | null | undefined,
+  faIcon?: String | null | undefined,
+  id?: ID | null | undefined,
+  name: String    
 };
 		
 export type Int = number;
@@ -1127,6 +1167,18 @@ export type Mutation = {
     name?: String | null | undefined,
     type: RepresentationtypeEnum
   }) => Representation,
+  createRequest: (p: {
+    committeeId: ID,
+    id?: ID | null | undefined,
+    requestTypeId: ID
+  }) => Request,
+  createRequestType: (p: {
+    conferenceId: ID,
+    delegatesOnly?: Boolean | null | undefined,
+    faIcon?: String | null | undefined,
+    id?: ID | null | undefined,
+    name: String
+  }) => Requesttype,
   createResolutionComment: (p: {
     clauseId?: String | null | undefined,
     content: String,
@@ -1168,6 +1220,9 @@ export type Mutation = {
     id: ID
   }) => Presenceevent,
   deleteRepresentation: (p: {
+    id: ID
+  }) => Boolean,
+  deleteRequestType: (p: {
     id: ID
   }) => Boolean,
   deleteResolutionComment: (p: {
@@ -1229,6 +1284,9 @@ export type Mutation = {
   removeSpeakerOnList: (p: {
     speakerOnListId: ID
   }) => Speakerslist,
+  resolveRequest: (p: {
+    id: ID
+  }) => Request,
   restorePaperFromSnapshot: (p: {
     snapshotId: ID
   }) => Papercontentsnapshot,
@@ -1305,6 +1363,7 @@ export type Mutation = {
     abbreviation?: String | null | undefined,
     activeAgendaItemId?: ID | null | undefined,
     allowDelegationsToAddThemselvesToSpeakersList?: Boolean | null | undefined,
+    allowRequests?: Boolean | null | undefined,
     displayRegionalGroups?: Boolean | null | undefined,
     id: ID,
     name?: String | null | undefined,
@@ -1342,6 +1401,14 @@ export type Mutation = {
     present?: Boolean | null | undefined,
     timestamp?: DateTime | null | undefined
   }) => Presenceevent,
+  updateRequestType: (p: {
+    delegatesOnly?: Boolean | null | undefined,
+    enabled?: Boolean | null | undefined,
+    faIcon?: String | null | undefined,
+    id: ID,
+    name?: String | null | undefined,
+    priority?: Int | null | undefined
+  }) => Requesttype,
   updateResolutionComment: (p: {
     content: String,
     id: ID
@@ -1373,7 +1440,10 @@ export type Mutation = {
     votesAbstain?: Int | null | undefined,
     votesCon?: Int | null | undefined,
     votesPro?: Int | null | undefined
-  }) => Votingsession    
+  }) => Votingsession,
+  withdrawRequest: (p: {
+    id: ID
+  }) => Request    
 };
 		
 export type Operativeclausevote = {
@@ -1827,6 +1897,24 @@ export type Query = {
     orderBy?: RepresentationOrderInputArgument | null | undefined,
     where?: RepresentationWhereInputArgument | null | undefined
   }) => Representation[],
+  request: (p: {
+    id: ID
+  }) => Request,
+  requestType: (p: {
+    id: ID
+  }) => Requesttype,
+  requestTypes: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RequesttypeOrderInputArgument | null | undefined,
+    where?: RequesttypeWhereInputArgument | null | undefined
+  }) => Requesttype[],
+  requests: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RequestOrderInputArgument | null | undefined,
+    where?: RequestWhereInputArgument | null | undefined
+  }) => Request[],
   resolutionComment: (p: {
     id: ID
   }) => Resolutioncomment,
@@ -1973,6 +2061,118 @@ export type RepresentationWhereInputArgument = {
 };
 		
 export type RepresentationtypeEnum = "DELEGATION" | "NSA" | "UN";
+		
+export type Request = {
+  committee: (p?: {
+    orderBy?: CommitteeOrderInputArgument | null | undefined,
+    where?: CommitteeWhereInputArgument | null | undefined
+  }) => Committee,
+  committeeId: ID,
+  conferenceUser: (p?: {
+    orderBy?: ConferenceuserOrderInputArgument | null | undefined,
+    where?: ConferenceuserWhereInputArgument | null | undefined
+  }) => Conferenceuser,
+  conferenceUserId: ID,
+  createdAt: DateTime,
+  id: ID,
+  requestType: (p?: {
+    orderBy?: RequesttypeOrderInputArgument | null | undefined,
+    where?: RequesttypeWhereInputArgument | null | undefined
+  }) => Requesttype,
+  requestTypeId: ID,
+  resolvedAt: DateTime | null,
+  resolvedBy: (p?: {
+    orderBy?: ConferenceuserOrderInputArgument | null | undefined,
+    where?: ConferenceuserWhereInputArgument | null | undefined
+  }) => Conferenceuser | null,
+  resolvedByConferenceUserId: ID | null,
+  status: RequeststatusEnum,
+  updatedAt: DateTime | null    
+};
+		
+export type RequestOrderInputArgument = {
+  committeeId?: SortingParameter | null | undefined,
+  conferenceUserId?: SortingParameter | null | undefined,
+  createdAt?: SortingParameter | null | undefined,
+  id?: SortingParameter | null | undefined,
+  requestTypeId?: SortingParameter | null | undefined,
+  resolvedAt?: SortingParameter | null | undefined,
+  resolvedByConferenceUserId?: SortingParameter | null | undefined,
+  status?: SortingParameter | null | undefined,
+  updatedAt?: SortingParameter | null | undefined    
+};
+		
+export type RequestWhereInputArgument = {
+  AND?: RequestWhereInputArgument[] | undefined,
+  NOT?: RequestWhereInputArgument | null | undefined,
+  OR?: RequestWhereInputArgument[] | undefined,
+  committee?: CommitteeWhereInputArgument | null | undefined,
+  committeeId?: IDWhereInputArgument | null | undefined,
+  conferenceUser?: ConferenceuserWhereInputArgument | null | undefined,
+  conferenceUserId?: IDWhereInputArgument | null | undefined,
+  createdAt?: DateTimeWhereInputArgument | null | undefined,
+  id?: IDWhereInputArgument | null | undefined,
+  requestType?: RequesttypeWhereInputArgument | null | undefined,
+  requestTypeId?: IDWhereInputArgument | null | undefined,
+  resolvedAt?: DateTimeWhereInputArgument | null | undefined,
+  resolvedBy?: ConferenceuserWhereInputArgument | null | undefined,
+  resolvedByConferenceUserId?: IDWhereInputArgument | null | undefined,
+  status?: RequeststatusEnum | null | undefined,
+  updatedAt?: DateTimeWhereInputArgument | null | undefined    
+};
+		
+export type RequeststatusEnum = "PENDING" | "RESOLVED" | "WITHDRAWN";
+		
+export type Requesttype = {
+  conference: (p?: {
+    orderBy?: ConferenceOrderInputArgument | null | undefined,
+    where?: ConferenceWhereInputArgument | null | undefined
+  }) => Conference,
+  conferenceId: ID,
+  createdAt: DateTime,
+  delegatesOnly: Boolean,
+  enabled: Boolean,
+  faIcon: String | null,
+  id: ID,
+  name: String,
+  priority: Int,
+  requests: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RequestOrderInputArgument | null | undefined,
+    where?: RequestWhereInputArgument | null | undefined
+  }) => Request[],
+  updatedAt: DateTime | null    
+};
+		
+export type RequesttypeOrderInputArgument = {
+  conferenceId?: SortingParameter | null | undefined,
+  createdAt?: SortingParameter | null | undefined,
+  delegatesOnly?: SortingParameter | null | undefined,
+  enabled?: SortingParameter | null | undefined,
+  faIcon?: SortingParameter | null | undefined,
+  id?: SortingParameter | null | undefined,
+  name?: SortingParameter | null | undefined,
+  priority?: SortingParameter | null | undefined,
+  updatedAt?: SortingParameter | null | undefined    
+};
+		
+export type RequesttypeWhereInputArgument = {
+  AND?: RequesttypeWhereInputArgument[] | undefined,
+  NOT?: RequesttypeWhereInputArgument | null | undefined,
+  OR?: RequesttypeWhereInputArgument[] | undefined,
+  conference?: ConferenceWhereInputArgument | null | undefined,
+  conferenceId?: IDWhereInputArgument | null | undefined,
+  createdAt?: DateTimeWhereInputArgument | null | undefined,
+  delegatesOnly?: BooleanWhereInputArgument | null | undefined,
+  enabled?: BooleanWhereInputArgument | null | undefined,
+  faIcon?: StringWhereInputArgument | null | undefined,
+  id?: IDWhereInputArgument | null | undefined,
+  name?: StringWhereInputArgument | null | undefined,
+  priority?: IntWhereInputArgument | null | undefined,
+  requests?: RequestWhereInputArgument | null | undefined,
+  updatedAt?: DateTimeWhereInputArgument | null | undefined    
+};
 		
 export type Resolutioncomment = {
   author: (p?: {
@@ -2491,6 +2691,24 @@ export type Subscription = {
     orderBy?: RepresentationOrderInputArgument | null | undefined,
     where?: RepresentationWhereInputArgument | null | undefined
   }) => Representation[],
+  request: (p: {
+    id: ID
+  }) => Request,
+  requestType: (p: {
+    id: ID
+  }) => Requesttype,
+  requestTypes: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RequesttypeOrderInputArgument | null | undefined,
+    where?: RequesttypeWhereInputArgument | null | undefined
+  }) => Requesttype[],
+  requests: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: RequestOrderInputArgument | null | undefined,
+    where?: RequestWhereInputArgument | null | undefined
+  }) => Request[],
   resolutionComment: (p: {
     id: ID
   }) => Resolutioncomment,
@@ -2785,7 +3003,7 @@ export const client = {
    */
   liveQuery: makeLiveQuery<Query>({
 	  urqlClient,
-	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentReviewItem", "amendmentReviewItems", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceEvent", "presenceEvents", "representation", "representations", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "rollCallSession", "rollCallSessions", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users", "votingSession", "votingSessions", "votingVote", "votingVotes"]),
+	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentReviewItem", "amendmentReviewItems", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceEvent", "presenceEvents", "representation", "representations", "request", "requestType", "requestTypes", "requests", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "rollCallSession", "rollCallSessions", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users", "votingSession", "votingSessions", "votingVote", "votingVotes"]),
 		schema,
   }),
   /**

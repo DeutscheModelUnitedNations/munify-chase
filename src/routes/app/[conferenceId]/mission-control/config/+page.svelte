@@ -11,6 +11,7 @@
 	import CommitteesTab from './CommitteesTab.svelte';
 	import DelegationsTab from './DelegationsTab.svelte';
 	import NsaTab from './NsaTab.svelte';
+	import RequestTypesTab from './RequestTypesTab.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
@@ -97,6 +98,14 @@
 				type: true,
 				faIcon: true
 			}
+		},
+		requestTypes: {
+			id: true,
+			name: true,
+			faIcon: true,
+			priority: true,
+			enabled: true,
+			delegatesOnly: true
 		}
 	});
 
@@ -123,7 +132,9 @@
 		currentUser?.email ||
 		'';
 
-	let activeTab = $state<'general' | 'users' | 'committees' | 'delegations' | 'nsa'>('general');
+	let activeTab = $state<
+		'general' | 'users' | 'committees' | 'delegations' | 'nsa' | 'requestTypes'
+	>('general');
 
 	let menubarItems = $derived(
 		buildConferenceNavItems({
@@ -215,6 +226,14 @@
 				>
 					{m.nonStateActors()}
 				</button>
+				<button
+					role="tab"
+					class="tab"
+					class:tab-active={activeTab === 'requestTypes'}
+					onclick={() => (activeTab = 'requestTypes')}
+				>
+					{m.requestTypes()}
+				</button>
 			</div>
 
 			{#if activeTab === 'general'}
@@ -231,6 +250,11 @@
 				/>
 			{:else if activeTab === 'nsa'}
 				<NsaTab conferenceId={conference.id} representations={conference.representations ?? []} />
+			{:else if activeTab === 'requestTypes'}
+				<RequestTypesTab
+					conferenceId={conference.id}
+					requestTypes={conference.requestTypes ?? []}
+				/>
 			{/if}
 		{:else}
 			<div class="flex items-center justify-center">

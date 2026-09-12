@@ -35,6 +35,7 @@
 		stateOfDebate: true,
 		whiteboardContent: true,
 		allowDelegationsToAddThemselvesToSpeakersList: true,
+		allowRequests: true,
 		totalPresent: true,
 		simpleMajority: true,
 		twoThirdsMajority: true,
@@ -48,6 +49,11 @@
 	let editWhiteboardModalOpen = $state(false);
 
 	const selfAddTabs = [
+		{ id: true, label: m.on(), faIcon: 'fa-check' },
+		{ id: false, label: m.off(), faIcon: 'fa-xmark' }
+	];
+
+	const requestsTabs = [
 		{ id: true, label: m.on(), faIcon: 'fa-check' },
 		{ id: false, label: m.off(), faIcon: 'fa-xmark' }
 	];
@@ -163,6 +169,25 @@
 										id: true
 									}),
 									promiseToastStrings(m.allowSelfAddToSpeakersList(), 'update')
+								);
+							}}
+						/>
+					</BasicCard>
+					<BasicCard title={m.allowRequests()}>
+						<p class="mb-4 text-sm opacity-70">{m.allowRequestsDescription()}</p>
+						<Tabs
+							activeTab={committee.allowRequests}
+							tabs={requestsTabs}
+							onTabChange={(tab) => {
+								toast.promise(
+									client.mutate.updateCommittee({
+										__args: {
+											id: committee.id,
+											allowRequests: tab
+										},
+										id: true
+									}),
+									promiseToastStrings(m.allowRequests(), 'update')
 								);
 							}}
 						/>

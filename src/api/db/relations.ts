@@ -32,6 +32,10 @@ export const relations = defineRelations(schema, (r) => ({
 		displayDevices: r.many.displayDevice({
 			from: r.conference.id,
 			to: r.displayDevice.conferenceId
+		}),
+		requestTypes: r.many.requestType({
+			from: r.conference.id,
+			to: r.requestType.conferenceId
 		})
 	},
 	committee: {
@@ -90,6 +94,10 @@ export const relations = defineRelations(schema, (r) => ({
 		displayDevices: r.many.displayDevice({
 			from: r.committee.id,
 			to: r.displayDevice.committeeId
+		}),
+		requests: r.many.request({
+			from: r.committee.id,
+			to: r.request.committeeId
 		})
 	},
 	displayDevice: {
@@ -183,6 +191,14 @@ export const relations = defineRelations(schema, (r) => ({
 		authoredComments: r.many.resolutionComment({
 			from: r.conferenceUser.id,
 			to: r.resolutionComment.authorConferenceUserId
+		}),
+		requests: r.many.request({
+			from: r.conferenceUser.id,
+			to: r.request.conferenceUserId
+		}),
+		resolvedRequests: r.many.request({
+			from: r.conferenceUser.id,
+			to: r.request.resolvedByConferenceUserId
 		})
 	},
 	representation: {
@@ -514,6 +530,39 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.operativeClauseVote.votingSessionId,
 			to: r.votingSession.id,
 			optional: false
+		})
+	},
+	requestType: {
+		conference: r.one.conference({
+			from: r.requestType.conferenceId,
+			to: r.conference.id,
+			optional: false
+		}),
+		requests: r.many.request({
+			from: r.requestType.id,
+			to: r.request.requestTypeId
+		})
+	},
+	request: {
+		committee: r.one.committee({
+			from: r.request.committeeId,
+			to: r.committee.id,
+			optional: false
+		}),
+		requestType: r.one.requestType({
+			from: r.request.requestTypeId,
+			to: r.requestType.id,
+			optional: false
+		}),
+		conferenceUser: r.one.conferenceUser({
+			from: r.request.conferenceUserId,
+			to: r.conferenceUser.id,
+			optional: false
+		}),
+		resolvedBy: r.one.conferenceUser({
+			from: r.request.resolvedByConferenceUserId,
+			to: r.conferenceUser.id,
+			optional: true
 		})
 	}
 }));

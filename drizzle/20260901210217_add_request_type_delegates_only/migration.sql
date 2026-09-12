@@ -1,0 +1,1 @@
+ALTER TABLE "request_type" ADD COLUMN "delegates_only" boolean DEFAULT false NOT NULL;

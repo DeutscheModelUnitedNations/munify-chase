@@ -100,6 +100,20 @@ const Input = schemaBuilder.inputType('ImportData', {
 				})
 			],
 			required: true
+		}),
+		requestTypes: t.field({
+			type: [
+				schemaBuilder.inputType('ImportDataRequestType', {
+					fields: (t) => ({
+						id: t.id(),
+						name: t.string({ required: true }),
+						faIcon: t.string(),
+						enabled: t.boolean(),
+						delegatesOnly: t.boolean()
+					})
+				})
+			],
+			required: false
 		})
 	})
 });
@@ -237,6 +251,21 @@ schemaBuilder.mutationFields((t) => ({
 							type: 'COMMENT_LIST'
 						});
 					}
+				}
+
+				if (data.requestTypes && data.requestTypes.length > 0) {
+					await tx.insert(schema.requestType).values(
+						data.requestTypes.map((requestType, index) => ({
+							id: requestType.id ?? undefined,
+							conferenceId: data.id,
+							name: requestType.name,
+							faIcon: requestType.faIcon,
+							// array order is the natural hierarchy of the request types
+							priority: index,
+							enabled: requestType.enabled ?? true,
+							delegatesOnly: requestType.delegatesOnly ?? false
+						}))
+					);
 				}
 			});
 

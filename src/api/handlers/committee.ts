@@ -191,6 +191,7 @@ schemaBuilder.mutationFields((t) => {
 				stateOfDebate: t.arg.string(),
 				activeAgendaItemId: t.arg.id(),
 				allowDelegationsToAddThemselvesToSpeakersList: t.arg.boolean(),
+				allowRequests: t.arg.boolean(),
 				presentationLayout: t.arg.string(),
 				presentationRootFontSize: t.arg.int(),
 				presentationResolutionFontSize: t.arg.int(),
@@ -212,6 +213,7 @@ schemaBuilder.mutationFields((t) => {
 							activeAgendaItemId: args.activeAgendaItemId ?? undefined,
 							allowDelegationsToAddThemselvesToSpeakersList:
 								args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined,
+							allowRequests: args.allowRequests ?? undefined,
 							presentationLayout: args.presentationLayout ?? undefined,
 							presentationRootFontSize: args.presentationRootFontSize ?? undefined,
 							presentationResolutionFontSize: args.presentationResolutionFontSize ?? undefined,

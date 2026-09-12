@@ -94,6 +94,10 @@ CVE-2025-68973
 # libpam: directory traversal - PAM auth not used by Node.js/Bun runtime
 CVE-2025-6020
 
+# libpcre2-8-0: PCRE2 vulnerabilities in distro regex engine - app runtime uses V8 regex, not PCRE2
+CVE-2026-86145
+CVE-2026-89161
+
 # minimatch: ReDoS via crafted glob patterns - transitive dev dep (ESLint), not exposed to user input
 CVE-2026-26996
 CVE-2026-27903

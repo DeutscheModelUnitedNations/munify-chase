@@ -6,6 +6,10 @@ export const relations = defineRelations(schema, (r) => ({
 		conferenceMemberships: r.many.conferenceUser({
 			from: r.user.email,
 			to: r.conferenceUser.userEmail
+		}),
+		provisionedDisplayDevices: r.many.displayDevice({
+			from: r.user.id,
+			to: r.displayDevice.provisionedByUserId
 		})
 	},
 	conference: {
@@ -24,6 +28,10 @@ export const relations = defineRelations(schema, (r) => ({
 		representations: r.many.representation({
 			from: r.conference.id,
 			to: r.representation.conferenceId
+		}),
+		displayDevices: r.many.displayDevice({
+			from: r.conference.id,
+			to: r.displayDevice.conferenceId
 		}),
 		requestTypes: r.many.requestType({
 			from: r.conference.id,
@@ -83,9 +91,28 @@ export const relations = defineRelations(schema, (r) => ({
 			from: r.committee.id,
 			to: r.resolutionPaper.committeeId
 		}),
+		displayDevices: r.many.displayDevice({
+			from: r.committee.id,
+			to: r.displayDevice.committeeId
+		}),
 		requests: r.many.request({
 			from: r.committee.id,
 			to: r.request.committeeId
+		})
+	},
+	displayDevice: {
+		conference: r.one.conference({
+			from: r.displayDevice.conferenceId,
+			to: r.conference.id
+		}),
+		committee: r.one.committee({
+			from: r.displayDevice.committeeId,
+			to: r.committee.id
+		}),
+		provisionedBy: r.one.user({
+			from: r.displayDevice.provisionedByUserId,
+			to: r.user.id,
+			optional: true
 		})
 	},
 	committeeMember: {

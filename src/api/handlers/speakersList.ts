@@ -10,9 +10,20 @@ import {
 import { eq } from 'drizzle-orm';
 import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
+import {
+	isDisplayKiosk,
+	isTeamInConference,
+	isParticipantInConference
+} from '$api/services/authHelper';
 
 abilityBuilder.speakersList.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return {
+			where: {
+				agendaItem: { committee: { conference: { displayDevices: { revoked: false } } } }
+			}
+		};
+	}
 	return {
 		where: {
 			agendaItem: {

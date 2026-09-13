@@ -8,6 +8,7 @@ import {
 	schemaBuilder
 } from '$api/rumble';
 import {
+	isDisplayKiosk,
 	isParticipantInConference,
 	isTeamInConference,
 	isPaperAuthor
@@ -49,6 +50,11 @@ abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
 });
 
 abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return {
+			where: { committee: { conference: { displayDevices: { revoked: false } } } }
+		};
+	}
 	return {
 		where: {
 			OR: [
@@ -87,6 +93,13 @@ export const ResolutionPaperRef = ref;
 const statusEnum = enum_({ tsName: 'paperStatus' });
 
 const pubsub = rumblePubsub({ table: 'resolutionPaper' });
+// This handler updates `committee.lastResolutionAdoptionDate` on adoption
+// (below) but otherwise never touches committee rows — without notifying
+// committee's own pubsub too, subscribers watching a committee (mission-
+// control, kiosk, the chair's presentation view) never get pushed that
+// change, so the adoption confetti/banner only ever appeared on a page
+// freshly loaded after the fact, never live on one already open.
+const committeePubsub = rumblePubsub({ table: 'committee' });
 
 query({ table: 'resolutionPaper' });
 
@@ -354,6 +367,7 @@ schemaBuilder.mutationFields((t) => ({
 						.update(schema.committee)
 						.set({ lastResolutionAdoptionDate: new Date() })
 						.where(eq(schema.committee.id, paper.committeeId));
+					committeePubsub.updated(paper.committeeId);
 				}
 			}
 
@@ -425,6 +439,7 @@ schemaBuilder.mutationFields((t) => ({
 					.set({ lastResolutionAdoptionDate: new Date() })
 					.where(eq(schema.committee.id, paperForCommittee.committeeId));
 			});
+			committeePubsub.updated(paperForCommittee.committeeId);
 
 			pubsub.updated(args.paperId);
 

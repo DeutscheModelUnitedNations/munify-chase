@@ -7,12 +7,19 @@ import {
 	pubsub as rumblePubsub,
 	query
 } from '$api/rumble';
-import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
+import {
+	isAdminInConference,
+	isDisplayKiosk,
+	isParticipantInConference
+} from '$api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { nanoidValidation } from '$lib/helpers/nanoid';
 
 abilityBuilder.representation.allow('read').when((ctx) => {
+	if (isDisplayKiosk(ctx)) {
+		return { where: { conference: { displayDevices: { revoked: false } } } };
+	}
 	return {
 		where: isParticipantInConference(ctx)
 	};

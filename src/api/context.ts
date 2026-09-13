@@ -7,7 +7,10 @@ import {
 } from './services/syntheticRequestEvent';
 import { OIDC } from './services/OIDC';
 
-export const oidcRoles = ['admin', 'member', 'service_user'] as const;
+// 'service_user' was the shared display-kiosk account's role; kiosk access
+// is now determined by session type (isKioskSession), not a role — see
+// kioskOIDC.ts and authHelper.ts's isDisplayKiosk().
+export const oidcRoles = ['admin', 'member'] as const;
 
 export function context(req: RequestEvent) {
 	const source: unknown =
@@ -45,6 +48,9 @@ export function context(req: RequestEvent) {
 
 	return {
 		...req.locals,
+		// True only when this request authenticated through the kiosk's device
+		// flow (kioskOIDC.ts) — see isDisplayKiosk() in authHelper.ts.
+		isKioskSession: req.locals.isKioskSession === true,
 		mustBeLoggedIn: () => {
 			if (!req.locals.oidc?.user) {
 				throw new GraphQLError('Must be logged in');

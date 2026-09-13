@@ -1,5 +1,10 @@
 import { abilityBuilder, schemaBuilder, object, query } from '$api/rumble';
-import { isAdmin, isGlobalAdmin, isTeamInConference } from '$api/services/authHelper';
+import {
+	isAdmin,
+	isDisplayKiosk,
+	isGlobalAdmin,
+	isTeamInConference
+} from '$api/services/authHelper';
 
 abilityBuilder.user.allow('read').when(({ oidc }) => {
 	if (oidc?.user) {
@@ -67,6 +72,15 @@ schemaBuilder.queryFields((t) => ({
 		resolve: (root, args, ctx) => {
 			ctx.mustBeLoggedIn();
 			return isGlobalAdmin(ctx);
+		}
+	}),
+	// Lets staff-facing pages detect "signed in as the shared Pi kiosk
+	// account" and point the user at their own login instead of showing a
+	// generic/confusing permission error.
+	isDisplayKiosk: t.boolean({
+		resolve: (root, args, ctx) => {
+			ctx.mustBeLoggedIn();
+			return isDisplayKiosk(ctx);
 		}
 	}),
 	currentUserClaims: t.field({

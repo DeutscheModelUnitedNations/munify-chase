@@ -4,6 +4,7 @@ import './committeeMember';
 import './conference';
 import './conferenceMember';
 import './conferenceUser';
+import './displayDevice';
 import './representation';
 import './speakerOnList';
 import './speakersList';

@@ -1,0 +1,432 @@
+<script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import { client } from '$lib/api/rumbleClient/client';
+	import { page } from '$app/state';
+	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { locales } from '$lib/paraglide/runtime';
+	import toast from 'svelte-french-toast';
+	import { promiseToastStrings } from '$lib/utils/toast';
+
+	const user = await getCurrentUser();
+	// Any staff member — including a global/conference admin — can end up
+	// here through a kiosk (device-flow) session rather than their normal
+	// browser login, e.g. testing the device grant flow themselves. Checked
+	// first and treated as an absolute veto below: the underlying account
+	// may well be a real admin, but several ability rules (conference.ts,
+	// committee.ts) check isDisplayKiosk() before checking admin status, so
+	// a ctx that's both ends up with an inconsistent, half-kiosk-scoped read
+	// filter if this page tries to treat it as an admin. Kiosk *session*
+	// always wins here regardless of the person behind it — this page must
+	// never run the admin queries below for it, full stop.
+	const isKioskUser = (await client.query.isDisplayKiosk()) as unknown as boolean;
+	const isGlobalAdminUser = isKioskUser
+		? false
+		: ((await client.query.isGlobalAdmin()) as unknown as boolean);
+
+	// This page manages every conference's displays from one place, so
+	// "can see a row" (ability-filtered on the query below) isn't enough —
+	// someone with no admin/team role anywhere shouldn't land on the page
+	// shell at all. The device list itself is still ability-filtered
+	// server-side regardless, this just avoids exposing the management UI
+	// to plain participants.
+	//
+	// Filtered client-side rather than via a `where: { OR: [...] } }` arg:
+	// unlike the server-side ability-builder DSL (Drizzle relational
+	// filters), the GraphQL `where` input generated for conferenceUser has
+	// no AND/OR/NOT combinators and no `in` on the enum field — only exact
+	// per-field equality. Same approach as the launcher page.
+	const myConferenceRoles =
+		isGlobalAdminUser || isKioskUser
+			? []
+			: await client.liveQuery.conferenceUsers({
+					__args: { where: { user: { id: user.id } } },
+					id: true,
+					conferenceId: true,
+					conferenceUserType: true
+				});
+	const authorized =
+		!isKioskUser &&
+		(isGlobalAdminUser ||
+			(myConferenceRoles ?? []).some(
+				(cu) => cu.conferenceUserType === 'ADMIN' || cu.conferenceUserType === 'TEAM'
+			));
+
+	// Deletion is admin-only (global or conference), unlike read/update which
+	// team members also get — mirrors the `delete` ability in displayDevice.ts.
+	const myAdminConferenceIds = new Set(
+		(myConferenceRoles ?? [])
+			.filter((cu) => cu.conferenceUserType === 'ADMIN')
+			.map((cu) => cu.conferenceId)
+	);
+	function canDelete(d: { conferenceId: string | null }): boolean {
+		return isGlobalAdminUser || (!!d.conferenceId && myAdminConferenceIds.has(d.conferenceId));
+	}
+
+	// Conferences this user could claim an unassigned device into — mirrors
+	// the server-side ADMIN/TEAM membership check in assignDisplayDevice's
+	// resolver. `conferences` itself (below) is only scoped to *some*
+	// participation (isParticipant), which includes plain delegates/
+	// spectators, so this is a stricter subset of it.
+	const myAdminOrTeamConferenceIds = new Set(
+		(myConferenceRoles ?? [])
+			.filter((cu) => cu.conferenceUserType === 'ADMIN' || cu.conferenceUserType === 'TEAM')
+			.map((cu) => cu.conferenceId)
+	);
+	// Whoever provisioned a still-unassigned device may claim it — see the
+	// same check, resolver-side, in assignDisplayDevice.
+	function canClaim(d: {
+		conferenceId: string | null;
+		provisionedByUserId: string | null;
+	}): boolean {
+		return !isGlobalAdminUser && d.conferenceId === null && d.provisionedByUserId === user.id;
+	}
+
+	const focusId = page.url.searchParams.get('focus');
+
+	const localeLabels: Record<string, string> = { de: 'Deutsch', en: 'English', pt: 'Português' };
+
+	// Native, always-current IANA zone list — no hardcoded list to maintain.
+	// Not supported in some very old browsers; the select just shows the
+	// current/empty option then, since staff use this page on their own
+	// up-to-date browser, not the kiosk appliance.
+	const timezones: string[] = (() => {
+		try {
+			return Intl.supportedValuesOf('timeZone');
+		} catch {
+			return [];
+		}
+	})();
+
+	// Only ever queried for an authorized (admin/team) ctx — never for the
+	// kiosk account, whose ability filters take a different, kiosk-scoped
+	// priority branch in conference.ts/committee.ts and shouldn't be
+	// exercised from this admin-facing page at all.
+	const devices = authorized
+		? await client.liveQuery.displayDevices({
+				// Without an explicit orderBy, Postgres makes no row-order
+				// guarantee at all — it was drifting on every revoke/restore
+				// because that UPDATE moves the row to a new physical version.
+				// createdAt is stable (never touched by revoke/restore) and
+				// keeps devices in registration order regardless.
+				__args: { orderBy: { createdAt: 'asc' } },
+				id: true,
+				name: true,
+				revoked: true,
+				conferenceId: true,
+				committeeId: true,
+				lastSeenAt: true,
+				locale: true,
+				timezone: true,
+				provisionedByUserId: true,
+				provisionedBy: { id: true, givenName: true, familyName: true, preferredUsername: true },
+				conference: { id: true, title: true },
+				committee: { id: true, abbreviation: true }
+			})
+		: null;
+
+	const conferences = authorized
+		? await client.liveQuery.conferences({
+				id: true,
+				title: true,
+				committees: { id: true, name: true, abbreviation: true }
+			})
+		: null;
+
+	type Draft = {
+		name: string;
+		conferenceId: string;
+		committeeId: string;
+		locale: (typeof locales)[number] | '';
+		timezone: string;
+	};
+	let drafts = $state<Record<string, Draft>>({});
+
+	// Seed an editable draft for every device id once it appears. Done in an
+	// effect (not during render) so we never mutate $state while deriving.
+	$effect(() => {
+		for (const d of devices ?? []) {
+			if (!drafts[d.id]) {
+				drafts[d.id] = {
+					name: d.name ?? '',
+					conferenceId: d.conferenceId ?? '',
+					committeeId: d.committeeId ?? '',
+					locale: d.locale ?? '',
+					timezone: d.timezone ?? ''
+				};
+			}
+		}
+	});
+
+	function committeesFor(conferenceId: string) {
+		return (conferences ?? []).find((c) => c.id === conferenceId)?.committees ?? [];
+	}
+
+	// Global admins may assign into any conference; a claiming non-admin only
+	// into one of their own ADMIN/TEAM conferences (see myAdminOrTeamConferenceIds).
+	function conferenceOptionsFor(d: {
+		conferenceId: string | null;
+		provisionedByUserId: string | null;
+		conference?: { id: string; title: string } | null;
+	}) {
+		if (isGlobalAdminUser) return conferences ?? [];
+		if (!canClaim(d)) {
+			// Locked (view-only) select for this viewer — still show the
+			// device's own already-assigned conference as its one option
+			// (from the device row itself, not the separate `conferences`
+			// list, which is scoped to conferences *this* viewer has a role
+			// in and may not include it) so the dropdown reflects reality
+			// instead of rendering blank.
+			return d.conference ? [d.conference] : [];
+		}
+		return (conferences ?? []).filter((c) => myAdminOrTeamConferenceIds.has(c.id));
+	}
+
+	let busy = $state<string | null>(null);
+
+	async function save(id: string) {
+		const d = drafts[id];
+		const device = (devices ?? []).find((x) => x.id === id);
+		if (!d || !device) return;
+		busy = id;
+		const targetName = d.name.trim() || id;
+		try {
+			await toast.promise(
+				client.mutate.assignDisplayDevice({
+					__args: {
+						id,
+						name: d.name.trim() === '' ? null : d.name.trim(),
+						// Conference (re)assignment is normally a global-admin-only
+						// action; the one exception is the device's own provisioner
+						// claiming it while unassigned (canClaim). Everyone else has
+						// the select disabled, so omitting the arg entirely — rather
+						// than resending the unchanged value — keeps them from
+						// tripping the server-side guard on every unrelated
+						// settings save.
+						...(isGlobalAdminUser || canClaim(device)
+							? { conferenceId: d.conferenceId === '' ? null : d.conferenceId }
+							: {}),
+						committeeId: d.committeeId === '' ? null : d.committeeId,
+						locale: d.locale === '' ? null : d.locale,
+						timezone: d.timezone === '' ? null : d.timezone
+					},
+					id: true
+				}),
+				promiseToastStrings(targetName, 'update')
+			);
+		} finally {
+			busy = null;
+		}
+	}
+
+	async function setRevoked(id: string, revoked: boolean) {
+		busy = id;
+		const targetName = drafts[id]?.name.trim() || id;
+		try {
+			await toast.promise(
+				client.mutate.setDisplayDeviceRevoked({
+					__args: { id, revoked },
+					id: true,
+					revoked: true
+				}),
+				promiseToastStrings(targetName, 'update')
+			);
+		} finally {
+			busy = null;
+		}
+	}
+
+	async function deleteDevice(id: string) {
+		if (!confirm(m.confirmDeleteDisplayDevice())) return;
+		const targetName = drafts[id]?.name.trim() || id;
+		busy = id;
+		try {
+			await toast.promise(
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
+				(client.mutate.deleteDisplayDevice as any)({ __args: { id } } as any),
+				promiseToastStrings(targetName, 'delete')
+			);
+			delete drafts[id];
+		} finally {
+			busy = null;
+		}
+	}
+
+	function fmtLastSeen(d: Date | string | null | undefined): string {
+		if (!d) return m.displaysNeverSeen();
+		const date = typeof d === 'string' ? new Date(d) : d;
+		return date.toLocaleString();
+	}
+
+	// `provisionedBy` can resolve to null even when `provisionedByUserId` is
+	// set — the user ability's non-admin branches only allow reading someone
+	// who shares a conference with the viewer (see user.ts) — so this always
+	// has a graceful "unknown" fallback rather than assuming the relation
+	// resolved.
+	function fmtProvisionedBy(d: {
+		provisionedByUserId: string | null;
+		provisionedBy?: {
+			givenName: string;
+			familyName: string;
+			preferredUsername: string;
+		} | null;
+	}): string | null {
+		if (!d.provisionedByUserId) return null;
+		const p = d.provisionedBy;
+		if (!p) return m.displaysProvisionedByUnknown();
+		const fullName = [p.givenName, p.familyName].filter(Boolean).join(' ').trim();
+		return fullName || p.preferredUsername;
+	}
+</script>
+
+<svelte:head>
+	<title>{m.displaysManage()} - MUNify CHASE</title>
+</svelte:head>
+
+{#if authorized}
+	<div class="bg-base-200 min-h-screen p-4 sm:p-8">
+		<div class="mx-auto w-full max-w-5xl">
+			<h1 class="mb-2 text-3xl font-bold tracking-tight">{m.displaysManage()}</h1>
+			<p class="text-base-content/60 mb-6 text-sm">{m.displaysAdminOnlyHint()}</p>
+
+			{#if (devices ?? []).length === 0}
+				<div class="card bg-base-100 p-10 text-center shadow-sm">
+					<i class="fa-duotone fa-display text-base-content/30 mb-3 text-5xl"></i>
+					<p class="text-base-content/70 m-0">{m.displaysEmpty()}</p>
+				</div>
+			{:else}
+				<div class="card bg-base-100 overflow-x-auto p-0 shadow-sm">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>{m.displaysColDevice()}</th>
+								<th>{m.displaysColAssignment()}</th>
+								<th>{m.displaysColLastSeen()}</th>
+								<th class="text-right">{m.displaysColStatus()}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each devices ?? [] as d (d.id)}
+								{@const draft = drafts[d.id]}
+								{#if draft}
+									<tr class={d.id === focusId ? 'bg-warning/10' : ''}>
+										<td class="align-top">
+											<input
+												class="input input-sm input-bordered w-44"
+												placeholder={m.displaysNamePlaceholder()}
+												bind:value={draft.name}
+											/>
+											<div class="text-base-content/50 mt-1 font-mono text-xs">{d.id}</div>
+											{#if fmtProvisionedBy(d)}
+												<div class="text-base-content/50 mt-1 text-xs">
+													{m.displaysProvisionedBy({ name: fmtProvisionedBy(d)! })}
+												</div>
+											{/if}
+										</td>
+										<td class="align-top">
+											<div class="flex flex-col gap-2">
+												<select
+													class="select select-sm select-bordered w-56"
+													bind:value={draft.conferenceId}
+													onchange={() => (draft.committeeId = '')}
+													disabled={!isGlobalAdminUser && !canClaim(d)}
+													title={isGlobalAdminUser || canClaim(d)
+														? ''
+														: m.displaysConferenceAdminOnly()}
+												>
+													<option value="">{m.displaysSelectConference()}</option>
+													{#each conferenceOptionsFor(d) as c (c.id)}
+														<option value={c.id}>{c.title}</option>
+													{/each}
+												</select>
+												<select
+													class="select select-sm select-bordered w-56"
+													bind:value={draft.committeeId}
+													disabled={draft.conferenceId === ''}
+												>
+													<option value="">{m.displaysAllCommittees()}</option>
+													{#each committeesFor(draft.conferenceId) as cm (cm.id)}
+														<option value={cm.id}>{cm.abbreviation} — {cm.name}</option>
+													{/each}
+												</select>
+												<select
+													class="select select-sm select-bordered w-56"
+													bind:value={draft.locale}
+												>
+													<option value="">{m.displaysDefaultLanguage()}</option>
+													{#each locales as l (l)}
+														<option value={l}>{localeLabels[l] ?? l}</option>
+													{/each}
+												</select>
+												<select
+													class="select select-sm select-bordered w-56"
+													bind:value={draft.timezone}
+												>
+													<option value="">{m.displaysDefaultTimezone()}</option>
+													{#each timezones as tz (tz)}
+														<option value={tz}>{tz}</option>
+													{/each}
+												</select>
+												<button
+													class="btn btn-sm btn-primary w-28"
+													disabled={busy === d.id}
+													onclick={() => save(d.id)}
+												>
+													{m.displaysSave()}
+												</button>
+											</div>
+										</td>
+										<td class="align-top text-sm">{fmtLastSeen(d.lastSeenAt)}</td>
+										<td class="align-top text-right">
+											{#if d.revoked}
+												<span class="badge badge-error mb-2">{m.displaysStatusRevoked()}</span>
+												<br />
+												<button
+													class="btn btn-xs btn-ghost"
+													disabled={busy === d.id}
+													onclick={() => setRevoked(d.id, false)}
+												>
+													{m.displaysRestore()}
+												</button>
+												{#if canDelete(d)}
+													<button
+														class="btn btn-xs btn-ghost text-error"
+														disabled={busy === d.id}
+														onclick={() => deleteDevice(d.id)}
+													>
+														{m.displaysDelete()}
+													</button>
+												{/if}
+											{:else}
+												<span class="badge badge-success mb-2">{m.displaysStatusActive()}</span>
+												<br />
+												<button
+													class="btn btn-xs btn-ghost text-error"
+													disabled={busy === d.id}
+													onclick={() => setRevoked(d.id, true)}
+												>
+													{m.displaysRevoke()}
+												</button>
+											{/if}
+										</td>
+									</tr>
+								{/if}
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{/if}
+		</div>
+	</div>
+{:else if isKioskUser}
+	<div class="bg-base-200 flex min-h-screen flex-col items-center justify-center gap-4 p-8">
+		<i class="fa-duotone fa-display text-base-content/40 text-7xl"></i>
+		<h1 class="m-0 text-3xl font-bold">{m.displaysKioskAccountHeadline()}</h1>
+		<p class="text-base-content/70 m-0 max-w-md text-center">{m.displaysKioskAccountBody()}</p>
+	</div>
+{:else}
+	<div class="bg-base-200 flex min-h-screen flex-col items-center justify-center gap-4 p-8">
+		<i class="fa-duotone fa-lock text-base-content/40 text-7xl"></i>
+		<h1 class="m-0 text-3xl font-bold">{m.displaysPermissionDeniedHeadline()}</h1>
+		<p class="text-base-content/70 m-0 max-w-md text-center">{m.displaysPermissionDeniedBody()}</p>
+	</div>
+{/if}

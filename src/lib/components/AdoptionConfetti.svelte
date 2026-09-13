@@ -116,23 +116,38 @@
 		noise.start(start);
 	}
 
-	// Fires once per distinct adoption, not on every second-tick re-render —
-	// keyed on the adoption timestamp itself rather than the ticking `now`,
-	// so this effect only reruns when lastAdoptionDate actually changes.
+	// Whether to show/count down the confetti at all is decided once per
+	// distinct adoption, the moment we first observe it, using the kiosk's
+	// own clock (`observedAt`) rather than the server's timestamp for the
+	// ongoing countdown. A kiosk Pi has no RTC and can have a briefly-wrong
+	// system clock while NTP races the WiFi/captive-portal flow at boot; the
+	// previous code re-derived "how long has this been showing" from
+	// `now - lastAdoptionDate.getTime()` on every tick, so a client clock
+	// that's behind the server's made that diff negative for as long as the
+	// drift lasted — satisfying "< confettiDurationSec" forever, i.e. the
+	// confetti/banner never timed out. Only the one-time freshness check
+	// below ("is this actually a new adoption, not old news from before I
+	// loaded/reconnected") still needs to compare against the server clock;
+	// once that decision is made, the countdown is a pure client-side
+	// stopwatch and can't get stuck on clock skew.
+	let observedKey = $state<number | null>(null);
+	let observedAt = $state<number | null>(null);
+	$effect(() => {
+		const key = lastAdoptionDate ? lastAdoptionDate.getTime() : null;
+		if (key === observedKey) return;
+		observedKey = key;
+		observedAt = key != null && (Date.now() - key) / 1000 < confettiDurationSec ? Date.now() : null;
+	});
+
 	let lastPlayedKey = $state<number | null>(null);
 	$effect(() => {
-		if (!playSound) return;
-		const key = lastAdoptionDate ? lastAdoptionDate.getTime() : null;
-		if (key === lastPlayedKey) return;
-		lastPlayedKey = key;
-		if (key == null) return;
-		if ((Date.now() - key) / 1000 < confettiDurationSec) {
-			playGong();
-		}
+		if (!playSound || observedAt == null || observedKey === lastPlayedKey) return;
+		lastPlayedKey = observedKey;
+		playGong();
 	});
 
 	const timeSinceLastAdoption = $derived(
-		lastAdoptionDate ? Math.floor((now - lastAdoptionDate.getTime()) / 1000) : null
+		observedAt != null ? Math.floor((now - observedAt) / 1000) : null
 	);
 
 	const confettiExplosionCount = $derived(Math.floor(confettiDurationSec * 1.6));

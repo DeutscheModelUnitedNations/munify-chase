@@ -922,6 +922,10 @@ def portal_form_page(networks: list[dict], message: str = "") -> str:
         "</div>"
         "<label for=psk>Password</label>"
         "<input id=psk name=psk type=password autocomplete=off>"
+        "<label style='display:flex;align-items:center;gap:.5rem;font-weight:400'>"
+        "<input type=checkbox style='width:auto' "
+        "onclick=\"document.getElementById('psk').type=this.checked?'text':'password'\">"
+        "Show password</label>"
         "<button type=submit>Connect</button>"
         "</form></body>"
     )

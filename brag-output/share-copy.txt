@@ -1,0 +1,3 @@
+Model UN has been run on handwritten speakers' lists and shared Google Docs for decades. MUNify CHASE replaces all of it — speakers' lists, timers, majority thresholds and digital voting — free and open source, built by volunteers at DMUN e.V.
+
+And yes, the adopt-resolution dialog warns you about the confetti. 🎉

@@ -10,6 +10,8 @@ const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
 export default ts.config(
 	includeIgnoreFile(gitignorePath),
+	// Generated launch-video artifacts (/brag) — vendored runtime and extracted data
+	{ ignores: ['brag-output/**'] },
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,

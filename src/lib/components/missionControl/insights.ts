@@ -247,17 +247,31 @@ export function buildInsightTiles(
 			present += c.totalPresent ?? 0;
 			total += (c.members ?? []).filter((m) => m.representation?.type === 'DELEGATION').length;
 		}
-		tiles.push({
-			kind: 'attendance',
-			key: 'attendance',
-			present,
-			total,
-			committeeCount: committees.length
-		});
+		// A conference with no delegation members yet has nothing to report —
+		// "0 of 0 delegates present" isn't meaningful data.
+		if (total > 0) {
+			tiles.push({
+				kind: 'attendance',
+				key: 'attendance',
+				present,
+				total,
+				committeeCount: committees.length
+			});
+		}
 	}
 
 	if (pulse) {
-		tiles.push({ kind: 'heartbeat', key: 'heartbeat', pulse });
+		const { speechesToday, votesHeldToday, resolutionsAdoptedToday, debateSecondsToday } =
+			pulse.heartbeat;
+		// Nothing happened today yet — an all-zero heartbeat isn't worth a tile.
+		if (
+			speechesToday > 0 ||
+			votesHeldToday > 0 ||
+			resolutionsAdoptedToday > 0 ||
+			debateSecondsToday > 0
+		) {
+			tiles.push({ kind: 'heartbeat', key: 'heartbeat', pulse });
+		}
 		if (pulse.recentAdoptions.length > 0) {
 			tiles.push({ kind: 'adoptions', key: 'adoptions', pulse });
 		}

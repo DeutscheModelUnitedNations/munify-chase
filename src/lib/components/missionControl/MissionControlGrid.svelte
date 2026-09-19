@@ -9,7 +9,11 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { flip } from 'svelte/animate';
+	// Imported from its own subpath, not the package's barrel export — the
+	// barrel also re-exports CodeEditor/DiffView, which pull in an optional
+	// peer dep (@wooorm/starry-night) we don't have installed and don't need,
+	// breaking the production build's static resolution.
+	import Masonry from 'svelte-widgets/Masonry.svelte';
 	import { resolve } from '$app/paths';
 	import { m } from '$lib/paraglide/messages';
 	import IconInfoBox from '../IconInfoBox.svelte';
@@ -26,6 +30,7 @@
 		committeesOnBreak,
 		committeesRunning,
 		speakerLabel,
+		type InsightTile,
 		type InsightPulse
 	} from './insights';
 
@@ -55,16 +60,16 @@
 	}
 
 	// ─── Rotating insight tiles ─────────────────────────────────────────────
+	// Every tile buildInsightTiles produces already only exists because it has
+	// real data to show (see its per-tile guards) — so all of them stay on
+	// screen all the time now, nothing is hidden. The rotation just reshuffles
+	// their order every 45s for visual variety on a hallway display that's
+	// glanced at rather than read start-to-end; Masonry FLIP-animates tiles
+	// into their new spot rather than swapping visibility. Seeded by `tick`
+	// (not Math.random()) so the order only changes on rotation, not on every
+	// unrelated data refresh.
 	const pool = $derived(buildInsightTiles(conference.committees, pulse));
-
-	// Reshuffles the visible insight tiles roughly once a minute — slow enough
-	// to read from across a hallway, frequent enough to feel alive. Showing
-	// several slots at once (rather than just one or two) is what actually
-	// fills a wide hallway display; the shuffle only matters once the tile
-	// pool outgrows SLOT_COUNT. Seeded by `tick` (not Math.random()) so the
-	// order only changes on rotation, not on every unrelated data refresh.
 	const ROTATE_MS = 45_000;
-	const SLOT_COUNT = 6;
 	let tick = $state(0);
 
 	onMount(() => {
@@ -91,10 +96,32 @@
 		return copy;
 	}
 
-	const slots = $derived.by(() => {
-		if (pool.length === 0) return [];
-		return shuffled(pool, tick).slice(0, Math.min(SLOT_COUNT, pool.length));
-	});
+	const tiles = $derived.by(() => (pool.length === 0 ? [] : shuffled(pool, tick)));
+
+	// ─── Masonry entries ────────────────────────────────────────────────────
+	// Committees and insight tiles are two different shapes, so they're merged
+	// into one discriminated-union list with a stable `id` per entry — Masonry
+	// keys and FLIP-animates items by `id`, tracking each committee/tile across
+	// rotations and data refreshes independently of its position in the array.
+	type MasonryEntry =
+		| { id: string; kind: 'committee'; committee: InsightCommittee; dueSoon: boolean }
+		| { id: string; kind: 'tile'; tile: InsightTile };
+
+	const masonryEntries = $derived.by((): MasonryEntry[] => [
+		...running.map((committee): MasonryEntry => ({
+			id: `committee-${committee.id}`,
+			kind: 'committee',
+			committee,
+			dueSoon: false
+		})),
+		...onBreak.map((committee): MasonryEntry => ({
+			id: `committee-${committee.id}`,
+			kind: 'committee',
+			committee,
+			dueSoon: isDueSoon(committee)
+		})),
+		...tiles.map((tile): MasonryEntry => ({ id: `tile-${tile.key}`, kind: 'tile', tile }))
+	]);
 
 	function fmtDuration(totalSeconds: number): string {
 		const h = Math.floor(totalSeconds / 3600);
@@ -153,21 +180,6 @@
 		}
 	}
 
-	// Chart tiles and the speakers-list spotlight need extra room (a legend,
-	// axis labels, or a full speaker queue) that a single 16rem cell can't give
-	// them.
-	const CHART_TILE_KINDS = new Set([
-		'resolutionFunnel',
-		'speakingByRegion',
-		'speakingByRepresentationType',
-		'amendmentActivity'
-	]);
-	function tileSpanClass(kind: string): string {
-		if (kind === 'speakersListSpotlight') return 'col-span-2 row-span-2';
-		if (CHART_TILE_KINDS.has(kind)) return 'row-span-2';
-		return '';
-	}
-
 	// Each chart-shaped tile picks its diagram type from a small pool suited to
 	// its data (an ordered funnel reads better as a bar than a pie, for
 	// instance), reseeded on every rotation tick alongside the tile shuffle —
@@ -191,13 +203,14 @@
 
 <!--
 	Everything — every committee, then the rotating conference-wide insight
-	tiles — flows into a single grid so grid-flow-dense can backfill gaps
-	regardless of how many committees or tiles there are. Committees always
-	come first (that's the navigation-critical info); stats follow.
+	tiles — flows into a single Masonry list (see masonryEntries above) so
+	varying tile heights pack without the empty gaps a CSS grid's shared
+	per-row track height would leave. Committees always come first (that's
+	the navigation-critical info); stats follow.
 -->
 {#snippet committeeCard(committee: InsightCommittee, dueSoon: boolean)}
 	<a
-		class="card bg-base-100 relative flex h-full w-full flex-col shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-md {dueSoon
+		class="card bg-base-100 relative flex w-full flex-col shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-md {dueSoon
 			? 'mission-control-due-soon'
 			: ''}"
 		href={getHref(committee.id)}
@@ -234,313 +247,303 @@
 	</a>
 {/snippet}
 
-<div class="mission-control-grid grid auto-rows-[16rem] grid-flow-dense justify-center gap-4 p-4">
-	{#each running as committee (committee.id)}
-		<div animate:flip={{ duration: 400 }} class="min-w-0">
-			{@render committeeCard(committee, false)}
-		</div>
-	{/each}
-	{#each onBreak as committee (committee.id)}
-		<div animate:flip={{ duration: 400 }} class="min-w-0">
-			{@render committeeCard(committee, isDueSoon(committee))}
-		</div>
-	{/each}
+{#snippet tileCard(tile: InsightTile)}
+	{#if tile.kind === 'votingSessions'}
+		<MissionControlTile title={m.missionControlActiveVotes()}>
+			<div class="flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-hidden text-2xl">
+				{#each tile.committees as committee (committee.id)}
+					{#each committee.votingSessions ?? [] as session (session.id)}
+						<div class="flex items-center gap-3">
+							<i class="fas fa-square-poll-vertical text-primary w-7 flex-none text-center"></i>
+							<span class="flex-none font-bold">{committee.abbreviation}</span>
+							<span class="text-base-content/70 truncate">{session.voteName || session.mode}</span>
+						</div>
+					{/each}
+				{/each}
+			</div>
+		</MissionControlTile>
+	{:else if tile.kind === 'speakingPulse'}
+		<MissionControlTile title={m.missionControlSpeakingNow()}>
+			<div class="flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-hidden text-2xl">
+				{#each tile.speakers as speaker (speaker.committee.id)}
+					<div class="flex items-center gap-3">
+						<Flag size="sm" representation={speaker.representation} />
+						<span class="flex-none font-bold">{speaker.committee.abbreviation}</span>
+						<span class="text-base-content/70 truncate">{speaker.label}</span>
+					</div>
+				{/each}
+			</div>
+		</MissionControlTile>
+	{:else if tile.kind === 'attendance'}
+		<MissionControlTile center>
+			<i class="fas fa-users text-base-content/40 text-4xl"></i>
+			<p class="text-6xl font-bold tabular-nums">
+				{tile.total > 0 ? Math.round((tile.present / tile.total) * 100) : 0}%
+			</p>
+			<p class="text-base-content/60 text-xl">
+				{m.missionControlDelegatesPresent({ present: tile.present, total: tile.total })}
+			</p>
+		</MissionControlTile>
+	{:else if tile.kind === 'adoptions'}
+		<MissionControlTile title={m.missionControlRecentAdoptions()}>
+			<div class="flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-hidden text-2xl">
+				{#each tile.pulse.recentAdoptions.slice(0, 3) as adoption, idx (idx)}
+					<div class="flex items-center gap-3">
+						<i class="fas fa-gavel text-success w-7 flex-none text-center"></i>
+						<div class="min-w-0 leading-tight">
+							<div class="flex items-baseline gap-2">
+								<span class="flex-none font-bold">{adoption.committeeAbbreviation}</span>
+								<span class="truncate"
+									>{adoption.documentNumber || adoption.paperTitle || m.unknown()}</span
+								>
+							</div>
+							<p class="text-base-content/60 truncate text-xl">
+								{adoption.agendaItemTitle}
+							</p>
+						</div>
+					</div>
+				{/each}
+			</div>
+		</MissionControlTile>
+	{:else if tile.kind === 'heartbeat'}
+		<MissionControlTile title={m.missionControlHeartbeatTitle()}>
+			<div class="grid min-h-0 flex-1 grid-cols-2 gap-3">
+				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
+					<i class="fas fa-microphone text-primary text-3xl"></i>
+					<p class="text-4xl font-bold tabular-nums">{tile.pulse.heartbeat.speechesToday}</p>
+					<p class="text-base-content/60 text-base">{m.missionControlSpeechesCaption()}</p>
+				</div>
+				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
+					<i class="fas fa-square-poll-vertical text-primary text-3xl"></i>
+					<p class="text-4xl font-bold tabular-nums">{tile.pulse.heartbeat.votesHeldToday}</p>
+					<p class="text-base-content/60 text-base">{m.missionControlVotesCaption()}</p>
+				</div>
+				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
+					<i class="fas fa-gavel text-success text-3xl"></i>
+					<p class="text-4xl font-bold tabular-nums">
+						{tile.pulse.heartbeat.resolutionsAdoptedToday}
+					</p>
+					<p class="text-base-content/60 text-base">{m.missionControlResolutionsCaption()}</p>
+				</div>
+				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
+					<i class="fas fa-clock text-info text-3xl"></i>
+					<p class="text-3xl font-bold tabular-nums">
+						{fmtDuration(tile.pulse.heartbeat.debateSecondsToday)}
+					</p>
+					<p class="text-base-content/60 text-base">{m.missionControlDebateCaption()}</p>
+				</div>
+			</div>
+		</MissionControlTile>
+	{:else if tile.kind === 'busiestCommittee'}
+		<MissionControlTile title={m.missionControlBusiestCommittee()} center>
+			<i class="fas fa-fire text-warning text-4xl"></i>
+			<p class="truncate text-4xl font-bold">{tile.committeeAbbreviation}</p>
+		</MissionControlTile>
+	{:else if tile.kind === 'closestVote'}
+		<MissionControlTile title={m.missionControlClosestVote()} center>
+			<i class="fas fa-scale-balanced text-info text-4xl"></i>
+			<p class="truncate text-4xl font-bold">
+				{tile.committeeAbbreviation}
+				<span class="text-base-content/60 text-2xl font-normal tabular-nums"
+					>{tile.votesPro}–{tile.votesCon}</span
+				>
+			</p>
+		</MissionControlTile>
+	{:else if tile.kind === 'committeeActivity'}
+		<MissionControlTile title={m.missionControlCommitteeActivity()}>
+			<MissionControlBarList
+				items={tile.entries.map((entry) => ({
+					key: entry.committeeAbbreviation,
+					label: entry.committeeAbbreviation,
+					value: entry.totalSpeakingSeconds,
+					valueLabel: fmtDuration(entry.totalSpeakingSeconds),
+					icon: 'chart-line'
+				}))}
+			/>
+		</MissionControlTile>
+	{:else if tile.kind === 'speakingByRegion'}
+		<MissionControlTile title={m.missionControlSpeakingByRegion()}>
+			<MissionControlChart
+				kind={chartTypeFor('speakingByRegion', tile.key)}
+				slices={tile.entries.slice(0, 5).map((entry) => ({
+					key: entry.group,
+					label: translateRegionalGroupEnum(entry.group as RegionalgroupEnum) || m.unknown(),
+					value: entry.totalSeconds,
+					valueLabel: fmtDuration(entry.totalSeconds)
+				}))}
+			/>
+		</MissionControlTile>
+	{:else if tile.kind === 'speakersListSpotlight'}
+		<MissionControlTile title={m.missionControlSpeakersListTitle()}>
+			<div class="mb-1 flex shrink-0 items-baseline gap-3">
+				<span class="text-3xl font-bold">{tile.committee.abbreviation}</span>
+				<span class="text-base-content/60 truncate text-lg">{tile.committee.name}</span>
+			</div>
+			<div class="flex min-h-0 flex-1 flex-col justify-start gap-2 overflow-hidden text-2xl">
+				{#each tile.speakers.slice(0, 8) as speaker, idx (speaker.id)}
+					{@const representation =
+						speaker.committeeMember?.representation ?? speaker.conferenceMember?.representation}
+					{@const label = speakerLabel(speaker, representation)}
+					<div class="flex items-center gap-3 {idx === 0 ? 'text-primary' : ''}">
+						{#if idx === 0}
+							<i class="fas fa-microphone w-7 flex-none text-center"></i>
+						{:else}
+							<span class="text-base-content/40 w-7 flex-none text-center font-mono text-xl"
+								>{idx}</span
+							>
+						{/if}
+						<Flag size="sm" {representation} />
+						<span class="truncate {idx === 0 ? 'font-bold' : ''}">{label}</span>
+					</div>
+				{/each}
+			</div>
+		</MissionControlTile>
+	{:else if tile.kind === 'conferenceOverview'}
+		<MissionControlTile title={m.missionControlConferenceOverview()}>
+			<div class="grid min-h-0 flex-1 grid-cols-2 gap-3">
+				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
+					<i class="fas fa-users text-primary text-3xl"></i>
+					<p class="text-4xl font-bold tabular-nums">{tile.overview.totalDelegates}</p>
+					<p class="text-base-content/60 text-base">{m.missionControlDelegatesCaption()}</p>
+				</div>
+				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
+					<i class="fas fa-building text-primary text-3xl"></i>
+					<p class="text-4xl font-bold tabular-nums">{tile.overview.totalCommittees}</p>
+					<p class="text-base-content/60 text-base">{m.missionControlCommitteesCaption()}</p>
+				</div>
+				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
+					<i class="fas fa-microphone text-primary text-3xl"></i>
+					<p class="text-4xl font-bold tabular-nums">{tile.overview.totalSpeechesAllTime}</p>
+					<p class="text-base-content/60 text-base">
+						{m.missionControlSpeechesAllTimeCaption()}
+					</p>
+				</div>
+				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
+					<i class="fas fa-gavel text-success text-3xl"></i>
+					<p class="text-4xl font-bold tabular-nums">
+						{tile.overview.totalResolutionsAdoptedAllTime}
+					</p>
+					<p class="text-base-content/60 text-base">
+						{m.missionControlResolutionsAllTimeCaption()}
+					</p>
+				</div>
+			</div>
+		</MissionControlTile>
+	{:else if tile.kind === 'resolutionFunnel'}
+		<MissionControlTile title={m.missionControlResolutionFunnel()}>
+			<MissionControlChart
+				kind={chartTypeFor('resolutionFunnel', tile.key)}
+				slices={tile.entries.map((entry) => ({
+					key: entry.status,
+					label: paperStatusLabel(entry.status),
+					value: entry.count,
+					valueLabel: String(entry.count)
+				}))}
+			/>
+		</MissionControlTile>
+	{:else if tile.kind === 'speakingByRepresentationType'}
+		<MissionControlTile title={m.missionControlSpeakingByType()}>
+			<MissionControlChart
+				kind={chartTypeFor('speakingByRepresentationType', tile.key)}
+				slices={tile.entries.map((entry) => ({
+					key: entry.representationType,
+					label: representationTypeLabel(entry.representationType),
+					value: entry.totalSeconds,
+					valueLabel: fmtDuration(entry.totalSeconds)
+				}))}
+			/>
+		</MissionControlTile>
+	{:else if tile.kind === 'longestSpeechToday'}
+		<MissionControlTile title={m.missionControlLongestSpeech()} center>
+			<i class="fas fa-hourglass-half text-warning text-4xl"></i>
+			<p class="truncate text-4xl font-bold">
+				{tile.committeeAbbreviation}
+				<span class="text-base-content/60 text-2xl font-normal"
+					>{fmtDuration(tile.durationSeconds)}</span
+				>
+			</p>
+		</MissionControlTile>
+	{:else if tile.kind === 'amendmentActivity'}
+		<MissionControlTile title={m.missionControlAmendmentActivity()}>
+			<MissionControlChart
+				kind={chartTypeFor('amendmentActivity', tile.key)}
+				slices={tile.entries.map((entry) => ({
+					key: entry.status,
+					label: amendmentStatusLabel(entry.status),
+					value: entry.count,
+					valueLabel: String(entry.count)
+				}))}
+			/>
+		</MissionControlTile>
+	{:else if tile.kind === 'voteOutcomesToday'}
+		{@const total = tile.entries.reduce((acc, entry) => acc + entry.count, 0)}
+		<MissionControlTile title={m.missionControlVoteOutcomesToday()}>
+			<div class="flex min-h-0 flex-1 flex-col justify-center gap-5">
+				<div class="bg-base-200 flex h-4 w-full overflow-hidden rounded-full">
+					{#each tile.entries as entry (entry.outcome)}
+						<div
+							class={entry.outcome === 'ADOPTED' ? 'bg-success' : 'bg-error'}
+							style="width: {total > 0 ? (entry.count / total) * 100 : 0}%"
+						></div>
+					{/each}
+				</div>
+				<div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-2xl">
+					{#each tile.entries as entry (entry.outcome)}
+						<div class="flex items-center gap-2">
+							<span
+								class="h-3 w-3 flex-none rounded-full {entry.outcome === 'ADOPTED'
+									? 'bg-success'
+									: 'bg-error'}"
+							></span>
+							<span class="font-bold"
+								>{entry.outcome === 'ADOPTED' ? m.adopted() : m.rejected()}</span
+							>
+							<span class="text-base-content/70">{entry.count}</span>
+						</div>
+					{/each}
+				</div>
+			</div>
+		</MissionControlTile>
+	{:else if tile.kind === 'papersAwaitingVote'}
+		<MissionControlTile title={m.missionControlPapersAwaitingVote()} center>
+			<i class="fas fa-scale-balanced text-info text-4xl"></i>
+			<p class="text-6xl font-bold tabular-nums">{tile.count}</p>
+		</MissionControlTile>
+	{:else if tile.kind === 'papersPerCommittee'}
+		<MissionControlTile title={m.missionControlPapersPerCommittee()}>
+			<MissionControlBarList
+				barColorClass="bg-success"
+				items={tile.entries.map((entry) => ({
+					key: entry.committeeAbbreviation,
+					label: entry.committeeAbbreviation,
+					value: entry.paperCount,
+					valueLabel: String(entry.paperCount),
+					icon: 'folder-open'
+				}))}
+			/>
+		</MissionControlTile>
+	{/if}
+{/snippet}
 
-	{#each slots as tile (tile.key)}
-		<div animate:flip={{ duration: 400 }} class="min-w-0 {tileSpanClass(tile.kind)}">
-			{#if tile.kind === 'votingSessions'}
-				<MissionControlTile title={m.missionControlActiveVotes()}>
-					<div class="flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-hidden text-2xl">
-						{#each tile.committees as committee (committee.id)}
-							{#each committee.votingSessions ?? [] as session (session.id)}
-								<div class="flex items-center gap-3">
-									<i class="fas fa-square-poll-vertical text-primary w-7 flex-none text-center"></i>
-									<span class="flex-none font-bold">{committee.abbreviation}</span>
-									<span class="text-base-content/70 truncate"
-										>{session.voteName || session.mode}</span
-									>
-								</div>
-							{/each}
-						{/each}
-					</div>
-				</MissionControlTile>
-			{:else if tile.kind === 'speakingPulse'}
-				<MissionControlTile title={m.missionControlSpeakingNow()}>
-					<div class="flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-hidden text-2xl">
-						{#each tile.speakers as speaker (speaker.committee.id)}
-							<div class="flex items-center gap-3">
-								<Flag size="sm" representation={speaker.representation} />
-								<span class="flex-none font-bold">{speaker.committee.abbreviation}</span>
-								<span class="text-base-content/70 truncate">{speaker.label}</span>
-							</div>
-						{/each}
-					</div>
-				</MissionControlTile>
-			{:else if tile.kind === 'attendance'}
-				<MissionControlTile center>
-					<i class="fas fa-users text-base-content/40 text-4xl"></i>
-					<p class="text-6xl font-bold tabular-nums">
-						{tile.total > 0 ? Math.round((tile.present / tile.total) * 100) : 0}%
-					</p>
-					<p class="text-base-content/60 text-xl">
-						{m.missionControlDelegatesPresent({ present: tile.present, total: tile.total })}
-					</p>
-				</MissionControlTile>
-			{:else if tile.kind === 'adoptions'}
-				<MissionControlTile title={m.missionControlRecentAdoptions()}>
-					<div class="flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-hidden text-2xl">
-						{#each tile.pulse.recentAdoptions.slice(0, 3) as adoption, idx (idx)}
-							<div class="flex items-center gap-3">
-								<i class="fas fa-gavel text-success w-7 flex-none text-center"></i>
-								<div class="min-w-0 leading-tight">
-									<div class="flex items-baseline gap-2">
-										<span class="flex-none font-bold">{adoption.committeeAbbreviation}</span>
-										<span class="truncate"
-											>{adoption.documentNumber || adoption.paperTitle || m.unknown()}</span
-										>
-									</div>
-									<p class="text-base-content/60 truncate text-xl">
-										{adoption.agendaItemTitle}
-									</p>
-								</div>
-							</div>
-						{/each}
-					</div>
-				</MissionControlTile>
-			{:else if tile.kind === 'heartbeat'}
-				<MissionControlTile title={m.missionControlHeartbeatTitle()}>
-					<div class="grid min-h-0 flex-1 grid-cols-2 gap-3">
-						<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-							<i class="fas fa-microphone text-primary text-3xl"></i>
-							<p class="text-4xl font-bold tabular-nums">{tile.pulse.heartbeat.speechesToday}</p>
-							<p class="text-base-content/60 text-base">{m.missionControlSpeechesCaption()}</p>
-						</div>
-						<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-							<i class="fas fa-square-poll-vertical text-primary text-3xl"></i>
-							<p class="text-4xl font-bold tabular-nums">{tile.pulse.heartbeat.votesHeldToday}</p>
-							<p class="text-base-content/60 text-base">{m.missionControlVotesCaption()}</p>
-						</div>
-						<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-							<i class="fas fa-gavel text-success text-3xl"></i>
-							<p class="text-4xl font-bold tabular-nums">
-								{tile.pulse.heartbeat.resolutionsAdoptedToday}
-							</p>
-							<p class="text-base-content/60 text-base">{m.missionControlResolutionsCaption()}</p>
-						</div>
-						<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-							<i class="fas fa-clock text-info text-3xl"></i>
-							<p class="text-3xl font-bold tabular-nums">
-								{fmtDuration(tile.pulse.heartbeat.debateSecondsToday)}
-							</p>
-							<p class="text-base-content/60 text-base">{m.missionControlDebateCaption()}</p>
-						</div>
-					</div>
-				</MissionControlTile>
-			{:else if tile.kind === 'busiestCommittee'}
-				<MissionControlTile title={m.missionControlBusiestCommittee()} center>
-					<i class="fas fa-fire text-warning text-4xl"></i>
-					<p class="truncate text-4xl font-bold">{tile.committeeAbbreviation}</p>
-				</MissionControlTile>
-			{:else if tile.kind === 'closestVote'}
-				<MissionControlTile title={m.missionControlClosestVote()} center>
-					<i class="fas fa-scale-balanced text-info text-4xl"></i>
-					<p class="truncate text-4xl font-bold">
-						{tile.committeeAbbreviation}
-						<span class="text-base-content/60 text-2xl font-normal tabular-nums"
-							>{tile.votesPro}–{tile.votesCon}</span
-						>
-					</p>
-				</MissionControlTile>
-			{:else if tile.kind === 'committeeActivity'}
-				<MissionControlTile title={m.missionControlCommitteeActivity()}>
-					<MissionControlBarList
-						items={tile.entries.map((entry) => ({
-							key: entry.committeeAbbreviation,
-							label: entry.committeeAbbreviation,
-							value: entry.totalSpeakingSeconds,
-							valueLabel: fmtDuration(entry.totalSpeakingSeconds),
-							icon: 'chart-line'
-						}))}
-					/>
-				</MissionControlTile>
-			{:else if tile.kind === 'speakingByRegion'}
-				<MissionControlTile title={m.missionControlSpeakingByRegion()}>
-					<MissionControlChart
-						kind={chartTypeFor('speakingByRegion', tile.key)}
-						slices={tile.entries.slice(0, 5).map((entry) => ({
-							key: entry.group,
-							label: translateRegionalGroupEnum(entry.group as RegionalgroupEnum) || m.unknown(),
-							value: entry.totalSeconds,
-							valueLabel: fmtDuration(entry.totalSeconds)
-						}))}
-					/>
-				</MissionControlTile>
-			{:else if tile.kind === 'speakersListSpotlight'}
-				<MissionControlTile title={m.missionControlSpeakersListTitle()}>
-					<div class="mb-1 flex shrink-0 items-baseline gap-3">
-						<span class="text-3xl font-bold">{tile.committee.abbreviation}</span>
-						<span class="text-base-content/60 truncate text-lg">{tile.committee.name}</span>
-					</div>
-					<div class="flex min-h-0 flex-1 flex-col justify-start gap-2 overflow-hidden text-2xl">
-						{#each tile.speakers.slice(0, 8) as speaker, idx (speaker.id)}
-							{@const representation =
-								speaker.committeeMember?.representation ?? speaker.conferenceMember?.representation}
-							{@const label = speakerLabel(speaker, representation)}
-							<div class="flex items-center gap-3 {idx === 0 ? 'text-primary' : ''}">
-								{#if idx === 0}
-									<i class="fas fa-microphone w-7 flex-none text-center"></i>
-								{:else}
-									<span class="text-base-content/40 w-7 flex-none text-center font-mono text-xl"
-										>{idx}</span
-									>
-								{/if}
-								<Flag size="sm" {representation} />
-								<span class="truncate {idx === 0 ? 'font-bold' : ''}">{label}</span>
-							</div>
-						{/each}
-					</div>
-				</MissionControlTile>
-			{:else if tile.kind === 'conferenceOverview'}
-				<MissionControlTile title={m.missionControlConferenceOverview()}>
-					<div class="grid min-h-0 flex-1 grid-cols-2 gap-3">
-						<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-							<i class="fas fa-users text-primary text-3xl"></i>
-							<p class="text-4xl font-bold tabular-nums">{tile.overview.totalDelegates}</p>
-							<p class="text-base-content/60 text-base">{m.missionControlDelegatesCaption()}</p>
-						</div>
-						<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-							<i class="fas fa-building text-primary text-3xl"></i>
-							<p class="text-4xl font-bold tabular-nums">{tile.overview.totalCommittees}</p>
-							<p class="text-base-content/60 text-base">{m.missionControlCommitteesCaption()}</p>
-						</div>
-						<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-							<i class="fas fa-microphone text-primary text-3xl"></i>
-							<p class="text-4xl font-bold tabular-nums">{tile.overview.totalSpeechesAllTime}</p>
-							<p class="text-base-content/60 text-base">
-								{m.missionControlSpeechesAllTimeCaption()}
-							</p>
-						</div>
-						<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-							<i class="fas fa-gavel text-success text-3xl"></i>
-							<p class="text-4xl font-bold tabular-nums">
-								{tile.overview.totalResolutionsAdoptedAllTime}
-							</p>
-							<p class="text-base-content/60 text-base">
-								{m.missionControlResolutionsAllTimeCaption()}
-							</p>
-						</div>
-					</div>
-				</MissionControlTile>
-			{:else if tile.kind === 'resolutionFunnel'}
-				<MissionControlTile title={m.missionControlResolutionFunnel()}>
-					<MissionControlChart
-						kind={chartTypeFor('resolutionFunnel', tile.key)}
-						slices={tile.entries.map((entry) => ({
-							key: entry.status,
-							label: paperStatusLabel(entry.status),
-							value: entry.count,
-							valueLabel: String(entry.count)
-						}))}
-					/>
-				</MissionControlTile>
-			{:else if tile.kind === 'speakingByRepresentationType'}
-				<MissionControlTile title={m.missionControlSpeakingByType()}>
-					<MissionControlChart
-						kind={chartTypeFor('speakingByRepresentationType', tile.key)}
-						slices={tile.entries.map((entry) => ({
-							key: entry.representationType,
-							label: representationTypeLabel(entry.representationType),
-							value: entry.totalSeconds,
-							valueLabel: fmtDuration(entry.totalSeconds)
-						}))}
-					/>
-				</MissionControlTile>
-			{:else if tile.kind === 'longestSpeechToday'}
-				<MissionControlTile title={m.missionControlLongestSpeech()} center>
-					<i class="fas fa-hourglass-half text-warning text-4xl"></i>
-					<p class="truncate text-4xl font-bold">
-						{tile.committeeAbbreviation}
-						<span class="text-base-content/60 text-2xl font-normal"
-							>{fmtDuration(tile.durationSeconds)}</span
-						>
-					</p>
-				</MissionControlTile>
-			{:else if tile.kind === 'amendmentActivity'}
-				<MissionControlTile title={m.missionControlAmendmentActivity()}>
-					<MissionControlChart
-						kind={chartTypeFor('amendmentActivity', tile.key)}
-						slices={tile.entries.map((entry) => ({
-							key: entry.status,
-							label: amendmentStatusLabel(entry.status),
-							value: entry.count,
-							valueLabel: String(entry.count)
-						}))}
-					/>
-				</MissionControlTile>
-			{:else if tile.kind === 'voteOutcomesToday'}
-				{@const total = tile.entries.reduce((acc, entry) => acc + entry.count, 0)}
-				<MissionControlTile title={m.missionControlVoteOutcomesToday()}>
-					<div class="flex min-h-0 flex-1 flex-col justify-center gap-5">
-						<div class="bg-base-200 flex h-4 w-full overflow-hidden rounded-full">
-							{#each tile.entries as entry (entry.outcome)}
-								<div
-									class={entry.outcome === 'ADOPTED' ? 'bg-success' : 'bg-error'}
-									style="width: {total > 0 ? (entry.count / total) * 100 : 0}%"
-								></div>
-							{/each}
-						</div>
-						<div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-2xl">
-							{#each tile.entries as entry (entry.outcome)}
-								<div class="flex items-center gap-2">
-									<span
-										class="h-3 w-3 flex-none rounded-full {entry.outcome === 'ADOPTED'
-											? 'bg-success'
-											: 'bg-error'}"
-									></span>
-									<span class="font-bold"
-										>{entry.outcome === 'ADOPTED' ? m.adopted() : m.rejected()}</span
-									>
-									<span class="text-base-content/70">{entry.count}</span>
-								</div>
-							{/each}
-						</div>
-					</div>
-				</MissionControlTile>
-			{:else if tile.kind === 'papersAwaitingVote'}
-				<MissionControlTile title={m.missionControlPapersAwaitingVote()} center>
-					<i class="fas fa-scale-balanced text-info text-4xl"></i>
-					<p class="text-6xl font-bold tabular-nums">{tile.count}</p>
-				</MissionControlTile>
-			{:else if tile.kind === 'papersPerCommittee'}
-				<MissionControlTile title={m.missionControlPapersPerCommittee()}>
-					<MissionControlBarList
-						barColorClass="bg-success"
-						items={tile.entries.map((entry) => ({
-							key: entry.committeeAbbreviation,
-							label: entry.committeeAbbreviation,
-							value: entry.paperCount,
-							valueLabel: String(entry.paperCount),
-							icon: 'folder-open'
-						}))}
-					/>
-				</MissionControlTile>
-			{/if}
-		</div>
-	{/each}
-</div>
+<Masonry
+	items={masonryEntries}
+	gap={16}
+	min_col_width={320}
+	max_col_width={420}
+	order="balanced-stable"
+	class="p-4"
+	column_props={{ style: 'grid-template-columns: minmax(0, 1fr);' }}
+>
+	{#snippet children({ item })}
+		{#if item.kind === 'committee'}
+			{@render committeeCard(item.committee, item.dueSoon)}
+		{:else}
+			{@render tileCard(item.tile)}
+		{/if}
+	{/snippet}
+</Masonry>
 
 <style>
-	.mission-control-grid {
-		/* Tracks grow up to 30rem to fill the row when there are many cards, but
-		   never beyond that — so a lone card doesn't stretch edge-to-edge.
-		   Leftover space is centered via justify-content instead. */
-		grid-template-columns: repeat(auto-fit, minmax(20rem, 30rem));
-		/* Grid items default to min-width: auto, which lets a wide child (long
-		   text, a chart legend) force its track past the container edge on a
-		   hallway display nobody scrolls. Clip instead of overflowing the page. */
-		overflow-x: hidden;
-	}
-
 	@keyframes mission-control-blink {
 		0%,
 		100% {

@@ -1,6 +1,30 @@
 import { schemaBuilder } from '$api/rumble';
 import { db, schema } from '$api/db/db';
-import { and, count, desc, eq, isNotNull, or, sql } from 'drizzle-orm';
+import { and, count, eq, isNotNull, or, sql } from 'drizzle-orm';
+import { building } from '$app/environment';
+import { refreshMaterializedViewsWithLock } from '$api/db/refreshMaterializedViews';
+
+// Conference-wide stats are heavy aggregations, not time-critical — refreshed
+// every 5 minutes rather than on every request.
+const STATISTICS_REFRESH_INTERVAL_MS = 5 * 60_000;
+const STATISTICS_VIEWS = [
+	'representation_speaking_stats',
+	'committee_activity_stats',
+	'amendment_success_stats',
+	'paper_sponsor_stats',
+	'contrarian_vote_stats',
+	'voting_alignment_stats',
+	'attendance_trend_stats',
+	'speaking_timeline_stats'
+];
+
+if (!building) {
+	setInterval(() => {
+		refreshMaterializedViewsWithLock('refresh_statistics', STATISTICS_VIEWS).catch((err) =>
+			console.error('Failed to refresh statistics materialized views', err)
+		);
+	}, STATISTICS_REFRESH_INTERVAL_MS);
+}
 
 // ─── Result interfaces ─────────────────────────────────────────────────────
 
@@ -129,22 +153,6 @@ interface ConferenceStatsResult {
 	votingAlignment: VotingAlignmentStats[];
 	attendanceTrend: AttendanceTrendPoint[];
 	speakingTimeline: SpeakingTimelineBucket[];
-}
-
-// ─── TTL cache for expensive conference-wide aggregations ─────────────────
-
-const CACHE_TTL_MS = 60_000;
-const conferenceStatsCache = new Map<string, { data: ConferenceStatsResult; expiresAt: number }>();
-
-function getCached(conferenceId: string): ConferenceStatsResult | null {
-	const entry = conferenceStatsCache.get(conferenceId);
-	if (entry && entry.expiresAt > Date.now()) return entry.data;
-	conferenceStatsCache.delete(conferenceId);
-	return null;
-}
-
-function setCached(conferenceId: string, data: ConferenceStatsResult): void {
-	conferenceStatsCache.set(conferenceId, { data, expiresAt: Date.now() + CACHE_TTL_MS });
 }
 
 // ─── Reusable SQL expressions ─────────────────────────────────────────────
@@ -581,7 +589,9 @@ schemaBuilder.queryFields((t) => ({
 		}
 	}),
 
-	// ── Conference-wide stats — any participant, cached 60 s ────────────────
+	// ── Conference-wide stats — any participant. Reads straight off the
+	// statistics materialized views, which the refresh-statistics job keeps
+	// current; no per-request aggregation, no app-level cache.
 	conferenceStats: t.field({
 		type: ConferenceStatsRef,
 		nullable: true,
@@ -591,139 +601,77 @@ schemaBuilder.queryFields((t) => ({
 
 			const { conferenceId } = args;
 
-			// Ability check runs on every call — including cache hits — so a user
-			// who left the conference cannot read a previously cached response.
 			const conference = await db.query.conference.findFirst(
 				ctx.abilities.conference.filter('read').merge({ where: { id: conferenceId } }).query.single
 			);
 			if (!conference) return null;
 
-			const cached = getCached(conferenceId);
-			if (cached) return cached;
-
-			// ── Speaking leaderboard ─────────────────────────────────────────
-			function fetchSpeakingByRepresentation(source: 'committee' | 'conference') {
-				if (source === 'committee') {
-					return db
-						.select({
-							representationId: schema.representation.id,
-							representationName: schema.representation.name,
-							alpha2Code: schema.representation.alpha2Code,
-							regionalGroup: schema.representation.regionalGroup,
-							representationType: schema.representation.type,
-							totalSeconds: sql<number>`COALESCE(SUM(${durationExpr}), 0)`,
-							speechCount: sql<number>`COUNT(*) FILTER (WHERE ${schema.speakersList.type} = 'SPEAKERS_LIST')`,
-							commentCount: sql<number>`COUNT(*) FILTER (WHERE ${schema.speakersList.type} = 'COMMENT_LIST')`
-						})
-						.from(schema.spokenTimePeriod)
-						.innerJoin(
-							schema.speakersList,
-							eq(schema.spokenTimePeriod.speakersListId, schema.speakersList.id)
-						)
-						.innerJoin(
-							schema.committeeMember,
-							eq(schema.spokenTimePeriod.committeeMemberId, schema.committeeMember.id)
-						)
-						.innerJoin(
-							schema.representation,
-							eq(schema.committeeMember.representationId, schema.representation.id)
-						)
-						.innerJoin(
-							schema.committee,
-							eq(schema.committeeMember.committeeId, schema.committee.id)
-						)
-						.where(
-							and(
-								eq(schema.committee.conferenceId, conferenceId),
-								isNotNull(schema.spokenTimePeriod.committeeMemberId)
-							)
-						)
-						.groupBy(
-							schema.representation.id,
-							schema.representation.name,
-							schema.representation.alpha2Code,
-							schema.representation.regionalGroup,
-							schema.representation.type
-						);
-				} else {
-					return db
-						.select({
-							representationId: schema.representation.id,
-							representationName: schema.representation.name,
-							alpha2Code: schema.representation.alpha2Code,
-							regionalGroup: schema.representation.regionalGroup,
-							representationType: schema.representation.type,
-							totalSeconds: sql<number>`COALESCE(SUM(${durationExpr}), 0)`,
-							speechCount: sql<number>`COUNT(*) FILTER (WHERE ${schema.speakersList.type} = 'SPEAKERS_LIST')`,
-							commentCount: sql<number>`COUNT(*) FILTER (WHERE ${schema.speakersList.type} = 'COMMENT_LIST')`
-						})
-						.from(schema.spokenTimePeriod)
-						.innerJoin(
-							schema.speakersList,
-							eq(schema.spokenTimePeriod.speakersListId, schema.speakersList.id)
-						)
-						.innerJoin(
-							schema.conferenceMember,
-							eq(schema.spokenTimePeriod.conferenceMemberId, schema.conferenceMember.id)
-						)
-						.innerJoin(
-							schema.representation,
-							eq(schema.conferenceMember.representationId, schema.representation.id)
-						)
-						.where(
-							and(
-								eq(schema.conferenceMember.conferenceId, conferenceId),
-								isNotNull(schema.spokenTimePeriod.conferenceMemberId)
-							)
-						)
-						.groupBy(
-							schema.representation.id,
-							schema.representation.name,
-							schema.representation.alpha2Code,
-							schema.representation.regionalGroup,
-							schema.representation.type
-						);
-				}
-			}
-
-			const [delegateSpeaking, nsaSpeaking] = await Promise.all([
-				fetchSpeakingByRepresentation('committee'),
-				fetchSpeakingByRepresentation('conference')
+			const [
+				speakingRows,
+				committeeActivityRows,
+				amendmentRows,
+				paperSponsorRows,
+				contrarianRows,
+				votingAlignmentRows,
+				attendanceTrendRows,
+				speakingTimelineRows
+			] = await Promise.all([
+				db
+					.select()
+					.from(schema.representationSpeakingStats)
+					.where(eq(schema.representationSpeakingStats.conferenceId, conferenceId)),
+				db
+					.select()
+					.from(schema.committeeActivityStats)
+					.where(eq(schema.committeeActivityStats.conferenceId, conferenceId)),
+				db
+					.select()
+					.from(schema.amendmentSuccessStats)
+					.where(eq(schema.amendmentSuccessStats.conferenceId, conferenceId)),
+				db
+					.select()
+					.from(schema.paperSponsorStats)
+					.where(eq(schema.paperSponsorStats.conferenceId, conferenceId)),
+				db
+					.select()
+					.from(schema.contrarianVoteStats)
+					.where(eq(schema.contrarianVoteStats.conferenceId, conferenceId)),
+				db
+					.select()
+					.from(schema.votingAlignmentStats)
+					.where(eq(schema.votingAlignmentStats.conferenceId, conferenceId)),
+				db
+					.select()
+					.from(schema.attendanceTrendStats)
+					.where(eq(schema.attendanceTrendStats.conferenceId, conferenceId)),
+				db
+					.select()
+					.from(schema.speakingTimelineStats)
+					.where(eq(schema.speakingTimelineStats.conferenceId, conferenceId))
 			]);
 
-			const speakingMap = new Map<string, DelegationSpeakingStats>();
-			for (const row of [...delegateSpeaking, ...nsaSpeaking]) {
-				const existing = speakingMap.get(row.representationId);
-				if (existing) {
-					existing.totalSeconds += Math.round(row.totalSeconds) || 0;
-					existing.speechCount += Number(row.speechCount) || 0;
-					existing.commentCount += Number(row.commentCount) || 0;
-				} else {
-					speakingMap.set(row.representationId, {
-						representationId: row.representationId,
-						representationName: row.representationName,
-						alpha2Code: row.alpha2Code,
-						regionalGroup: row.regionalGroup,
-						representationType: row.representationType,
-						totalSeconds: Math.round(row.totalSeconds) || 0,
-						speechCount: Number(row.speechCount) || 0,
-						commentCount: Number(row.commentCount) || 0
-					});
-				}
-			}
+			// ── Speaking leaderboards + by-region + fairness ──────────────────
+			const allSpeaking: DelegationSpeakingStats[] = speakingRows.map((r) => ({
+				representationId: r.representationId,
+				representationName: r.representationName,
+				alpha2Code: r.alpha2Code,
+				regionalGroup: r.regionalGroup,
+				representationType: r.representationType,
+				totalSeconds: r.totalSeconds,
+				speechCount: r.speechCount,
+				commentCount: r.commentCount
+			}));
 
-			const allSpeaking = Array.from(speakingMap.values());
-			const speakingLeaderboard = [...allSpeaking]
+			const speakingLeaderboard = allSpeaking
 				.filter((r) => r.representationType !== 'NSA')
-				.sort((a, b) => b.totalSeconds - a.totalSeconds);
-			const commentLeaderboard = [...allSpeaking]
+				.toSorted((a, b) => b.totalSeconds - a.totalSeconds);
+			const commentLeaderboard = allSpeaking
 				.filter((r) => r.representationType !== 'NSA')
-				.sort((a, b) => b.commentCount - a.commentCount);
-			const nsaLeaderboard = [...allSpeaking]
+				.toSorted((a, b) => b.commentCount - a.commentCount);
+			const nsaLeaderboard = allSpeaking
 				.filter((r) => r.representationType === 'NSA')
-				.sort((a, b) => b.totalSeconds - a.totalSeconds);
+				.toSorted((a, b) => b.totalSeconds - a.totalSeconds);
 
-			// ── Speaking by regional group ────────────────────────────────────
 			const regionMap = new Map<string, RegionalStats>();
 			for (const row of allSpeaking) {
 				const group = row.regionalGroup ?? 'OTHER';
@@ -741,360 +689,88 @@ schemaBuilder.queryFields((t) => ({
 					});
 				}
 			}
-			const speakingByRegion = Array.from(regionMap.values()).sort(
+			const speakingByRegion = Array.from(regionMap.values()).toSorted(
 				(a, b) => b.totalSeconds - a.totalSeconds
 			);
 
-			// ── Amendment success by country ──────────────────────────────────
-			const amendmentRows = await db
-				.select({
-					representationId: schema.representation.id,
-					representationName: schema.representation.name,
-					alpha2Code: schema.representation.alpha2Code,
-					status: schema.amendment.status
-				})
-				.from(schema.amendment)
-				.innerJoin(
-					schema.committeeMember,
-					eq(schema.amendment.proposerCommitteeMemberId, schema.committeeMember.id)
-				)
-				.innerJoin(
-					schema.representation,
-					eq(schema.committeeMember.representationId, schema.representation.id)
-				)
-				.innerJoin(schema.committee, eq(schema.committeeMember.committeeId, schema.committee.id))
-				.where(eq(schema.committee.conferenceId, conferenceId));
+			const speakingFairness: SpeakingFairness = {
+				gini: Math.round(gini(allSpeaking.map((r) => r.totalSeconds)) * 1000) / 1000,
+				stdDevSeconds: Math.round(stdDev(allSpeaking.map((r) => r.totalSeconds)))
+			};
 
-			const amendmentMap = new Map<string, AmendmentCountStats>();
-			for (const row of amendmentRows) {
-				const existing = amendmentMap.get(row.representationId) ?? {
-					representationId: row.representationId,
-					representationName: row.representationName,
-					alpha2Code: row.alpha2Code,
-					total: 0,
-					accepted: 0
-				};
-				existing.total++;
-				if (row.status === 'ACCEPTED' || row.status === 'CONSENSUS_ADOPTED') existing.accepted++;
-				amendmentMap.set(row.representationId, existing);
-			}
-			const amendmentSuccessRate = Array.from(amendmentMap.values()).sort(
-				(a, b) => b.total - a.total
-			);
+			// ── Amendment success + paper sponsors ─────────────────────────────
+			const amendmentSuccessRate: AmendmentCountStats[] = amendmentRows
+				.map((r) => ({
+					representationId: r.representationId,
+					representationName: r.representationName,
+					alpha2Code: r.alpha2Code,
+					total: r.total,
+					accepted: r.accepted
+				}))
+				.toSorted((a, b) => b.total - a.total);
 
-			// ── Paper sponsor leaderboard ─────────────────────────────────────
-			const paperSponsorRows = await db
-				.select({
-					representationId: schema.representation.id,
-					representationName: schema.representation.name,
-					alpha2Code: schema.representation.alpha2Code,
-					sponsorships: sql<number>`COUNT(*)`
-				})
-				.from(schema.paperSponsor)
-				.innerJoin(
-					schema.committeeMember,
-					eq(schema.paperSponsor.committeeMemberId, schema.committeeMember.id)
-				)
-				.innerJoin(
-					schema.representation,
-					eq(schema.committeeMember.representationId, schema.representation.id)
-				)
-				.innerJoin(schema.committee, eq(schema.committeeMember.committeeId, schema.committee.id))
-				.where(eq(schema.committee.conferenceId, conferenceId))
-				.groupBy(
-					schema.representation.id,
-					schema.representation.name,
-					schema.representation.alpha2Code
-				)
-				.orderBy(desc(sql`COUNT(*)`));
+			const paperSponsorLeaderboard: PaperSponsorStats[] = paperSponsorRows
+				.map((r) => ({
+					representationId: r.representationId,
+					representationName: r.representationName,
+					alpha2Code: r.alpha2Code,
+					sponsorships: r.sponsorships
+				}))
+				.toSorted((a, b) => b.sponsorships - a.sponsorships);
 
-			const paperSponsorLeaderboard: PaperSponsorStats[] = paperSponsorRows.map((r) => ({
-				representationId: r.representationId,
-				representationName: r.representationName,
-				alpha2Code: r.alpha2Code,
-				sponsorships: Number(r.sponsorships)
-			}));
-
-			// ── Committee activity ────────────────────────────────────────────
-			const [committeeActivityRows, voteCountRows] = await Promise.all([
-				db
-					.select({
-						committeeId: schema.committee.id,
-						committeeName: schema.committee.name,
-						committeeAbbreviation: schema.committee.abbreviation,
-						totalSpeakingSeconds: sql<number>`COALESCE(SUM(${durationExpr}), 0)`,
-						speechCount: sql<number>`COUNT(${schema.spokenTimePeriod.id})`
-					})
-					.from(schema.committee)
-					.leftJoin(schema.agendaItem, eq(schema.agendaItem.committeeId, schema.committee.id))
-					.leftJoin(schema.speakersList, eq(schema.speakersList.agendaItemId, schema.agendaItem.id))
-					.leftJoin(
-						schema.spokenTimePeriod,
-						eq(schema.spokenTimePeriod.speakersListId, schema.speakersList.id)
-					)
-					.where(eq(schema.committee.conferenceId, conferenceId))
-					.groupBy(schema.committee.id, schema.committee.name, schema.committee.abbreviation),
-				db
-					.select({
-						committeeId: schema.votingSession.committeeId,
-						voteCount: sql<number>`COUNT(*)`
-					})
-					.from(schema.votingSession)
-					.innerJoin(schema.committee, eq(schema.votingSession.committeeId, schema.committee.id))
-					.where(
-						and(
-							eq(schema.committee.conferenceId, conferenceId),
-							isNotNull(schema.votingSession.completedAt)
-						)
-					)
-					.groupBy(schema.votingSession.committeeId)
-			]);
-
-			const voteCountMap = new Map(voteCountRows.map((r) => [r.committeeId, Number(r.voteCount)]));
+			// ── Committee activity ──────────────────────────────────────────────
 			const committeeActivity: CommitteeActivityStats[] = committeeActivityRows.map((r) => ({
 				committeeId: r.committeeId,
 				committeeName: r.committeeName,
 				committeeAbbreviation: r.committeeAbbreviation,
-				totalSpeakingSeconds: Math.round(r.totalSpeakingSeconds) || 0,
-				speechCount: Number(r.speechCount) || 0,
-				voteCount: voteCountMap.get(r.committeeId) ?? 0
+				totalSpeakingSeconds: r.totalSpeakingSeconds,
+				speechCount: r.speechCount,
+				voteCount: r.voteCount
 			}));
 
-			// ── Speaking fairness ─────────────────────────────────────────────
-			const allSecondsArr = allSpeaking.map((r) => r.totalSeconds);
-			const speakingFairness: SpeakingFairness = {
-				gini: Math.round(gini(allSecondsArr) * 1000) / 1000,
-				stdDevSeconds: Math.round(stdDev(allSecondsArr))
-			};
-
-			// ── Most contrarian votes ─────────────────────────────────────────
-			const contraryRows = await db
-				.select({
-					representationId: schema.representation.id,
-					representationName: schema.representation.name,
-					alpha2Code: schema.representation.alpha2Code,
-					contraryVotes: sql<number>`COUNT(*) FILTER (
-						WHERE (${schema.votingVote.vote} = 'PRO' AND ${schema.votingSession.outcome} = 'REJECTED')
-						   OR (${schema.votingVote.vote} = 'CON' AND ${schema.votingSession.outcome} = 'ADOPTED')
-					)`,
-					totalVotes: sql<number>`COUNT(*)`
-				})
-				.from(schema.votingVote)
-				.innerJoin(
-					schema.votingSession,
-					eq(schema.votingVote.votingSessionId, schema.votingSession.id)
-				)
-				.innerJoin(
-					schema.committeeMember,
-					eq(schema.votingVote.committeeMemberId, schema.committeeMember.id)
-				)
-				.innerJoin(
-					schema.representation,
-					eq(schema.committeeMember.representationId, schema.representation.id)
-				)
-				.innerJoin(schema.committee, eq(schema.votingSession.committeeId, schema.committee.id))
-				.where(
-					and(
-						eq(schema.committee.conferenceId, conferenceId),
-						isNotNull(schema.votingSession.outcome)
-					)
-				)
-				.groupBy(
-					schema.representation.id,
-					schema.representation.name,
-					schema.representation.alpha2Code
-				)
-				.orderBy(
-					desc(
-						sql`COUNT(*) FILTER (
-							WHERE (${schema.votingVote.vote} = 'PRO' AND ${schema.votingSession.outcome} = 'REJECTED')
-							   OR (${schema.votingVote.vote} = 'CON' AND ${schema.votingSession.outcome} = 'ADOPTED')
-						)`
-					)
-				)
-				.limit(20);
-
-			const mostContrarian: ContraryStats[] = contraryRows.map((r) => ({
-				representationId: r.representationId,
-				representationName: r.representationName,
-				alpha2Code: r.alpha2Code,
-				contraryVotes: Number(r.contraryVotes),
-				totalVotes: Number(r.totalVotes)
-			}));
-
-			// ── Voting alignment ──────────────────────────────────────────────
-			const allVoteRows = await db
-				.select({
-					votingSessionId: schema.votingVote.votingSessionId,
-					representationId: schema.representation.id,
-					representationName: schema.representation.name,
-					alpha2Code: schema.representation.alpha2Code,
-					vote: schema.votingVote.vote
-				})
-				.from(schema.votingVote)
-				.innerJoin(
-					schema.committeeMember,
-					eq(schema.votingVote.committeeMemberId, schema.committeeMember.id)
-				)
-				.innerJoin(
-					schema.representation,
-					eq(schema.committeeMember.representationId, schema.representation.id)
-				)
-				.innerJoin(
-					schema.votingSession,
-					eq(schema.votingVote.votingSessionId, schema.votingSession.id)
-				)
-				.innerJoin(schema.committee, eq(schema.votingSession.committeeId, schema.committee.id))
-				.where(eq(schema.committee.conferenceId, conferenceId));
-
-			// Build per-session vote maps then compute pairwise agreement
-			const bySession = new Map<
-				string,
-				Map<string, { vote: string; name: string | null; alpha2: string | null }>
-			>();
-			for (const row of allVoteRows) {
-				let sessionMap = bySession.get(row.votingSessionId);
-				if (!sessionMap) {
-					sessionMap = new Map();
-					bySession.set(row.votingSessionId, sessionMap);
-				}
-				sessionMap.set(row.representationId, {
-					vote: row.vote,
-					name: row.representationName,
-					alpha2: row.alpha2Code
-				});
-			}
-
-			const pairStats = new Map<
-				string,
-				{
-					agree: number;
-					total: number;
-					name1: string | null;
-					alpha2_1: string | null;
-					name2: string | null;
-					alpha2_2: string | null;
-				}
-			>();
-			for (const sessionMap of bySession.values()) {
-				const entries = Array.from(sessionMap.entries());
-				for (let i = 0; i < entries.length; i++) {
-					for (let j = i + 1; j < entries.length; j++) {
-						const [id1, d1] = entries[i];
-						const [id2, d2] = entries[j];
-						const [lo, hi] = id1 < id2 ? [id1, id2] : [id2, id1];
-						const loIsId1 = lo === id1;
-						const key = `${lo}|${hi}`;
-						const existing = pairStats.get(key) ?? {
-							agree: 0,
-							total: 0,
-							name1: loIsId1 ? d1.name : d2.name,
-							alpha2_1: loIsId1 ? d1.alpha2 : d2.alpha2,
-							name2: loIsId1 ? d2.name : d1.name,
-							alpha2_2: loIsId1 ? d2.alpha2 : d1.alpha2
-						};
-						existing.total++;
-						if (d1.vote === d2.vote) existing.agree++;
-						pairStats.set(key, existing);
-					}
-				}
-			}
-
-			const votingAlignment: VotingAlignmentStats[] = Array.from(pairStats.entries())
-				.filter(([, v]) => v.total >= 3)
-				.map(([key, v]) => {
-					const [rep1Id, rep2Id] = key.split('|');
-					return {
-						representation1Id: rep1Id,
-						representation1Name: v.name1,
-						representation1Alpha2Code: v.alpha2_1,
-						representation2Id: rep2Id,
-						representation2Name: v.name2,
-						representation2Alpha2Code: v.alpha2_2,
-						agreementRate: Math.round((v.agree / v.total) * 1000) / 1000,
-						votesCompared: v.total
-					};
-				})
-				.sort((a, b) => b.agreementRate - a.agreementRate)
+			// ── Most contrarian votes ───────────────────────────────────────────
+			const mostContrarian: ContraryStats[] = contrarianRows
+				.map((r) => ({
+					representationId: r.representationId,
+					representationName: r.representationName,
+					alpha2Code: r.alpha2Code,
+					contraryVotes: r.contraryVotes,
+					totalVotes: r.totalVotes
+				}))
+				.toSorted((a, b) => b.contraryVotes - a.contraryVotes)
 				.slice(0, 20);
 
-			// ── Attendance trend (distinct check-ins per calendar day) ────────
-			const trendRows = await db
-				.select({
-					conferenceUserId: schema.presenceEvent.conferenceUserId,
-					timestamp: schema.presenceEvent.timestamp
-				})
-				.from(schema.presenceEvent)
-				.innerJoin(schema.committee, eq(schema.presenceEvent.committeeId, schema.committee.id))
-				.where(
-					and(
-						eq(schema.committee.conferenceId, conferenceId),
-						eq(schema.presenceEvent.present, true)
-					)
-				);
+			// ── Voting alignment ────────────────────────────────────────────────
+			const votingAlignment: VotingAlignmentStats[] = votingAlignmentRows
+				.map((r) => ({
+					representation1Id: r.representation1Id,
+					representation1Name: r.representation1Name,
+					representation1Alpha2Code: r.representation1Alpha2Code,
+					representation2Id: r.representation2Id,
+					representation2Name: r.representation2Name,
+					representation2Alpha2Code: r.representation2Alpha2Code,
+					agreementRate: Math.round(r.agreementRate * 1000) / 1000,
+					votesCompared: r.votesCompared
+				}))
+				.toSorted((a, b) => b.agreementRate - a.agreementRate)
+				.slice(0, 20);
 
-			const byDate = new Map<string, Set<string>>();
-			for (const row of trendRows) {
-				const day = row.timestamp.toISOString().split('T')[0];
-				const set = byDate.get(day) ?? new Set<string>();
-				set.add(row.conferenceUserId);
-				byDate.set(day, set);
-			}
-			const attendanceTrend: AttendanceTrendPoint[] = Array.from(byDate.entries())
-				.sort(([a], [b]) => a.localeCompare(b))
-				.map(([date, users]) => ({ date, uniqueUsersPresent: users.size }));
+			// ── Attendance trend + speaking timeline ────────────────────────────
+			const attendanceTrend: AttendanceTrendPoint[] = attendanceTrendRows
+				.toSorted((a, b) => a.date.getTime() - b.date.getTime())
+				.map((r) => ({
+					date: r.date.toISOString().split('T')[0],
+					uniqueUsersPresent: r.uniqueUsersPresent
+				}));
 
-			// ── Speaking activity timeline (30-min buckets) ─────────────────
-			const bucketExpr = sql<string>`to_char(to_timestamp(floor(extract(epoch from ${schema.spokenTimePeriod.startTimestamp}) / 1800) * 1800), 'YYYY-MM-DD"T"HH24:MI:SS"Z"')`;
-			const bucketDuration = sql<number>`COALESCE(SUM(EXTRACT(EPOCH FROM (${schema.spokenTimePeriod.endTimestamp} - ${schema.spokenTimePeriod.startTimestamp}))), 0)`;
+			const speakingTimeline: SpeakingTimelineBucket[] = speakingTimelineRows
+				.toSorted((a, b) => a.bucket.getTime() - b.bucket.getTime())
+				.map((r) => ({
+					bucket: `${r.bucket.toISOString().slice(0, 19)}Z`,
+					totalSeconds: r.totalSeconds
+				}));
 
-			const [timelineCommittee, timelineConference] = await Promise.all([
-				db
-					.select({ bucket: bucketExpr, totalSeconds: bucketDuration })
-					.from(schema.spokenTimePeriod)
-					.innerJoin(
-						schema.committeeMember,
-						eq(schema.spokenTimePeriod.committeeMemberId, schema.committeeMember.id)
-					)
-					.innerJoin(schema.committee, eq(schema.committeeMember.committeeId, schema.committee.id))
-					.where(
-						and(
-							eq(schema.committee.conferenceId, conferenceId),
-							isNotNull(schema.spokenTimePeriod.committeeMemberId)
-						)
-					)
-					.groupBy(bucketExpr)
-					.orderBy(bucketExpr),
-				db
-					.select({ bucket: bucketExpr, totalSeconds: bucketDuration })
-					.from(schema.spokenTimePeriod)
-					.innerJoin(
-						schema.conferenceMember,
-						eq(schema.spokenTimePeriod.conferenceMemberId, schema.conferenceMember.id)
-					)
-					.where(
-						and(
-							eq(schema.conferenceMember.conferenceId, conferenceId),
-							isNotNull(schema.spokenTimePeriod.conferenceMemberId)
-						)
-					)
-					.groupBy(bucketExpr)
-					.orderBy(bucketExpr)
-			]);
-
-			const timelineMap = new Map<string, number>();
-			for (const row of [...timelineCommittee, ...timelineConference]) {
-				timelineMap.set(
-					row.bucket,
-					(timelineMap.get(row.bucket) ?? 0) + Math.round(row.totalSeconds)
-				);
-			}
-			const speakingTimeline: SpeakingTimelineBucket[] = Array.from(timelineMap.entries())
-				.sort(([a], [b]) => a.localeCompare(b))
-				.map(([bucket, totalSeconds]) => ({ bucket, totalSeconds }));
-
-			// ── Assemble, cache, return ──────────────────────────────────────
-			const result: ConferenceStatsResult = {
+			return {
 				speakingLeaderboard,
 				commentLeaderboard,
 				nsaLeaderboard,
@@ -1108,8 +784,6 @@ schemaBuilder.queryFields((t) => ({
 				attendanceTrend,
 				speakingTimeline
 			};
-			setCached(conferenceId, result);
-			return result;
 		}
 	})
 }));

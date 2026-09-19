@@ -156,13 +156,6 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.where(eq(schema.request.id, args.id));
 
-			// Rumble's auto-generated `requests` LIST field only re-subscribes on
-			// "created"/"removed" pubsub actions (see makePubSubInstance /
-			// registerOnInstance in @m1212e/rumble) - "updated" only wakes up a
-			// subscriber on the singular `request(id)` field. A resolved request
-			// leaves every chair's PENDING list, so it has to fire "removed" (like
-			// withdrawRequest below) for that list to live-update; `updated(id)`
-			// here would silently leave chairs' lists stale until a manual refresh.
 			pubsub.removed();
 
 			return db.query.request

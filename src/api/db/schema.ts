@@ -12,6 +12,7 @@ import {
 	smallint,
 	integer,
 	bytea,
+	doublePrecision,
 	type AnyPgColumn
 } from 'drizzle-orm/pg-core';
 
@@ -646,3 +647,141 @@ export const request = snakeCase.table(
 			.where(sql`${t.status} = 'PENDING'`)
 	]
 );
+
+export const representationSpeakingStats = snakeCase
+	.materializedView('representation_speaking_stats', {
+		conferenceId: text().notNull(),
+		representationId: text().notNull(),
+		representationName: text(),
+		alpha2Code: text(),
+		regionalGroup: regionalGroup(),
+		representationType: representationType(),
+		totalSeconds: integer().notNull(),
+		speechCount: integer().notNull(),
+		commentCount: integer().notNull()
+	})
+	.existing();
+
+export const committeeActivityStats = snakeCase
+	.materializedView('committee_activity_stats', {
+		conferenceId: text().notNull(),
+		committeeId: text().notNull(),
+		committeeName: text().notNull(),
+		committeeAbbreviation: text().notNull(),
+		totalSpeakingSeconds: integer().notNull(),
+		speechCount: integer().notNull(),
+		voteCount: integer().notNull()
+	})
+	.existing();
+
+export const amendmentSuccessStats = snakeCase
+	.materializedView('amendment_success_stats', {
+		conferenceId: text().notNull(),
+		representationId: text().notNull(),
+		representationName: text(),
+		alpha2Code: text(),
+		total: integer().notNull(),
+		accepted: integer().notNull()
+	})
+	.existing();
+
+export const paperSponsorStats = snakeCase
+	.materializedView('paper_sponsor_stats', {
+		conferenceId: text().notNull(),
+		representationId: text().notNull(),
+		representationName: text(),
+		alpha2Code: text(),
+		sponsorships: integer().notNull()
+	})
+	.existing();
+
+export const contrarianVoteStats = snakeCase
+	.materializedView('contrarian_vote_stats', {
+		conferenceId: text().notNull(),
+		representationId: text().notNull(),
+		representationName: text(),
+		alpha2Code: text(),
+		contraryVotes: integer().notNull(),
+		totalVotes: integer().notNull()
+	})
+	.existing();
+
+export const votingAlignmentStats = snakeCase
+	.materializedView('voting_alignment_stats', {
+		conferenceId: text().notNull(),
+		representation1Id: text().notNull(),
+		representation1Name: text(),
+		representation1Alpha2Code: text(),
+		representation2Id: text().notNull(),
+		representation2Name: text(),
+		representation2Alpha2Code: text(),
+		agreementRate: doublePrecision().notNull(),
+		votesCompared: integer().notNull()
+	})
+	.existing();
+
+export const attendanceTrendStats = snakeCase
+	.materializedView('attendance_trend_stats', {
+		conferenceId: text().notNull(),
+		date: date({ mode: 'date' }).notNull(),
+		uniqueUsersPresent: integer().notNull()
+	})
+	.existing();
+
+export const speakingTimelineStats = snakeCase
+	.materializedView('speaking_timeline_stats', {
+		conferenceId: text().notNull(),
+		bucket: timestamp({ mode: 'date' }).notNull(),
+		totalSeconds: integer().notNull()
+	})
+	.existing();
+
+export const missionControlHeartbeatStats = snakeCase
+	.materializedView('mission_control_heartbeat_stats', {
+		conferenceId: text().notNull(),
+		day: date({ mode: 'date' }).notNull(),
+		speechesToday: integer().notNull(),
+		debateSecondsToday: integer().notNull(),
+		votesHeldToday: integer().notNull(),
+		resolutionsAdoptedToday: integer().notNull()
+	})
+	.existing();
+
+export const committeeRecentActivityStats = snakeCase
+	.materializedView('committee_recent_activity_stats', {
+		conferenceId: text().notNull(),
+		committeeId: text().notNull(),
+		committeeName: text().notNull(),
+		committeeAbbreviation: text().notNull(),
+		interventionCount: integer().notNull()
+	})
+	.existing();
+
+export const votingSessionResultsStats = snakeCase
+	.materializedView('voting_session_results_stats', {
+		conferenceId: text().notNull(),
+		votingSessionId: text().notNull(),
+		committeeId: text().notNull(),
+		committeeName: text().notNull(),
+		committeeAbbreviation: text().notNull(),
+		voteName: text(),
+		votesPro: integer().notNull(),
+		votesCon: integer().notNull(),
+		margin: integer().notNull(),
+		completedAt: timestamp({ mode: 'date' })
+	})
+	.existing();
+
+export const resolutionAdoptionStats = snakeCase
+	.materializedView('resolution_adoption_stats', {
+		conferenceId: text().notNull(),
+		resolutionPaperId: text().notNull(),
+		committeeId: text().notNull(),
+		committeeName: text().notNull(),
+		committeeAbbreviation: text().notNull(),
+		paperTitle: text(),
+		documentNumber: text(),
+		agendaItemTitle: text().notNull(),
+		adoptedAt: timestamp({ mode: 'date' }).notNull()
+	})
+	.existing();

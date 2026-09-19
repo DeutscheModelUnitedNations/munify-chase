@@ -27,6 +27,7 @@ import './requestType';
 import './request';
 import './ai';
 import './statistics';
+import './missionControlPulse';
 import { building, dev } from '$app/environment';
 import { clientCreator } from '$api/rumble';
 

@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from './schema';
 import { reset } from 'drizzle-seed';
 import { assertFirstEntryExists } from '@m1212e/rumble';
-import yaml from 'js-yaml';
+import { load as loadYaml } from 'js-yaml';
 import type { SeedData } from './seed-data/schema';
 import * as fs from 'fs';
 import { getCountryData } from './seedUtils';
@@ -31,7 +31,7 @@ try {
 	const filePath = './src/api/db/seed-data/' + process.argv[2];
 	const fileContents = fs.readFileSync(filePath, 'utf8');
 
-	const data = yaml.load(fileContents) as SeedData;
+	const data = loadYaml(fileContents) as SeedData;
 
 	// Users
 	for (const user of data.users) {
@@ -193,6 +193,9 @@ try {
 
 	console.info('\n### Seeding resolution papers ###');
 	await seedResolutionPapers();
+
+	console.info('\n### Seeding statistics & dashboard data ###');
+	await seedStatisticsAndDashboardData();
 
 	console.info('\n####################');
 	console.info('### Seeding done ###');
@@ -2104,6 +2107,322 @@ async function seedResolutionPapers() {
 				}
 			}
 		}
+	}
+}
+
+// ─── statistics & dashboard data ───────────────────────────────────────────
+// Backs the materialized views in statistics.ts / missionControlPulse.ts:
+// spoken time, presence, and voting sessions aren't produced anywhere else
+// in this seed, so without this those resolvers/tiles just show zeros.
+
+function daysAgo(n: number, hour: number, minute = 0): Date {
+	const d = new Date();
+	d.setDate(d.getDate() - n);
+	d.setHours(hour, minute, 0, 0);
+	return d;
+}
+
+function minutesAgo(n: number): Date {
+	return new Date(Date.now() - n * 60_000);
+}
+
+function addSeconds(d: Date, s: number): Date {
+	return new Date(d.getTime() + s * 1000);
+}
+
+async function seedSpeeches(opts: {
+	speakersListId: string;
+	speakingTime: number;
+	speakers: Array<{ committeeMemberId?: string; conferenceMemberId?: string }>;
+	startAt: Date;
+	count: number;
+}) {
+	let cursor = opts.startAt;
+	for (let i = 0; i < opts.count; i++) {
+		const speaker = opts.speakers[i % opts.speakers.length];
+		const duration = Math.max(20, opts.speakingTime - (i % 4) * 15);
+		await db.insert(schema.spokenTimePeriod).values({
+			id: nanoid(),
+			...speaker,
+			speakersListId: opts.speakersListId,
+			startTimestamp: cursor,
+			endTimestamp: addSeconds(cursor, duration),
+			queuedAt: addSeconds(cursor, -30),
+			phase: 'SPEECH_DONE'
+		});
+		cursor = addSeconds(cursor, duration + 20 + (i % 3) * 10);
+	}
+}
+
+async function insertVotingSession(opts: {
+	committeeId: string;
+	startedByConferenceUserId?: string;
+	delegates: Array<{ id: string }>;
+	voteName: string;
+	pro: number;
+	con: number;
+	abstain: number;
+	completedAt: Date | null;
+	offset?: number;
+}) {
+	const { delegates, pro, con, abstain, completedAt } = opts;
+	const majorityAmount = Math.floor(delegates.length / 2) + 1;
+	const sessionId = nanoid();
+
+	await db.insert(schema.votingSession).values({
+		id: sessionId,
+		committeeId: opts.committeeId,
+		startedByConferenceUserId: opts.startedByConferenceUserId,
+		mode: 'ROLL_CALL',
+		voteName: opts.voteName,
+		majority: 'SIMPLE',
+		withAbstentions: true,
+		majorityAmount,
+		currentStage: completedAt ? 'EVALUATION' : 'PRO',
+		votesPro: pro,
+		votesCon: con,
+		votesAbstain: abstain,
+		completedAt: completedAt ?? undefined,
+		outcome: completedAt ? (pro > con ? 'ADOPTED' : 'REJECTED') : undefined
+	});
+
+	const choices: Array<'PRO' | 'CON' | 'ABSTAIN'> = [
+		...Array(pro).fill('PRO' as const),
+		...Array(con).fill('CON' as const),
+		...Array(abstain).fill('ABSTAIN' as const)
+	];
+	const offset = opts.offset ?? 0;
+	for (let i = 0; i < choices.length && i < delegates.length; i++) {
+		await db.insert(schema.votingVote).values({
+			id: nanoid(),
+			votingSessionId: sessionId,
+			committeeMemberId: delegates[(offset + i) % delegates.length].id,
+			vote: choices[i]
+		});
+	}
+
+	return sessionId;
+}
+
+async function seedStatisticsAndDashboardData() {
+	const committees = await db.select().from(schema.committee);
+
+	for (const [committeeIdx, committee] of committees.entries()) {
+		const agendaItems = await db
+			.select()
+			.from(schema.agendaItem)
+			.where(eq(schema.agendaItem.committeeId, committee.id));
+		if (agendaItems.length === 0) continue;
+
+		const membersWithType = await db
+			.select({ id: schema.committeeMember.id, representationType: schema.representation.type })
+			.from(schema.committeeMember)
+			.innerJoin(
+				schema.representation,
+				eq(schema.committeeMember.representationId, schema.representation.id)
+			)
+			.where(eq(schema.committeeMember.committeeId, committee.id));
+		const delegates = membersWithType.filter((m) => m.representationType === 'DELEGATION');
+		if (delegates.length < 5) continue;
+
+		const nsaCommitteeMembers = membersWithType.filter(
+			(m) => m.representationType !== 'DELEGATION'
+		);
+
+		const conferenceMembers = await db
+			.select({ id: schema.conferenceMember.id })
+			.from(schema.conferenceMember)
+			.where(eq(schema.conferenceMember.conferenceId, committee.conferenceId));
+
+		const delegateCUs = await db
+			.select({
+				id: schema.conferenceUser.id,
+				committeeMemberId: schema.conferenceUser.committeeMemberId
+			})
+			.from(schema.conferenceUser)
+			.innerJoin(
+				schema.committeeMember,
+				eq(schema.conferenceUser.committeeMemberId, schema.committeeMember.id)
+			)
+			.where(eq(schema.committeeMember.committeeId, committee.id));
+
+		const adminCU = (
+			await db
+				.select()
+				.from(schema.conferenceUser)
+				.where(
+					and(
+						eq(schema.conferenceUser.conferenceId, committee.conferenceId),
+						eq(schema.conferenceUser.conferenceUserType, 'ADMIN')
+					)
+				)
+				.limit(1)
+		)[0];
+
+		console.info(`  ${committee.name}:`);
+
+		// ── Presence: ~80% of delegates checked in right now, 3-day history ──
+		const presentDelegates = delegates.filter((_, i) => i % 5 !== 0);
+		for (const d of presentDelegates) {
+			await db
+				.update(schema.committeeMember)
+				.set({ present: true })
+				.where(eq(schema.committeeMember.id, d.id));
+		}
+
+		for (let dayOffset = 2; dayOffset >= 0; dayOffset--) {
+			for (const cu of delegateCUs) {
+				await db.insert(schema.presenceEvent).values({
+					conferenceUserId: cu.id,
+					committeeId: committee.id,
+					timestamp: daysAgo(dayOffset, 9, (dayOffset * 7 + 3) % 30),
+					present: true,
+					type: 'ROLL_CALL'
+				});
+				// Leave today's check-ins open, matching committeeMember.present above.
+				if (dayOffset > 0) {
+					await db.insert(schema.presenceEvent).values({
+						conferenceUserId: cu.id,
+						committeeId: committee.id,
+						timestamp: daysAgo(dayOffset, 17, (dayOffset * 11 + 5) % 30),
+						present: false,
+						type: 'ROLL_CALL'
+					});
+				}
+			}
+			if (adminCU) {
+				await db.insert(schema.presenceEvent).values({
+					conferenceUserId: adminCU.id,
+					committeeId: committee.id,
+					timestamp: daysAgo(dayOffset, 8, 45),
+					present: true,
+					type: 'MANUAL'
+				});
+			}
+		}
+		console.info(`    Presence events: ${delegateCUs.length * 5 + 3}`);
+
+		// ── Spoken time: historical speeches (yesterday + today) plus a burst ──
+		// in the last 15 minutes so the "busiest committee" tile has a winner.
+		const nsaSpeakerPool = [
+			...nsaCommitteeMembers.map((m) => ({ committeeMemberId: m.id })),
+			...conferenceMembers.map((m) => ({ conferenceMemberId: m.id }))
+		];
+		let speechCount = 0;
+		for (const agendaItem of agendaItems) {
+			const lists = await db
+				.select()
+				.from(schema.speakersList)
+				.where(eq(schema.speakersList.agendaItemId, agendaItem.id));
+			const isActive = agendaItem.id === committee.activeAgendaItemId;
+
+			for (const list of lists) {
+				const pool =
+					list.type === 'SPEAKERS_LIST'
+						? delegates.map((d) => ({ committeeMemberId: d.id }))
+						: [...delegates.map((d) => ({ committeeMemberId: d.id })), ...nsaSpeakerPool];
+				const historicalCount = list.type === 'SPEAKERS_LIST' ? 6 : 4;
+
+				await seedSpeeches({
+					speakersListId: list.id,
+					speakingTime: list.speakingTime,
+					speakers: pool,
+					startAt: daysAgo(1, 10, 0),
+					count: historicalCount
+				});
+				await seedSpeeches({
+					speakersListId: list.id,
+					speakingTime: list.speakingTime,
+					speakers: pool,
+					startAt: daysAgo(0, 9, 30),
+					count: historicalCount
+				});
+				speechCount += historicalCount * 2;
+
+				if (isActive && list.type === 'SPEAKERS_LIST') {
+					// A couple of interventions in the last 15 minutes, staggered per
+					// committee so there's a clear "busiest committee right now".
+					const recentCount = 2 + (committeeIdx % 2);
+					for (let i = 0; i < recentCount; i++) {
+						const speaker = delegates[(i + 20) % delegates.length];
+						const end = minutesAgo(1 + i * 3);
+						await db.insert(schema.spokenTimePeriod).values({
+							id: nanoid(),
+							committeeMemberId: speaker.id,
+							speakersListId: list.id,
+							startTimestamp: addSeconds(end, -90),
+							endTimestamp: end,
+							queuedAt: addSeconds(end, -120),
+							phase: 'SPEECH_DONE'
+						});
+						speechCount++;
+					}
+				}
+			}
+		}
+		console.info(`    Spoken time periods: ${speechCount}`);
+
+		// ── Voting sessions: history plus a close vote and an active session ──
+		await insertVotingSession({
+			committeeId: committee.id,
+			startedByConferenceUserId: adminCU?.id,
+			delegates,
+			voteName: 'Procedural motion to suspend the meeting',
+			pro: Math.ceil(delegates.length * 0.7),
+			con: Math.floor(delegates.length * 0.2),
+			abstain: Math.max(0, delegates.length - Math.ceil(delegates.length * 0.9)),
+			completedAt: daysAgo(1, 15, 0),
+			offset: 0
+		});
+		await insertVotingSession({
+			committeeId: committee.id,
+			startedByConferenceUserId: adminCU?.id,
+			delegates,
+			voteName: 'Motion to extend speaking time',
+			pro: Math.floor(delegates.length * 0.3),
+			con: Math.ceil(delegates.length * 0.6),
+			abstain: Math.max(0, delegates.length - Math.floor(delegates.length * 0.9)),
+			completedAt: daysAgo(1, 16, 0),
+			offset: 5
+		});
+		await insertVotingSession({
+			committeeId: committee.id,
+			startedByConferenceUserId: adminCU?.id,
+			delegates,
+			voteName: 'Draft resolution — final vote',
+			pro: Math.floor(delegates.length / 2) + 1,
+			con: Math.floor(delegates.length / 2),
+			abstain: 0,
+			completedAt: minutesAgo(45),
+			offset: 2
+		});
+		await insertVotingSession({
+			committeeId: committee.id,
+			startedByConferenceUserId: adminCU?.id,
+			delegates,
+			voteName: 'Amendment vote',
+			pro: Math.ceil(delegates.length * 0.6),
+			con: Math.floor(delegates.length * 0.3),
+			abstain: Math.max(0, delegates.length - Math.ceil(delegates.length * 0.9)),
+			completedAt: minutesAgo(120),
+			offset: 8
+		});
+		const activeSessionId = await insertVotingSession({
+			committeeId: committee.id,
+			startedByConferenceUserId: adminCU?.id,
+			delegates,
+			voteName: 'Motion for a moderated caucus',
+			pro: Math.floor(delegates.length * 0.4),
+			con: Math.floor(delegates.length * 0.1),
+			abstain: 0,
+			completedAt: null,
+			offset: 1
+		});
+		await db
+			.update(schema.committee)
+			.set({ activeVotingSessionId: activeSessionId })
+			.where(eq(schema.committee.id, committee.id));
+		console.info(`    Voting sessions: 5 (1 active)`);
 	}
 }
 

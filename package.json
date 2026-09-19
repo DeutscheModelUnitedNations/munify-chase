@@ -152,6 +152,7 @@
 		"drizzle-orm": "^1.0.0-rc.5-ab785fc",
 		"pg": "^8.23.0",
 		"polka": "^0.5.2",
+		"svelte-widgets": "^1.8.0",
 		"ws": "^8.21.3"
 	},
 	"version": "3.0.52"

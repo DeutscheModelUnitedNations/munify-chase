@@ -149,6 +149,12 @@
 	});
 </script>
 
-<div class="min-h-0 w-full flex-1 overflow-hidden" style="position: relative">
+<!--
+	Chart.js's responsive canvas needs a parent with an actual (non-auto) height
+	to size against — the masonry grid this tile sits in sizes columns to their
+	content, so nothing above this div provides one. A fixed height here is the
+	simplest bounded box that still leaves room for a bottom legend.
+-->
+<div class="h-72 w-full overflow-hidden" style="position: relative">
 	<canvas bind:this={canvas}></canvas>
 </div>

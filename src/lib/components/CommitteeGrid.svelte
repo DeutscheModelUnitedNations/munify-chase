@@ -55,7 +55,10 @@
 		>
 			<div class="card-body">
 				<div class="mb-4 flex w-full items-end gap-4">
-					<h2 class="card-title text-5xl">
+					<h2
+						class="card-title text-5xl"
+						style="view-transition-name: committee-abbr-{committee.id};"
+					>
 						{committee.abbreviation}
 					</h2>
 					<div>

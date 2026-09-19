@@ -786,7 +786,10 @@
 					</div>
 				{:else}
 					<div class="flex items-center gap-1">
-						<span class="truncate text-lg font-semibold">
+						<span
+							class="truncate text-lg font-semibold"
+							style="view-transition-name: paper-title-{paper.id};"
+						>
 							{paper.documentNumber || paper.title || workingPaperName(paperId)}
 						</span>
 						{#if team && status === 'SUBMITTED'}

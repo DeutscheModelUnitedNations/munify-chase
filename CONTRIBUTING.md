@@ -120,7 +120,7 @@ export const keepThis = 1;
 
 Use `git commit --no-verify` to skip the hook when you genuinely need to.
 
-**CI.** The `fallow` job runs on every pull request and posts a sticky comment with the health score plus inline annotations on the lines you added. It is **advisory** — it never fails the build and never blocks a merge.
+**CI.** The `fallow` job runs on every pull request and posts a sticky comment with the project health score and the ten worst offenders behind it. It is **advisory** — it never fails the build and never blocks a merge.
 
 ## Native Client
 

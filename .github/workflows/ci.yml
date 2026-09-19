@@ -77,7 +77,7 @@ jobs:
   #
   # Advisory only: `fail-on-issues: false` means this job never blocks a merge and
   # it is deliberately left out of the `needs` list below. It posts a sticky PR
-  # comment with the health score plus inline annotations on the lines the PR added.
+  # comment carrying the project health score and the worst offenders behind it.
   # The CLI version comes from the `fallow` devDependency in package.json, so local
   # runs and CI analyse with the same binary.
   fallow:
@@ -91,7 +91,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          # The diff scoping of the findings needs the base commit.
+          # Complexity hotspots are derived from git history, which a shallow
+          # clone truncates.
           fetch-depth: 0
       # fallow resolves imports through node_modules and recognises tooling that is
       # only referenced from package.json scripts, so it needs a real install and the
@@ -105,10 +106,17 @@ jobs:
           fail-on-issues: false
           score: true
           comment: true
-          # Analyse the whole project so the health score reflects the codebase rather
-          # than just the diff; the comment and annotations stay scoped to the PR.
+          # The health score only means something across the whole codebase, so the
+          # analysis is not scoped to the PR. Both scoping knobs have to be off: with
+          # a diff filter in play fallow drops the score table from the comment and
+          # reports a score computed from the diff alone.
           auto-changed-since: false
-          summary-scope: diff
+          diff-filter: nofilter
+          # Keeps the sticky comment to the score plus the ten worst offenders
+          # instead of hundreds of rows.
+          max-comments: 10
+          # A project-wide run would otherwise annotate files the PR never touched.
+          annotations: false
 
   build:
     if: github.event_name == 'pull_request'

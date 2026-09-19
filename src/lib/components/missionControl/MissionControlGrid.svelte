@@ -9,7 +9,11 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Masonry } from 'svelte-widgets';
+	// Imported from its own subpath, not the package's barrel export — the
+	// barrel also re-exports CodeEditor/DiffView, which pull in an optional
+	// peer dep (@wooorm/starry-night) we don't have installed and don't need,
+	// breaking the production build's static resolution.
+	import Masonry from 'svelte-widgets/Masonry.svelte';
 	import { resolve } from '$app/paths';
 	import { m } from '$lib/paraglide/messages';
 	import IconInfoBox from '../IconInfoBox.svelte';

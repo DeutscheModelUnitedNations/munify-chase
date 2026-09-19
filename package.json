@@ -61,7 +61,9 @@
 		"@zxing/library": "^0.23.0",
 		"ai": "^7.0.77",
 		"bits-ui": "^2.19.0",
+		"brace-expansion": "^5.0.9",
 		"canvas-confetti": "^1.9.4",
+		"chart.js": "^4.5.1",
 		"codenamize-ts": "^1.0.2",
 		"concurrently": "^10.0.5",
 		"convert-iso-codes": "^1.0.10",
@@ -100,6 +102,7 @@
 		"svelte-grid-extended": "^1.2.1",
 		"svelte-inspect-value": "^0.11.3",
 		"svelte-tiptap": "^2.2.0",
+		"svelte-widgets": "^1.8.0",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.67.0",
@@ -146,13 +149,10 @@
 	},
 	"dependencies": {
 		"@urql/core": "^6.0.3",
-		"brace-expansion": "^5.0.9",
-		"chart.js": "^4.5.1",
 		"drizzle-kit": "^1.0.0-rc.5-ab785fc",
 		"drizzle-orm": "^1.0.0-rc.5-ab785fc",
 		"pg": "^8.23.0",
 		"polka": "^0.5.2",
-		"svelte-widgets": "^1.8.0",
 		"ws": "^8.21.3"
 	},
 	"version": "3.0.52"

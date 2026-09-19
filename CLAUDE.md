@@ -25,6 +25,9 @@ bun run format:check     # Prettier check (no write)
 bun run check            # svelte-kit sync + svelte-check
 bun run typecheck        # tsc --noEmit
 bun run test             # Vitest
+bun run fallow:audit     # fallow gate: findings introduced vs. the base branch
+bun run fallow:health    # fallow health score (0-100 + letter grade)
+bun run fallow           # fallow full pipeline (dead code + duplication + health)
 
 # i18n
 bun run i18n:check       # Compare message keys across locales
@@ -98,6 +101,15 @@ bun run preview          # Preview production build
 - **i18n**: Messages in `messages/de.json`, `messages/en.json`, and `messages/pt.json`, auto-translated via `bun run machine-translate`
 - **Styling**: Tailwind CSS v4 with DaisyUI components, DMUN corporate identity package
 - **Env access**: read config through the Zod wrappers in `src/lib/config/`, not `$env` directly
+
+## Codebase Intelligence (fallow)
+
+[fallow](https://fallow.tools) reports dead code, circular dependencies, duplication, and complexity hotspots. It is configured in `.fallowrc.json` (generated output is ignored there; the two dependency-placement rules that misfire on a bundled SvelteKit app are turned off).
+
+- **Pre-commit**: lefthook runs `fallow audit --base HEAD`. The default `new-only` gate fails **only** on findings the commit introduces — the existing backlog is reported but never blocks. Bypass with `git commit --no-verify`.
+- **CI**: the `fallow` job in `.github/workflows/ci.yml` runs on pull requests with `fail-on-issues: false`, so it is advisory. It posts a sticky PR comment with the health score and inline annotations, and is intentionally absent from `docker-build`'s `needs`.
+- The CLI version resolves from the `fallow` devDependency, so local and CI runs use the same binary.
+- Suppress a legitimate finding with `// fallow-ignore-next-line <issue-type> -- <reason>` rather than widening `ignorePatterns`.
 
 ## Authentication
 

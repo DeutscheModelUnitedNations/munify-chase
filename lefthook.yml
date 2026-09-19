@@ -1,9 +1,17 @@
 pre-commit:
-  parallel: true
+  parallel: false
   commands:
     format:
+      priority: 1
       run: bunx prettier --ignore-unknown --write "{staged_files}"
       stage_fixed: true
+    fallow:
+      priority: 2
+      glob: '*.{ts,js,svelte,css,json}'
+      # Audits the commit against HEAD and only fails on findings this commit
+      # introduces — the existing backlog is reported but never blocks.
+      run: bunx fallow audit --base HEAD
+      fail_text: 'fallow found issues introduced by this commit. Inspect with `bun run fallow:audit`, or bypass with `git commit --no-verify`.'
 pre-push:
   commands:
     lint:

@@ -25,6 +25,9 @@ bun run format:check     # Prettier check (no write)
 bun run check            # svelte-kit sync + svelte-check
 bun run typecheck        # tsc --noEmit
 bun run test             # Vitest
+bun run fallow:audit     # fallow gate: findings introduced vs. the base branch
+bun run fallow:health    # fallow health score (0-100 + letter grade)
+bun run fallow           # fallow full pipeline (dead code + duplication + health)
 
 # i18n
 bun run i18n:check       # Compare message keys across locales
@@ -98,6 +101,15 @@ bun run preview          # Preview production build
 - **i18n**: Messages in `messages/de.json`, `messages/en.json`, and `messages/pt.json`, auto-translated via `bun run machine-translate`
 - **Styling**: Tailwind CSS v4 with DaisyUI components, DMUN corporate identity package
 - **Env access**: read config through the Zod wrappers in `src/lib/config/`, not `$env` directly
+
+## Codebase Intelligence (fallow)
+
+[fallow](https://fallow.tools) reports dead code, circular dependencies, duplication, and complexity hotspots. It is configured in `.fallowrc.jsonc` (generated output is ignored there; the two dependency-placement rules that misfire on a bundled SvelteKit app are turned off).
+
+- **Pre-commit**: lefthook runs `fallow audit --base HEAD`. The default `new-only` gate fails **only** on findings the commit introduces — the existing backlog is reported but never blocks. Bypass with `git commit --no-verify`. Note that fallow reads the **working tree**, not the index: if the two have diverged (`git add -p`, or edits made after staging) the hook audits content the commit will not contain, and can both miss a staged finding and flag an unstaged one. CI is the backstop.
+- **CI**: the `fallow` job in `.github/workflows/ci.yml` runs the CLI on pull requests. Findings never fail it and it is absent from `docker-build`'s `needs`, so no finding can block a merge. A fallow error (exit 2 or higher) does fail the job, so a broken integration surfaces rather than posting an empty comment. It analyses the whole project — the health score is only meaningful at that scope — and posts a sticky PR comment with the score and the worst offenders behind it. It does not use the `fallow-rs/fallow` action: that action renders its comment from saved JSON, a path that drops the score table.
+- The CLI version resolves from the `fallow` devDependency, so local and CI runs use the same binary.
+- Suppress a legitimate finding with `// fallow-ignore-next-line <issue-type> -- <reason>` rather than widening `ignorePatterns`.
 
 ## Authentication
 

@@ -220,7 +220,7 @@
 			aria-hidden="true"
 		></i>
 		<div class="card-body flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-5">
-			<div class="mb-1 flex w-full min-w-0 shrink-0 items-baseline gap-3 pr-8">
+			<div class="mb-1 flex w-full min-w-0 shrink-0 flex-col gap-1 pr-8">
 				<h2 class="card-title text-5xl">
 					{committee.abbreviation}
 				</h2>
@@ -375,7 +375,7 @@
 		</MissionControlTile>
 	{:else if tile.kind === 'speakersListSpotlight'}
 		<MissionControlTile title={m.missionControlSpeakersListTitle()}>
-			<div class="mb-1 flex shrink-0 items-baseline gap-3">
+			<div class="mb-1 flex shrink-0 flex-col gap-0.5">
 				<span class="text-3xl font-bold">{tile.committee.abbreviation}</span>
 				<span class="text-base-content/60 truncate text-lg">{tile.committee.name}</span>
 			</div>

@@ -75,19 +75,21 @@ jobs:
 
   # Codebase intelligence (dead code, duplication, complexity) — https://fallow.tools
   #
-  # Advisory only: `fail-on-issues: false` means this job never blocks a merge and
-  # it is deliberately left out of the `needs` list below. It posts a sticky PR
-  # comment carrying the project health score and the worst offenders behind it.
-  # The CLI version comes from the `fallow` devDependency in package.json, so local
-  # runs and CI analyse with the same binary.
+  # Advisory only: findings never fail this job and it is deliberately left out of
+  # the `needs` list below, so it can neither block a merge nor hold up a deploy.
+  # It posts a sticky PR comment with the project health score and the worst
+  # offenders behind it, and writes the same report to the job summary.
+  #
+  # This drives the CLI rather than fallow-rs/fallow because the action renders its
+  # comment from saved JSON, and that path drops the score table — the number the
+  # comment exists for. `bunx fallow` also pins the analysis to the version in
+  # package.json, so CI and a local run agree.
   fallow:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-      checks: write
-      id-token: write
     steps:
       - uses: actions/checkout@v6
         with:
@@ -101,22 +103,53 @@ jobs:
       - uses: ./.github/actions/setup-bun
       - run: bunx svelte-kit sync
       - run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
-      - uses: fallow-rs/fallow@v3
+
+      # Rendered twice on purpose: re-rendering a saved JSON report loses the score.
+      # Each pass is a couple of seconds.
+      - name: Analyse
+        run: |
+          set -o pipefail
+          render() {
+            local status=0
+            bunx fallow --score --format "$1" > "$2" || status=$?
+            # 0 = clean, 1 = findings; both are successful runs. Anything higher is a
+            # real error and should surface rather than post a broken comment.
+            if [ "$status" -gt 1 ]; then
+              echo "::error::fallow exited with $status"
+              cat "$2"
+              exit 1
+            fi
+          }
+          render pr-comment-github fallow-comment.md
+          render github-summary fallow-summary.md
+          cat fallow-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/github-script@v7
         with:
-          fail-on-issues: false
-          score: true
-          comment: true
-          # The health score only means something across the whole codebase, so the
-          # analysis is not scoped to the PR. Both scoping knobs have to be off: with
-          # a diff filter in play fallow drops the score table from the comment and
-          # reports a score computed from the diff alone.
-          auto-changed-since: false
-          diff-filter: nofilter
-          # Keeps the sticky comment to the score plus the ten worst offenders
-          # instead of hundreds of rows.
-          max-comments: 10
-          # A project-wide run would otherwise annotate files the PR never touched.
-          annotations: false
+          script: |
+            const body = require('fs').readFileSync('fallow-comment.md', 'utf8');
+            // The marker fallow itself emits on the first line of the report.
+            const marker = '<!-- fallow-id: fallow-results -->';
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number
+            });
+            const existing = comments.find(
+              (c) => c.user?.type === 'Bot' && c.body?.includes(marker)
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
 
   build:
     if: github.event_name == 'pull_request'

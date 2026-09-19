@@ -103,7 +103,7 @@ Write commit messages that explain the _why_, not just the what. Code review tak
 
 ## Codebase Health (fallow)
 
-[fallow](https://fallow.tools) checks the repository for unused files and exports, circular dependencies, duplication and complexity hotspots. It is configured in `.fallowrc.json` and installed as a devDependency, so nothing extra is needed beyond `bun i`.
+[fallow](https://fallow.tools) checks the repository for unused files and exports, circular dependencies, duplication and complexity hotspots. It is configured in `.fallowrc.jsonc` and installed as a devDependency, so nothing extra is needed beyond `bun i`.
 
 | Command                 | Purpose                                        |
 | ----------------------- | ---------------------------------------------- |

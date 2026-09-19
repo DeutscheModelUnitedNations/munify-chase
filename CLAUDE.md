@@ -104,10 +104,10 @@ bun run preview          # Preview production build
 
 ## Codebase Intelligence (fallow)
 
-[fallow](https://fallow.tools) reports dead code, circular dependencies, duplication, and complexity hotspots. It is configured in `.fallowrc.json` (generated output is ignored there; the two dependency-placement rules that misfire on a bundled SvelteKit app are turned off).
+[fallow](https://fallow.tools) reports dead code, circular dependencies, duplication, and complexity hotspots. It is configured in `.fallowrc.jsonc` (generated output is ignored there; the two dependency-placement rules that misfire on a bundled SvelteKit app are turned off).
 
 - **Pre-commit**: lefthook runs `fallow audit --base HEAD`. The default `new-only` gate fails **only** on findings the commit introduces — the existing backlog is reported but never blocks. Bypass with `git commit --no-verify`.
-- **CI**: the `fallow` job in `.github/workflows/ci.yml` runs on pull requests with `fail-on-issues: false`, so it is advisory. It analyses the whole project — the health score is only meaningful at that scope — and posts a sticky PR comment with the score and the worst offenders behind it. It is intentionally absent from `docker-build`'s `needs`.
+- **CI**: the `fallow` job in `.github/workflows/ci.yml` runs the CLI on pull requests. Findings never fail it and it is absent from `docker-build`'s `needs`, so it is advisory throughout. It analyses the whole project — the health score is only meaningful at that scope — and posts a sticky PR comment with the score and the worst offenders behind it. It does not use the `fallow-rs/fallow` action: that action renders its comment from saved JSON, a path that drops the score table.
 - The CLI version resolves from the `fallow` devDependency, so local and CI runs use the same binary.
 - Suppress a legitimate finding with `// fallow-ignore-next-line <issue-type> -- <reason>` rather than widening `ignorePatterns`.
 

@@ -111,7 +111,7 @@ Write commit messages that explain the _why_, not just the what. Code review tak
 | `bun run fallow:audit`  | Gate: only the findings your change introduces |
 | `bun run fallow:health` | Health score (0–100 with a letter grade)       |
 
-**Pre-commit.** The lefthook `pre-commit` hook runs `fallow audit --base HEAD`. It fails only on findings the commit itself introduces, so the existing backlog never blocks you. If a finding is intentional, suppress it at the source instead of ignoring it:
+**Pre-commit.** The lefthook `pre-commit` hook runs `fallow audit --base HEAD`. It fails only on findings the commit itself introduces, so the existing backlog never blocks you. It analyses the working tree rather than the index, so when the two differ — after `git add -p`, or after editing a file you already staged — it is auditing something other than what you are about to commit; CI catches what slips past. If a finding is intentional, suppress it at the source instead of ignoring it:
 
 ```ts
 // fallow-ignore-next-line unused-export -- consumed by the Tauri client
@@ -120,7 +120,7 @@ export const keepThis = 1;
 
 Use `git commit --no-verify` to skip the hook when you genuinely need to.
 
-**CI.** The `fallow` job runs on every pull request and posts a sticky comment with the project health score and the ten worst offenders behind it. It is **advisory** — it never fails the build and never blocks a merge.
+**CI.** The `fallow` job runs on every pull request and posts a sticky comment with the project health score and the worst offenders behind it. Findings are **advisory** — none of them fails the build or blocks a merge. Only a fallow error itself (a broken config, a crash) fails the job.
 
 ## Native Client
 

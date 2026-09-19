@@ -91,13 +91,24 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          # fallow scopes the analysis to the PR diff, which needs the base commit.
+          # The diff scoping of the findings needs the base commit.
           fetch-depth: 0
+      # fallow resolves imports through node_modules and recognises tooling that is
+      # only referenced from package.json scripts, so it needs a real install and the
+      # generated i18n output to reach the same conclusions as a local run. Without
+      # these it reports packages such as @fontsource/* or @inlang/cli as unused.
+      - uses: ./.github/actions/setup-bun
+      - run: bunx svelte-kit sync
+      - run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
       - uses: fallow-rs/fallow@v3
         with:
           fail-on-issues: false
           score: true
           comment: true
+          # Analyse the whole project so the health score reflects the codebase rather
+          # than just the diff; the comment and annotations stay scoped to the PR.
+          auto-changed-since: false
+          summary-scope: diff
 
   build:
     if: github.event_name == 'pull_request'

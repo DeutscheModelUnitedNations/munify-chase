@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
+	import { resolve } from '$app/paths';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
@@ -128,7 +129,22 @@
 	{#each conference?.committees ?? [] as committee (committee.id)}
 		{@const list = byCommittee.get(committee.id) ?? []}
 		{@const stat = delegateStat(committee)}
-		<BasicCard title={`${committee.name} (${committee.abbreviation ?? ''})`}>
+		<BasicCard>
+			<div class="mb-4">
+				<h2 class="text-2xl font-bold">
+					<a
+						href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+							conferenceId,
+							committeeId: committee.id
+						})}
+						class="hover:underline"
+					>
+						{committee.name} (<span style="view-transition-name: committee-abbr-{committee.id};"
+							>{committee.abbreviation ?? ''}</span
+						>)
+					</a>
+				</h2>
+			</div>
 			<div class="-mt-3 mb-3 flex flex-wrap items-center gap-2">
 				<span
 					class="badge badge-sm {badgeClass(stat.present, stat.total)} tabular-nums"

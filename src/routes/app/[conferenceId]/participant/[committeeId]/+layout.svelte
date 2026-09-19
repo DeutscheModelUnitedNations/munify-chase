@@ -82,7 +82,12 @@
 				</a>
 			</div>
 		{/if}
-		<h1 class="ml-2 flex-1 text-lg font-bold">{committee.abbreviation} — {committee.name}</h1>
+		<h1 class="ml-2 flex-1 text-lg font-bold">
+			<span style="view-transition-name: committee-abbr-{committee.id};"
+				>{committee.abbreviation}</span
+			>
+			— {committee.name}
+		</h1>
 		<div class="flex-none">
 			<NavbarBurgerMenu
 				items={menubarItems}

@@ -160,7 +160,9 @@
 				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
 					<div class="card-body flex-row items-center gap-3 p-3">
 						<div class="flex min-w-0 flex-1 flex-col">
-							<span class="font-medium">{p.title || workingPaperName(p.id)}</span>
+							<span class="font-medium" style="view-transition-name: paper-title-{p.id};"
+								>{p.title || workingPaperName(p.id)}</span
+							>
 							{#if p.creatorCommitteeMember?.representation}
 								{@const rep = p.creatorCommitteeMember.representation}
 								<div class="text-base-content/60 mt-1 flex items-center gap-1 text-sm">
@@ -189,7 +191,9 @@
 				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
 					<div class="card-body flex-row items-center gap-3 p-3">
 						<div class="flex min-w-0 flex-1 flex-col">
-							<span class="font-medium">{p.title || workingPaperName(p.id)}</span>
+							<span class="font-medium" style="view-transition-name: paper-title-{p.id};"
+								>{p.title || workingPaperName(p.id)}</span
+							>
 							{#if p.creatorCommitteeMember?.representation}
 								{@const rep = p.creatorCommitteeMember.representation}
 								<div class="text-base-content/60 mt-1 flex items-center gap-1 text-sm">
@@ -221,7 +225,7 @@
 				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
 					<div class="card-body flex-row items-center gap-3 p-3">
 						<div class="flex min-w-0 flex-1 flex-col">
-							<span class="font-medium"
+							<span class="font-medium" style="view-transition-name: paper-title-{p.id};"
 								>{p.documentNumber || p.title || workingPaperName(p.id)}</span
 							>
 							{#if p.creatorCommitteeMember?.representation}

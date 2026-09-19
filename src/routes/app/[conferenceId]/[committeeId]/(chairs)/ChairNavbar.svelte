@@ -150,7 +150,9 @@
 
 <!-- Slim top bar -->
 <div class="navbar bg-base-100 sticky top-0 z-10 shadow-sm">
-	<h1 class="ml-4 text-3xl font-bold">{title ?? ''}</h1>
+	<h1 class="ml-4 text-3xl font-bold" style="view-transition-name: committee-abbr-{committeeId};">
+		{title ?? ''}
+	</h1>
 
 	<div class="flex-1"></div>
 

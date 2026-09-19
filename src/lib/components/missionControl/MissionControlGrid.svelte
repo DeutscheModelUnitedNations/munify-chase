@@ -221,7 +221,10 @@
 		></i>
 		<div class="card-body flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-5">
 			<div class="mb-1 flex w-full min-w-0 shrink-0 flex-col gap-1 pr-8">
-				<h2 class="card-title text-5xl">
+				<h2
+					class="card-title text-5xl"
+					style="view-transition-name: committee-abbr-{committee.id};"
+				>
 					{committee.abbreviation}
 				</h2>
 				<div class="text-base-content/60 truncate text-xl">

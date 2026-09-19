@@ -1,5 +1,9 @@
 <script lang="ts">
-	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
+	import { onMount } from 'svelte';
+	import MissionControlGrid, {
+		type MissionControlConference
+	} from '$lib/components/missionControl/MissionControlGrid.svelte';
+	import type { InsightPulse } from '$lib/components/missionControl/insights';
 	import CurrentTime from '$lib/components/CurrentTime.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
@@ -58,14 +62,140 @@
 			abbreviation: true,
 			activeAgendaItem: {
 				id: true,
-				title: true
+				title: true,
+				speakersList: {
+					isClosed: true,
+					startTimestamp: true,
+					speakers: {
+						id: true,
+						position: true,
+						overwriteName: true,
+						committeeMember: {
+							id: true,
+							representation: {
+								name: true,
+								alpha2Code: true,
+								alpha3Code: true,
+								faIcon: true,
+								type: true
+							}
+						},
+						conferenceMember: {
+							id: true,
+							representation: {
+								name: true,
+								alpha2Code: true,
+								alpha3Code: true,
+								faIcon: true,
+								type: true
+							}
+						}
+					}
+				}
 			},
 			status: true,
 			statusHeadline: true,
 			statusUntil: true,
 			stateOfDebate: true,
-			lastResolutionAdoptionDate: true
+			lastResolutionAdoptionDate: true,
+			totalPresent: true,
+			members: { id: true, present: true, representation: { type: true } },
+			votingSessions: {
+				__args: { where: { completedAt: { isNull: true } } },
+				id: true,
+				mode: true,
+				voteName: true,
+				createdAt: true
+			}
 		}
+	});
+
+	// Aggregate conference-wide "pulse" stats — not a live-subscribed field,
+	// so we poll it on the same cadence as the insight-tile rotation.
+	let pulse = $state<InsightPulse | null>(null);
+	async function refreshPulse() {
+		pulse = (await client.query.missionControlPulse({
+			__args: { conferenceId: page.params.conferenceId! },
+			heartbeat: {
+				speechesToday: true,
+				votesHeldToday: true,
+				resolutionsAdoptedToday: true,
+				debateSecondsToday: true
+			},
+			busiestCommittee: {
+				committeeAbbreviation: true,
+				committeeName: true,
+				interventionCount: true
+			},
+			closestVote: {
+				committeeAbbreviation: true,
+				committeeName: true,
+				voteName: true,
+				votesPro: true,
+				votesCon: true,
+				margin: true
+			},
+			recentAdoptions: {
+				committeeAbbreviation: true,
+				committeeName: true,
+				paperTitle: true,
+				documentNumber: true,
+				agendaItemTitle: true,
+				adoptedAt: true
+			},
+			committeeActivityLeaderboard: {
+				committeeAbbreviation: true,
+				committeeName: true,
+				totalSpeakingSeconds: true,
+				speechCount: true,
+				voteCount: true
+			},
+			speakingByRegion: {
+				group: true,
+				totalSeconds: true,
+				delegationCount: true,
+				speechCount: true
+			},
+			conferenceOverview: {
+				totalDelegates: true,
+				totalCommittees: true,
+				totalSpeechesAllTime: true,
+				totalResolutionsAdoptedAllTime: true
+			},
+			resolutionFunnel: {
+				status: true,
+				count: true
+			},
+			speakingByRepresentationType: {
+				representationType: true,
+				totalSeconds: true,
+				delegationCount: true
+			},
+			longestSpeechToday: {
+				committeeAbbreviation: true,
+				committeeName: true,
+				durationSeconds: true
+			},
+			amendmentActivity: {
+				status: true,
+				count: true
+			},
+			voteOutcomesToday: {
+				outcome: true,
+				count: true
+			},
+			papersAwaitingVote: true,
+			papersPerCommittee: {
+				committeeAbbreviation: true,
+				committeeName: true,
+				paperCount: true
+			}
+		})) as unknown as InsightPulse | null;
+	}
+	onMount(() => {
+		refreshPulse();
+		const id = setInterval(refreshPulse, 60_000);
+		return () => clearInterval(id);
 	});
 
 	const adoptingCommittee = $derived(
@@ -142,5 +272,5 @@
 />
 
 {#if conference}
-	<CommitteeGrid conference={conference as unknown as ConferenceData} environment="TEAM" />
+	<MissionControlGrid conference={conference as unknown as MissionControlConference} {pulse} />
 {/if}

@@ -18,6 +18,10 @@
 		marqueeOnOverflow?: boolean;
 		fullHeight?: boolean;
 		hideCountdown?: boolean;
+		/** Tailwind font-size class for the main text/icon — defaults to text-lg. */
+		textClass?: string;
+		/** Tailwind font-size class for the "until HH:MM" line — defaults to text-sm. */
+		subTextClass?: string;
 	}
 
 	let {
@@ -28,7 +32,9 @@
 		until,
 		marqueeOnOverflow = true,
 		fullHeight = false,
-		hideCountdown = false
+		hideCountdown = false,
+		textClass = 'text-lg',
+		subTextClass = 'text-sm'
 	}: Props = $props();
 
 	let textElement = $state<HTMLParagraphElement>();
@@ -70,7 +76,7 @@
 </script>
 
 <div
-	class="alert py-0 block w-full text-lg shadow-sm {committeeStatus
+	class="alert py-0 block w-full {textClass} shadow-sm {committeeStatus
 		? getCommitteeStatusBackground(committeeStatus)
 		: ''} {fullHeight ? 'h-full' : ''}"
 >
@@ -98,7 +104,7 @@
 				</Marquee>
 			{/if}
 			{#if until}
-				<p class="text-sm">
+				<p class={subTextClass}>
 					{m.until({
 						time:
 							until?.toLocaleTimeString(getLocale(), {

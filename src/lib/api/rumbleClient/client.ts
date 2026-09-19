@@ -105,6 +105,11 @@ export type Amendment = {
   updatedAt: DateTime | null    
 };
 		
+export type AmendmentActivityEntry = {
+  count: Int,
+  status: String    
+};
+		
 export type AmendmentCountStats = {
   accepted: Int,
   alpha2Code: String | null,
@@ -305,7 +310,24 @@ export type BooleanWhereInputArgument = {
   notIn?: Boolean[] | undefined    
 };
 		
+export type BusiestCommittee = {
+  committeeAbbreviation: String,
+  committeeId: ID,
+  committeeName: String,
+  interventionCount: Int    
+};
+		
 export type Bytes = unknown;
+		
+export type ClosestVote = {
+  committeeAbbreviation: String,
+  committeeId: ID,
+  committeeName: String,
+  margin: Int,
+  voteName: String | null,
+  votesCon: Int,
+  votesPro: Int    
+};
 		
 export type CommentvisibilityEnum = "PUBLIC" | "TEAM_ONLY";
 		
@@ -453,6 +475,13 @@ export type CommitteeOrderInputArgument = {
   supportReevaluationOpen?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined,
   whiteboardContent?: SortingParameter | null | undefined    
+};
+		
+export type CommitteePaperCountEntry = {
+  committeeAbbreviation: String,
+  committeeId: ID,
+  committeeName: String,
+  paperCount: Int    
 };
 		
 export type CommitteeWhereInputArgument = {
@@ -646,6 +675,13 @@ export type ConferenceOrderInputArgument = {
   startDate?: SortingParameter | null | undefined,
   title?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined    
+};
+		
+export type ConferenceOverview = {
+  totalCommittees: Int,
+  totalDelegates: Int,
+  totalResolutionsAdoptedAllTime: Int,
+  totalSpeechesAllTime: Int    
 };
 		
 export type ConferenceStats = {
@@ -929,6 +965,13 @@ export type FloatWhereInputArgument = {
   notLike?: String | null | undefined    
 };
 		
+export type HeartbeatStats = {
+  debateSecondsToday: Int,
+  resolutionsAdoptedToday: Int,
+  speechesToday: Int,
+  votesHeldToday: Int    
+};
+		
 export type ID = string;
 		
 export type IDWhereInputArgument = {
@@ -1059,6 +1102,46 @@ export type JSONWhereInputArgument = {
   isNull?: Boolean | null | undefined,
   ne?: JSON | null | undefined,
   notIn?: JSON[] | undefined    
+};
+		
+export type LongestSpeechToday = {
+  committeeAbbreviation: String,
+  committeeId: ID,
+  committeeName: String,
+  durationSeconds: Int    
+};
+		
+export type MissionControlCommitteeActivityEntry = {
+  committeeAbbreviation: String,
+  committeeId: ID,
+  committeeName: String,
+  speechCount: Int,
+  totalSpeakingSeconds: Int,
+  voteCount: Int    
+};
+		
+export type MissionControlPulse = {
+  amendmentActivity: () => AmendmentActivityEntry[],
+  busiestCommittee: () => BusiestCommittee | null,
+  closestVote: () => ClosestVote | null,
+  committeeActivityLeaderboard: () => MissionControlCommitteeActivityEntry[],
+  conferenceOverview: () => ConferenceOverview,
+  heartbeat: () => HeartbeatStats,
+  longestSpeechToday: () => LongestSpeechToday | null,
+  papersAwaitingVote: Int,
+  papersPerCommittee: () => CommitteePaperCountEntry[],
+  recentAdoptions: () => RecentAdoption[],
+  resolutionFunnel: () => ResolutionFunnelEntry[],
+  speakingByRegion: () => MissionControlRegionSpeakingEntry[],
+  speakingByRepresentationType: () => RepresentationTypeSpeakingEntry[],
+  voteOutcomesToday: () => VoteOutcomeEntry[]    
+};
+		
+export type MissionControlRegionSpeakingEntry = {
+  delegationCount: Int,
+  group: String,
+  speechCount: Int,
+  totalSeconds: Int    
 };
 		
 export type Mutation = {
@@ -1831,6 +1914,9 @@ export type Query = {
   currentUserClaims: () => UserClaims,
   hasAiProviders: Boolean,
   isGlobalAdmin: Boolean,
+  missionControlPulse: (p: {
+    conferenceId: ID
+  }) => MissionControlPulse | null,
   myStats: (p: {
     conferenceId: ID
   }) => PersonalStats | null,
@@ -1990,6 +2076,16 @@ export type Query = {
   }) => Votingvote[]    
 };
 		
+export type RecentAdoption = {
+  adoptedAt: DateTime,
+  agendaItemTitle: String,
+  committeeAbbreviation: String,
+  committeeId: ID,
+  committeeName: String,
+  documentNumber: String | null,
+  paperTitle: String | null    
+};
+		
 export type RegionalStats = {
   delegationCount: Int,
   group: String,
@@ -2039,6 +2135,12 @@ export type RepresentationOrderInputArgument = {
   regionalGroup?: SortingParameter | null | undefined,
   type?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined    
+};
+		
+export type RepresentationTypeSpeakingEntry = {
+  delegationCount: Int,
+  representationType: String,
+  totalSeconds: Int    
 };
 		
 export type RepresentationWhereInputArgument = {
@@ -2172,6 +2274,11 @@ export type RequesttypeWhereInputArgument = {
   priority?: IntWhereInputArgument | null | undefined,
   requests?: RequestWhereInputArgument | null | undefined,
   updatedAt?: DateTimeWhereInputArgument | null | undefined    
+};
+		
+export type ResolutionFunnelEntry = {
+  count: Int,
+  status: String    
 };
 		
 export type Resolutioncomment = {
@@ -2833,6 +2940,11 @@ export type UserWhereInputArgument = {
   locale?: StringWhereInputArgument | null | undefined,
   preferredUsername?: StringWhereInputArgument | null | undefined,
   updatedAt?: DateTimeWhereInputArgument | null | undefined    
+};
+		
+export type VoteOutcomeEntry = {
+  count: Int,
+  outcome: String    
 };
 		
 export type VotechoiceEnum = "ABSTAIN" | "CON" | "PRO";

@@ -56,16 +56,16 @@
 	}
 
 	// ─── Rotating insight tiles ─────────────────────────────────────────────
+	// Every tile buildInsightTiles produces already only exists because it has
+	// real data to show (see its per-tile guards) — so all of them stay on
+	// screen all the time now, nothing is hidden. The rotation just reshuffles
+	// their order every 45s for visual variety on a hallway display that's
+	// glanced at rather than read start-to-end; Masonry FLIP-animates tiles
+	// into their new spot rather than swapping visibility. Seeded by `tick`
+	// (not Math.random()) so the order only changes on rotation, not on every
+	// unrelated data refresh.
 	const pool = $derived(buildInsightTiles(conference.committees, pulse));
-
-	// Reshuffles the visible insight tiles roughly once a minute — slow enough
-	// to read from across a hallway, frequent enough to feel alive. Showing
-	// several slots at once (rather than just one or two) is what actually
-	// fills a wide hallway display; the shuffle only matters once the tile
-	// pool outgrows SLOT_COUNT. Seeded by `tick` (not Math.random()) so the
-	// order only changes on rotation, not on every unrelated data refresh.
 	const ROTATE_MS = 45_000;
-	const SLOT_COUNT = 6;
 	let tick = $state(0);
 
 	onMount(() => {
@@ -92,10 +92,7 @@
 		return copy;
 	}
 
-	const slots = $derived.by(() => {
-		if (pool.length === 0) return [];
-		return shuffled(pool, tick).slice(0, Math.min(SLOT_COUNT, pool.length));
-	});
+	const tiles = $derived.by(() => (pool.length === 0 ? [] : shuffled(pool, tick)));
 
 	// ─── Masonry entries ────────────────────────────────────────────────────
 	// Committees and insight tiles are two different shapes, so they're merged
@@ -119,7 +116,7 @@
 			committee,
 			dueSoon: isDueSoon(committee)
 		})),
-		...slots.map((tile): MasonryEntry => ({ id: `tile-${tile.key}`, kind: 'tile', tile }))
+		...tiles.map((tile): MasonryEntry => ({ id: `tile-${tile.key}`, kind: 'tile', tile }))
 	]);
 
 	function fmtDuration(totalSeconds: number): string {

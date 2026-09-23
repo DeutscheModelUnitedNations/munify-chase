@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 396" width="840" height="396" role="img">
+  <defs>
+    <linearGradient id="bgl" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#eaf1fb"/>
+      <stop offset="100%" stop-color="#e1ebf9"/>
+    </linearGradient>
+    <pattern id="gridl" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#2a6ac4" stroke-opacity="0.10" stroke-width="1"/>
+    </pattern>
+    <filter id="glowl" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="46"/>
+    </filter>
+    <filter id="softl" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#1e3050" flood-opacity="0.14"/>
+    </filter>
+    <linearGradient id="fadel" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2a6ac4" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#2a6ac4" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#2a6ac4" stop-opacity="0"/>
+    </linearGradient>
+  </defs><rect width="840" height="396" rx="0" fill="url(#bgl)"/><rect width="840" height="396" rx="0" fill="url(#gridl)"/><ellipse cx="420" cy="200" rx="260" ry="150" fill="#2a6ac4" opacity="0.07" filter="url(#glowl)"/><g filter="url(#softl)"><rect x="30" y="16" width="248" height="168" rx="14"
+      fill="#ffffff" fill-opacity="1" stroke="#cdddf2"/></g>
+    <rect x="52" y="38" width="40" height="40" rx="11" fill="#2a6ac4" fill-opacity="0.14" stroke="#2a6ac4" stroke-opacity="0.35">
+      <animate attributeName="fill-opacity" values="0.14;0.26;0.14" dur="6s" begin="0.0s" repeatCount="indefinite"/></rect>
+    <rect x="63" y="50" width="12" height="3" rx="1.5" fill="#2a6ac4" opacity="1"/><rect x="63" y="57" width="18" height="3" rx="1.5" fill="#2a6ac4" opacity="0.45"/><rect x="63" y="64" width="18" height="3" rx="1.5" fill="#2a6ac4" opacity="0.45"/><circle cx="79" cy="51.5" r="2.6" fill="#2a6ac4"/>
+    <text x="52" y="110" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#121f33">Speakers' Lists</text>
+    <rect x="52" y="122" width="26" height="2" rx="1" fill="#2a6ac4" opacity="0.8"/>
+    <text x="52" y="144" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#40567a">Queue, recognise and time</text>
+    <text x="52" y="162" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#68809f">speakers. Live on every seat.</text><g filter="url(#softl)"><rect x="296" y="16" width="248" height="168" rx="14"
+      fill="#ffffff" fill-opacity="1" stroke="#cdddf2"/></g>
+    <rect x="318" y="38" width="40" height="40" rx="11" fill="#0f8a5f" fill-opacity="0.14" stroke="#0f8a5f" stroke-opacity="0.35">
+      <animate attributeName="fill-opacity" values="0.14;0.26;0.14" dur="6s" begin="0.7s" repeatCount="indefinite"/></rect>
+    <rect x="328" y="56" width="7" height="10" rx="1.5" fill="#0f8a5f"/><rect x="336.5" y="50" width="7" height="16" rx="1.5" fill="#0f8a5f"/><rect x="345" y="60" width="7" height="6" rx="1.5" fill="#c1382c" opacity="0.8"/>
+    <text x="318" y="110" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#121f33">Voting &amp; Motions</text>
+    <rect x="318" y="122" width="26" height="2" rx="1" fill="#0f8a5f" opacity="0.8"/>
+    <text x="318" y="144" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#40567a">Roll-call and simple votes with</text>
+    <text x="318" y="162" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#68809f">the majorities your RoP sets.</text><g filter="url(#softl)"><rect x="562" y="16" width="248" height="168" rx="14"
+      fill="#ffffff" fill-opacity="1" stroke="#cdddf2"/></g>
+    <rect x="584" y="38" width="40" height="40" rx="11" fill="#a8701a" fill-opacity="0.14" stroke="#a8701a" stroke-opacity="0.35">
+      <animate attributeName="fill-opacity" values="0.14;0.26;0.14" dur="6s" begin="1.4s" repeatCount="indefinite"/></rect>
+    <rect x="596" y="48" width="16" height="20" rx="2.5" fill="none" stroke="#a8701a" stroke-width="1.6"/><rect x="599.5" y="53.0" width="9" height="1.8" rx="0.9" fill="#a8701a" opacity="0.75"/><rect x="599.5" y="57.5" width="9" height="1.8" rx="0.9" fill="#a8701a" opacity="0.75"/><rect x="599.5" y="62.0" width="5" height="1.8" rx="0.9" fill="#a8701a" opacity="0.75"/>
+    <text x="584" y="110" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#121f33">Resolution Editor</text>
+    <rect x="584" y="122" width="26" height="2" rx="1" fill="#a8701a" opacity="0.8"/>
+    <text x="584" y="144" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#40567a">Collaborative clauses,</text>
+    <text x="584" y="162" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#68809f">amendments, export, adoption.</text><g filter="url(#softl)"><rect x="30" y="202" width="248" height="168" rx="14"
+      fill="#ffffff" fill-opacity="1" stroke="#cdddf2"/></g>
+    <rect x="52" y="224" width="40" height="40" rx="11" fill="#1e3050" fill-opacity="0.14" stroke="#1e3050" stroke-opacity="0.35">
+      <animate attributeName="fill-opacity" values="0.14;0.26;0.14" dur="6s" begin="2.0999999999999996s" repeatCount="indefinite"/></rect>
+    <circle cx="71" cy="239" r="4.2" fill="none" stroke="#1e3050" stroke-width="1.6"/><path d="M63 253 a8 8 0 0 1 16 0" fill="none" stroke="#1e3050" stroke-width="1.6" stroke-linecap="round"/><path d="M76 246 l3 3 l6 -7" fill="none" stroke="#0f8a5f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="52" y="296" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#121f33">Presence &amp; Roll Call</text>
+    <rect x="52" y="308" width="26" height="2" rx="1" fill="#1e3050" opacity="0.8"/>
+    <text x="52" y="330" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#40567a">QR check-in, live attendance</text>
+    <text x="52" y="348" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#68809f">and per-day presence records.</text><g filter="url(#softl)"><rect x="296" y="202" width="248" height="168" rx="14"
+      fill="#ffffff" fill-opacity="1" stroke="#cdddf2"/></g>
+    <rect x="318" y="224" width="40" height="40" rx="11" fill="#a8701a" fill-opacity="0.14" stroke="#a8701a" stroke-opacity="0.35">
+      <animate attributeName="fill-opacity" values="0.14;0.26;0.14" dur="6s" begin="2.8s" repeatCount="indefinite"/></rect>
+    <rect x="327" y="235" width="22" height="14" rx="2.5" fill="none" stroke="#a8701a" stroke-width="1.6"/><rect x="334" y="250" width="8" height="2" rx="1" fill="#a8701a"/><rect x="331" y="239" width="9" height="2" rx="1" fill="#a8701a" opacity="0.7"/><rect x="331" y="243" width="5" height="2" rx="1" fill="#a8701a" opacity="0.4"/>
+    <text x="318" y="296" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#121f33">Presentation View</text>
+    <rect x="318" y="308" width="26" height="2" rx="1" fill="#a8701a" opacity="0.8"/>
+    <text x="318" y="330" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#40567a">A second screen for the room:</text>
+    <text x="318" y="348" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#68809f">speaker, timer, results, text.</text><g filter="url(#softl)"><rect x="562" y="202" width="248" height="168" rx="14"
+      fill="#ffffff" fill-opacity="1" stroke="#cdddf2"/></g>
+    <rect x="584" y="224" width="40" height="40" rx="11" fill="#0f8a5f" fill-opacity="0.14" stroke="#0f8a5f" stroke-opacity="0.35">
+      <animate attributeName="fill-opacity" values="0.14;0.26;0.14" dur="6s" begin="3.5s" repeatCount="indefinite"/></rect>
+    <circle cx="604" cy="244" r="10" fill="none" stroke="#0f8a5f" stroke-width="1.5" opacity="0.45"/><circle cx="604" cy="244" r="5" fill="none" stroke="#0f8a5f" stroke-width="1.5" opacity="0.7"/><line x1="604" y1="244" x2="604" y2="234" stroke="#0f8a5f" stroke-width="1.8" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 604 244" to="360 604 244" dur="6s" repeatCount="indefinite"/></line><circle cx="604" cy="244" r="2" fill="#0f8a5f"/>
+    <text x="584" y="296" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#121f33">Mission Control</text>
+    <rect x="584" y="308" width="26" height="2" rx="1" fill="#0f8a5f" opacity="0.8"/>
+    <text x="584" y="330" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#40567a">Live view of the whole floor:</text>
+    <text x="584" y="348" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11.5" fill="#68809f">activity, votes, adoptions.</text></svg>

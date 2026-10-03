@@ -60,7 +60,7 @@
 
 <SplitSection inverse title={m.homeOfflineTitle()} text={m.homeOfflineText()}>
 	<a
-		class="btn border-neutral-content bg-neutral-content text-neutral"
+		class="btn border-neutral-content bg-neutral-content text-neutral w-full sm:w-auto"
 		href={resolve('/app/[conferenceId]/mission-control', { conferenceId: LOCAL_CONFERENCE_ID })}
 	>
 		{m.homeOfflineButtonLabel()}
@@ -69,25 +69,25 @@
 
 <SplitSection title={m.homeDocsTitle()} text={m.homeDocsText()}>
 	<div class="flex flex-wrap gap-3">
-		<a class="btn btn-primary" href="https://munify.cloud/chase" target="_blank">
+		<a class="btn btn-primary w-full sm:w-auto" href="https://munify.cloud/chase" target="_blank">
 			{m.homeDocsButtonLabel()}
 		</a>
 		<a
-			class="btn btn-outline"
+			class="btn btn-outline w-full sm:w-auto"
 			href="https://munify.cloud/chase/user-manual/chair/getting-started"
 			target="_blank"
 		>
 			{m.homeDocsChairLabel()}
 		</a>
 		<a
-			class="btn btn-outline"
+			class="btn btn-outline w-full sm:w-auto"
 			href="https://munify.cloud/chase/user-manual/participant/getting-started"
 			target="_blank"
 		>
 			{m.homeDocsParticipantLabel()}
 		</a>
 		<a
-			class="btn btn-outline"
+			class="btn btn-outline w-full sm:w-auto"
 			href="https://munify.cloud/chase/user-manual/admin/getting-started"
 			target="_blank"
 		>

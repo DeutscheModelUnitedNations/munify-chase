@@ -28,7 +28,7 @@
 </script>
 
 <section
-	class="mx-auto flex max-w-[1200px] flex-wrap-reverse items-center gap-x-16 gap-y-12 px-4 pt-10 pb-16 md:px-12 lg:pt-24 lg:pb-32"
+	class="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-16 gap-y-12 px-4 pt-10 pb-16 md:px-12 lg:pt-24 lg:pb-32"
 >
 	<div class="flex flex-[1_1_420px] flex-col items-start gap-7">
 		<div class="enter-draw" style="--enter-delay: 150ms">
@@ -67,7 +67,7 @@
 			{/each}
 		</div>
 	</div>
-	<div class="relative flex min-w-0 flex-[1_1_380px] items-center justify-center py-6">
+	<div class="relative flex min-w-0 flex-[1_1_380px] items-center justify-center py-2 sm:py-6">
 		<img
 			src={blobs[shape % blobs.length]}
 			alt=""
@@ -78,7 +78,7 @@
 		<img
 			src={illustrations[illustration % illustrations.length]}
 			alt=""
-			class="enter-up relative block h-auto w-full max-w-[560px]"
+			class="enter-up relative block h-auto w-full max-w-[320px] sm:max-w-[560px]"
 			style="--enter-delay: 400ms"
 		/>
 	</div>

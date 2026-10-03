@@ -8,21 +8,21 @@
 	class="enter-fade mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-x-8 gap-y-4 px-4 py-7 md:px-12"
 >
 	<a class="text-xl leading-none" href={resolve('/(pages)')}>
-		<span class="font-light">MUNify </span><span class="font-bold">CHASE</span>
+		<span class="font-light">MUNify</span> <span class="font-bold">CHASE</span>
 	</a>
 	<nav class="flex flex-wrap items-center gap-x-7 gap-y-3 text-[15px]">
-		<a class="link link-hover" href="https://munify.cloud/chase" target="_blank">
+		<a class="link link-hover hidden sm:inline" href="https://munify.cloud/chase" target="_blank">
 			{m.homeDocsTitle()}
 		</a>
 		<a
-			class="link link-hover"
+			class="link link-hover hidden sm:inline"
 			href="https://github.com/DeutscheModelUnitedNations/munify-chase"
 			target="_blank"
 		>
 			GitHub
 		</a>
 		<a
-			class="link link-hover"
+			class="link link-hover hidden sm:inline"
 			href={resolve('/app/[conferenceId]/mission-control', { conferenceId: LOCAL_CONFERENCE_ID })}
 		>
 			{m.tryOfflineDemo()}

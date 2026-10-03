@@ -12,8 +12,8 @@
 	let { src, alt, header, text, comingSoonRibbon = false }: Props = $props();
 </script>
 
-<div class="card border-base-300 bg-base-100 relative h-full gap-4 border p-8">
-	<img {src} {alt} class="mb-4 h-40 w-full object-contain" />
+<div class="card border-base-300 bg-base-100 relative h-full gap-4 border p-6 md:p-8">
+	<img {src} {alt} class="mb-2 h-28 w-full object-contain md:mb-4 md:h-40" />
 	<h3 class="text-primary text-xl leading-none font-light">{header}</h3>
 	<p class="text-[15px] leading-[1.3]">{text}</p>
 	{#if comingSoonRibbon}

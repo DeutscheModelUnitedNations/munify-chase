@@ -14,7 +14,7 @@
 			class="pointer-events-none absolute -top-[8%] -left-[6%] w-[44%] select-none dark:hidden"
 		/>
 		<div
-			class="relative mx-auto flex max-w-[1200px] flex-col items-end gap-6 px-4 py-18 text-right md:px-12 lg:py-32"
+			class="relative mx-auto flex max-w-[1200px] flex-col items-start gap-6 px-4 py-18 text-left md:items-end md:px-12 md:text-right lg:py-32"
 		>
 			<AccentStripe long inverse />
 			<h2 class="text-[27px] leading-none font-bold">{m.homeContactTitle()}</h2>

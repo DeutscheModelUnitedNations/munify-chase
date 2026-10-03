@@ -19,6 +19,7 @@ import { optimistic, updates, ensureId } from './optimisticUpdateHandlers';
 import { setWsConnected, DISCONNECT_GRACE_MS } from '$lib/state/connection.svelte';
 import { createClient as createWSClient } from 'graphql-ws';
 import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
+import { consumeClearOfflineCacheMarker } from '$lib/helpers/clearOfflineCacheMarker';
 import {
 	localDemoConferenceUpdates,
 	resolveLocalDemoRootField,
@@ -340,6 +341,11 @@ if (browser) {
 		idbName,
 		maxAge: 7
 	});
+	// After a logout, drop the previous user's cached data and queued offline mutations.
+	// Issued before the offline exchange's first read, so that read sees the cleared stores.
+	if (consumeClearOfflineCacheMarker()) {
+		storage.clear();
+	}
 
 	const onlineCallbacks = new Set<() => void>();
 	const baseOnOnline = storage.onOnline?.bind(storage);

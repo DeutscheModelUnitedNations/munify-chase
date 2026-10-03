@@ -19,7 +19,8 @@
 			<i class="fa-duotone fa-cloud-slash mr-2 text-xl"></i>
 			{m.tryOfflineDemo()}
 		</a>
-		<a class="btn btn-ghost" href={resolve('/app')}>
+		<!-- Full page load: /app has no server load, so a client-side navigation would skip the OIDC check -->
+		<a class="btn btn-ghost" href={resolve('/app')} data-sveltekit-reload>
 			<i class="fa-duotone fa-right-to-bracket mr-2 text-xl"></i>
 			{m.login()}
 		</a>

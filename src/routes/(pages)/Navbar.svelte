@@ -5,7 +5,7 @@
 </script>
 
 <header
-	class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-x-8 gap-y-4 px-4 py-7 md:px-12"
+	class="enter-fade mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-x-8 gap-y-4 px-4 py-7 md:px-12"
 >
 	<a class="text-xl leading-none" href={resolve('/(pages)')}>
 		<span class="font-light">MUNify </span><span class="font-bold">CHASE</span>

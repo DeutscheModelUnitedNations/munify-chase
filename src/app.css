@@ -16,6 +16,60 @@
 	themes: false;
 }
 
+/* Landing page entrance: one-shot, DMUN ease-out, no bounce.
+   Stagger with style="--enter-delay: 300ms". */
+@keyframes enter-up {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+}
+
+@keyframes enter-fade {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes enter-draw {
+	from {
+		transform: scaleX(0);
+	}
+}
+
+@keyframes enter-shape {
+	from {
+		opacity: 0;
+		transform: scale(0.88) rotate(-8deg);
+	}
+}
+
+.enter-up {
+	animation: enter-up 700ms cubic-bezier(0, 0, 0.2, 1) var(--enter-delay, 0ms) both;
+}
+
+.enter-fade {
+	animation: enter-fade 500ms cubic-bezier(0, 0, 0.2, 1) var(--enter-delay, 0ms) both;
+}
+
+.enter-draw {
+	transform-origin: left center;
+	animation: enter-draw 600ms cubic-bezier(0.2, 0, 0.2, 1) var(--enter-delay, 0ms) both;
+}
+
+.enter-shape {
+	animation: enter-shape 1100ms cubic-bezier(0, 0, 0.2, 1) var(--enter-delay, 0ms) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.enter-up,
+	.enter-fade,
+	.enter-draw,
+	.enter-shape {
+		animation: none;
+	}
+}
+
 /* TipTap */
 .ProseMirror:focus {
 	outline: none;

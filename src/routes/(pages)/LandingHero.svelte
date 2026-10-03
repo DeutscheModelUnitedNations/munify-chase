@@ -31,14 +31,23 @@
 	class="mx-auto flex max-w-[1200px] flex-wrap-reverse items-center gap-x-16 gap-y-12 px-4 pt-10 pb-16 md:px-12 lg:pt-24 lg:pb-32"
 >
 	<div class="flex flex-[1_1_420px] flex-col items-start gap-7">
-		<AccentStripe />
-		<p class="text-xl leading-none font-bold">{m.homeHeroSubline()}</p>
-		<h1 class="text-5xl leading-none font-extralight tracking-tight lg:text-[67px]">
+		<div class="enter-draw" style="--enter-delay: 150ms">
+			<AccentStripe />
+		</div>
+		<p class="enter-up text-xl leading-none font-bold" style="--enter-delay: 250ms">
+			{m.homeHeroSubline()}
+		</p>
+		<h1
+			class="enter-up text-5xl leading-none font-extralight tracking-tight lg:text-[67px]"
+			style="--enter-delay: 350ms"
+		>
 			<span class="font-bold">MUN</span>
 			{m.homeCaption()}
 		</h1>
-		<p class="max-w-[34ch] text-xl leading-[1.3] font-light">{m.homeHeroText()}</p>
-		<div class="mt-1 flex flex-wrap gap-3">
+		<p class="enter-up max-w-[34ch] text-xl leading-[1.3] font-light" style="--enter-delay: 450ms">
+			{m.homeHeroText()}
+		</p>
+		<div class="enter-up mt-1 flex flex-wrap gap-3" style="--enter-delay: 550ms">
 			<a class="btn btn-primary btn-lg" href={resolve('/app')}>{m.login()}</a>
 			<a
 				class="btn btn-outline btn-lg"
@@ -48,8 +57,13 @@
 			</a>
 		</div>
 		<div class="mt-2 flex flex-wrap gap-2">
-			{#each badges as label (label)}
-				<span class="badge border-0 bg-base-200 text-xs font-bold">{label}</span>
+			{#each badges as label, i (label)}
+				<span
+					class="enter-up badge border-0 bg-base-200 text-xs font-bold"
+					style="--enter-delay: {650 + i * 70}ms"
+				>
+					{label}
+				</span>
 			{/each}
 		</div>
 	</div>
@@ -58,13 +72,14 @@
 			src={blobs[shape % blobs.length]}
 			alt=""
 			aria-hidden="true"
-			class="pointer-events-none absolute h-[124%] w-[116%] object-contain dark:opacity-20"
-			style="inset: -12% -8%;"
+			class="enter-shape pointer-events-none absolute h-[124%] w-[116%] object-contain dark:opacity-20"
+			style="inset: -12% -8%; --enter-delay: 100ms"
 		/>
 		<img
 			src={illustrations[illustration % illustrations.length]}
 			alt=""
-			class="relative block h-auto w-full max-w-[560px]"
+			class="enter-up relative block h-auto w-full max-w-[560px]"
+			style="--enter-delay: 400ms"
 		/>
 	</div>
 </section>

@@ -10,15 +10,9 @@
 	let { title, text, children }: Props = $props();
 </script>
 
-<h1
-	class="text-center text-3xl leading-tight font-bold text-base-content lg:text-right lg:text-4xl"
->
-	{title}
-</h1>
-<div class="pb-10 lg:pb-0 flex flex-col items-center lg:items-start">
-	<p class="text-md text-center leading-normal text-base-content lg:text-left lg:text-lg">
-		{text}
-	</p>
+<div class="flex flex-col items-start gap-4">
+	<h3 class="text-primary text-xl leading-none font-light">{title}</h3>
+	<p class="text-[15px] leading-[1.3]">{text}</p>
 	{#if children}
 		{@render children()}
 	{/if}

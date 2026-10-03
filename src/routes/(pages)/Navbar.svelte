@@ -4,24 +4,29 @@
 	import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
 </script>
 
-<div class="navbar bg-base-100 relative shadow-sm">
-	<div class="flex-none">
-		<i class="fa-duotone fa-podium ml-6 text-4xl"></i>
-	</div>
-	<div class="flex-1">
-		<a class="btn btn-ghost ml-4 text-xl" href={resolve('/(pages)')}>MUNify CHASE</a>
-	</div>
-	<div class="flex-none flex items-center gap-2">
+<header
+	class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-x-8 gap-y-4 px-4 py-7 md:px-12"
+>
+	<a class="text-xl leading-none" href={resolve('/(pages)')}>
+		<span class="font-light">MUNify </span><span class="font-bold">CHASE</span>
+	</a>
+	<nav class="flex flex-wrap items-center gap-x-7 gap-y-3 text-[15px]">
+		<a class="link link-hover" href="https://munify.cloud/chase" target="_blank">
+			{m.homeDocsTitle()}
+		</a>
 		<a
-			class="btn btn-ghost"
+			class="link link-hover"
+			href="https://github.com/DeutscheModelUnitedNations/munify-chase"
+			target="_blank"
+		>
+			GitHub
+		</a>
+		<a
+			class="link link-hover"
 			href={resolve('/app/[conferenceId]/mission-control', { conferenceId: LOCAL_CONFERENCE_ID })}
 		>
-			<i class="fa-duotone fa-cloud-slash mr-2 text-xl"></i>
 			{m.tryOfflineDemo()}
 		</a>
-		<a class="btn btn-ghost" href={resolve('/app')}>
-			<i class="fa-duotone fa-right-to-bracket mr-2 text-xl"></i>
-			{m.login()}
-		</a>
-	</div>
-</div>
+		<a class="btn btn-primary btn-sm" href={resolve('/app')}>{m.login()}</a>
+	</nav>
+</header>

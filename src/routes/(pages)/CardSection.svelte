@@ -1,31 +1,32 @@
 <script lang="ts">
 	import Card from './Card.svelte';
 	import { m } from '$lib/paraglide/messages';
-	import { fly } from 'svelte/transition';
 
 	import candidate from '$assets/undraw/candidate.svg';
 	import voting from '$assets/undraw/voting.svg';
 	import teamCollaboration from '$assets/undraw/team_collaboration.svg';
 </script>
 
-<div class="grid grid-cols-1 justify-stretch gap-4 p-4 md:grid-cols-3">
-	<div in:fly={{ y: 10, duration: 1000, delay: 1000 }}>
+<section class="mx-auto flex max-w-[1200px] flex-col gap-12 px-4 pb-16 md:px-12 lg:pb-32">
+	<div class="flex flex-col gap-3">
+		<span class="text-accent-600 text-xs font-bold tracking-[0.08em] uppercase">
+			{m.homeFeaturesEyebrow()}
+		</span>
+		<h2 class="text-primary text-[27px] leading-none font-bold">{m.homeFeaturesTitle()}</h2>
+	</div>
+	<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
 		<Card
 			src={candidate}
 			alt="SpeakersList"
 			header={m.homeHeroCardSpeakersListTitle()}
 			text={m.homeHeroCardSpeakersListText()}
 		/>
-	</div>
-	<div in:fly={{ y: 10, duration: 1000, delay: 1200 }}>
 		<Card
 			src={voting}
 			alt="Voting"
 			header={m.homeHeroCardVotingTitle()}
 			text={m.homeHeroCardVotingText()}
 		/>
-	</div>
-	<div in:fly={{ y: 10, duration: 1000, delay: 1400 }}>
 		<Card
 			src={teamCollaboration}
 			alt="Resolution Editor"
@@ -33,4 +34,4 @@
 			text={m.homeHeroCardResolutionEditorText()}
 		/>
 	</div>
-</div>
+</section>

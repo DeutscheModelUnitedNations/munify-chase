@@ -12,18 +12,10 @@
 	let { src, alt, header, text, comingSoonRibbon = false }: Props = $props();
 </script>
 
-<div
-	class="card bg-base-100 dark:bg-base-300 border border-base-300 dark:border-base-100 relative h-full flex-1 shadow-lg"
->
-	<div class="card-header flex max-h-60 items-center justify-center p-8">
-		<img {src} {alt} class="h-full w-full dark:inverted" />
-	</div>
-	<div class="card-body">
-		<h2 class="mb-4 text-center font-serif text-3xl font-bold">
-			{header}
-		</h2>
-		<p class="text-md text-center">{text}</p>
-	</div>
+<div class="card border-base-300 bg-base-100 relative h-full gap-4 border p-6 md:p-8">
+	<img {src} {alt} class="mb-2 h-28 w-full object-contain md:mb-4 md:h-40" />
+	<h3 class="text-primary text-xl leading-none font-light">{header}</h3>
+	<p class="text-[15px] leading-[1.3]">{text}</p>
 	{#if comingSoonRibbon}
 		<ComingSoonRibbon />
 	{/if}

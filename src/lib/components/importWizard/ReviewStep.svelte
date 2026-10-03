@@ -208,7 +208,7 @@
 							{#if members.length > 0}
 								<div class="flex flex-wrap gap-1">
 									{#each members.slice(0, 18) as rep (rep.id)}
-										<div class="h-5 w-7 overflow-hidden rounded shadow-sm">
+										<div class="h-5 w-7 overflow-hidden rounded-box shadow-sm">
 											<span
 												class="fi fi-{rep.alpha2Code}"
 												style="display:block;width:100%;height:100%;background-size:cover;background-position:center;"

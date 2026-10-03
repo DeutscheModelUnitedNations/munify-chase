@@ -1,16 +1,15 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { configPublic } from '$config/public';
 	import LandingHero from './LandingHero.svelte';
 	import CardSection from './CardSection.svelte';
 	import TextSection from './TextSection.svelte';
 	import ContactSection from './ContactSection.svelte';
-	import { onMount } from 'svelte';
+	import SplitSection from './SplitSection.svelte';
 	import { resolve } from '$app/paths';
 	import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
 
-	let loading = $state(true);
-
-	onMount(() => (loading = false));
+	let { data } = $props();
 
 	const jsonLd = $derived(
 		JSON.stringify({
@@ -56,108 +55,75 @@
 	{@html `<${'script'} type="application/ld+json">${jsonLd}</${'script'}>`}
 </svelte:head>
 
-<div class="flex min-h-screen flex-col items-center">
-	{#if loading}
-		<div class="absolute top-0 right-0 bottom-0 left-0 z-50 flex items-center justify-center">
-			<div class="loading loading-dots"></div>
-		</div>
-	{:else}
-		<div class="max-w-7xl">
-			<LandingHero />
+<LandingHero illustration={data.hero.illustration} shape={data.hero.shape} />
 
-			<!-- {#if $media.isTabletOrMobile}
-				<div class="flex h-40 w-full items-center justify-center bg-base-100">
-					<img
-						src="/logo/svg/chase_logo_blue_text.svg"
-						style="object-fit:contain"
-						width="300"
-						height="100"
-						alt="Chase Logo"
-					/>
-				</div>
-			{/if} -->
+<CardSection />
 
-			<CardSection />
+<SplitSection inverse title={m.homeOfflineTitle()} text={m.homeOfflineText()}>
+	<a
+		class="btn border-neutral-content bg-neutral-content text-neutral w-full sm:w-auto"
+		href={resolve('/app/[conferenceId]/mission-control', { conferenceId: LOCAL_CONFERENCE_ID })}
+	>
+		{m.homeOfflineButtonLabel()}
+		<span class="badge badge-warning badge-xs font-bold uppercase">{m.betaTag()}</span>
+	</a>
+	<p class="max-w-[66ch] text-sm italic opacity-80">{m.homeOfflineBetaNote()}</p>
+</SplitSection>
 
-			<div
-				class="mx-4 flex flex-col items-center gap-4 rounded-box border-2 border-primary bg-base-100 p-8 text-center shadow-lg lg:mx-20 lg:p-12"
+<SplitSection title={m.homeDocsTitle()} text={m.homeDocsText()}>
+	<div class="flex flex-wrap gap-3">
+		<a class="btn btn-primary w-full sm:w-auto" href="https://munify.cloud/chase" target="_blank">
+			{m.homeDocsButtonLabel()}
+		</a>
+		<a
+			class="btn btn-outline w-full sm:w-auto"
+			href="https://munify.cloud/chase/user-manual/chair/getting-started"
+			target="_blank"
+		>
+			{m.homeDocsChairLabel()}
+		</a>
+		<a
+			class="btn btn-outline w-full sm:w-auto"
+			href="https://munify.cloud/chase/user-manual/participant/getting-started"
+			target="_blank"
+		>
+			{m.homeDocsParticipantLabel()}
+		</a>
+		<a
+			class="btn btn-outline w-full sm:w-auto"
+			href="https://munify.cloud/chase/user-manual/admin/getting-started"
+			target="_blank"
+		>
+			{m.homeDocsAdminLabel()}
+		</a>
+	</div>
+</SplitSection>
+
+<section class="mx-auto max-w-[1200px] px-4 pb-16 md:px-12 lg:pb-32">
+	<div class="border-base-content grid grid-cols-1 gap-x-16 gap-y-14 border-t pt-14 md:grid-cols-2">
+		<TextSection title={m.homeAboutTitle()} text={m.homeAboutText()} />
+		<TextSection title={m.homeMissionTitle()} text={m.homeMissionText()}>
+			<a class="link link-primary font-bold" href="https://dmun.de" target="_blank">
+				{m.homeMissionButtonLabel()}
+			</a>
+		</TextSection>
+		<TextSection title={m.homeContributeTitle()} text={m.homeContributeText()}>
+			<a
+				class="link link-primary font-bold"
+				href="https://github.com/DeutscheModelUnitedNations/munify-chase"
+				target="_blank"
 			>
-				<h2 class="font-serif text-3xl font-bold text-base-content lg:text-4xl">
-					{m.homeDocsTitle()}
-				</h2>
-				<p class="text-md max-w-2xl leading-normal text-base-content lg:text-lg">
-					{m.homeDocsText()}
-				</p>
-				<a class="btn btn-primary mt-2" href="https://munify.cloud/chase" target="_blank">
-					<i class="fas fa-book mr-2"></i>
-					{m.homeDocsButtonLabel()}
+				{m.homeContributeButtonLabel()}
+			</a>
+		</TextSection>
+		<TextSection title={m.homeHostingTitle()} text={m.homeHostingText()}>
+			{#if configPublic.PUBLIC_CONTACT_EMAIL}
+				<a class="link link-primary font-bold" href="mailto:{configPublic.PUBLIC_CONTACT_EMAIL}">
+					{m.homeHostingButtonLabel()}
 				</a>
-				<div class="flex flex-wrap justify-center gap-2">
-					<a
-						class="btn btn-outline btn-sm"
-						href="https://munify.cloud/chase/user-manual/chair/getting-started"
-						target="_blank"
-					>
-						{m.homeDocsChairLabel()}
-					</a>
-					<a
-						class="btn btn-outline btn-sm"
-						href="https://munify.cloud/chase/user-manual/participant/getting-started"
-						target="_blank"
-					>
-						{m.homeDocsParticipantLabel()}
-					</a>
-					<a
-						class="btn btn-outline btn-sm"
-						href="https://munify.cloud/chase/user-manual/admin/getting-started"
-						target="_blank"
-					>
-						{m.homeDocsAdminLabel()}
-					</a>
-				</div>
-			</div>
+			{/if}
+		</TextSection>
+	</div>
+</section>
 
-			<div
-				class="align-items-start flex flex-col gap-2 p-4 lg:grid lg:flex-none lg:gap-10 lg:p-20"
-				style="grid-template-columns: auto 1fr;"
-			>
-				<TextSection title={m.homeAboutTitle()} text={m.homeAboutText()} />
-				<TextSection title={m.homeMissionTitle()} text={m.homeMissionText()}>
-					<a class="btn btn-primary mt-3" href="https://dmun.de" target="_blank">
-						<i class="fas fa-external-link mr-2"></i>
-						{m.homeMissionButtonLabel()}
-					</a>
-				</TextSection>
-				<TextSection title={m.homeContributeTitle()} text={m.homeContributeText()}>
-					<a
-						class="btn btn-primary mt-3"
-						href="https://github.com/DeutscheModelUnitedNations/munify-chase"
-						target="_blank"
-					>
-						<i class="fas fa-code-branch mr-2"></i>
-						{m.homeContributeButtonLabel()}
-					</a>
-				</TextSection>
-				<TextSection title={m.homeOfflineTitle()} text={m.homeOfflineText()}>
-					<a
-						class="btn btn-primary mt-3"
-						href={resolve('/app/[conferenceId]/mission-control', {
-							conferenceId: LOCAL_CONFERENCE_ID
-						})}
-					>
-						<i class="fa-duotone fa-cloud-slash mr-2"></i>
-						{m.homeOfflineButtonLabel()}
-					</a>
-				</TextSection>
-				<TextSection title={m.homeHostingTitle()} text={m.homeHostingText()}>
-					<a class="btn btn-primary mt-3" href="mailto:vorstand@dmun.de">
-						<i class="fas fa-envelope mr-2"></i>
-						{m.homeHostingButtonLabel()}
-					</a>
-				</TextSection>
-			</div>
-
-			<ContactSection />
-		</div>
-	{/if}
-</div>
+<ContactSection />

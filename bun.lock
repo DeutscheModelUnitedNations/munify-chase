@@ -29,13 +29,12 @@
         "@ai-sdk/openai-compatible": "^3.0.35",
         "@ai-sdk/togetherai": "^3.0.36",
         "@ai-sdk/xai": "^4.0.43",
-        "@deutschemodelunitednations/corporate-identity": "^1.1.10",
+        "@deutschemodelunitednations/corporate-identity": "^2.0.0",
         "@deutschemodelunitednations/munify-resolution-editor": "^0.6.0",
         "@eslint/compat": "^2.1.0",
         "@eslint/js": "^10.0.1",
         "@fontsource/outfit": "^5.3.0",
         "@fontsource/roboto-mono": "^5.3.0",
-        "@fontsource/vollkorn": "^5.3.0",
         "@friendofsvelte/tipex": "^0.2.0",
         "@graphql-yoga/redis-event-target": "^3.0.3",
         "@hocuspocus/extension-database": "^4.6.0",
@@ -183,7 +182,7 @@
 
     "@babel/runtime": ["@babel/runtime@7.29.2", "", {}, ""],
 
-    "@deutschemodelunitednations/corporate-identity": ["@deutschemodelunitednations/corporate-identity@1.1.10", "", { "dependencies": { "@fontsource/outfit": "^5.2.8", "@fontsource/roboto-mono": "^5.2.8", "@fontsource/vollkorn": "^5.2.10", "esbuild": "^0.25.10", "js-yaml": "^4.1.0", "tailwind-shades": "^1.1.2" } }, ""],
+    "@deutschemodelunitednations/corporate-identity": ["@deutschemodelunitednations/corporate-identity@2.0.0", "", { "dependencies": { "@fontsource/outfit": "^5.2.8", "@fontsource/roboto-mono": "^5.2.8", "@fontsource/vollkorn": "^5.2.10", "esbuild": "^0.25.10", "js-yaml": "^4.1.0", "tailwind-shades": "^1.1.2" } }, "sha512-MumTbk9C7FJb70AuLNlCQKK3/S6CnH1X7VDTJoCj5BGfAgVoWloT8hC5gE9mHuqjbiPXSRTAeUM7OeY3268taA=="],
 
     "@deutschemodelunitednations/munify-resolution-editor": ["@deutschemodelunitednations/munify-resolution-editor@0.6.0", "", { "dependencies": { "diff": "^9.0.0", "pagedjs": "^0.4.3", "typst": "^0.10.0-8", "zod": "^3.24.1" }, "peerDependencies": { "svelte": "^5.0.0", "y-protocols": "^1.0.0", "yjs": "^13.6.0" }, "optionalPeers": ["y-protocols", "yjs"] }, "sha512-BK/Ksjofsnb8elnt7u2Bn/7nx+mrR30SrG74YHHdh5h8HuNCjdDbdJXWrJxn0maAj3jl9/yCaJlE80pCPOcXXQ=="],
 
@@ -1734,12 +1733,6 @@
     "@ai-sdk/provider-utils/undici": ["undici@7.29.0", "", {}, "sha512-IDxfleLmmbSskfWSUATiN1nfn2rDuvnMOqb5CWR92iIfojA0Ud+ulOAAEQ57LPr9rWmsreUyf5lwyao+7GNNVw=="],
 
     "@apidevtools/json-schema-ref-parser/js-yaml": ["js-yaml@4.1.1", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": "bin/js-yaml.js" }, ""],
-
-    "@deutschemodelunitednations/corporate-identity/@fontsource/outfit": ["@fontsource/outfit@5.2.8", "", {}, ""],
-
-    "@deutschemodelunitednations/corporate-identity/@fontsource/roboto-mono": ["@fontsource/roboto-mono@5.2.9", "", {}, ""],
-
-    "@deutschemodelunitednations/corporate-identity/@fontsource/vollkorn": ["@fontsource/vollkorn@5.2.10", "", {}, ""],
 
     "@deutschemodelunitednations/corporate-identity/js-yaml": ["js-yaml@4.1.1", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": "bin/js-yaml.js" }, ""],
 

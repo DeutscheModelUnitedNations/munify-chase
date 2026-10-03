@@ -88,6 +88,7 @@
 		"lefthook": "^2.1.10",
 		"lib0": "^0.2.117",
 		"nanoid": "^6.0.1",
+		"oidc-mock": "^0.1.2",
 		"prettier": "^3.9.6",
 		"prettier-plugin-sort-json": "^4.2.0",
 		"prettier-plugin-svelte": "^4.1.1",

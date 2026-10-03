@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { configPublic } from '$config/public';
 	import LandingHero from './LandingHero.svelte';
 	import CardSection from './CardSection.svelte';
 	import TextSection from './TextSection.svelte';
@@ -114,9 +115,11 @@
 			</a>
 		</TextSection>
 		<TextSection title={m.homeHostingTitle()} text={m.homeHostingText()}>
-			<a class="link link-primary font-bold" href="mailto:vorstand@dmun.de">
-				{m.homeHostingButtonLabel()}
-			</a>
+			{#if configPublic.PUBLIC_CONTACT_EMAIL}
+				<a class="link link-primary font-bold" href="mailto:{configPublic.PUBLIC_CONTACT_EMAIL}">
+					{m.homeHostingButtonLabel()}
+				</a>
+			{/if}
 		</TextSection>
 	</div>
 </section>

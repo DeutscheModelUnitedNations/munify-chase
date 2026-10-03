@@ -127,7 +127,10 @@
 	<div
 		class="flex w-full flex-col items-center justify-center gap-6 p-6 lg:flex-row lg:items-start"
 	>
-		<div class="top-22 hidden h-full w-lg flex-col gap-4 2xl:sticky 2xl:flex">
+		<div
+			class="top-22 hidden h-full w-lg flex-col gap-4 2xl:sticky 2xl:flex"
+			data-tour="chair.status-sidebar"
+		>
 			<BasicCard>
 				<StatusWidget {committee} />
 			</BasicCard>
@@ -142,7 +145,9 @@
 		</div>
 		<BasicCard title={m.speakersList()} className="min-h-[calc(100vh-8rem)] max-w-xl w-full">
 			<div class="flex flex-col gap-8">
-				<CurrentSpeaker {speakersList} />
+				<div data-tour="speakers-list.current-speaker">
+					<CurrentSpeaker {speakersList} />
+				</div>
 				<ChairControls
 					{speakersList}
 					committeeMembers={committee.members}
@@ -150,13 +155,19 @@
 					type="SPEAKERS_LIST"
 					childList={commentList}
 				/>
-				<SpeakersQueuePresentation
-					rawSpeakers={speakersList?.speakers}
-					closed={speakersList?.isClosed}
-				/>
+				<div data-tour="speakers-list.queue">
+					<SpeakersQueuePresentation
+						rawSpeakers={speakersList?.speakers}
+						closed={speakersList?.isClosed}
+					/>
+				</div>
 			</div>
 		</BasicCard>
-		<BasicCard title={m.commentList()} className="min-h-[calc(100vh-8rem)] max-w-xl  w-full">
+		<BasicCard
+			title={m.commentList()}
+			className="min-h-[calc(100vh-8rem)] max-w-xl  w-full"
+			data-tour="speakers-list.comment-list"
+		>
 			<div class="flex flex-col gap-8">
 				<CurrentSpeaker speakersList={commentList} />
 				<ChairControls

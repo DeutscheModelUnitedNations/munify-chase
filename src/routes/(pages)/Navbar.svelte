@@ -11,7 +11,10 @@
 		<span class="font-light">MUNify</span> <span class="font-bold">CHASE</span>
 	</a>
 	<nav class="flex flex-wrap items-center gap-x-7 gap-y-3 text-[15px]">
-		<a class="link link-hover hidden sm:inline" href="https://munify.cloud/chase" target="_blank">
+		<a
+			class="link link-hover hidden sm:inline"
+			href={resolve('/(pages)/docs/[...slug]', { slug: '' })}
+		>
 			{m.homeDocsTitle()}
 		</a>
 		<a

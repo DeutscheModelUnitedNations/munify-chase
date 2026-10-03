@@ -83,6 +83,15 @@ bun run preview          # Preview production build
 - **`app/[conferenceId]/`**: Protected conference routes — committee overview, `[committeeId]`, attendance, mission-control, participant
 - **`api/graphql/`**: Yoga GraphQL endpoint (also exports OPTIONS); **`api/keepalive/`**, **`api/schemas/import/`**
 
+### User manual and guided tours
+
+- **`docs/{en,de,pt}/`**: the user manual as markdown, served in-app at `/docs` (`src/routes/(pages)/docs/`). Sidebar order lives in `src/lib/docs/nav.ts`, page titles in each file's frontmatter.
+- **Screenshots** are generated, never taken by hand: reference them as `![alt](shot:chair/speakers-list)` and list each id in `scripts/docs-screenshots/shots.ts` (route, role, steps). `bun run docs:screenshots [id-prefix]` resets a separate `chase_docs` database, stages it (`stage.ts`), starts a dev server and captures every shot in en/de/pt and light/dark into `static/docs-assets/screenshots/` (stop your own dev server first). The `Docs screenshots` workflow reruns it on main and opens a PR.
+- **Live demos**: a `:::live chair/speakers-list` line embeds the real page from the offline demo conference (ids in `src/lib/docs/live.ts`).
+- **Tours**: driver.js tours defined in `*.tour.ts` next to the feature they explain, anchored on `data-tour="..."` attributes. `src/lib/tours/routeHelp.ts` maps each route to its manual page and tour, shown by the help button in the navbar.
+- When changing a feature's UI, update its manual page in all three locales, keep the `data-tour` anchors and rerun the affected screenshots. `src/lib/docs/docs.test.ts` and `src/lib/tours/anchors.test.ts` fail on missing translations, broken links, missing or unused screenshots, unknown live demos and orphaned anchors.
+- Manual prose: concise, no semicolons or em dashes.
+
 ### Key Generated Files (do not edit manually)
 
 - `schema.graphql` - Generated GraphQL schema

@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
+	import HelpButton from '$lib/tours/HelpButton.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { Snippet } from 'svelte';
 
@@ -68,30 +69,33 @@
 	});
 </script>
 
-{#if user}
-	<button
-		class="from-primary to-primary/70 grid size-8 cursor-pointer place-items-center rounded-full bg-gradient-to-br text-xs font-bold tracking-wide text-white"
-		aria-label={displayName || 'Open menu'}
-		title={displayName || undefined}
-		aria-haspopup="menu"
-		aria-expanded={menuVisible}
-		type="button"
-		onclick={() => (menuVisible = true)}
-	>
-		{initials}
-	</button>
-{:else}
-	<button
-		class="btn btn-circle btn-ghost"
-		aria-label="Open menu"
-		aria-haspopup="menu"
-		aria-expanded={menuVisible}
-		type="button"
-		onclick={() => (menuVisible = true)}
-	>
-		<i class="fa-duotone fa-bars"></i>
-	</button>
-{/if}
+<div class="flex items-center gap-2">
+	<HelpButton />
+	{#if user}
+		<button
+			class="from-primary to-primary/70 grid size-8 cursor-pointer place-items-center rounded-full bg-gradient-to-br text-xs font-bold tracking-wide text-white"
+			aria-label={displayName || 'Open menu'}
+			title={displayName || undefined}
+			aria-haspopup="menu"
+			aria-expanded={menuVisible}
+			type="button"
+			onclick={() => (menuVisible = true)}
+		>
+			{initials}
+		</button>
+	{:else}
+		<button
+			class="btn btn-circle btn-ghost"
+			aria-label="Open menu"
+			aria-haspopup="menu"
+			aria-expanded={menuVisible}
+			type="button"
+			onclick={() => (menuVisible = true)}
+		>
+			<i class="fa-duotone fa-bars"></i>
+		</button>
+	{/if}
+</div>
 
 {#if menuVisible}
 	<div

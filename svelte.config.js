@@ -17,6 +17,10 @@ const config = {
 		adapter: adapter({
 			precompress: true
 		}),
+		typescript: {
+			// Typecheck the docs screenshot scripts with the app, they import its schema
+			config: (config) => ({ ...config, include: [...config.include, '../scripts/**/*.ts'] })
+		},
 		alias: {
 			$api: 'src/api',
 			$assets: 'src/assets',

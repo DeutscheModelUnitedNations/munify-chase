@@ -16,7 +16,7 @@ MUNify CHASE (CHAiring SoftwarE) is a conference management application for Mode
 # Development
 bun run dev              # Start dev server + Docker containers + seed-schema compile (concurrently)
 bun run dev:server       # Dev server only, in a crash-restart loop (requires running containers)
-bun run dev:docker       # Docker containers only (dev.docker-compose.yml: postgres + mock OIDC)
+bun run dev:docker       # Docker containers only (dev.docker-compose.yml: postgres)
 
 # Code Quality
 bun run lint             # ESLint
@@ -101,7 +101,7 @@ bun run preview          # Preview production build
 
 ## Authentication
 
-OIDC-only authentication (no built-in auth). Local development uses a mock OIDC server (`dev.docker-compose.yml`, `ghcr.io/navikt/mock-oauth2-server`). Configure via:
+OIDC-only authentication (no built-in auth). Local development uses [oidc-mock](https://github.com/strehk/oidc-mock), which runs inside `vite dev` via the `oidcMock()` plugin in `vite.config.ts`; mock users and their claims live in `oidc-mock.yaml` (edits apply live). Configure via:
 
 - `PUBLIC_OIDC_AUTHORITY`: OIDC discovery URL (full `/.well-known/openid-configuration`)
 - `PUBLIC_OIDC_CLIENT_ID`: Application client ID
@@ -131,7 +131,7 @@ bun run dev              # Start everything
 ```
 
 Database: `localhost:5432` (postgres/postgres)
-Mock OIDC: `localhost:8080`
+Mock OIDC: login page at `localhost:5173/oidc/authorize`, back channel at `127.0.0.1:8090/oidc` (started by `vite dev`)
 
 You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
 

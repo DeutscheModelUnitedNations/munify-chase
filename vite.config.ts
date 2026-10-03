@@ -2,6 +2,7 @@ import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, type ViteDevServer } from 'vite';
+import { oidcMock } from 'oidc-mock/vite';
 import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
 
@@ -69,6 +70,8 @@ export default defineConfig({
 	plugins: [
 		// mkcert(),
 		devAutoRestart(),
+		// Local OIDC provider for development, users are configured in oidc-mock.yaml
+		oidcMock(),
 		tailwindcss(),
 		paraglideVitePlugin({
 			project: './project.inlang',

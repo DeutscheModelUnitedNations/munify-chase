@@ -15,7 +15,6 @@
 			font-size="13"
 			font-weight="700"
 			transform="rotate(45)"
-			class="font-serif"
 		>
 			{m.comingSoon()}
 		</text>

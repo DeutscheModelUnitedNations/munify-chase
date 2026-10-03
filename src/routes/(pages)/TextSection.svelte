@@ -11,7 +11,7 @@
 </script>
 
 <h1
-	class="text-center font-serif text-3xl leading-tight font-bold text-base-content lg:text-right lg:text-4xl"
+	class="text-center text-3xl leading-tight font-bold text-base-content lg:text-right lg:text-4xl"
 >
 	{title}
 </h1>

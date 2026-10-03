@@ -7,9 +7,7 @@
 	<div
 		class="flex flex-col items-center gap-6 mx-4 p-4 py-20 lg:p-20 bg-base-100 rounded-box border-base-300 border shadow-lg"
 	>
-		<h1
-			class="text-center font-serif text-3xl leading-tight font-bold text-base-content lg:text-4xl"
-		>
+		<h1 class="text-center text-3xl leading-tight font-bold text-base-content lg:text-4xl">
 			{m.homeContactTitle()}
 		</h1>
 		<p class="text-md max-w-3xl text-center leading-normal text-base-content lg:text-lg">

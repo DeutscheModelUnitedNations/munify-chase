@@ -82,7 +82,7 @@
 			<div
 				class="mx-4 flex flex-col items-center gap-4 rounded-box border-2 border-primary bg-base-100 p-8 text-center shadow-lg lg:mx-20 lg:p-12"
 			>
-				<h2 class="font-serif text-3xl font-bold text-base-content lg:text-4xl">
+				<h2 class="text-3xl font-bold text-base-content lg:text-4xl">
 					{m.homeDocsTitle()}
 				</h2>
 				<p class="text-md max-w-2xl leading-normal text-base-content lg:text-lg">

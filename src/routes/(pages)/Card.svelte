@@ -19,7 +19,7 @@
 		<img {src} {alt} class="h-full w-full dark:inverted" />
 	</div>
 	<div class="card-body">
-		<h2 class="mb-4 text-center font-serif text-3xl font-bold">
+		<h2 class="mb-4 text-center text-3xl font-bold">
 			{header}
 		</h2>
 		<p class="text-md text-center">{text}</p>

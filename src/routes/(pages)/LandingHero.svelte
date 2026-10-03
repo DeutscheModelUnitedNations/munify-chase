@@ -35,9 +35,7 @@
 	</div>
 	<div class="z-20 flex w-full flex-col items-center lg:w-1/2 lg:items-end">
 		<div in:fly={{ y: 10, duration: 1000, delay: 700 }}>
-			<h1
-				class="mb-4 text-center font-serif text-5xl leading-tight font-bold lg:text-right lg:text-6xl"
-			>
+			<h1 class="mb-4 text-center text-5xl leading-tight font-bold lg:text-right lg:text-6xl">
 				<span
 					class="from-primary to-primary-800 dark:to-primary-300 bg-linear-to-r bg-clip-text text-transparent"
 				>

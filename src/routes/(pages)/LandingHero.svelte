@@ -24,7 +24,11 @@
 	const illustrations = [theWorldIsMine, world, aroundTheWorld];
 	const blobs = [blob1, blob2, blob3, blob4, blob5];
 
-	const badges = $derived([m.homeBadgeFree(), m.homeBadgeOpenSource(), m.homeBadgeOffline()]);
+	const badges = $derived([
+		m.homeBadgeFree(),
+		m.homeBadgeOpenSource(),
+		`${m.homeBadgeOffline()} (${m.betaTag()})`
+	]);
 </script>
 
 <section
@@ -54,6 +58,7 @@
 				href={resolve('/app/[conferenceId]/mission-control', { conferenceId: LOCAL_CONFERENCE_ID })}
 			>
 				{m.tryOfflineDemo()}
+				<span class="badge badge-warning badge-xs font-bold uppercase">{m.betaTag()}</span>
 			</a>
 		</div>
 		<div class="mt-2 flex flex-wrap gap-2">

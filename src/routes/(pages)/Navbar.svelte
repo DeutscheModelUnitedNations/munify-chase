@@ -26,6 +26,7 @@
 			href={resolve('/app/[conferenceId]/mission-control', { conferenceId: LOCAL_CONFERENCE_ID })}
 		>
 			{m.tryOfflineDemo()}
+			<span class="badge badge-warning badge-xs font-bold uppercase">{m.betaTag()}</span>
 		</a>
 		<a class="btn btn-primary btn-sm" href={resolve('/app')}>{m.login()}</a>
 	</nav>

@@ -65,7 +65,9 @@
 		href={resolve('/app/[conferenceId]/mission-control', { conferenceId: LOCAL_CONFERENCE_ID })}
 	>
 		{m.homeOfflineButtonLabel()}
+		<span class="badge badge-warning badge-xs font-bold uppercase">{m.betaTag()}</span>
 	</a>
+	<p class="max-w-[66ch] text-sm italic opacity-80">{m.homeOfflineBetaNote()}</p>
 </SplitSection>
 
 <SplitSection title={m.homeDocsTitle()} text={m.homeDocsText()}>

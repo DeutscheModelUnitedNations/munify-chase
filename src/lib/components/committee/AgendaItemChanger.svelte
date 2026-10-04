@@ -2,6 +2,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { nanoid } from '$lib/helpers/nanoid';
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import toast from 'svelte-french-toast';
 
@@ -37,6 +38,12 @@
 		);
 	};
 
+	// Same as picking the item in the select
+	const selectAgendaItem = (id: string) => {
+		value = id;
+		update();
+	};
+
 	const addAgendaItem = async () => {
 		const title = prompt(m.agendaItemTitle());
 		if (!title) return;
@@ -66,6 +73,26 @@
 			promiseToastStrings(m.agendaItem(), 'create')
 		);
 	};
+
+	registerCommands(() => [
+		{
+			id: 'setup.add-agenda-item',
+			title: m.commandAddAgendaItem,
+			group: 'page',
+			icon: 'plus',
+			run: addAgendaItem
+		},
+		...(agendaItems ?? []).map((item) => ({
+			id: `setup.agenda-item.${item.id}`,
+			title: m.commandActivateAgendaItem,
+			context: () => item.title,
+			keywords: [item.title],
+			group: 'page' as const,
+			icon: 'list-ol',
+			visible: () => item.id !== activeAgendaItem?.id,
+			run: () => selectAgendaItem(item.id)
+		}))
+	]);
 </script>
 
 <div class="join">

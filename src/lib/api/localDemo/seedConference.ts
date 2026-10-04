@@ -1,4 +1,5 @@
 import { gql, type Client } from '@urql/core';
+import type { DocumentNode } from 'graphql';
 import type {
 	Cache,
 	OptimisticMutationConfig,
@@ -11,6 +12,7 @@ import { calculateMajority } from '$lib/utils/majorities';
 import { LOCAL_CONFERENCE_ID, isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 import { densifySpeakers } from '../optimisticUpdateHandlers';
 import { schema } from '../rumbleClient/schema';
+import { completeLocalDemoQueryAnswer } from './completeAnswer';
 
 const now = new Date();
 
@@ -928,7 +930,8 @@ const answeredOperationKeys = new Set<number>();
 
 /**
  * `Record<string, unknown>`: canned success data.
- * `undefined`: genuinely unhandled field — caller should answer with an offline error.
+ * `undefined`: no canned answer for this field — resolveLocalDemoQuery synthesizes an
+ * empty-but-valid one from the schema instead (see ./completeAnswer.ts).
  * `null`: a handled field whose answer has already been served for this exact operation
  * — caller should neither error nor emit new data, deferring entirely to the cache.
  */
@@ -960,6 +963,36 @@ export function resolveLocalDemoRootField(
 		answeredOperationKeys.add(operationKey);
 	}
 	return data;
+}
+
+/**
+ * What both the browser exchange (localDemoExchange) and the SSR remote-functions exchange in
+ * client.ts actually answer a local-demo query with: every root field's canned answer (see
+ * resolveLocalDemoRootField), completed against the operation's own selection set so that no
+ * selected field is ever missing — and any root field without a canned answer at all gets an
+ * empty-but-valid one synthesized from the schema. Never `undefined`, so no query under the
+ * demo conference can ever fall through to an offline error (which SSR turns into a 500).
+ * `null` means "defer to the cache", see resolveLocalDemoRootField.
+ */
+export function resolveLocalDemoQuery(
+	query: DocumentNode,
+	variables: unknown,
+	operationKey?: number
+): Record<string, unknown> | null {
+	const canned: Record<string, unknown> = {};
+	for (const definition of query.definitions) {
+		if (definition.kind !== 'OperationDefinition') continue;
+		for (const selection of definition.selectionSet.selections) {
+			if (selection.kind !== 'Field') continue;
+			const answer = resolveLocalDemoRootField(selection.name.value, variables, operationKey);
+			if (answer === null) return null;
+			if (answer) Object.assign(canned, answer);
+		}
+		break;
+	}
+	return completeLocalDemoQueryAnswer(query, variables, canned, (typename, id) =>
+		localDemoEntitiesById.get(`${typename}:${id}`)
+	);
 }
 
 function computeLocalDemoCannedAnswer(

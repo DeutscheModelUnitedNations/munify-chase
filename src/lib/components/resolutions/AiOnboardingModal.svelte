@@ -152,7 +152,9 @@
 					<div class="flex items-center justify-between text-xs">
 						<span class="opacity-60">{m.aiOnboardingModelFastest()}</span>
 						<span class="font-medium">
-							{tierSlider === -1 ? m.aiOnboardingModelAuto() : LOCAL_MODEL_TIERS[previewTier].label}
+							{tierSlider === -1
+								? m.aiOnboardingModelAuto()
+								: LOCAL_MODEL_TIERS[previewTier].label()}
 						</span>
 						<span class="opacity-60">{m.aiOnboardingModelBest()}</span>
 					</div>
@@ -167,7 +169,7 @@
 					/>
 					<p class="text-xs opacity-50 text-center">
 						{#if tierSlider === -1}
-							{m.aiOnboardingModelAuto()} — picks the best model that fits your GPU
+							{m.aiOnboardingModelAutoHint()}
 						{:else}
 							{LOCAL_MODEL_TIERS[previewTier].id.replace(/-q\d+f\d+.*$/, '').replaceAll('-', ' ')}
 							· {m.aiOnboardingModelVram({ vram: LOCAL_MODEL_TIERS[previewTier].vramMB })}

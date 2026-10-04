@@ -20,8 +20,6 @@
 	const committeeWithVote = await client.liveQuery.committee({
 		__args: { id: committeeId },
 		id: true,
-		simpleMajority: true,
-		twoThirdsMajority: true,
 		activeVotingSession: {
 			id: true,
 			mode: true,
@@ -40,20 +38,6 @@
 	const getSession = latchWhileDisconnected(() => committeeWithVote?.activeVotingSession ?? null);
 	let session = $derived(getSession());
 
-	let majorityAmount = $derived.by(() => {
-		if (!session) return 0;
-		switch (session.majority) {
-			case 'SIMPLE':
-				return calculateMajority((session.votesPro ?? 0) + (session.votesCon ?? 0), 'simple');
-			case 'ABSOLUTE':
-				return committeeWithVote?.simpleMajority ?? 0;
-			case 'TWO_THIRDS':
-				return committeeWithVote?.twoThirdsMajority ?? 0;
-			default:
-				return 0;
-		}
-	});
-
 	let votesTotal = $derived.by(() => {
 		if (!session) return 0;
 		switch (session.majority) {
@@ -62,6 +46,19 @@
 				return (session.votesPro ?? 0) + (session.votesCon ?? 0);
 			case 'ABSOLUTE':
 				return (session.votesPro ?? 0) + (session.votesCon ?? 0) + (session.votesAbstain ?? 0);
+			default:
+				return 0;
+		}
+	});
+	// Same rule as ShowOfHandsVotingChair, which decides the outcome from the counted votes
+	let majorityAmount = $derived.by(() => {
+		if (!session) return 0;
+		switch (session.majority) {
+			case 'SIMPLE':
+			case 'ABSOLUTE':
+				return calculateMajority(votesTotal, 'simple');
+			case 'TWO_THIRDS':
+				return calculateMajority(votesTotal, 'twoThirds');
 			default:
 				return 0;
 		}

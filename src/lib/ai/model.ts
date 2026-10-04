@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import type { MLCEngineInterface } from '@mlc-ai/web-llm';
+import { m } from '$lib/paraglide/messages';
 import { assessAiCapability, LOCAL_MODEL_TIERS } from './assess';
 import { getLocalModelTier } from './aiPreference.svelte';
 
@@ -81,7 +82,7 @@ async function tryLoad(modelId: string, fixWindowSize = false): Promise<MLCEngin
 		// Don't null enginePromise here — that would let getEngine() spawn a parallel load.
 		if (isWindowSizeError(err) && !fixWindowSize) return tryLoad(modelId, true);
 		if (isCorruptCacheError(err)) {
-			dispatchError('Cached model data is corrupted — clearing and redownloading…', true);
+			dispatchError(m.aiModelCacheCorrupted(), true);
 			await clearCache().catch(() => undefined);
 			return loadEngine(modelId, fixWindowSize); // one retry; let it throw on second failure
 		}
@@ -96,14 +97,15 @@ async function createEnginePromise(): Promise<MLCEngineInterface | null> {
 	const tier = await selectFittingTier(preferred);
 
 	if (tier === null) {
-		dispatchError(
-			'Not enough browser storage for any AI model. Please free up disk space and reload.'
-		);
+		dispatchError(m.aiModelNoStorage());
 		return null;
 	}
 	if (preferred !== null && tier < preferred) {
 		dispatchError(
-			`Not enough storage for the selected model — loading ${LOCAL_MODEL_TIERS[tier].label} (${LOCAL_MODEL_TIERS[tier].vramMB} MB) instead.`,
+			m.aiModelStorageFallback({
+				model: LOCAL_MODEL_TIERS[tier].label(),
+				size: LOCAL_MODEL_TIERS[tier].vramMB
+			}),
 			true
 		);
 	}
@@ -116,20 +118,17 @@ async function createEnginePromise(): Promise<MLCEngineInterface | null> {
 	} catch (err) {
 		enginePromise = null;
 		if (!isStorageFullError(err)) {
-			dispatchError(`Failed to load AI model: ${errMsg(err)}`);
+			dispatchError(m.aiModelLoadFailed({ error: errMsg(err) }));
 			return null;
 		}
 
 		// Storage full mid-download — clear and retry one tier down.
-		dispatchError(
-			'Storage full mid-download — clearing cache and retrying with a smaller model…',
-			true
-		);
+		dispatchError(m.aiModelStorageFullRetry(), true);
 		await clearCache().catch(() => undefined);
 
 		const fallbackTier = tier - 1;
 		if (fallbackTier < 0) {
-			dispatchError('Not enough storage for any AI model. Please free up browser storage.');
+			dispatchError(m.aiModelNoStorage());
 			return null;
 		}
 		const fallback = await assessAiCapability(fallbackTier);
@@ -137,7 +136,7 @@ async function createEnginePromise(): Promise<MLCEngineInterface | null> {
 
 		return tryLoad(fallback.modelId).catch((retryErr) => {
 			enginePromise = null;
-			dispatchError(`Failed to load AI model: ${errMsg(retryErr)}`);
+			dispatchError(m.aiModelLoadFailed({ error: errMsg(retryErr) }));
 			return null;
 		});
 	}

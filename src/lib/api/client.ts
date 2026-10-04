@@ -22,7 +22,7 @@ import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 import { consumeClearOfflineCacheMarker } from '$lib/helpers/clearOfflineCacheMarker';
 import {
 	localDemoConferenceUpdates,
-	resolveLocalDemoRootField,
+	resolveLocalDemoQuery,
 	seedLocalDemoConference,
 	withLocalDemoMutationCommits
 } from './localDemo/seedConference';
@@ -57,21 +57,18 @@ const remoteFunctionsExchange: Exchange = ({ forward }) => {
 				// which would otherwise hit the real access-control layer/DB for an anonymous
 				// visitor. There's no real backend for this conference at all, so — mirroring
 				// localDemoExchange's browser-side behavior — every operation is answered
-				// synthetically instead of ever reaching the resolvers: queries with a canned
-				// answer (see ./localDemo/seedConference.ts) succeed with that data, uncovered
-				// queries get a synthetic error, and mutations always succeed (see
-				// makeLocalDemoMutationResult) since there's nothing to eventually retry against.
+				// synthetically instead of ever reaching the resolvers: queries succeed with
+				// their canned answer, or an empty one synthesized from the schema (see
+				// resolveLocalDemoQuery — an error here would 500 the whole page), and
+				// mutations always succeed (see makeLocalDemoMutationResult) since there's
+				// nothing to eventually retry against.
 				if (isLocalConferenceActive()) {
 					if (operation.kind === 'query') {
 						// No `operationKey` passed here — SSR has no persistent cache to defer
 						// to (each request is stateless), so it must always answer fresh; see
 						// resolveLocalDemoRootField's doc comment.
-						const data = resolveLocalDemoRootField(
-							getRootFieldName(operation),
-							operation.variables
-						);
-						if (data) return fromValue(makeSuccessResult(operation, data));
-						return fromValue(makeOfflineErrorResult(operation));
+						const data = resolveLocalDemoQuery(operation.query, operation.variables);
+						return fromValue(makeSuccessResult(operation, data));
 					}
 					if (operation.kind === 'mutation') {
 						return fromValue(makeLocalDemoMutationResult(operation));
@@ -288,25 +285,16 @@ const localDemoExchange: Exchange =
 			map((op) => makeSuccessResult(op, getLocalDemoSeed(op)))
 		);
 
-		// Queries with a canned answer (see resolveLocalDemoRootField) succeed with that
-		// data instead of falling into the generic offline error below — otherwise every
-		// page under the local conference would render in a permanent error state on a
-		// completely empty, first-ever-load cache. `data === null` means this exact
-		// operation already got its canned answer on a previous run (see
-		// resolveLocalDemoRootField's doc comment) — deliberately excluded here (and from
-		// localOfflineResults$ below) so it neither re-answers nor errors, just defers to
-		// whatever the cache already holds.
-		const queryAnswers$ = pipe(
+		// Every query succeeds with its canned answer, or an empty-but-valid one synthesized
+		// from the schema (see resolveLocalDemoQuery) — an error would leave the page in a
+		// permanent error state on a completely empty, first-ever-load cache. `data === null`
+		// means this exact operation already got its canned answer on a previous run (see
+		// resolveLocalDemoRootField's doc comment) — deliberately excluded here so it doesn't
+		// re-answer, just defers to whatever the cache already holds.
+		const cannedResults$ = pipe(
 			ops$,
 			filter((op) => op.kind === 'query' && isLocalConferenceActive() && !getLocalDemoSeed(op)),
-			map((op) => ({
-				op,
-				data: resolveLocalDemoRootField(getRootFieldName(op), op.variables, op.key)
-			}))
-		);
-
-		const cannedResults$ = pipe(
-			queryAnswers$,
+			map((op) => ({ op, data: resolveLocalDemoQuery(op.query, op.variables, op.key) })),
 			filter((x): x is { op: Operation; data: Record<string, unknown> } => !!x.data),
 			map(({ op, data }) => makeSuccessResult(op, data))
 		);
@@ -319,19 +307,7 @@ const localDemoExchange: Exchange =
 			map((op) => makeLocalDemoMutationResult(op))
 		);
 
-		const localOfflineResults$ = pipe(
-			queryAnswers$,
-			filter((x) => x.data === undefined),
-			map(({ op }) => makeOfflineErrorResult(op))
-		);
-
-		return merge([
-			remoteOps$,
-			seedResults$,
-			cannedResults$,
-			mutationResults$,
-			localOfflineResults$
-		]);
+		return merge([remoteOps$, seedResults$, cannedResults$, mutationResults$]);
 	};
 
 if (browser) {

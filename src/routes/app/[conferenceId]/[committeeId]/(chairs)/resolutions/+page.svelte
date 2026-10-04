@@ -6,6 +6,7 @@
 	import { nanoid } from '$lib/helpers/nanoid';
 	import { workingPaperName } from '$lib/helpers/paperName';
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import CommitteePhaseToggles from '$lib/components/resolutions/CommitteePhaseToggles.svelte';
@@ -129,6 +130,17 @@
 		}
 	}
 
+	registerCommands(() => [
+		{
+			id: 'resolutions.create',
+			title: m.createPaper,
+			group: 'page',
+			icon: 'plus',
+			enabled: () => !creating && !!committee?.activeAgendaItem,
+			run: createPaper
+		}
+	]);
+
 	let promotingId = $state<string | null>(null);
 	async function promote(paperId: string) {
 		promotingId = paperId;
@@ -155,6 +167,7 @@
 			<h1 class="text-3xl font-bold">{m.resolutions()}</h1>
 			<button
 				class="btn btn-primary"
+				data-tour="resolutions.create"
 				disabled={creating || !committee?.activeAgendaItem}
 				onclick={createPaper}
 			>
@@ -164,7 +177,7 @@
 		</header>
 
 		{#if committee}
-			<div class="bg-base-100 rounded-box p-4">
+			<div class="bg-base-100 rounded-box p-4" data-tour="resolutions.phase-toggles">
 				<CommitteePhaseToggles
 					{committeeId}
 					amendmentSubmissionOpen={committee.amendmentSubmissionOpen}
@@ -174,7 +187,7 @@
 			</div>
 		{/if}
 
-		<div class="overflow-x-auto">
+		<div class="overflow-x-auto" data-tour="resolutions.filters">
 			<div role="tablist" class="tabs tabs-boxed w-max min-w-full">
 				{#each statusFilters as filter (filter.key)}
 					<button
@@ -190,7 +203,7 @@
 		</div>
 
 		{#if !filteredPapers.length}
-			<BasicCard>
+			<BasicCard data-tour="resolutions.list">
 				<div class="flex flex-col items-center gap-2 py-12 text-center opacity-70">
 					<i class="fas fa-file-lines text-5xl"></i>
 					<p class="text-lg font-semibold">{m.noPapersYet()}</p>
@@ -198,7 +211,7 @@
 				</div>
 			</BasicCard>
 		{:else}
-			<div class="grid gap-3">
+			<div class="grid gap-3" data-tour="resolutions.list">
 				{#each filteredPapers as paper (paper.id)}
 					{@const isActive = committee?.activeDraftResolutionId === paper.id}
 					{@const isSubmitted = paper.status === 'SUBMITTED'}
@@ -231,6 +244,7 @@
 							{#if isSubmitted}
 								<button
 									class="btn btn-primary btn-sm"
+									data-tour="resolutions.promote"
 									disabled={promotingId === paper.id}
 									onclick={() => promote(paper.id)}
 								>
@@ -240,6 +254,7 @@
 							{/if}
 							<button
 								class="btn btn-sm btn-circle"
+								data-tour="resolutions.set-active"
 								class:btn-secondary={isActive}
 								class:btn-ghost={!isActive}
 								disabled={settingActiveId === paper.id}

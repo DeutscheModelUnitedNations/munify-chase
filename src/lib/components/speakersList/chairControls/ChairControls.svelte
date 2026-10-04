@@ -62,15 +62,23 @@
 
 	let { committeeMembers, conferenceMembers, type, speakersList, childList, otherList }: Props =
 		$props();
+
+	// Tour anchors only on the main list, so the tour doesn't jump between both columns
+	const tourAnchor = (name: string) =>
+		type === 'SPEAKERS_LIST' ? `speakers-list.${name}` : undefined;
 </script>
 
 <div class="flex flex-col gap-4">
-	<SpeechControls {type} {speakersList} otherList={childList ?? otherList} />
-
-	<div class="flex gap-2">
-		<NextSpeech {speakersList} {childList} parentList={otherList} {type} />
-		<MoreOptions {speakersList} />
+	<div data-tour={tourAnchor('timer')}>
+		<SpeechControls {type} {speakersList} otherList={childList ?? otherList} />
 	</div>
 
-	<AddSpeakers {committeeMembers} {conferenceMembers} {speakersList} />
+	<div class="flex gap-2" data-tour={tourAnchor('queue-controls')}>
+		<NextSpeech {speakersList} {childList} parentList={otherList} {type} />
+		<MoreOptions {speakersList} {type} />
+	</div>
+
+	<div data-tour={tourAnchor('add-speakers')}>
+		<AddSpeakers {committeeMembers} {conferenceMembers} {speakersList} {type} />
+	</div>
 </div>

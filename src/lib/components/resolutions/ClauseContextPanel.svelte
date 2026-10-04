@@ -7,6 +7,8 @@
 	import ClauseVotePanel from './ClauseVotePanel.svelte';
 	import { isTeam, type ResolutionViewer } from './paperContext';
 	import type { OperativeClause } from '@deutschemodelunitednations/munify-resolution-editor';
+	import { browser } from '$app/environment';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 
 	interface Props {
 		paperId: string;
@@ -101,6 +103,47 @@
 	$effect(() => {
 		if (tab === 'vote' && !showVoteTab) tab = 'comments';
 	});
+
+	function showAmendments() {
+		tab = 'amendments';
+	}
+	function showComments() {
+		tab = 'comments';
+	}
+	function openComposer() {
+		composerOpen = true;
+	}
+
+	// The panel is only shown on wide screens (lg)
+	const isWideScreen = () => browser && window.matchMedia('(min-width: 1024px)').matches;
+
+	// Participant panel controls. Chairs use the same panel with their own commands.
+	registerCommands(() => [
+		{
+			id: 'paper.participant.tab-amendments',
+			title: m.commandShowAmendments,
+			group: 'page',
+			icon: 'pen-to-square',
+			visible: () => !team && isWideScreen() && tab !== 'amendments',
+			run: showAmendments
+		},
+		{
+			id: 'paper.participant.tab-comments',
+			title: m.commandShowComments,
+			group: 'page',
+			icon: 'comments',
+			visible: () => !team && isWideScreen() && tab !== 'comments',
+			run: showComments
+		},
+		{
+			id: 'paper.participant.propose-amendment',
+			title: m.proposeAmendment,
+			group: 'page',
+			icon: 'plus',
+			visible: () => !team && isWideScreen() && tab === 'amendments' && canPropose,
+			run: openComposer
+		}
+	]);
 </script>
 
 <div class="bg-base-200 flex h-full w-full flex-col">
@@ -139,18 +182,13 @@
 				role="tab"
 				class="tab"
 				class:tab-active={tab === 'amendments'}
-				onclick={() => (tab = 'amendments')}
+				onclick={showAmendments}
 			>
 				{m.amendments()}
 				{#if amendmentCount}<span class="badge badge-xs ml-1">{amendmentCount}</span>{/if}
 				{#if hasReview}<span class="badge badge-error badge-xs ml-1">!</span>{/if}
 			</button>
-			<button
-				role="tab"
-				class="tab"
-				class:tab-active={tab === 'comments'}
-				onclick={() => (tab = 'comments')}
-			>
+			<button role="tab" class="tab" class:tab-active={tab === 'comments'} onclick={showComments}>
 				{m.comments()}
 				{#if commentCount}<span class="badge badge-xs ml-1">{commentCount}</span>{/if}
 			</button>
@@ -169,7 +207,7 @@
 			<button
 				class="btn btn-primary btn-xs mr-2 shrink-0"
 				title={m.proposeAmendment()}
-				onclick={() => (composerOpen = true)}
+				onclick={openComposer}
 			>
 				<i class="fas fa-plus"></i>
 				{m.proposeAmendment()}

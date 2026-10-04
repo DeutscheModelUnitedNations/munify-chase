@@ -6,7 +6,7 @@ description: 'Rechte und Anträge vom eigenen Gerät an den Vorsitz schicken'
 
 # Anträge
 
-Mit Anträgen schickst du dem Vorsitz eine formelle Bitte direkt von deinem Gerät, zum Beispiel ein Recht auf Information oder einen Antrag zur Geschäftsordnung, statt nur dein Namensschild zu heben. Der Vorsitz sieht ihn sofort in seiner Liste der offenen Anträge.
+Mit Anträgen schickst du dem Vorsitz eine formelle Bitte direkt von deinem Gerät, zum Beispiel ein Recht auf Information oder einen Antrag zur Geschäftsordnung, statt nur dein Länderschild zu heben. Der Vorsitz sieht ihn sofort in seiner Liste der offenen Anträge.
 
 ## Wann Anträge verfügbar sind
 

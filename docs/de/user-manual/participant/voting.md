@@ -10,11 +10,11 @@ Der Vorsitz kann auf drei Arten abstimmen lassen. Welche du erlebst, hängt alle
 
 ## Abstimmung per Handzeichen
 
-Die klassische Abstimmung mit Namensschildern: Der Vorsitz fragt nach Stimmen dafür, dagegen und Enthaltungen und zählt die erhobenen Namensschilder oder Hände im Raum. CHASE zeigt Zählung und Ergebnis auf dem Präsentationsbildschirm, sobald der Vorsitz sie einträgt. Auf deinem eigenen Gerät musst du bei dieser Abstimmungsart nichts tun.
+Die klassische Abstimmung mit Länderschildern: Der Vorsitz fragt nach Stimmen dafür, dagegen und Enthaltungen und zählt die erhobenen Länderschilder oder Hände im Raum. CHASE zeigt Zählung und Ergebnis auf dem Präsentationsbildschirm, sobald der Vorsitz sie einträgt. Auf deinem eigenen Gerät musst du bei dieser Abstimmungsart nichts tun.
 
 ## Mündliche Abstimmung
 
-Der Vorsitz ruft jede Delegation nacheinander namentlich auf und du nennst deine Stimme, wenn du dran bist (mündlich oder mit Namensschild, je nach Verfahren deines Gremiums). Wie bei der Abstimmung per Handzeichen passiert das im Raum. CHASE erfasst die Stimme jeder Delegation, sobald der Vorsitz sie einträgt, und zeigt den laufenden Stand auf dem Präsentationsbildschirm.
+Der Vorsitz ruft jede Delegation nacheinander namentlich auf und du nennst deine Stimme, wenn du dran bist (mündlich oder mit Länderschild, je nach Verfahren deines Gremiums). Wie bei der Abstimmung per Handzeichen passiert das im Raum. CHASE erfasst die Stimme jeder Delegation, sobald der Vorsitz sie einträgt, und zeigt den laufenden Stand auf dem Präsentationsbildschirm.
 
 ## Geräte-basierte Abstimmung
 

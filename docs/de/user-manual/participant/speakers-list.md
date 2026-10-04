@@ -28,7 +28,7 @@ Ob du dich selbst eintragen kannst, hängt von einer Einstellung ab, die der Vor
 2. Klicke auf **Auf die Liste setzen**.
 3. Du landest am Ende der Warteschlange.
 
-Ist die Selbsteintragung aus, bitte den Vorsitz, dich so einzutragen, wie es in deinem Gremium vereinbart ist (z. B. per Namensschild).
+Ist die Selbsteintragung aus, bitte den Vorsitz, dich so einzutragen, wie es in deinem Gremium vereinbart ist (z. B. per Länderschild).
 
 Du kannst dich nicht selbst eintragen, wenn:
 

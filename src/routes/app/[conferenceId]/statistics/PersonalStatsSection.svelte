@@ -91,7 +91,7 @@
 	);
 </script>
 
-<section>
+<section data-tour="statistics.personal">
 	<h2 class="text-base-content/70 mb-4 text-lg font-semibold">{m.myStatistics()}</h2>
 
 	{#if !stats}

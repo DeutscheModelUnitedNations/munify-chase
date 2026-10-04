@@ -130,13 +130,14 @@
 	<div class="grid gap-3 sm:grid-cols-2">
 		<button
 			class="btn btn-primary"
+			data-tour="papers.new"
 			disabled={creating || !committee?.activeAgendaItem}
 			onclick={createPaper}
 		>
 			{#if creating}<i class="fas fa-spinner fa-spin"></i>{:else}<i class="fas fa-plus"></i>{/if}
 			{m.newWorkingPaper()}
 		</button>
-		<div class="join">
+		<div class="join" data-tour="papers.redeem">
 			<input
 				class="input input-bordered join-item w-full font-mono uppercase"
 				placeholder={m.enterShareCode()}
@@ -151,7 +152,7 @@
 	</div>
 
 	<!-- My papers -->
-	<section class="flex flex-col gap-2">
+	<section class="flex flex-col gap-2" data-tour="papers.mine">
 		<h2 class="font-bold">{m.myPapers()}</h2>
 		{#if !myPapers.length}
 			<p class="text-base-content/50 text-sm">{m.noPapersYet()}</p>
@@ -182,7 +183,7 @@
 	</section>
 
 	<!-- Submitted papers (visible to all committee members) -->
-	<section class="flex flex-col gap-2">
+	<section class="flex flex-col gap-2" data-tour="papers.submitted">
 		<h2 class="font-bold">{m.submittedPapers()}</h2>
 		{#if !submittedPapers.length}
 			<p class="text-base-content/50 text-sm">{m.noSubmittedPapers()}</p>
@@ -216,7 +217,7 @@
 	</section>
 
 	<!-- Published draft resolutions -->
-	<section class="flex flex-col gap-2">
+	<section class="flex flex-col gap-2" data-tour="papers.published">
 		<h2 class="font-bold">{m.draftResolutions()}</h2>
 		{#if !published.length}
 			<p class="text-base-content/50 text-sm">{m.noDraftResolutionsYet()}</p>

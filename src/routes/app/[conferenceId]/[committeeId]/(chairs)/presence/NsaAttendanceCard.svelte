@@ -62,7 +62,7 @@
 	}
 </script>
 
-<BasicCard title={m.nsaAttendance()}>
+<BasicCard title={m.nsaAttendance()} data-tour="presence.nsa">
 	<div class="flex flex-col gap-3">
 		<button class="btn btn-primary btn-xl" onclick={() => (drawerOpen = true)}>
 			<i class="fas fa-qrcode mr-2"></i>

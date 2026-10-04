@@ -37,6 +37,9 @@ export function startTour(tour: Tour) {
 		prevBtnText: m.tourPrevious(),
 		doneBtnText: m.tourDone(),
 		popoverClass: 'chase-tour',
+		// driver.js only scrolls elements outside the window, but fixed bars like the bottom
+		// dock can still cover them, so always bring the highlighted element to the middle
+		onHighlightStarted: (element) => element?.scrollIntoView({ block: 'center' }),
 		stagePadding: 6,
 		stageRadius: 12
 	}).drive();

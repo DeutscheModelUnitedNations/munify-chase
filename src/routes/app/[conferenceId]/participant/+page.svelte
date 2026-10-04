@@ -7,6 +7,7 @@
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
+	import HelpButton from '$lib/tours/HelpButton.svelte';
 	import ParticipantIdentityCard from './ParticipantIdentityCard.svelte';
 	import MyAttendanceTab from './MyAttendanceTab.svelte';
 
@@ -112,20 +113,23 @@
 			</a>
 		</div>
 		<h1 class="ml-4 flex-1 text-xl font-bold">{conference.title}</h1>
-		<div class="flex-none">
+		<div class="flex flex-none items-center gap-2">
+			<HelpButton />
 			<ThemeSwitcher />
 		</div>
 	</div>
 
-	<div class="p-4">
+	<div class="p-4" data-tour="overview.identity">
 		<ParticipantIdentityCard {representation} />
 	</div>
 
 	{#if role === 'NON_STATE_ACTOR' && conferenceUser}
-		<div class="p-4">
+		<div class="p-4" data-tour="overview.attendance">
 			<MyAttendanceTab conferenceUserId={conferenceUser.id} />
 		</div>
 	{/if}
 
-	<CommitteeGrid conference={conference as unknown as ConferenceData} environment="PARTICIPANT" />
+	<div data-tour="overview.committees">
+		<CommitteeGrid conference={conference as unknown as ConferenceData} environment="PARTICIPANT" />
+	</div>
 {/if}

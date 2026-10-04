@@ -400,7 +400,7 @@
 />
 
 <!-- Bottom dock -->
-<div class="dock dock-md lg:dock-lg md:justify-center md:gap-4" data-tour="chair.dock">
+<div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">
 	{#each dockItems as item, i (item.key)}
 		<a
 			href={item.href}

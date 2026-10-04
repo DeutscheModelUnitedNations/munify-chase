@@ -40,23 +40,6 @@ export const chairSpeakersListTour: Tour = {
 			title: () => m.tourSpeakersListCommentTitle(),
 			body: () => m.tourSpeakersListCommentBody(),
 			side: 'left'
-		},
-		{
-			anchor: 'chair.status-sidebar',
-			title: () => m.tourSpeakersListSidebarTitle(),
-			body: () => m.tourSpeakersListSidebarBody(),
-			side: 'right'
-		},
-		{
-			anchor: 'chair.dock',
-			title: () => m.tourChairDockTitle(),
-			body: () => m.tourChairDockBody(),
-			side: 'top'
-		},
-		{
-			anchor: 'help-button',
-			title: () => m.tourHelpButtonTitle(),
-			body: () => m.tourHelpButtonBody()
 		}
 	]
 };

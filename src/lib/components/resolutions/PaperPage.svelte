@@ -825,7 +825,7 @@
 				/>
 			{:else}
 				<!-- Read-only lifecycle chain for participants -->
-				<ul class="steps steps-horizontal text-xs">
+				<ul class="steps steps-horizontal text-xs" data-tour="paper.lifecycle">
 					{#each PAPER_STATUS_ORDER as s, i (s)}
 						<li class="step {i <= currentStatusIdx ? 'step-primary' : ''}">
 							<span
@@ -886,6 +886,7 @@
 				{#if status === 'WORKING_PAPER' && (isCreator || team)}
 					<button
 						class="btn btn-ghost btn-sm"
+						data-tour={team ? 'chair-paper.share' : 'paper.share'}
 						onclick={() => (shareOpen = true)}
 						title={m.shareCodes()}
 					>
@@ -895,6 +896,7 @@
 				{/if}
 				<button
 					class="btn btn-ghost btn-sm"
+					data-tour={team ? 'chair-paper.sponsors' : 'paper.sponsors'}
 					onclick={() => (detailsOpen = !detailsOpen)}
 					title={m.sponsors()}
 				>
@@ -921,6 +923,7 @@
 					</div>
 					<button
 						class="btn btn-ghost btn-sm"
+						data-tour="chair-paper.ai"
 						onclick={() => (aiOnboardingOpen = true)}
 						title={m.aiOnboardingOpenSettings()}
 					>
@@ -928,6 +931,7 @@
 					</button>
 					<button
 						class="btn btn-ghost btn-sm"
+						data-tour="chair-paper.history"
 						onclick={() => (historyOpen = true)}
 						title={m.documentHistory()}
 					>
@@ -948,6 +952,7 @@
 				{#if status === 'WORKING_PAPER' && (isCreator || team)}
 					<button
 						class="btn btn-primary btn-sm"
+						data-tour={team ? undefined : 'paper.submit'}
 						disabled={submitting}
 						onclick={() => (submitConfirmOpen = true)}
 					>
@@ -985,6 +990,7 @@
 					<aside
 						class="hidden shrink-0 flex-col overflow-hidden lg:flex"
 						style="width: {previewWidth}px;"
+						data-tour={team ? undefined : 'paper.preview'}
 					>
 						<div class="border-base-300 flex items-center justify-between border-b px-3 py-2">
 							<span class="text-sm font-semibold">
@@ -1040,7 +1046,7 @@
 			{/if}
 
 			<!-- Center: preview (FINAL) or editor -->
-			<div class="min-h-0 flex-1 overflow-auto">
+			<div class="min-h-0 flex-1 overflow-auto" data-tour={team ? undefined : 'paper.editor'}>
 				{#if browser && yClient}
 					{#if status === 'FINAL'}
 						<div class="min-h-0 flex-1 overflow-auto p-4">
@@ -1094,6 +1100,7 @@
 				<aside
 					class="hidden shrink-0 overflow-hidden lg:flex lg:flex-col"
 					style="width: {contextWidth}px;"
+					data-tour={team ? 'chair-paper.amendments' : 'paper.context'}
 				>
 					<ClauseContextPanel
 						{paperId}

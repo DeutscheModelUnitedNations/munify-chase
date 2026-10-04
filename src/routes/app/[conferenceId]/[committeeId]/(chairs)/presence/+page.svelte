@@ -151,7 +151,7 @@
 						{minAmendmentSponsors}
 					/>
 				</BasicCard>
-				<BasicCard>
+				<BasicCard data-tour="presence.roll-call">
 					<div class="flex flex-col gap-2">
 						{#if activeSession}
 							<div class="alert alert-info p-2 text-sm">
@@ -218,7 +218,7 @@
 						{/if}
 					</div>
 				</BasicCard>
-				<BasicCard>
+				<BasicCard data-tour="presence.bulk-actions">
 					<PresenceActions memberIds={committee.members.map((x) => x.id)} />
 				</BasicCard>
 			</div>
@@ -227,10 +227,11 @@
 					<NsaAttendanceCard conferenceId={committee.conference!.id} committeeId={committee.id} />
 				{/if}
 				<BasicCard title={m.delegations()}>
-					{#each countries as member (member.id)}
+					{#each countries as member, index (member.id)}
 						{@const rep = member.representation}
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
+							data-tour={index === 0 ? 'presence.delegations' : undefined}
 						>
 							<Flag representation={rep} size="sm" />
 							<h3 class="flex-1 text-lg">
@@ -269,7 +270,7 @@
 						</div>
 					{/each}
 				</BasicCard>
-				<BasicCard title={m.unActors()}>
+				<BasicCard title={m.unActors()} data-tour="presence.un-actors">
 					{#each un as member (member.id)}
 						{@const rep = member.representation}
 						<div

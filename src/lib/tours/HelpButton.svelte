@@ -21,7 +21,6 @@
 		class="btn btn-ghost btn-circle btn-sm"
 		aria-label={m.help()}
 		title={m.help()}
-		data-tour="help-button"
 	>
 		<i class="fa-duotone fa-circle-question text-lg"></i>
 	</button>

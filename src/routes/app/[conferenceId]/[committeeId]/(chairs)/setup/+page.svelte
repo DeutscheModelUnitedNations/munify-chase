@@ -93,7 +93,7 @@
 						{minAmendmentSponsors}
 					/>
 				</BasicCard>
-				<BasicCard className="relative group">
+				<BasicCard className="relative group" data-tour="setup.whiteboard">
 					<button
 						class="btn mb-4"
 						onclick={() => {
@@ -107,7 +107,7 @@
 				</BasicCard>
 			</div>
 			<div class="flex h-full w-full flex-3 flex-col gap-4">
-				<BasicCard title={m.setStatus()} kbd="alt+S">
+				<BasicCard title={m.setStatus()} kbd="alt+S" data-tour="setup.status">
 					<StatusChanger
 						committeeId={committee.id}
 						oldStatus={committee.status}
@@ -116,17 +116,17 @@
 						hasModeratedCaucus={committee.conference?.hasModeratedCaucus}
 					/>
 				</BasicCard>
-				<BasicCard title={m.stateOfDebate()} kbd="alt+D">
+				<BasicCard title={m.stateOfDebate()} kbd="alt+D" data-tour="setup.state-of-debate">
 					<StateOfDebate committeeId={committee.id} oldStateOfDebate={committee.stateOfDebate} />
 				</BasicCard>
-				<BasicCard title={m.agendaItem()}>
+				<BasicCard title={m.agendaItem()} data-tour="setup.agenda-item">
 					<AgendaItemChanger
 						committeeId={committee.id}
 						activeAgendaItem={committee.activeAgendaItem}
 						agendaItems={committee.agendaItems}
 					/>
 				</BasicCard>
-				<BasicCard title={m.presentationMode()}>
+				<BasicCard title={m.presentationMode()} data-tour="setup.presentation">
 					<div class="mb-4 flex flex-wrap items-center gap-3">
 						<button
 							type="button"
@@ -154,7 +154,7 @@
 					<PresentationSettings committeeId={page.params.committeeId!} />
 				</BasicCard>
 				{#if !isLocalConferenceActive()}
-					<BasicCard title={m.allowSelfAddToSpeakersList()}>
+					<BasicCard title={m.allowSelfAddToSpeakersList()} data-tour="setup.self-add">
 						<p class="mb-4 text-sm opacity-70">{m.allowSelfAddToSpeakersListDescription()}</p>
 						<Tabs
 							activeTab={committee.allowDelegationsToAddThemselvesToSpeakersList}
@@ -173,7 +173,7 @@
 							}}
 						/>
 					</BasicCard>
-					<BasicCard title={m.allowRequests()}>
+					<BasicCard title={m.allowRequests()} data-tour="setup.requests">
 						<p class="mb-4 text-sm opacity-70">{m.allowRequestsDescription()}</p>
 						<Tabs
 							activeTab={committee.allowRequests}

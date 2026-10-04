@@ -127,10 +127,7 @@
 	<div
 		class="flex w-full flex-col items-center justify-center gap-6 p-6 lg:flex-row lg:items-start"
 	>
-		<div
-			class="top-22 hidden h-full w-lg flex-col gap-4 2xl:sticky 2xl:flex"
-			data-tour="chair.status-sidebar"
-		>
+		<div class="top-22 hidden h-full w-lg flex-col gap-4 2xl:sticky 2xl:flex">
 			<BasicCard>
 				<StatusWidget {committee} />
 			</BasicCard>

@@ -65,7 +65,7 @@
 </script>
 
 {#if activeVotingSession}
-	<div class="flex flex-col gap-3">
+	<div class="flex flex-col gap-3" data-tour="voting.resume">
 		<div class="alert alert-warning p-2 text-sm">
 			<i class="fas fa-circle-exclamation"></i>
 			<span>{m.voteInProgress()}</span>
@@ -82,6 +82,7 @@
 		bind:majority
 		bind:withAbstentions
 		bind:deviceVotingWindowSeconds
+		tourAnchors
 		onstart={() => {
 			if (voteType === 'SHOW_OF_HANDS') {
 				showOfHandModalOpen = true;

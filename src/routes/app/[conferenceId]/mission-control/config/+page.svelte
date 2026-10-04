@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
 	import {
 		buildConferenceNavItems,
@@ -135,6 +136,33 @@
 	let activeTab = $state<
 		'general' | 'users' | 'committees' | 'delegations' | 'nsa' | 'requestTypes'
 	>('general');
+
+	type ConfigTab = typeof activeTab;
+	const configTabs: { id: ConfigTab; title: () => string; icon: string }[] = [
+		{ id: 'general', title: m.general, icon: 'sliders' },
+		{ id: 'users', title: m.users, icon: 'users' },
+		{ id: 'committees', title: m.committees, icon: 'building-columns' },
+		{ id: 'delegations', title: m.delegations, icon: 'flag' },
+		{ id: 'nsa', title: m.nonStateActors, icon: 'people-group' },
+		{ id: 'requestTypes', title: m.requestTypes, icon: 'hand' }
+	];
+
+	// Same as clicking the tab. The users tab is hidden in the offline demo
+	registerCommands(() =>
+		configTabs.map((tab) => ({
+			id: `configuration.tab.${tab.id}`,
+			title: m.commandShowTab,
+			context: tab.title,
+			group: 'page' as const,
+			icon: tab.icon,
+			visible: () =>
+				isAdmin &&
+				!!conference &&
+				activeTab !== tab.id &&
+				(tab.id !== 'users' || !isLocalConferenceActive()),
+			run: () => (activeTab = tab.id)
+		}))
+	);
 
 	let menubarItems = $derived(
 		buildConferenceNavItems({

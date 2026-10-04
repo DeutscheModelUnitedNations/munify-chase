@@ -69,7 +69,9 @@ Os delegados não têm seta para voltar na vista do comité, por isso use **Pain
 
 ![O menu aberto, com o nome e a função do utilizador com sessão iniciada, Estatísticas, Painel, "Minha Conta" e "Sair"](shot:participant/avatar-menu)
 
-O botão **?** ao lado das suas iniciais abre a página do manual para o ecrã em que está.
+O botão **?** ao lado das suas iniciais abre a página do manual para o ecrã em que está e oferece uma visita guiada.
+
+Prima **Ctrl+K** (**⌘K** num Mac) ou **/** para procurar ações e páginas, por exemplo "adicionar-me" ou "fazer um pedido", e prima Enter. Um comando faz exatamente o mesmo que o respetivo botão.
 
 ## Manter a ligação
 

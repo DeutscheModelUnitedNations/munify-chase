@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 
@@ -34,6 +35,37 @@
 			toast.error(err instanceof Error ? err.message : 'Failed');
 		}
 	}
+
+	// Same as flipping the matching toggle
+	registerCommands(() => [
+		{
+			id: 'resolutions.amendment-submission',
+			title: amendmentSubmissionOpen
+				? m.commandCloseAmendmentSubmission
+				: m.commandOpenAmendmentSubmission,
+			group: 'page',
+			icon: 'file-circle-plus',
+			run: () => set({ amendmentSubmissionOpen: !amendmentSubmissionOpen })
+		},
+		{
+			id: 'resolutions.amendment-sponsoring',
+			title: amendmentSponsoringOpen
+				? m.commandCloseAmendmentSponsoring
+				: m.commandOpenAmendmentSponsoring,
+			group: 'page',
+			icon: 'handshake',
+			run: () => set({ amendmentSponsoringOpen: !amendmentSponsoringOpen })
+		},
+		{
+			id: 'resolutions.support-reevaluation',
+			title: supportReevaluationOpen
+				? m.commandCloseSupportReevaluation
+				: m.commandOpenSupportReevaluation,
+			group: 'page',
+			icon: 'scale-balanced',
+			run: () => set({ supportReevaluationOpen: !supportReevaluationOpen })
+		}
+	]);
 </script>
 
 <div class="flex flex-wrap items-center gap-x-6 gap-y-2">

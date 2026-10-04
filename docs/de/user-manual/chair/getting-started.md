@@ -55,7 +55,9 @@ CHASE behält dein Gremium für dich im Blick und zeigt einen Hinweis, wenn etwa
 
 ## Hilfe bekommen
 
-Der Button **?** in der oberen Leiste öffnet die Handbuchseite zu dem Bildschirm, auf dem du gerade bist. Auf manchen Seiten bietet er außerdem **Tour starten** an, einen kurzen geführten Rundgang durch die Bedienelemente.
+Der Button **?** in der oberen Leiste öffnet die Handbuchseite zu dem Bildschirm, auf dem du gerade bist. Außerdem bietet er **Tour starten** an, einen kurzen geführten Rundgang durch die Bedienelemente der Seite.
+
+Mit **Strg+K** (**⌘K** auf dem Mac) oder **/** öffnest du die Befehlssuche. Tippe ein paar Buchstaben, zum Beispiel "nächste Rede" oder "Abstimmung", und drücke Enter. Ein Befehl macht genau dasselbe wie sein Button, Rückfragen eingeschlossen, und die Liste zeigt jedes Tastenkürzel. Fährst du mit der Maus über den Button **?**, siehst du das Kürzel.
 
 ## Offline-Demo
 

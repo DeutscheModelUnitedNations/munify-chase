@@ -15,6 +15,7 @@
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 
 	const conferenceId = $derived(page.params.conferenceId!);
 	const committeeId = $derived(page.params.committeeId!);
@@ -123,6 +124,27 @@
 			redeeming = false;
 		}
 	}
+
+	let codeInput = $state<HTMLInputElement>();
+
+	registerCommands(() => [
+		{
+			id: 'participant.papers.new',
+			title: m.newWorkingPaper,
+			group: 'page',
+			icon: 'plus',
+			enabled: () => !creating && !!committee?.activeAgendaItem,
+			run: createPaper
+		},
+		{
+			id: 'participant.papers.share-code',
+			title: m.enterShareCode,
+			keywords: [m.redeem()],
+			group: 'page',
+			icon: 'ticket',
+			run: () => codeInput?.focus()
+		}
+	]);
 </script>
 
 <div class="flex flex-col gap-4 p-4">
@@ -141,6 +163,7 @@
 			<input
 				class="input input-bordered join-item w-full font-mono uppercase"
 				placeholder={m.enterShareCode()}
+				bind:this={codeInput}
 				bind:value={code}
 			/>
 			<button class="btn join-item" disabled={redeeming || !code.trim()} onclick={redeem}>

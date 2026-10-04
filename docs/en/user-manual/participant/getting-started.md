@@ -69,7 +69,9 @@ Delegates have no back arrow in the committee view, so use **Dashboard** in this
 
 ![The menu open, showing the signed-in user's name, role, Statistics, Dashboard, "My Account", and "Sign out"](shot:participant/avatar-menu)
 
-The **?** button next to your initials opens the manual page for the screen you're on.
+The **?** button next to your initials opens the manual page for the screen you're on and offers a guided tour of it.
+
+Press **Ctrl+K** (**⌘K** on a Mac) or **/** to search for actions and pages, for example "add me" or "make a request", and press Enter. A command does exactly what its button does.
 
 ## Staying connected
 

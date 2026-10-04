@@ -6,6 +6,7 @@
 	import { nanoid } from '$lib/helpers/nanoid';
 	import { workingPaperName } from '$lib/helpers/paperName';
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import Flag from '$lib/components/Flag.svelte';
 	import CommitteePhaseToggles from '$lib/components/resolutions/CommitteePhaseToggles.svelte';
@@ -128,6 +129,17 @@
 			creating = false;
 		}
 	}
+
+	registerCommands(() => [
+		{
+			id: 'resolutions.create',
+			title: m.createPaper,
+			group: 'page',
+			icon: 'plus',
+			enabled: () => !creating && !!committee?.activeAgendaItem,
+			run: createPaper
+		}
+	]);
 
 	let promotingId = $state<string | null>(null);
 	async function promote(paperId: string) {

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { type VotingMajority } from './votingModal';
 	import { m } from '$lib/paraglide/messages';
-	import { onDestroy, onMount } from 'svelte';
-	import hotkeys from 'hotkeys-js';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import Modal from '../Modal.svelte';
 	import VotingSetupForm from './VotingSetupForm.svelte';
 	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
@@ -104,16 +103,16 @@
 		executingOpen = true;
 	};
 
-	onMount(() => {
-		hotkeys('alt+v', (event) => {
-			event.preventDefault();
-			toggleModal();
-		});
-	});
-
-	onDestroy(() => {
-		hotkeys.unbind('alt+v');
-	});
+	registerCommands(() => [
+		{
+			id: 'chair.quick-vote',
+			title: m.commandQuickVote,
+			group: 'page',
+			icon: 'box-ballot',
+			shortcut: 'alt+v',
+			run: toggleModal
+		}
+	]);
 </script>
 
 {#if setupOpen}

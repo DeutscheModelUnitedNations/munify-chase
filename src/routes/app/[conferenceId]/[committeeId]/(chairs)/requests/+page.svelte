@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import BasicCard from '$lib/components/BasicCard.svelte';
@@ -133,6 +134,34 @@
 			promiseToastStrings(m.requests(), 'delete')
 		);
 	}
+
+	// The queue's first entry, in the order the list shows it
+	const nextRequest = $derived(sortedPending[0]);
+	const nextRequestContext = () =>
+		nextRequest
+			? `${nextRequest.requestType?.name ?? ''} (${requesterLabel(nextRequest.conferenceUser).primary})`
+			: '';
+
+	registerCommands(() => [
+		{
+			id: 'requests.resolve-next',
+			title: m.commandResolveNextRequest,
+			context: nextRequestContext,
+			group: 'page',
+			icon: 'check',
+			enabled: () => !!nextRequest,
+			run: () => nextRequest && resolve(nextRequest.id)
+		},
+		{
+			id: 'requests.withdraw-next',
+			title: m.commandWithdrawNextRequest,
+			context: nextRequestContext,
+			group: 'page',
+			icon: 'xmark',
+			enabled: () => !!nextRequest,
+			run: () => nextRequest && withdraw(nextRequest.id)
+		}
+	]);
 </script>
 
 {#if sortedPending.length === 0 && (history?.length ?? 0) === 0}

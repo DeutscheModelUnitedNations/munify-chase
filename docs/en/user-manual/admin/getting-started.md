@@ -40,7 +40,7 @@ Inside a conference, the menu in the top bar holds **Mission Control**, **Attend
 - **Requests**: the request types delegates and NSAs can send to the chairs (see [Requests](./requests))
 
 :::tip
-The help button (?) in the top bar opens this manual on the page for whatever screen you're on.
+The help button (?) in the top bar opens this manual on the page for whatever screen you're on. **Ctrl+K** (**⌘K** on a Mac) opens the command search, which also jumps to any committee, Configuration tab or attendance tab.
 :::
 
 ## Creating a conference

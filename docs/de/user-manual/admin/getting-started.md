@@ -40,7 +40,7 @@ Innerhalb einer Konferenz findest du für Admins und Teammitglieder im Menü der
 - **Anträge**: die Antragsarten, die Delegierte und NAs an den Vorsitz stellen können (siehe [Anträge](./requests))
 
 :::tip
-Der Hilfe-Button (?) in der oberen Leiste öffnet dieses Handbuch auf der Seite zu dem Bildschirm, auf dem du gerade bist.
+Der Hilfe-Button (?) in der oberen Leiste öffnet dieses Handbuch auf der Seite zu dem Bildschirm, auf dem du gerade bist. **Strg+K** (**⌘K** auf dem Mac) öffnet die Befehlssuche, mit der du auch direkt zu jedem Gremium, Reiter der Konfiguration oder Reiter der Anwesenheit springst.
 :::
 
 ## Eine Konferenz anlegen

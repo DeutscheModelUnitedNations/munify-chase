@@ -5,7 +5,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import hotkeys from 'hotkeys-js';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { compareSpeakers } from '$lib/helpers/speakerSort';
 
@@ -90,27 +90,29 @@
 		return 'speech_idle';
 	});
 
-	let buttonLabel = $derived.by(() => {
+	// The message itself, so the command palette can also search the English label
+	let buttonMessage = $derived.by(() => {
 		switch (widgetState) {
 			case 'speech_running':
-				return m.stopSpeech();
+				return m.stopSpeech;
 			case 'speech_stopped':
-				return hasQuestioner ? m.startQuestion() : m.nextSpeaker();
+				return hasQuestioner ? m.startQuestion : m.nextSpeaker;
 			case 'question_idle':
-				return m.startQuestion();
+				return m.startQuestion;
 			case 'question_running':
-				return m.stopQuestion();
+				return m.stopQuestion;
 			case 'answer_idle':
-				return m.startAnswer();
+				return m.startAnswer;
 			case 'answer_running':
-				return m.stopAnswer();
+				return m.stopAnswer;
 			case 'answer_stopped':
-				return (commentList?.speakers.length ?? 0) > 1 ? m.nextQuestion() : m.nextSpeaker();
+				return (commentList?.speakers.length ?? 0) > 1 ? m.nextQuestion : m.nextSpeaker;
 			case 'speech_idle':
 			default:
-				return m.startSpeech();
+				return m.startSpeech;
 		}
 	});
+	let buttonLabel = $derived(buttonMessage());
 
 	let buttonIcon = $derived.by(() => {
 		switch (widgetState) {
@@ -382,15 +384,19 @@
 		);
 	};
 
-	$effect(() => {
-		const handler = (event: KeyboardEvent) => {
-			event.preventDefault();
-			if (!hasSpeaker) return;
-			handleButton();
-		};
-		hotkeys('shift+space', handler);
-		return () => hotkeys.unbind('shift+space', handler);
-	});
+	registerCommands(() => [
+		{
+			id: 'speakers-list.widget.action',
+			title: buttonMessage,
+			context: m.speakersList,
+			group: 'page',
+			icon: buttonIcon.replace('fa-', ''),
+			shortcut: 'shift+space',
+			// The widget only shows while someone is speaking
+			visible: () => hasSpeaker,
+			run: handleButton
+		}
+	]);
 </script>
 
 {#if hasSpeaker}

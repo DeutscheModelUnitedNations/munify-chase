@@ -6,6 +6,11 @@
 	import HelpButton from '$lib/tours/HelpButton.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { Snippet } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { getLocale, locales, setLocale } from '$lib/paraglide/runtime';
+	import { toggleTheme } from '$lib/utils/theme.svelte';
 
 	interface CommitteeLink {
 		id: string;
@@ -67,6 +72,80 @@
 		if (fromName) return fromName;
 		return user?.email?.trim()?.[0]?.toUpperCase() ?? '?';
 	});
+
+	// The menu's links and switches, also reachable from the command palette. The theme and
+	// language switchers only mount while the menu is open, so their commands live here.
+	const localeLabels: Record<string, () => string> = {
+		en: () => m.commandSwitchToEnglish(),
+		de: () => m.commandSwitchToGerman(),
+		pt: () => m.commandSwitchToPortuguese()
+	};
+
+	registerCommands(() => [
+		...items.map((item) => ({
+			id: `navigation.${item.key ?? item.href}`,
+			title: () => item.title,
+			group: 'navigation' as const,
+			icon: item.faIcon.replace('fa-', ''),
+			visible: () => !item.active,
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- hrefs come resolved from buildConferenceNavItems
+			run: () => goto(item.href)
+		})),
+		...sortedCommittees.map((committee) => ({
+			id: `navigation.committee.${committee.id}`,
+			title: () => m.commandOpenCommittee({ committee: committee.abbreviation }),
+			keywords: [committee.name],
+			group: 'navigation' as const,
+			icon: 'gavel',
+			visible: () => page.params.committeeId !== committee.id,
+			run: () =>
+				goto(
+					resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+						conferenceId: conferenceId!,
+						committeeId: committee.id
+					})
+				)
+		})),
+		{
+			id: 'navigation.dashboard',
+			title: m.dashboard,
+			group: 'navigation',
+			icon: 'grid-2',
+			visible: () => !!dashboardHref,
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route
+			run: () => goto(dashboardHref!)
+		},
+		{
+			id: 'global.theme',
+			title: m.commandToggleTheme,
+			group: 'global',
+			icon: 'circle-half-stroke',
+			run: toggleTheme
+		},
+		...locales.map((locale) => ({
+			id: `global.language.${locale}`,
+			title: localeLabels[locale] ?? (() => locale),
+			group: 'global' as const,
+			icon: 'language',
+			visible: () => getLocale() !== locale,
+			run: () => setLocale(locale)
+		})),
+		{
+			id: 'global.my-account',
+			title: m.myDelegatorAccount,
+			group: 'global',
+			icon: 'user',
+			run: () => window.open('https://delegator.munify.cloud/my-account', '_blank', 'noopener')
+		},
+		{
+			id: 'global.sign-out',
+			title: m.launcherSignOut,
+			group: 'global',
+			icon: 'arrow-right-from-bracket',
+			visible: () => !!signOutHref,
+			run: () => (window.location.href = signOutHref!)
+		}
+	]);
 </script>
 
 <div class="flex items-center gap-2">

@@ -49,4 +49,7 @@
 	});
 </script>
 
-{@render children()}
+<!-- Remount per committee, pages start their live queries with the id they mounted with -->
+{#key page.params.committeeId}
+	{@render children()}
+{/key}

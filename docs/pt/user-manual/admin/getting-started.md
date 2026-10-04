@@ -40,7 +40,7 @@ Dentro de uma conferência, o menu na barra superior contém **Controlo de Miss�
 - **Pedidos**: os tipos de pedido que os delegados e os ANE podem enviar à presidência (consulte [Pedidos](./requests))
 
 :::tip
-O botão de ajuda (?) na barra superior abre este manual na página do ecrã em que se encontra.
+O botão de ajuda (?) na barra superior abre este manual na página do ecrã em que se encontra. **Ctrl+K** (**⌘K** num Mac) abre a pesquisa de comandos, que também leva diretamente a qualquer comité, separador da Configuração ou separador de presenças.
 :::
 
 ## Criar uma conferência

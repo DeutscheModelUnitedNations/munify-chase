@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import BasicCard from '$lib/components/BasicCard.svelte';
@@ -124,6 +125,21 @@
 		}
 	];
 
+	function openRollCall() {
+		rollCallActive = true;
+	}
+
+	registerCommands(() => [
+		{
+			id: 'presence.roll-call',
+			title: activeSession ? m.resumeRollCall : m.rollCall,
+			group: 'page',
+			icon: activeSession ? 'rotate-right' : 'user-magnifying-glass',
+			visible: () => !!committee,
+			run: openRollCall
+		}
+	]);
+
 	const setPresence = (tab: boolean, id: string) => {
 		toast.promise(
 			client.mutate.setPresenceForCommitteeMembers({
@@ -163,12 +179,12 @@
 									})}
 								</span>
 							</div>
-							<button class="btn btn-warning btn-xl" onclick={() => (rollCallActive = true)}>
+							<button class="btn btn-warning btn-xl" onclick={openRollCall}>
 								<i class="fas fa-rotate-right mr-2"></i>
 								{m.resumeRollCall()}
 							</button>
 						{:else}
-							<button class="btn btn-primary btn-xl" onclick={() => (rollCallActive = true)}>
+							<button class="btn btn-primary btn-xl" onclick={openRollCall}>
 								<i class="fas fa-user-magnifying-glass mr-2"></i>
 								{m.rollCall()}
 							</button>

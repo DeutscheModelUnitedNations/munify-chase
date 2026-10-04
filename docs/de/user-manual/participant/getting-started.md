@@ -69,7 +69,9 @@ Delegierte haben in der Gremienansicht keinen Zurück-Pfeil. Nutze daher **Über
 
 ![Das geöffnete Menü mit Name und Rolle der angemeldeten Person, Statistiken, Übersicht, Mein Konto und Abmelden](shot:participant/avatar-menu)
 
-Der Button **?** neben deinen Initialen öffnet die Handbuchseite zu dem Bildschirm, auf dem du gerade bist.
+Der Button **?** neben deinen Initialen öffnet die Handbuchseite zu dem Bildschirm, auf dem du gerade bist, und bietet eine geführte Tour an.
+
+Mit **Strg+K** (**⌘K** auf dem Mac) oder **/** suchst du nach Aktionen und Seiten, zum Beispiel "eintragen" oder "Antrag stellen", und drückst Enter. Ein Befehl macht genau dasselbe wie sein Button.
 
 ## Verbunden bleiben
 

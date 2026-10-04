@@ -10,6 +10,7 @@
 	import HelpButton from '$lib/tours/HelpButton.svelte';
 	import ParticipantIdentityCard from './ParticipantIdentityCard.svelte';
 	import MyAttendanceTab from './MyAttendanceTab.svelte';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 
 	const currentUser = await getCurrentUser();
 	const [conferenceUser] =
@@ -84,6 +85,27 @@
 			);
 		}
 	});
+
+	// The committee grid, also reachable from the command palette
+	registerCommands(() =>
+		[...(conference?.committees ?? [])]
+			.sort((a, b) => a.abbreviation.localeCompare(b.abbreviation))
+			.map((committee) => ({
+				id: `navigation.participant.committee.${committee.id}`,
+				title: () => m.commandOpenCommittee({ committee: committee.abbreviation }),
+				keywords: [committee.name],
+				group: 'navigation' as const,
+				icon: 'gavel',
+				visible: () => !(role === 'DELEGATE' && !myCommitteeId),
+				run: () =>
+					goto(
+						resolve('/app/[conferenceId]/participant/[committeeId]', {
+							conferenceId: page.params.conferenceId!,
+							committeeId: committee.id
+						})
+					)
+			}))
+	);
 </script>
 
 <svelte:head>

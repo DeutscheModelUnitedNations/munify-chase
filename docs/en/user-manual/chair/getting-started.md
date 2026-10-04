@@ -55,7 +55,9 @@ CHASE watches your committee for you and shows a notice when something needs att
 
 ## Getting help
 
-The **?** button in the top bar opens the manual page for the screen you are on. On some pages it also offers **Take the tour**, a short guided walk through the controls.
+The **?** button in the top bar opens the manual page for the screen you are on. It also offers **Take the tour**, a short guided walk through the controls of that page.
+
+Press **Ctrl+K** (**⌘K** on a Mac) or **/** to open the command search. Type a few letters of what you want, for example "next speech" or "voting", and press Enter. A command does exactly what its button does, confirmations included, and the list shows each keyboard shortcut. Hover the **?** button to see the shortcut.
 
 ## Offline demo
 

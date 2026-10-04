@@ -7,6 +7,7 @@
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import Kbd from '$lib/components/Kbd.svelte';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import UndrawError from '$lib/components/UndrawError.svelte';
 	import emptyStreet from '$assets/undraw/empty_street.svg';
 	import BasicCard from '$lib/components/BasicCard.svelte';
@@ -76,6 +77,78 @@
 	};
 
 	const canToggleFullscreen = fullscreenDelegationSupported();
+
+	function openWhiteboardEditor() {
+		editWhiteboardModalOpen = true;
+	}
+
+	function setSelfAdd(tab: boolean) {
+		if (!committee) return;
+		toast.promise(
+			client.mutate.updateCommittee({
+				__args: {
+					id: committee.id,
+					allowDelegationsToAddThemselvesToSpeakersList: tab
+				},
+				id: true
+			}),
+			promiseToastStrings(m.allowSelfAddToSpeakersList(), 'update')
+		);
+	}
+
+	function setAllowRequests(tab: boolean) {
+		if (!committee) return;
+		toast.promise(
+			client.mutate.updateCommittee({
+				__args: {
+					id: committee.id,
+					allowRequests: tab
+				},
+				id: true
+			}),
+			promiseToastStrings(m.allowRequests(), 'update')
+		);
+	}
+
+	// Opening the presentation is a layout-wide command (Alt+P), so it is not repeated here
+	registerCommands(() => [
+		{
+			id: 'setup.whiteboard',
+			title: m.commandEditWhiteboard,
+			group: 'page',
+			icon: 'pencil',
+			visible: () => !!committee,
+			run: openWhiteboardEditor
+		},
+		{
+			id: 'setup.fullscreen',
+			title: m.enterFullscreen,
+			context: m.presentationMode,
+			group: 'page',
+			icon: 'expand',
+			visible: () => !!committee && canToggleFullscreen,
+			enabled: presentationOpen,
+			run: toggleFullscreen
+		},
+		{
+			id: 'setup.self-add',
+			title: committee?.allowDelegationsToAddThemselvesToSpeakersList
+				? m.commandDisallowSelfAdd
+				: m.commandAllowSelfAdd,
+			group: 'page',
+			icon: 'user-plus',
+			visible: () => !!committee && !isLocalConferenceActive(),
+			run: () => setSelfAdd(!committee?.allowDelegationsToAddThemselvesToSpeakersList)
+		},
+		{
+			id: 'setup.requests',
+			title: committee?.allowRequests ? m.commandDisableRequests : m.commandEnableRequests,
+			group: 'page',
+			icon: 'hand',
+			visible: () => !!committee && !isLocalConferenceActive(),
+			run: () => setAllowRequests(!committee?.allowRequests)
+		}
+	]);
 </script>
 
 {#if committee}
@@ -94,12 +167,7 @@
 					/>
 				</BasicCard>
 				<BasicCard className="relative group" data-tour="setup.whiteboard">
-					<button
-						class="btn mb-4"
-						onclick={() => {
-							editWhiteboardModalOpen = true;
-						}}
-					>
+					<button class="btn mb-4" onclick={openWhiteboardEditor}>
 						<i class="fas fa-pencil"></i>
 						{m.edit()}
 					</button>
@@ -159,18 +227,7 @@
 						<Tabs
 							activeTab={committee.allowDelegationsToAddThemselvesToSpeakersList}
 							tabs={selfAddTabs}
-							onTabChange={(tab) => {
-								toast.promise(
-									client.mutate.updateCommittee({
-										__args: {
-											id: committee.id,
-											allowDelegationsToAddThemselvesToSpeakersList: tab
-										},
-										id: true
-									}),
-									promiseToastStrings(m.allowSelfAddToSpeakersList(), 'update')
-								);
-							}}
+							onTabChange={setSelfAdd}
 						/>
 					</BasicCard>
 					<BasicCard title={m.allowRequests()} data-tour="setup.requests">
@@ -178,18 +235,7 @@
 						<Tabs
 							activeTab={committee.allowRequests}
 							tabs={requestsTabs}
-							onTabChange={(tab) => {
-								toast.promise(
-									client.mutate.updateCommittee({
-										__args: {
-											id: committee.id,
-											allowRequests: tab
-										},
-										id: true
-									}),
-									promiseToastStrings(m.allowRequests(), 'update')
-								);
-							}}
+							onTabChange={setAllowRequests}
 						/>
 					</BasicCard>
 				{/if}

@@ -55,7 +55,9 @@ O CHASE vigia o seu comité e mostra um aviso quando algo precisa da sua atenç�
 
 ## Obter ajuda
 
-O botão **?** na barra superior abre a página do manual do ecrã em que está. Em algumas páginas oferece também **Fazer a visita guiada**, um pequeno percurso pelos controlos.
+O botão **?** na barra superior abre a página do manual do ecrã em que está. Oferece também **Fazer a visita guiada**, um pequeno percurso pelos controlos dessa página.
+
+Prima **Ctrl+K** (**⌘K** num Mac) ou **/** para abrir a pesquisa de comandos. Escreva algumas letras, por exemplo "próximo discurso" ou "votação", e prima Enter. Um comando faz exatamente o mesmo que o respetivo botão, incluindo as confirmações, e a lista mostra cada atalho de teclado. Passe o rato sobre o botão **?** para ver o atalho.
 
 ## Demonstração offline
 

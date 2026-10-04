@@ -16,6 +16,7 @@
 	import DeviceVoteModal from '$lib/components/voting/DeviceVoteModal.svelte';
 	import RequestsCard from '$lib/components/requests/RequestsCard.svelte';
 	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 
 	const currentUser = await getCurrentUser();
 	const [conferenceUser] =
@@ -205,6 +206,49 @@
 			speakers: { id: true, position: true }
 		});
 	}
+
+	// The self-add buttons of both lists. Each command is visible exactly while its button is
+	// rendered, so a closed list or a delegate who is not present gets no command.
+	registerCommands(() =>
+		[
+			{
+				list: speakersList,
+				context: m.speakersList,
+				myPosition: myPositionOnSpeakers,
+				key: 'speakers'
+			},
+			{ list: commentList, context: m.commentList, myPosition: myPositionOnComments, key: 'poi' }
+		].flatMap(({ list, context, myPosition, key }) => {
+			const listShown = !!list && (isParticipant || role === 'SPECTATOR') && !!canSelfAdd;
+			const keywords = key === 'poi' ? ['POI'] : [];
+			return [
+				{
+					id: `participant.${key}.add-me`,
+					title: m.addMeToList,
+					context,
+					keywords,
+					group: 'page' as const,
+					icon: 'plus',
+					visible: () =>
+						listShown &&
+						myPosition === null &&
+						!list!.isClosed &&
+						!(role === 'DELEGATE' && !myPresent),
+					run: () => handleSelfAdd(list!.id)
+				},
+				{
+					id: `participant.${key}.remove-me`,
+					title: m.removeFromList,
+					context,
+					keywords,
+					group: 'page' as const,
+					icon: 'minus',
+					visible: () => listShown && myPosition !== null,
+					run: () => handleSelfRemove(list!.id)
+				}
+			];
+		})
+	);
 </script>
 
 <svelte:head>

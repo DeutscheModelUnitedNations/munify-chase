@@ -75,10 +75,10 @@
 
 	<div class="flex gap-2" data-tour={tourAnchor('queue-controls')}>
 		<NextSpeech {speakersList} {childList} parentList={otherList} {type} />
-		<MoreOptions {speakersList} />
+		<MoreOptions {speakersList} {type} />
 	</div>
 
 	<div data-tour={tourAnchor('add-speakers')}>
-		<AddSpeakers {committeeMembers} {conferenceMembers} {speakersList} />
+		<AddSpeakers {committeeMembers} {conferenceMembers} {speakersList} {type} />
 	</div>
 </div>

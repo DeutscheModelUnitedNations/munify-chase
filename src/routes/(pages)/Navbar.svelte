@@ -31,9 +31,6 @@
 			{m.tryOfflineDemo()}
 			<span class="badge badge-warning badge-xs font-bold uppercase">{m.betaTag()}</span>
 		</a>
-		<!-- Full page load: /app has no server load, so a client-side navigation would skip the OIDC check -->
-		<a class="btn btn-primary btn-sm" href={resolve('/app')} data-sveltekit-reload>
-			{m.login()}
-		</a>
+		<a class="btn btn-primary btn-sm" href={resolve('/app')}>{m.login()}</a>
 	</nav>
 </header>

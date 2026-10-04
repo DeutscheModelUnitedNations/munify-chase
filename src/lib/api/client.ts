@@ -20,10 +20,6 @@ import { setWsConnected, DISCONNECT_GRACE_MS } from '$lib/state/connection.svelt
 import { createClient as createWSClient } from 'graphql-ws';
 import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 import {
-	hasClearOfflineCacheMarker,
-	removeClearOfflineCacheMarker
-} from '$lib/helpers/clearOfflineCacheMarker';
-import {
 	localDemoConferenceUpdates,
 	resolveLocalDemoQuery,
 	seedLocalDemoConference,
@@ -320,23 +316,6 @@ if (browser) {
 		idbName,
 		maxAge: 7
 	});
-	// After a logout, drop the previous user's cached data and queued offline mutations.
-	// Issued before the offline exchange's first read, so that read sees the cleared stores.
-	// The marker is only removed once clearing succeeded; if it fails, reads return nothing
-	// (so the previous user's data is never hydrated) and the next start retries.
-	if (hasClearOfflineCacheMarker()) {
-		const cleared = storage.clear().then(
-			() => {
-				removeClearOfflineCacheMarker();
-				return true;
-			},
-			() => false
-		);
-		const readData = storage.readData.bind(storage);
-		const readMetadata = storage.readMetadata?.bind(storage);
-		storage.readData = async () => ((await cleared) ? readData() : {});
-		if (readMetadata) storage.readMetadata = async () => ((await cleared) ? readMetadata() : null);
-	}
 
 	const onlineCallbacks = new Set<() => void>();
 	const baseOnOnline = storage.onOnline?.bind(storage);

@@ -33,7 +33,7 @@
 		</a>
 		<!-- Full page load: /app has no server load, so a client-side navigation would skip the OIDC check -->
 		<a class="btn btn-primary btn-sm" href={resolve('/app')} data-sveltekit-reload>
-      {m.login()}
-    </a>
+			{m.login()}
+		</a>
 	</nav>
 </header>

@@ -17,6 +17,8 @@ const schema = z.object({
 	ADMIN_EMAIL_WHITELIST: z.string().optional().default(''),
 	ADMIN_DOMAIN_WHITELIST: z.string().optional().default(''),
 	REDIS_URL: z.string().optional(),
+	// Optional, raises the GitHub API rate limit for the desktop app downloads
+	GITHUB_TOKEN: z.string().optional(),
 	// same semantics as the node adapter: forwarded headers are only trusted
 	// when explicitly configured
 	ORIGIN: z.string().optional(),

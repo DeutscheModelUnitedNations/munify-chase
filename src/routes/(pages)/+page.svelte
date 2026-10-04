@@ -6,6 +6,7 @@
 	import TextSection from './TextSection.svelte';
 	import ContactSection from './ContactSection.svelte';
 	import SplitSection from './SplitSection.svelte';
+	import DownloadSection from './DownloadSection.svelte';
 	import { resolve } from '$app/paths';
 	import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
 
@@ -69,6 +70,8 @@
 	</a>
 	<p class="max-w-[66ch] text-sm italic opacity-80">{m.homeOfflineBetaNote()}</p>
 </SplitSection>
+
+<DownloadSection platform={data.downloadPlatform} release={data.latestRelease} />
 
 <SplitSection title={m.homeDocsTitle()} text={m.homeDocsText()}>
 	<div class="flex flex-wrap gap-3">

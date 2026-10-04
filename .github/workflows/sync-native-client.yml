@@ -90,6 +90,8 @@ jobs:
           git rm -rqf --ignore-unmatch -- \
             src/api \
             src/routes/api \
+            src/routes/download \
+            src/params/downloadPlatform.ts \
             src/routes/logout \
             src/routes/app/+layout.server.ts \
             src/hooks.server.ts \

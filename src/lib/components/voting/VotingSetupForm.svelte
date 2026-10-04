@@ -13,6 +13,8 @@
 		withAbstentions: boolean;
 		deviceVotingWindowSeconds: number;
 		onstart: () => void;
+		/** Adds the voting page tour anchors. Off in the quick vote modal (Alt+V) */
+		tourAnchors?: boolean;
 	}
 
 	let {
@@ -21,8 +23,11 @@
 		majority = $bindable(),
 		withAbstentions = $bindable(),
 		deviceVotingWindowSeconds = $bindable(),
-		onstart
+		onstart,
+		tourAnchors = false
 	}: Props = $props();
+
+	const tourAnchor = (name: string) => (tourAnchors ? `voting.${name}` : undefined);
 
 	// Device-based voting has each participant vote from their own device — meaningless in
 	// the offline demo, where there's only ever the one device in front of the chair.
@@ -58,11 +63,17 @@
 </script>
 
 <div class="flex flex-col gap-2">
-	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
+	<fieldset
+		class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4"
+		data-tour={tourAnchor('type')}
+	>
 		<legend class="fieldset-legend">{m.typeOfVoting()}</legend>
 		<Tabs activeTab={voteType} tabs={voteTypeTabs} onTabChange={(tab) => (voteType = tab)} />
 	</fieldset>
-	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
+	<fieldset
+		class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4"
+		data-tour={tourAnchor('majority')}
+	>
 		<legend class="fieldset-legend">{m.majoritySettings()}</legend>
 		<p class="label whitespace-normal">{m.majoritySettingsDescriptions()}</p>
 		<Tabs activeTab={majority} tabs={majorityTabs} onTabChange={(tab) => (majority = tab)} />
@@ -85,7 +96,10 @@
 			<p class="label whitespace-normal">{m.deviceVotingWindowSecondsDescription()}</p>
 		</fieldset>
 	{/if}
-	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
+	<fieldset
+		class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4"
+		data-tour={tourAnchor('title')}
+	>
 		<legend class="fieldset-legend">{m.voteTitel()}</legend>
 		<Combobox
 			bind:value={voteName}
@@ -116,7 +130,7 @@
 		<p class="label whitespace-normal">{m.voteTitleDescription()}</p>
 	</fieldset>
 
-	<button class="btn btn-primary w-full" onclick={onstart}>
+	<button class="btn btn-primary w-full" onclick={onstart} data-tour={tourAnchor('start')}>
 		<i class="fas fa-box-ballot"></i>
 		{m.startVote()}
 	</button>

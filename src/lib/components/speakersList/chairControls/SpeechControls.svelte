@@ -4,9 +4,9 @@
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
-	import hotkeys from 'hotkeys-js';
-	import { onMount } from 'svelte';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import toast from 'svelte-french-toast';
+	import { listCommandScope } from './listCommands';
 
 	type List = {
 		id: string;
@@ -171,41 +171,61 @@
 			.catch(() => {});
 	};
 
-	onMount(() => {
-		hotkeys('space, shift+space, alt+r, alt+shift+r', (event, handler) => {
-			event.preventDefault();
-			if (!speakersList?.speakers?.length) return;
-			switch (handler.key) {
-				case 'space':
-					if (type === 'SPEAKERS_LIST') {
-						if (timerRunning) {
-							stopTimer();
-						} else {
-							startTimer();
-						}
-					}
-					break;
-				case 'shift+space':
-					if (type === 'COMMENT_LIST') {
-						if (timerRunning) {
-							stopTimer();
-						} else {
-							startTimer();
-						}
-					}
-					break;
-				case 'alt+r':
-					if (type === 'SPEAKERS_LIST') {
-						resetTimer();
-					}
-					break;
-				case 'alt+shift+r':
-					if (type === 'COMMENT_LIST') {
-						resetTimer();
-					}
-					break;
+	const toggleTimer = () => (timerRunning ? stopTimer() : startTimer());
+	const removeTime = () => changeTimer(-10);
+	const addTime = () => changeTimer(10);
+
+	const isCommentList = $derived(type === 'COMMENT_LIST');
+	const timerShortcut = $derived(isCommentList ? 'shift+space' : 'space');
+	const resetShortcut = $derived(isCommentList ? 'alt+shift+r' : 'alt+r');
+	const hasSpeakers = () => !!speakersList?.speakers?.length;
+
+	registerCommands(() => {
+		const { idPrefix, context, keywords } = listCommandScope(type);
+		return [
+			{
+				id: `${idPrefix}.timer`,
+				title: timerRunning ? m.commandSpeakersListPauseTimer : m.commandSpeakersListStartTimer,
+				context,
+				keywords,
+				group: 'page',
+				icon: timerRunning ? 'pause' : 'play',
+				shortcut: timerShortcut,
+				enabled: hasSpeakers,
+				run: toggleTimer
+			},
+			{
+				id: `${idPrefix}.add-time`,
+				title: m.commandSpeakersListAddTime,
+				context,
+				keywords,
+				group: 'page',
+				icon: 'plus',
+				enabled: hasSpeakers,
+				run: addTime
+			},
+			{
+				id: `${idPrefix}.remove-time`,
+				title: m.commandSpeakersListRemoveTime,
+				context,
+				keywords,
+				group: 'page',
+				icon: 'minus',
+				enabled: hasSpeakers,
+				run: removeTime
+			},
+			{
+				id: `${idPrefix}.reset-timer`,
+				title: m.commandSpeakersListResetTimer,
+				context,
+				keywords,
+				group: 'page',
+				icon: 'rotate-left',
+				shortcut: resetShortcut,
+				enabled: hasSpeakers,
+				run: resetTimer
 			}
-		});
+		];
 	});
 </script>
 
@@ -213,7 +233,7 @@
 	<button
 		class="btn btn-lg join-item flex flex-1 gap-2
 			{!speakersList?.speakers?.length ? 'btn-disabled' : timerRunning ? 'bg-error' : 'bg-success'}"
-		onclick={timerRunning ? stopTimer : startTimer}
+		onclick={toggleTimer}
 	>
 		{#if timerRunning}
 			<i class="fas fa-pause"></i>
@@ -221,18 +241,14 @@
 			<i class="fas fa-play"></i>
 		{/if}
 		{m.timer()}
-		{#if type === 'COMMENT_LIST'}
-			<Kbd hotkey="shift+space" class="text-base-content" />
-		{:else if type === 'SPEAKERS_LIST'}
-			<Kbd hotkey="space" class="text-base-content" />
-		{/if}
+		<Kbd hotkey={timerShortcut} class="text-base-content" />
 	</button>
 	<div class="join">
 		<button
 			class="btn btn-lg join-item flex gap-2
 				{!speakersList?.speakers?.length ? 'btn-disabled' : 'btn-square'}"
 			aria-label="remove time"
-			onclick={() => changeTimer(-10)}
+			onclick={removeTime}
 		>
 			<i class="fas fa-minus"></i>
 		</button>
@@ -242,17 +258,13 @@
 			onclick={resetTimer}
 		>
 			<i class="fas fa-rotate-left"></i>
-			{#if type === 'COMMENT_LIST'}
-				<Kbd hotkey="alt+shift+R" class="text-base-content" />
-			{:else if type === 'SPEAKERS_LIST'}
-				<Kbd hotkey="alt+R" class="text-base-content" />
-			{/if}
+			<Kbd hotkey={resetShortcut} class="text-base-content" />
 		</button>
 		<button
 			class="btn btn-lg join-item flex gap-2
 				{!speakersList?.speakers?.length ? 'btn-disabled' : 'btn-square'}"
 			aria-label="add time"
-			onclick={() => changeTimer(10)}
+			onclick={addTime}
 		>
 			<i class="fas fa-plus"></i>
 		</button>

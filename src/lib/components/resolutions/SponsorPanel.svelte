@@ -8,6 +8,7 @@
 	import Flag from '$lib/components/Flag.svelte';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import Fuse, { type IFuseOptions } from 'fuse.js';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 
 	interface Props {
 		paperId: string;
@@ -116,6 +117,27 @@
 			toast.error(err instanceof Error ? err.message : 'Failed');
 		}
 	}
+
+	// A participant's own sponsorship, while the sponsors dialog is open
+	registerCommands(() => [
+		{
+			id: 'paper.participant.sponsor',
+			title: m.sponsorThisPaper,
+			group: 'page',
+			icon: 'handshake',
+			visible: () => !team && !!myMemberId && !iSponsor && sponsoringAllowed,
+			enabled: () => !busy,
+			run: () => add()
+		},
+		{
+			id: 'paper.participant.unsponsor',
+			title: m.commandWithdrawSponsorship,
+			group: 'page',
+			icon: 'xmark',
+			visible: () => !team && !!iSponsor,
+			run: () => remove(iSponsor!.id)
+		}
+	]);
 </script>
 
 <div class="flex flex-col gap-3">

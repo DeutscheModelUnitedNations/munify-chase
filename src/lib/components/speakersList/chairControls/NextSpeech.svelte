@@ -5,10 +5,10 @@
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { promiseToastStrings } from '$lib/utils/toast';
-	import hotkeys from 'hotkeys-js';
-	import { onMount } from 'svelte';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import toast from 'svelte-french-toast';
 	import { compareSpeakers } from '$lib/helpers/speakerSort';
+	import { listCommandScope } from './listCommands';
 
 	type SpeakersList = {
 		id: string;
@@ -116,22 +116,23 @@
 		}
 	};
 
-	onMount(() => {
-		hotkeys('alt+n, alt+shift+n', (event, handler) => {
-			event.preventDefault();
-			if (!speakersList?.speakers?.length) return;
-			switch (handler.key) {
-				case 'alt+n':
-					if (type === 'SPEAKERS_LIST') {
-						nextSpeaker();
-					}
-					break;
-				case 'alt+shift+n':
-					if (type === 'COMMENT_LIST') {
-						nextSpeaker();
-					}
+	const shortcut = $derived(type === 'COMMENT_LIST' ? 'alt+shift+n' : 'alt+n');
+
+	registerCommands(() => {
+		const { idPrefix, context, keywords } = listCommandScope(type);
+		return [
+			{
+				id: `${idPrefix}.next-speech`,
+				title: m.nextSpeaker,
+				context,
+				keywords,
+				group: 'page',
+				icon: 'diagram-next',
+				shortcut,
+				enabled: () => !!speakersList?.speakers?.length,
+				run: nextSpeaker
 			}
-		});
+		];
 	});
 </script>
 
@@ -143,9 +144,5 @@
 >
 	<i class="fas fa-diagram-next"></i>
 	{m.nextSpeaker()}
-	{#if type === 'COMMENT_LIST'}
-		<Kbd hotkey="alt+shift+N" class="text-base-content" />
-	{:else if type === 'SPEAKERS_LIST'}
-		<Kbd hotkey="alt+N" class="text-base-content" />
-	{/if}
+	<Kbd hotkey={shortcut} class="text-base-content" />
 </button>

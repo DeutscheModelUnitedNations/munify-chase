@@ -223,7 +223,7 @@
 {#if stats}
 	<!-- ── Speaking Activity Timeline ────────────────────────────── -->
 	{#if hasTimeline}
-		<BasicCard title="Conference Speaking Activity">
+		<BasicCard title="Conference Speaking Activity" data-tour="statistics.timeline">
 			<SpeakingActivityChart buckets={stats.speakingTimeline ?? []} />
 		</BasicCard>
 	{/if}
@@ -231,6 +231,7 @@
 	<!-- ── Delegation Leaderboard (speaking / comments toggle) ───── -->
 	{#if (stats.speakingLeaderboard?.length ?? 0) > 0}
 		<BasicCard
+			data-tour="statistics.leaderboard"
 			title={leaderboardMode === 'speaking'
 				? m.delegationSpeakingLeaderboard()
 				: m.commentLeaderboard()}
@@ -369,7 +370,7 @@
 	{/if}
 
 	<!-- ── Speaking Fairness + By Region ────────────────────────── -->
-	<div class="grid items-stretch gap-4 lg:grid-cols-5">
+	<div class="grid items-stretch gap-4 lg:grid-cols-5" data-tour="statistics.fairness">
 		{#if (stats.speakingByRegion?.length ?? 0) > 0}
 			<div class="lg:col-span-3">
 				<BasicCard title={m.speakingByRegion()} className="h-full">
@@ -466,7 +467,7 @@
 
 	<!-- ── Voting ────────────────────────────────────────────────── -->
 	{#if hasVoting}
-		<div class="grid gap-4 lg:grid-cols-2">
+		<div class="grid gap-4 lg:grid-cols-2" data-tour="statistics.voting">
 			{#if (stats.mostContrarian?.length ?? 0) > 0}
 				<BasicCard title={m.mostContrarianVoters()}>
 					<div class="overflow-x-auto">
@@ -553,7 +554,7 @@
 
 	<!-- ── Resolutions ───────────────────────────────────────────── -->
 	{#if hasAmendments || hasPapers}
-		<div class="grid gap-4 lg:grid-cols-2">
+		<div class="grid gap-4 lg:grid-cols-2" data-tour="statistics.papers">
 			{#if hasAmendments}
 				<BasicCard title={m.amendmentSuccessRate()}>
 					<div class="overflow-x-auto">
@@ -632,7 +633,7 @@
 
 	<!-- ── Attendance Trend ──────────────────────────────────────── -->
 	{#if hasTrend}
-		<BasicCard title={m.attendanceTrend()}>
+		<BasicCard title={m.attendanceTrend()} data-tour="statistics.attendance">
 			<AttendanceTrendChart points={stats.attendanceTrend ?? []} />
 		</BasicCard>
 	{/if}

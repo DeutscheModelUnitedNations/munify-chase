@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import BasicCard from '$lib/components/BasicCard.svelte';
@@ -133,6 +134,34 @@
 			promiseToastStrings(m.requests(), 'delete')
 		);
 	}
+
+	// The queue's first entry, in the order the list shows it
+	const nextRequest = $derived(sortedPending[0]);
+	const nextRequestContext = () =>
+		nextRequest
+			? `${nextRequest.requestType?.name ?? ''} (${requesterLabel(nextRequest.conferenceUser).primary})`
+			: '';
+
+	registerCommands(() => [
+		{
+			id: 'requests.resolve-next',
+			title: m.commandResolveNextRequest,
+			context: nextRequestContext,
+			group: 'page',
+			icon: 'check',
+			enabled: () => !!nextRequest,
+			run: () => nextRequest && resolve(nextRequest.id)
+		},
+		{
+			id: 'requests.withdraw-next',
+			title: m.commandWithdrawNextRequest,
+			context: nextRequestContext,
+			group: 'page',
+			icon: 'xmark',
+			enabled: () => !!nextRequest,
+			run: () => nextRequest && withdraw(nextRequest.id)
+		}
+	]);
 </script>
 
 {#if sortedPending.length === 0 && (history?.length ?? 0) === 0}
@@ -144,13 +173,14 @@
 {:else}
 	<div class="flex h-full w-full items-center justify-center">
 		<div class="flex h-full w-full max-w-screen-lg flex-col gap-6 p-6">
-			<BasicCard title={m.requests()}>
+			<BasicCard title={m.requests()} data-tour="requests.queue">
 				{#if sortedPending.length > 0}
 					<ul class="flex flex-col gap-2">
 						{#each sortedPending as req (req.id)}
 							{@const label = requesterLabel(req.conferenceUser)}
 							<li
 								class="bg-base-200 flex flex-wrap items-center gap-3 rounded-lg px-4 py-3 sm:flex-nowrap"
+								data-tour="requests.request"
 							>
 								<i
 									class="fas fa-{(req.requestType?.faIcon ?? 'fa-flag').replace('fa-', '')} text-xl"
@@ -171,6 +201,7 @@
 								<button
 									type="button"
 									class="btn btn-ghost btn-sm text-error"
+									data-tour="requests.withdraw"
 									onclick={() => withdraw(req.id)}
 								>
 									<i class="fas fa-xmark"></i>
@@ -179,6 +210,7 @@
 								<button
 									type="button"
 									class="btn btn-success btn-sm"
+									data-tour="requests.resolve"
 									onclick={() => resolve(req.id)}
 								>
 									<i class="fas fa-check"></i>
@@ -193,7 +225,7 @@
 			</BasicCard>
 
 			{#if history && history.length > 0}
-				<details class="group">
+				<details class="group" data-tour="requests.history">
 					<summary
 						class="text-base-content/60 hover:text-base-content flex cursor-pointer select-none list-none items-center gap-1 text-sm transition-colors"
 					>

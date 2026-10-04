@@ -72,27 +72,27 @@
 
 <SplitSection title={m.homeDocsTitle()} text={m.homeDocsText()}>
 	<div class="flex flex-wrap gap-3">
-		<a class="btn btn-primary w-full sm:w-auto" href="https://munify.cloud/chase" target="_blank">
+		<a
+			class="btn btn-primary w-full sm:w-auto"
+			href={resolve('/(pages)/docs/[...slug]', { slug: '' })}
+		>
 			{m.homeDocsButtonLabel()}
 		</a>
 		<a
 			class="btn btn-outline w-full sm:w-auto"
-			href="https://munify.cloud/chase/user-manual/chair/getting-started"
-			target="_blank"
+			href={resolve('/(pages)/docs/[...slug]', { slug: 'user-manual/chair/getting-started' })}
 		>
 			{m.homeDocsChairLabel()}
 		</a>
 		<a
 			class="btn btn-outline w-full sm:w-auto"
-			href="https://munify.cloud/chase/user-manual/participant/getting-started"
-			target="_blank"
+			href={resolve('/(pages)/docs/[...slug]', { slug: 'user-manual/participant/getting-started' })}
 		>
 			{m.homeDocsParticipantLabel()}
 		</a>
 		<a
 			class="btn btn-outline w-full sm:w-auto"
-			href="https://munify.cloud/chase/user-manual/admin/getting-started"
-			target="_blank"
+			href={resolve('/(pages)/docs/[...slug]', { slug: 'user-manual/admin/getting-started' })}
 		>
 			{m.homeDocsAdminLabel()}
 		</a>

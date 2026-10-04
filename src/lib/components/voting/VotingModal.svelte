@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { type VotingMajority } from './votingModal';
 	import { m } from '$lib/paraglide/messages';
-	import { onDestroy, onMount } from 'svelte';
-	import hotkeys from 'hotkeys-js';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import Modal from '../Modal.svelte';
 	import VotingSetupForm from './VotingSetupForm.svelte';
 	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
@@ -83,9 +82,17 @@
 		}
 	};
 
+	// A quick vote (Alt+V) opens without an entry in votingModalStore, so clearing the store
+	// alone would not notify anyone. Close locally and let a waiting caller know as well.
+	const close = () => {
+		setupOpen = false;
+		executingOpen = false;
+		closeVotingModal();
+	};
+
 	const toggleModal = () => {
 		if (setupOpen || executingOpen) {
-			closeVotingModal();
+			close();
 		} else {
 			phase = 'SETUP';
 			setupOpen = true;
@@ -104,25 +111,21 @@
 		executingOpen = true;
 	};
 
-	onMount(() => {
-		hotkeys('alt+v', (event) => {
-			event.preventDefault();
-			toggleModal();
-		});
-	});
-
-	onDestroy(() => {
-		hotkeys.unbind('alt+v');
-	});
+	registerCommands(() => [
+		{
+			id: 'chair.quick-vote',
+			title: m.commandQuickVote,
+			group: 'page',
+			icon: 'box-ballot',
+			shortcut: 'alt+v',
+			run: toggleModal
+		}
+	]);
 </script>
 
 {#if setupOpen}
 	<Modal bind:open={setupOpen}>
-		<button
-			class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2"
-			onclick={() => {
-				closeVotingModal();
-			}}>✕</button
+		<button class="btn btn-sm btn-circle btn-ghost absolute top-2 right-2" onclick={close}>✕</button
 		>
 		<h1 class="mb-4 text-2xl font-bold">{m.voting()}</h1>
 		<VotingSetupForm

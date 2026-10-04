@@ -8,13 +8,14 @@
  */
 export const CLEAR_OFFLINE_CACHE_COOKIE = 'chase_clear_offline_cache';
 
-/** Reads and removes the marker. Browser only. */
-export function consumeClearOfflineCacheMarker(): boolean {
-	const present = document.cookie
+/** Whether a logout left the marker behind. Browser only. */
+export function hasClearOfflineCacheMarker(): boolean {
+	return document.cookie
 		.split(';')
 		.some((c) => c.trim().startsWith(`${CLEAR_OFFLINE_CACHE_COOKIE}=`));
-	if (present) {
-		document.cookie = `${CLEAR_OFFLINE_CACHE_COOKIE}=; Max-Age=0; Path=/; SameSite=Lax`;
-	}
-	return present;
+}
+
+/** Removes the marker. Call only once the cache was cleared, so a failed clear is retried. */
+export function removeClearOfflineCacheMarker(): void {
+	document.cookie = `${CLEAR_OFFLINE_CACHE_COOKIE}=; Max-Age=0; Path=/; SameSite=Lax`;
 }

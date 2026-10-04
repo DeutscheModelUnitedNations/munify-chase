@@ -18,14 +18,14 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-bun
       - run: bun run format:check
 
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-bun
       - run: bunx svelte-kit sync
       - run: bun run lint
@@ -33,7 +33,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-bun
       - run: bunx svelte-kit sync
       - run: bun run test
@@ -41,7 +41,7 @@ jobs:
   i18n:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-bun
       - run: bun run i18n:check
       - run: bun run i18n:validate
@@ -49,9 +49,9 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-bun
-      - uses: aquasecurity/trivy-action@0.35.0
+      - uses: aquasecurity/trivy-action@0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -66,7 +66,7 @@ jobs:
   typecheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-bun
       - run: bunx svelte-kit sync
       - run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
@@ -79,7 +79,7 @@ jobs:
     env:
       NODE_OPTIONS: '--max-old-space-size=8192'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-bun
       - run: bunx svelte-kit sync
       - run: bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
@@ -113,7 +113,7 @@ jobs:
             args: '--target universal-apple-darwin'
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-bun
 
@@ -164,13 +164,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Extract version
         id: version
         run: echo "number=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           draft: false
           generate_release_notes: true

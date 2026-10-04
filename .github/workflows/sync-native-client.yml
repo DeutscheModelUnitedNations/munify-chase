@@ -112,6 +112,16 @@ jobs:
           bun install
           git add bun.lock
 
+      - name: Update Tauri crates
+        if: steps.merge.outputs.result == 'merged'
+        run: |
+          # bun install can move @tauri-apps/* to a new minor release, and
+          # `tauri build` refuses to run when the Rust crates lag behind the npm
+          # packages. Update every tauri* crate in Cargo.toml to keep them in step.
+          packages=$(grep -oE '^tauri[a-z-]*' src-tauri/Cargo.toml | sed 's/^/-p /')
+          cargo update --manifest-path src-tauri/Cargo.toml $packages
+          git add src-tauri/Cargo.lock
+
       - name: Verify merged result
         id: verify
         if: steps.merge.outputs.result == 'merged'

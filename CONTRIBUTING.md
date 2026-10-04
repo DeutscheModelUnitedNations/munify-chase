@@ -13,10 +13,10 @@ git clone https://github.com/DeutscheModelUnitedNations/munify-chase
 cd munify-chase
 bun i
 cp .env.example .env
-bun run dev        # starts dev server + Docker containers (postgres + mock OIDC)
+bun run dev        # starts dev server (incl. mock OIDC) + Docker containers (postgres)
 ```
 
-The dev server runs at `http://localhost:5173`. The mock OIDC server runs at `http://localhost:8080`.
+The dev server runs at `http://localhost:5173`. The mock OIDC provider ([oidc-mock](https://github.com/strehk/oidc-mock)) runs inside the Vite dev server; its login page lets you sign in with one click as any user from `oidc-mock.yaml`.
 
 ### Key development commands
 

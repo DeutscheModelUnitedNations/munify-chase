@@ -4,8 +4,11 @@
 	let { children } = $props();
 </script>
 
-<Navbar />
+<!-- The public pages sit on white (DMUN: white + navy), unlike the app's tinted ground -->
+<div class="bg-base-100 min-h-screen">
+	<Navbar />
 
-{@render children()}
+	{@render children()}
 
-<Footer />
+	<Footer />
+</div>

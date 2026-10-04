@@ -1,3 +1,5 @@
+import { m } from '$lib/paraglide/messages';
+
 export interface AiAssessment {
 	supported: boolean;
 	/** Human-readable explanation shown to the user when supported=false. */
@@ -12,11 +14,31 @@ export interface AiAssessment {
 
 // Human-friendly model tiers exposed to the settings UI (index 0 = fastest/smallest).
 export const LOCAL_MODEL_TIERS = [
-	{ id: 'Qwen3-0.6B-q4f16_1-MLC', label: 'Fastest', vramMB: 1403, thinking: true },
-	{ id: 'Qwen3.5-0.8B-q4f16_1-MLC', label: 'Light', vramMB: 1629, thinking: true },
-	{ id: 'Qwen3.5-2B-q4f16_1-MLC', label: 'Balanced', vramMB: 2245, thinking: true },
-	{ id: 'Qwen3.5-4B-q4f16_1-MLC', label: 'Advanced', vramMB: 3868, thinking: true },
-	{ id: 'Qwen3-8B-q4f16_1-MLC', label: 'Expert', vramMB: 5696, thinking: true }
+	{
+		id: 'Qwen3-0.6B-q4f16_1-MLC',
+		label: () => m.aiModelTierFastest(),
+		vramMB: 1403,
+		thinking: true
+	},
+	{
+		id: 'Qwen3.5-0.8B-q4f16_1-MLC',
+		label: () => m.aiModelTierLight(),
+		vramMB: 1629,
+		thinking: true
+	},
+	{
+		id: 'Qwen3.5-2B-q4f16_1-MLC',
+		label: () => m.aiModelTierBalanced(),
+		vramMB: 2245,
+		thinking: true
+	},
+	{
+		id: 'Qwen3.5-4B-q4f16_1-MLC',
+		label: () => m.aiModelTierAdvanced(),
+		vramMB: 3868,
+		thinking: true
+	},
+	{ id: 'Qwen3-8B-q4f16_1-MLC', label: () => m.aiModelTierExpert(), vramMB: 5696, thinking: true }
 ] as const;
 
 // Auto-detection order: best quality first, falling back to smaller models.

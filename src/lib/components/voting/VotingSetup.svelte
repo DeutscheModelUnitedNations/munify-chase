@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { VotingMajority } from './votingModal';
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import RollCallVotingChair from './RollCallVotingChair.svelte';
 	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
 	import DeviceBasedVotingChair from './DeviceBasedVotingChair.svelte';
@@ -46,6 +47,35 @@
 	let rollCallModalOpen: boolean = $state(false);
 	let deviceBasedModalOpen: boolean = $state(false);
 
+	function startVote() {
+		if (voteType === 'SHOW_OF_HANDS') {
+			showOfHandModalOpen = true;
+		} else if (voteType === 'ROLL_CALL') {
+			rollCallModalOpen = true;
+		} else {
+			deviceBasedModalOpen = true;
+		}
+	}
+
+	registerCommands(() => [
+		{
+			id: 'voting.start',
+			title: m.startVote,
+			group: 'page',
+			icon: 'box-ballot',
+			visible: () => !activeVotingSession,
+			run: startVote
+		},
+		{
+			id: 'voting.resume',
+			title: m.resumeVote,
+			group: 'page',
+			icon: 'rotate-right',
+			visible: () => !!activeVotingSession,
+			run: openResume
+		}
+	]);
+
 	function openResume() {
 		if (!activeVotingSession) return;
 		const mode = activeVotingSession.mode as 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED';
@@ -65,7 +95,7 @@
 </script>
 
 {#if activeVotingSession}
-	<div class="flex flex-col gap-3">
+	<div class="flex flex-col gap-3" data-tour="voting.resume">
 		<div class="alert alert-warning p-2 text-sm">
 			<i class="fas fa-circle-exclamation"></i>
 			<span>{m.voteInProgress()}</span>
@@ -82,15 +112,8 @@
 		bind:majority
 		bind:withAbstentions
 		bind:deviceVotingWindowSeconds
-		onstart={() => {
-			if (voteType === 'SHOW_OF_HANDS') {
-				showOfHandModalOpen = true;
-			} else if (voteType === 'ROLL_CALL') {
-				rollCallModalOpen = true;
-			} else {
-				deviceBasedModalOpen = true;
-			}
-		}}
+		tourAnchors
+		onstart={startVote}
 	/>
 {/if}
 

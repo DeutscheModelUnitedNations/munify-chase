@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import NsaScannerDrawer from './NsaScannerDrawer.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
@@ -56,15 +57,29 @@
 		});
 	});
 
+	function openScanner() {
+		drawerOpen = true;
+	}
+
+	registerCommands(() => [
+		{
+			id: 'presence.scan-nsa',
+			title: m.scanNsaPerson,
+			group: 'page',
+			icon: 'qrcode',
+			run: openScanner
+		}
+	]);
+
 	function formatSince(ts: string | Date) {
 		const d = ts instanceof Date ? ts : new Date(ts);
 		return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 	}
 </script>
 
-<BasicCard title={m.nsaAttendance()}>
+<BasicCard title={m.nsaAttendance()} data-tour="presence.nsa">
 	<div class="flex flex-col gap-3">
-		<button class="btn btn-primary btn-xl" onclick={() => (drawerOpen = true)}>
+		<button class="btn btn-primary btn-xl" onclick={openScanner}>
 			<i class="fas fa-qrcode mr-2"></i>
 			{m.scanNsaPerson()}
 		</button>

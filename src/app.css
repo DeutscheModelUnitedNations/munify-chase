@@ -5,10 +5,69 @@
 @import '@deutschemodelunitednations/corporate-identity/css/theme/dmun-light';
 @import '@deutschemodelunitednations/corporate-identity/css/theme/dmun-dark';
 
+/* No Vollkorn: serif falls back to the Outfit sans stack */
+:root {
+	--font-family-serif: var(--font-family-sans);
+}
+
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 @plugin '@tailwindcss/typography';
 @plugin 'daisyui/index.js' {
 	themes: false;
+}
+
+/* Landing page entrance: one-shot, DMUN ease-out, no bounce.
+   Stagger with style="--enter-delay: 300ms". */
+@keyframes enter-up {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+}
+
+@keyframes enter-fade {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes enter-draw {
+	from {
+		transform: scaleX(0);
+	}
+}
+
+@keyframes enter-shape {
+	from {
+		opacity: 0;
+		transform: scale(0.88) rotate(-8deg);
+	}
+}
+
+.enter-up {
+	animation: enter-up 700ms cubic-bezier(0, 0, 0.2, 1) var(--enter-delay, 0ms) both;
+}
+
+.enter-fade {
+	animation: enter-fade 500ms cubic-bezier(0, 0, 0.2, 1) var(--enter-delay, 0ms) both;
+}
+
+.enter-draw {
+	transform-origin: left center;
+	animation: enter-draw 600ms cubic-bezier(0.2, 0, 0.2, 1) var(--enter-delay, 0ms) both;
+}
+
+.enter-shape {
+	animation: enter-shape 1100ms cubic-bezier(0, 0, 0.2, 1) var(--enter-delay, 0ms) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.enter-up,
+	.enter-fade,
+	.enter-draw,
+	.enter-shape {
+		animation: none;
+	}
 }
 
 /* TipTap */
@@ -28,4 +87,67 @@
 .toaster > .wrapper > .base > .indicator > .status {
 	height: auto !important;
 	width: auto !important;
+}
+
+/* Guided tours (driver.js), styled with the DaisyUI theme tokens */
+.driver-popover.chase-tour {
+	background-color: var(--color-base-100);
+	color: var(--color-base-content);
+	border-radius: var(--radius-box);
+	font-family: inherit;
+	max-width: 22rem;
+	padding: 1.25rem;
+}
+.driver-popover.chase-tour .driver-popover-title {
+	font-family: inherit;
+	font-size: 1.125rem;
+	font-weight: 700;
+}
+.driver-popover.chase-tour .driver-popover-description {
+	font-family: inherit;
+	font-size: 0.95rem;
+	line-height: 1.5;
+}
+.driver-popover.chase-tour .driver-popover-progress-text {
+	color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+}
+.driver-popover.chase-tour .driver-popover-footer button {
+	background-color: var(--color-base-200);
+	color: var(--color-base-content);
+	border: none;
+	border-radius: var(--radius-field);
+	font: inherit;
+	font-size: 0.875rem;
+	padding: 0.35rem 0.8rem;
+	text-shadow: none;
+}
+.driver-popover.chase-tour .driver-popover-footer .driver-popover-next-btn {
+	background-color: var(--color-primary);
+	color: var(--color-primary-content);
+}
+.driver-popover.chase-tour .driver-popover-close-btn {
+	color: var(--color-base-content);
+}
+.driver-popover.chase-tour .driver-popover-arrow-side-left {
+	border-left-color: var(--color-base-100);
+}
+.driver-popover.chase-tour .driver-popover-arrow-side-right {
+	border-right-color: var(--color-base-100);
+}
+.driver-popover.chase-tour .driver-popover-arrow-side-top {
+	border-top-color: var(--color-base-100);
+}
+.driver-popover.chase-tour .driver-popover-arrow-side-bottom {
+	border-bottom-color: var(--color-base-100);
+}
+
+/* Manual screenshots ship in both themes, show the one matching the app theme */
+.docs-shot-dark {
+	display: none;
+}
+[data-theme='dark'] .docs-shot-dark {
+	display: block;
+}
+[data-theme='dark'] .docs-shot-light {
+	display: none;
 }

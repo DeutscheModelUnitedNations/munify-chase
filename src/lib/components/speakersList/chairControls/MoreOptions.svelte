@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
+	import { client, type SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import Popover from '$lib/components/Popover.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Tabs from '$lib/components/Tabs.svelte';
@@ -9,8 +10,10 @@
 	import Modal from '$lib/components/Modal.svelte';
 	import dayjs from 'dayjs';
 	import { compareSpeakers } from '$lib/helpers/speakerSort';
+	import { listCommandScope } from './listCommands';
 
 	interface Props {
+		type: SpeakerslistcategoryEnum;
 		speakersList?: {
 			id: string;
 			type: string;
@@ -22,7 +25,7 @@
 		} | null;
 	}
 
-	let { speakersList }: Props = $props();
+	let { type, speakersList }: Props = $props();
 
 	let isOpen = $state(false);
 
@@ -131,6 +134,64 @@
 		changeSpeakingTimeModalOpen = false;
 	};
 
+	const openChangeSpeakersNameModal = () => {
+		if (!speakersList?.speakers?.length) return;
+		changeSpeakersNameModalOpen = true;
+		isOpen = false;
+	};
+
+	const openChangeSpeakingTimeModal = () => {
+		changeSpeakingTimeModalOpen = true;
+		isOpen = false;
+	};
+
+	const toggleListClosed = () => openOrCloseList(!speakersList?.isClosed);
+
+	registerCommands(() => {
+		const { idPrefix, context, keywords } = listCommandScope(type);
+		return [
+			{
+				id: `${idPrefix}.toggle-closed`,
+				title: speakersList?.isClosed
+					? m.commandSpeakersListOpenList
+					: m.commandSpeakersListCloseList,
+				context,
+				keywords,
+				group: 'page',
+				icon: speakersList?.isClosed ? 'lock-open' : 'lock',
+				run: toggleListClosed
+			},
+			{
+				id: `${idPrefix}.change-speaker-name`,
+				title: m.changeSpeakersName,
+				context,
+				keywords,
+				group: 'page',
+				icon: 'pencil',
+				enabled: () => !!speakersList?.speakers?.length,
+				run: openChangeSpeakersNameModal
+			},
+			{
+				id: `${idPrefix}.change-speaking-time`,
+				title: m.changeSpeakersTime,
+				context,
+				keywords,
+				group: 'page',
+				icon: 'timer',
+				run: openChangeSpeakingTimeModal
+			},
+			{
+				id: `${idPrefix}.clear-list`,
+				title: m.clearList,
+				context,
+				keywords,
+				group: 'page',
+				icon: 'trash',
+				run: clearList
+			}
+		];
+	});
+
 	$effect(() => {
 		if (speakersList?.speakingTime != null) {
 			changeSpeakingTimeValue = speakersList.speakingTime;
@@ -160,22 +221,12 @@
 			/>
 			<button
 				class={speakersList?.speakers?.length ? 'btn' : 'btn btn-disabled'}
-				onclick={() => {
-					if (!speakersList?.speakers?.length) return;
-					changeSpeakersNameModalOpen = true;
-					isOpen = false;
-				}}
+				onclick={openChangeSpeakersNameModal}
 			>
 				<i class="fas fa-pencil"></i>
 				{m.changeSpeakersName()}
 			</button>
-			<button
-				class="btn"
-				onclick={() => {
-					changeSpeakingTimeModalOpen = true;
-					isOpen = false;
-				}}
-			>
+			<button class="btn" onclick={openChangeSpeakingTimeModal}>
 				<i class="fas fa-timer"></i>
 				{m.changeSpeakersTime()}
 			</button>

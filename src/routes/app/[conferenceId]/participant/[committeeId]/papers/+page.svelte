@@ -15,6 +15,7 @@
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 
 	const conferenceId = $derived(page.params.conferenceId!);
 	const committeeId = $derived(page.params.committeeId!);
@@ -123,6 +124,27 @@
 			redeeming = false;
 		}
 	}
+
+	let codeInput = $state<HTMLInputElement>();
+
+	registerCommands(() => [
+		{
+			id: 'participant.papers.new',
+			title: m.newWorkingPaper,
+			group: 'page',
+			icon: 'plus',
+			enabled: () => !creating && !!committee?.activeAgendaItem,
+			run: createPaper
+		},
+		{
+			id: 'participant.papers.share-code',
+			title: m.enterShareCode,
+			keywords: [m.redeem()],
+			group: 'page',
+			icon: 'ticket',
+			run: () => codeInput?.focus()
+		}
+	]);
 </script>
 
 <div class="flex flex-col gap-4 p-4">
@@ -130,16 +152,18 @@
 	<div class="grid gap-3 sm:grid-cols-2">
 		<button
 			class="btn btn-primary"
+			data-tour="papers.new"
 			disabled={creating || !committee?.activeAgendaItem}
 			onclick={createPaper}
 		>
 			{#if creating}<i class="fas fa-spinner fa-spin"></i>{:else}<i class="fas fa-plus"></i>{/if}
 			{m.newWorkingPaper()}
 		</button>
-		<div class="join">
+		<div class="join" data-tour="papers.redeem">
 			<input
 				class="input input-bordered join-item w-full font-mono uppercase"
 				placeholder={m.enterShareCode()}
+				bind:this={codeInput}
 				bind:value={code}
 			/>
 			<button class="btn join-item" disabled={redeeming || !code.trim()} onclick={redeem}>
@@ -151,7 +175,7 @@
 	</div>
 
 	<!-- My papers -->
-	<section class="flex flex-col gap-2">
+	<section class="flex flex-col gap-2" data-tour="papers.mine">
 		<h2 class="font-bold">{m.myPapers()}</h2>
 		{#if !myPapers.length}
 			<p class="text-base-content/50 text-sm">{m.noPapersYet()}</p>
@@ -160,7 +184,9 @@
 				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
 					<div class="card-body flex-row items-center gap-3 p-3">
 						<div class="flex min-w-0 flex-1 flex-col">
-							<span class="font-medium">{p.title || workingPaperName(p.id)}</span>
+							<span class="font-medium" style="view-transition-name: paper-title-{p.id};"
+								>{p.title || workingPaperName(p.id)}</span
+							>
 							{#if p.creatorCommitteeMember?.representation}
 								{@const rep = p.creatorCommitteeMember.representation}
 								<div class="text-base-content/60 mt-1 flex items-center gap-1 text-sm">
@@ -180,7 +206,7 @@
 	</section>
 
 	<!-- Submitted papers (visible to all committee members) -->
-	<section class="flex flex-col gap-2">
+	<section class="flex flex-col gap-2" data-tour="papers.submitted">
 		<h2 class="font-bold">{m.submittedPapers()}</h2>
 		{#if !submittedPapers.length}
 			<p class="text-base-content/50 text-sm">{m.noSubmittedPapers()}</p>
@@ -189,7 +215,9 @@
 				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
 					<div class="card-body flex-row items-center gap-3 p-3">
 						<div class="flex min-w-0 flex-1 flex-col">
-							<span class="font-medium">{p.title || workingPaperName(p.id)}</span>
+							<span class="font-medium" style="view-transition-name: paper-title-{p.id};"
+								>{p.title || workingPaperName(p.id)}</span
+							>
 							{#if p.creatorCommitteeMember?.representation}
 								{@const rep = p.creatorCommitteeMember.representation}
 								<div class="text-base-content/60 mt-1 flex items-center gap-1 text-sm">
@@ -212,7 +240,7 @@
 	</section>
 
 	<!-- Published draft resolutions -->
-	<section class="flex flex-col gap-2">
+	<section class="flex flex-col gap-2" data-tour="papers.published">
 		<h2 class="font-bold">{m.draftResolutions()}</h2>
 		{#if !published.length}
 			<p class="text-base-content/50 text-sm">{m.noDraftResolutionsYet()}</p>
@@ -221,7 +249,7 @@
 				<a href={paperHref(p.id)} class="card bg-base-100 hover:bg-base-200 transition">
 					<div class="card-body flex-row items-center gap-3 p-3">
 						<div class="flex min-w-0 flex-1 flex-col">
-							<span class="font-medium"
+							<span class="font-medium" style="view-transition-name: paper-title-{p.id};"
 								>{p.documentNumber || p.title || workingPaperName(p.id)}</span
 							>
 							{#if p.creatorCommitteeMember?.representation}

@@ -14,7 +14,7 @@
 	import BellIcon from '$lib/components/toast/BellIcon.svelte';
 	import RequestNotificationToast from '$lib/components/requests/RequestNotificationToast.svelte';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
-	import hotkeys from 'hotkeys-js';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import VotingModal from '$lib/components/voting/VotingModal.svelte';
 	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
 	import { openPresentationWindow } from '$lib/state/presentationWindow.svelte';
@@ -216,20 +216,53 @@
 		return page.route.id?.includes(key) ?? false;
 	}
 
-	// Bound to the current dockItems order (rather than fixed routes) so the ⌥N shown
-	// on each dock icon always matches what alt+N actually navigates to, even though
+	function openPresentation() {
+		openPresentationWindow(
+			resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
+				conferenceId,
+				committeeId
+			}),
+			committeeId
+		);
+	}
+
+	// Shortcuts follow the current dockItems order (rather than fixed routes) so the ⌥N
+	// shown on each dock icon always matches what alt+N actually navigates to, even though
 	// the "requests" and "resolutions" entries are conditionally present.
-	$effect(() => {
-		const keys = dockItems.map((_, i) => `alt+${i + 1}`).join(', ');
-		if (!keys) return;
-		hotkeys(keys, (event, handler) => {
-			event.preventDefault();
-			const index = Number(handler.key.replace('alt+', '')) - 1;
-			const item = dockItems[index];
-			if (item) goto(item.href);
-		});
-		return () => hotkeys.unbind(keys);
-	});
+	registerCommands(() => [
+		...dockItems.map((item, i) => ({
+			id: `navigation.chair.${item.key}`,
+			title: item.label,
+			group: 'navigation' as const,
+			icon: item.icon.replace('fa-', ''),
+			shortcut: `alt+${i + 1}`,
+			visible: () => !isActive(item.key),
+			run: () => goto(item.href)
+		})),
+		{
+			id: 'navigation.chair.active-draft',
+			title: m.activeDraftResolution,
+			group: 'navigation',
+			icon: 'file-pen',
+			visible: () => !!committee?.activeDraftResolutionId && !isLocalConferenceActive(),
+			run: () =>
+				goto(
+					resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
+						conferenceId,
+						committeeId,
+						paperId: committee!.activeDraftResolutionId!
+					})
+				)
+		},
+		{
+			id: 'chair.presentation',
+			title: m.openPresentation,
+			group: 'global',
+			icon: 'presentation-screen',
+			shortcut: 'alt+p',
+			run: openPresentation
+		}
+	]);
 
 	let speakersList = $derived(
 		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'SPEAKERS_LIST')
@@ -349,20 +382,6 @@
 				openRequestToastIds.delete(id);
 			}
 		}
-	});
-
-	$effect(() => {
-		hotkeys('alt+p', (event) => {
-			event.preventDefault();
-			openPresentationWindow(
-				resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
-					conferenceId,
-					committeeId
-				}),
-				committeeId
-			);
-		});
-		return () => hotkeys.unbind('alt+p');
 	});
 </script>
 

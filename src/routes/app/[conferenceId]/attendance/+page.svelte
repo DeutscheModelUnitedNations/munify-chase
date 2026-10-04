@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { page } from '$app/state';
 	import Tabs from '$lib/components/Tabs.svelte';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
@@ -59,6 +60,25 @@
 		{ id: 'BY_NSA', label: m.nsaAttendanceTabByNsa(), faIcon: 'fa-people-group' },
 		{ id: 'HISTORY', label: m.nsaAttendanceTabHistory(), faIcon: 'fa-clock-rotate-left' }
 	];
+
+	const tabTitles: Record<TabId, () => string> = {
+		NOT_CHECKED_IN: m.nsaAttendanceTabNotCheckedIn,
+		BY_COMMITTEE: m.nsaAttendanceTabByCommittee,
+		BY_NSA: m.nsaAttendanceTabByNsa,
+		HISTORY: m.nsaAttendanceTabHistory
+	};
+
+	registerCommands(() =>
+		tabs.map((tab) => ({
+			id: `attendance.tab.${tab.id}`,
+			title: m.commandShowTab,
+			context: tabTitles[tab.id],
+			group: 'page' as const,
+			icon: tab.faIcon.replace('fa-', ''),
+			visible: () => allowed && activeTab !== tab.id,
+			run: () => (activeTab = tab.id)
+		}))
+	);
 
 	let menubarItems = $derived(
 		buildConferenceNavItems({

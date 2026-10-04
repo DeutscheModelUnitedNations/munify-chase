@@ -16,7 +16,7 @@ MUNify CHASE (CHAiring SoftwarE) is a conference management application for Mode
 # Development
 bun run dev              # Start dev server + Docker containers + seed-schema compile (concurrently)
 bun run dev:server       # Dev server only, in a crash-restart loop (requires running containers)
-bun run dev:docker       # Docker containers only (dev.docker-compose.yml: postgres + mock OIDC)
+bun run dev:docker       # Docker containers only (dev.docker-compose.yml: postgres)
 
 # Code Quality
 bun run lint             # ESLint
@@ -86,6 +86,19 @@ bun run preview          # Preview production build
 - **`app/[conferenceId]/`**: Protected conference routes — committee overview, `[committeeId]`, attendance, mission-control, participant
 - **`api/graphql/`**: Yoga GraphQL endpoint (also exports OPTIONS); **`api/keepalive/`**, **`api/schemas/import/`**
 
+### User manual and guided tours
+
+- **`docs/{en,de,pt}/`**: the user manual as markdown, served in-app at `/docs` (`src/routes/(pages)/docs/`). Sidebar order lives in `src/lib/docs/nav.ts`, page titles in each file's frontmatter.
+- **Screenshots** are generated, never taken by hand: reference them as `![alt](shot:chair/speakers-list)` and list each id in `scripts/docs-screenshots/shots.ts` (route, role, steps). `bun run docs:screenshots [id-prefix]` resets a separate `chase_docs` database, stages it (`stage.ts`), starts a dev server and captures every shot in en/de/pt and light/dark into `static/docs-assets/screenshots/` (stop your own dev server first). The `Docs screenshots` workflow reruns it on main and opens a PR.
+- **Live demos**: a `:::live chair/speakers-list` line embeds the real page from the offline demo conference (ids in `src/lib/docs/live.ts`).
+- **Tours**: driver.js tours defined in `*.tour.ts` next to the feature they explain, anchored on `data-tour="..."` attributes. `src/lib/tours/routeHelp.ts` maps each route to its manual page and tour, shown by the help button in the navbar.
+- **Commands and shortcuts** (`src/lib/commands/`): every action a user can trigger by keyboard is a command, listed in the command palette (Ctrl/⌘+K or `/`) and bound to its shortcut by the registry. Components call `registerCommands(() => [...])` during init, commands disappear when the component unmounts, so the palette always matches the current page.
+  - `run` must call the same handler the button's `onclick` uses, so confirmation dialogs and side effects are identical. Never reimplement an action for the palette.
+  - Put a command's shortcut in `shortcut` and do not bind the same key with `hotkeys()` elsewhere. Keys that only work inside an open dialog (vote counting, roll call) stay local to that dialog.
+  - Hide unavailable commands with `visible`, disable them with `enabled` (like a disabled button) instead of leaving them out conditionally. Titles are Paraglide messages so they can also be searched in English.
+- When changing a feature's UI, update its manual page in all three locales, keep the `data-tour` anchors and rerun the affected screenshots. `src/lib/docs/docs.test.ts` and `src/lib/tours/anchors.test.ts` fail on missing translations, broken links, missing or unused screenshots, unknown live demos and orphaned anchors.
+- Manual prose: concise, no semicolons or em dashes.
+
 ### Key Generated Files (do not edit manually)
 
 - `schema.graphql` - Generated GraphQL schema
@@ -113,7 +126,7 @@ bun run preview          # Preview production build
 
 ## Authentication
 
-OIDC-only authentication (no built-in auth). Local development uses a mock OIDC server (`dev.docker-compose.yml`, `ghcr.io/navikt/mock-oauth2-server`). Configure via:
+OIDC-only authentication (no built-in auth). Local development uses [oidc-mock](https://github.com/strehk/oidc-mock), which runs inside `vite dev` via the `oidcMock()` plugin in `vite.config.ts`; mock users and their claims live in `oidc-mock.yaml` (edits apply live). Configure via:
 
 - `PUBLIC_OIDC_AUTHORITY`: OIDC discovery URL (full `/.well-known/openid-configuration`)
 - `PUBLIC_OIDC_CLIENT_ID`: Application client ID
@@ -143,7 +156,7 @@ bun run dev              # Start everything
 ```
 
 Database: `localhost:5432` (postgres/postgres)
-Mock OIDC: `localhost:8080`
+Mock OIDC: login page at `localhost:5173/oidc/authorize`, back channel at `127.0.0.1:8090/oidc` (started by `vite dev`)
 
 You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
 

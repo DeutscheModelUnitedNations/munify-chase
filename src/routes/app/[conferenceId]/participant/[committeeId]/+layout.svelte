@@ -12,6 +12,8 @@
 		roleLabelFor
 	} from '$lib/components/navbar/conferenceNavItems';
 	import type { Snippet } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 
 	let { children }: { children: Snippet } = $props();
 
@@ -64,6 +66,57 @@
 			title: true
 		}
 	});
+
+	const committeeHref = $derived(
+		resolve('/app/[conferenceId]/participant/[committeeId]', {
+			conferenceId: page.params.conferenceId!,
+			committeeId: page.params.committeeId!
+		})
+	);
+	const papersHref = $derived(
+		resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
+			conferenceId: page.params.conferenceId!,
+			committeeId: page.params.committeeId!
+		})
+	);
+
+	// The bottom dock, also reachable from the command palette
+	registerCommands(() => [
+		{
+			id: 'navigation.participant.committee',
+			title: m.committee,
+			group: 'navigation',
+			icon: 'users',
+			visible: () => page.url.pathname.includes('/papers'),
+			run: () => goto(committeeHref)
+		},
+		{
+			id: 'navigation.participant.papers',
+			title: m.resolutions,
+			group: 'navigation',
+			icon: 'file-lines',
+			visible: () => !isLocalConferenceActive() && !page.url.pathname.endsWith('/papers'),
+			run: () => goto(papersHref)
+		},
+		{
+			id: 'navigation.participant.active-draft',
+			title: m.activeDraftResolution,
+			group: 'navigation',
+			icon: 'file-pen',
+			visible: () =>
+				!isLocalConferenceActive() &&
+				!!committee?.activeDraftResolutionId &&
+				!page.url.pathname.includes(committee.activeDraftResolutionId),
+			run: () =>
+				goto(
+					resolve('/app/[conferenceId]/participant/[committeeId]/papers/[paperId]', {
+						conferenceId: page.params.conferenceId!,
+						committeeId: page.params.committeeId!,
+						paperId: committee!.activeDraftResolutionId!
+					})
+				)
+		}
+	]);
 </script>
 
 {#if committee}
@@ -82,7 +135,12 @@
 				</a>
 			</div>
 		{/if}
-		<h1 class="ml-2 flex-1 text-lg font-bold">{committee.abbreviation} — {committee.name}</h1>
+		<h1 class="ml-2 flex-1 text-lg font-bold">
+			<span style="view-transition-name: committee-abbr-{committee.id};"
+				>{committee.abbreviation}</span
+			>
+			— {committee.name}
+		</h1>
 		<div class="flex-none">
 			<NavbarBurgerMenu
 				items={menubarItems}

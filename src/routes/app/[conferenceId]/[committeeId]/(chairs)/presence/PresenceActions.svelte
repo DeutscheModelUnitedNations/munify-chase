@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import toast from 'svelte-french-toast';
 
@@ -20,6 +21,23 @@
 			promiseToastStrings(m.presence(), 'update')
 		);
 	};
+
+	registerCommands(() => [
+		{
+			id: 'presence.all-present',
+			title: m.setAllPresent,
+			group: 'page',
+			icon: 'person-to-portal',
+			run: () => setAllPresence(true)
+		},
+		{
+			id: 'presence.all-absent',
+			title: m.setAllAbsent,
+			group: 'page',
+			icon: 'person-from-portal',
+			run: () => setAllPresence(false)
+		}
+	]);
 </script>
 
 <button class="btn btn-success btn-soft" onclick={() => setAllPresence(true)}>

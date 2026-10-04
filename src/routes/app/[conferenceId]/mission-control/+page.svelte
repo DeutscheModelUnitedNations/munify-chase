@@ -111,10 +111,21 @@
 	});
 
 	// Aggregate conference-wide "pulse" stats — not a live-subscribed field,
-	// so we poll it on the same cadence as the insight-tile rotation.
+	// so we poll it on the same cadence as the insight-tile rotation. A
+	// failure here (e.g. a stats materialized view migration not applied)
+	// must not leave `pulse` silently stuck at null forever with nothing in
+	// the UI to explain why most tiles are missing — log it so it's at least
+	// diagnosable, and keep the last successful value rather than clearing it.
 	let pulse = $state<InsightPulse | null>(null);
 	async function refreshPulse() {
-		pulse = (await client.query.missionControlPulse({
+		try {
+			pulse = await fetchPulse();
+		} catch (error) {
+			console.error('Failed to refresh mission control pulse', error);
+		}
+	}
+	async function fetchPulse() {
+		return (await client.query.missionControlPulse({
 			__args: { conferenceId: page.params.conferenceId! },
 			heartbeat: {
 				speechesToday: true,

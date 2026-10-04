@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 24" width="840" height="24" role="img"><defs><linearGradient id="dvl" x1="0%" y1="0%" x2="100%" y2="0%">
+    <stop offset="0%" stop-color="#2a6ac4" stop-opacity="0"/>
+    <stop offset="35%" stop-color="#2a6ac4" stop-opacity="0.55"/>
+    <stop offset="50%" stop-color="#a8701a" stop-opacity="0.85"/>
+    <stop offset="65%" stop-color="#2a6ac4" stop-opacity="0.55"/>
+    <stop offset="100%" stop-color="#2a6ac4" stop-opacity="0"/>
+    <animate attributeName="x1" values="-40%;0%;-40%" dur="8s" repeatCount="indefinite"/>
+    <animate attributeName="x2" values="100%;140%;100%" dur="8s" repeatCount="indefinite"/>
+  </linearGradient></defs><rect x="0" y="11" width="840" height="1.5" fill="url(#dvl)"/><path d="M420 6 L425 12 L420 18 L415 12 Z" fill="#a8701a" opacity="0.9"><animate attributeName="opacity" values="0.9;0.3;0.9" dur="4s" repeatCount="indefinite"/></path></svg>

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 250" width="840" height="250" role="img">
+  <defs>
+    <linearGradient id="bgd" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060c16"/>
+      <stop offset="55%" stop-color="#0d1830"/>
+      <stop offset="100%" stop-color="#101d38"/>
+    </linearGradient>
+    <pattern id="gridd" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#3c7dd2" stroke-opacity="0.07" stroke-width="1"/>
+    </pattern>
+    <filter id="glowd" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="46"/>
+    </filter>
+    <filter id="softd" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#1e3050" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="faded" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3c7dd2" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#3c7dd2" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#3c7dd2" stop-opacity="0"/>
+    </linearGradient>
+  </defs><rect width="840" height="250" rx="0" fill="url(#bgd)"/><rect width="840" height="250" rx="0" fill="url(#gridd)"/><ellipse cx="420" cy="140" rx="300" ry="120" fill="#3c7dd2" opacity="0.09" filter="url(#glowd)"/><text x="420" y="46" text-anchor="middle" font-family="Georgia,'Iowan Old Style','Times New Roman',serif" font-size="24" font-style="italic" fill="#e9eff9">Built for the room, not the router.</text>
+  <text x="420" y="70" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="12.5" fill="#7288ab">Every mutation is applied optimistically, cached in IndexedDB and replayed when the link returns.</text><g filter="url(#softd)"><rect x="48" y="104" width="214" height="92" rx="13"
+      fill="#101c33" fill-opacity="0.9" stroke="#22365a"/></g>
+    <text x="68" y="134" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#e9eff9">Delegate device</text>
+    <text x="68" y="156" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10.5" fill="#7288ab">urql + graphcache</text>
+    <rect x="68" y="168" width="60" height="3" rx="1.5" fill="#3c7dd2" opacity="0.75"/><g filter="url(#softd)"><rect x="578" y="104" width="214" height="92" rx="13"
+      fill="#101c33" fill-opacity="0.9" stroke="#22365a"/></g>
+    <text x="598" y="134" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="14" font-weight="600" fill="#e9eff9">CHASE server</text>
+    <text x="598" y="156" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10.5" fill="#7288ab">Yoga · graphql-ws</text>
+    <rect x="598" y="168" width="60" height="3" rx="1.5" fill="#3c7dd2" opacity="0.75"/><g filter="url(#softd)"><rect x="316" y="112" width="208" height="76" rx="13"
+    fill="#16253f" fill-opacity="0.9" stroke="#2c4570"/></g>
+  <text x="420" y="140" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="13" font-weight="600" fill="#e9eff9">Queued changes</text>
+  <text x="420" y="162" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10.5" fill="#7288ab">IndexedDB · cross-tab sync</text><line x1="262" y1="150" x2="316" y2="150" stroke="#3c7dd2" stroke-width="1.6" opacity="0.7"/><circle cx="262" cy="150" r="3" fill="#3c7dd2">
+      <animate attributeName="cx" values="262;316" dur="2.2s" begin="0.0s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur="2.2s" begin="0.0s" repeatCount="indefinite"/></circle><circle cx="262" cy="150" r="3" fill="#3c7dd2">
+      <animate attributeName="cx" values="262;316" dur="2.2s" begin="1.1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur="2.2s" begin="1.1s" repeatCount="indefinite"/></circle><line x1="524" y1="150" x2="578" y2="150" stroke="#e3675c" stroke-width="1.6" stroke-dasharray="4 4" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.8;0;0;0.8" keyTimes="0;0.6;0.66;0.96;1" dur="10s" repeatCount="indefinite"/></line>
+  <line x1="524" y1="150" x2="578" y2="150" stroke="#39cb92" stroke-width="1.8" opacity="0">
+    <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.6;0.66;0.96;1" dur="10s" repeatCount="indefinite"/></line>
+  <circle cx="524" cy="150" r="3" fill="#39cb92" opacity="0">
+    <animate attributeName="cx" values="524;524;578;524;578;524;578" keyTimes="0;0.62;0.7;0.7;0.78;0.78;0.86" dur="10s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0;1;0;1;0;1;0" keyTimes="0;0.62;0.64;0.7;0.72;0.78;0.8;0.86" dur="10s" repeatCount="indefinite"/></circle><g>
+    <rect x="330" y="206" width="180" height="26" rx="13" fill="#e3675c" fill-opacity="0.14" stroke="#e3675c" stroke-opacity="0.5">
+      <animate attributeName="opacity" values="1;1;0;0;1" keyTimes="0;0.6;0.63;0.97;1" dur="10s" repeatCount="indefinite"/></rect>
+    <text x="420" y="223" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" letter-spacing="2" fill="#e3675c">OFFLINE · 12 QUEUED
+      <animate attributeName="opacity" values="1;1;0;0;1" keyTimes="0;0.6;0.63;0.97;1" dur="10s" repeatCount="indefinite"/></text>
+    <rect x="330" y="206" width="180" height="26" rx="13" fill="#39cb92" fill-opacity="0.14" stroke="#39cb92" stroke-opacity="0.5" opacity="0">
+      <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.63;0.67;0.96;1" dur="10s" repeatCount="indefinite"/></rect>
+    <text x="420" y="223" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" letter-spacing="2" fill="#39cb92" opacity="0">SYNCED · 0 QUEUED
+      <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.63;0.67;0.96;1" dur="10s" repeatCount="indefinite"/></text>
+  </g></svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 300" width="840" height="300" role="img">
+  <defs>
+    <linearGradient id="bgl" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#eaf1fb"/>
+      <stop offset="100%" stop-color="#e1ebf9"/>
+    </linearGradient>
+    <pattern id="gridl" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#2a6ac4" stroke-opacity="0.10" stroke-width="1"/>
+    </pattern>
+    <filter id="glowl" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="46"/>
+    </filter>
+    <filter id="softl" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#1e3050" flood-opacity="0.14"/>
+    </filter>
+    <linearGradient id="fadel" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2a6ac4" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#2a6ac4" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#2a6ac4" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <defs>
+    <linearGradient id="wordl" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2a6ac4"/>
+      <stop offset="50%" stop-color="#1e3050"/>
+      <stop offset="100%" stop-color="#2a6ac4"/>
+      <animate attributeName="x1" values="-90%;10%;-90%" dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="10%;110%;10%" dur="7s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="timerl" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a8701a"/>
+      <stop offset="100%" stop-color="#c1382c"/>
+    </linearGradient>
+  </defs><rect width="840" height="300" rx="0" fill="url(#bgl)"/><rect width="840" height="300" rx="0" fill="url(#gridl)"/><ellipse cx="120" cy="40" rx="150" ry="120" fill="#2a6ac4" opacity="0.16" filter="url(#glowl)">
+    <animate attributeName="cx" values="120;190;120" dur="14s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.16;0.09;0.16" dur="14s" repeatCount="indefinite"/></ellipse>
+  <ellipse cx="740" cy="250" rx="140" ry="120" fill="#a8701a" opacity="0.11" filter="url(#glowl)">
+    <animate attributeName="cy" values="250;190;250" dur="17s" repeatCount="indefinite"/></ellipse><text x="48" y="58" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" letter-spacing="3.4"
+    fill="#68809f">DEUTSCHE MODEL UNITED NATIONS e.V.  ·  MUNIFY</text><text x="48" y="122" font-family="Georgia,'Iowan Old Style','Times New Roman',serif" font-size="58" letter-spacing="-1">
+    <tspan fill="#40567a" font-weight="400">MUNify </tspan><tspan fill="url(#wordl)" font-weight="700">CHASE</tspan></text><text x="50" y="156" font-family="Georgia,'Iowan Old Style','Times New Roman',serif" font-size="21" font-style="italic" fill="#121f33">MUN in the 21st century.</text>
+  <text x="50" y="181" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="13" fill="#68809f">Free, open-source debate management for Model United Nations conferences.</text><g filter="url(#softl)"><rect x="48" y="202" width="744" height="66" rx="12"
+    fill="#ffffff" fill-opacity="1" stroke="#cdddf2"/></g>
+  <rect x="48" y="202" width="4" height="66" rx="2" fill="#a8701a"/><circle cx="74" cy="226" r="4" fill="#a8701a">
+    <animate attributeName="opacity" values="1;0.25;1" dur="1.6s" repeatCount="indefinite"/></circle>
+  <circle cx="74" cy="226" r="4" fill="none" stroke="#a8701a" stroke-width="1.2">
+    <animate attributeName="r" values="4;11;4" dur="2.6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0;0.6" dur="2.6s" repeatCount="indefinite"/></circle>
+  <text x="88" y="230" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="9.5" letter-spacing="2.2" fill="#a8701a">ON THE FLOOR</text>
+  <text x="70" y="256" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="17" font-weight="600" fill="#121f33">Germany</text><line x1="250" y1="216" x2="250" y2="254" stroke="#b6cdea"/><text x="270" y="230" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="9.5" letter-spacing="2.2" fill="#68809f">UP NEXT</text><g><rect x="270" y="240" width="70" height="22" rx="11" fill="#f4f8fe" stroke="#b6cdea">
+    <animate attributeName="stroke" values="#b6cdea;#2a6ac4;#b6cdea" dur="5s" begin="0.0s" repeatCount="indefinite"/></rect>
+  <text x="305" y="255" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" fill="#40567a">France</text></g><g><rect x="348" y="240" width="70" height="22" rx="11" fill="#f4f8fe" stroke="#b6cdea">
+    <animate attributeName="stroke" values="#b6cdea;#2a6ac4;#b6cdea" dur="5s" begin="0.45s" repeatCount="indefinite"/></rect>
+  <text x="383" y="255" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" fill="#40567a">Brazil</text></g><g><rect x="426" y="240" width="70" height="22" rx="11" fill="#f4f8fe" stroke="#b6cdea">
+    <animate attributeName="stroke" values="#b6cdea;#2a6ac4;#b6cdea" dur="5s" begin="0.9s" repeatCount="indefinite"/></rect>
+  <text x="461" y="255" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" fill="#40567a">Kenya</text></g><text x="510" y="256" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="11" fill="#68809f">+ 12</text><text x="772" y="232" text-anchor="end" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="21" font-weight="600" fill="#a8701a">01:42</text>
+  <rect x="592" y="246" width="180" height="5" rx="2.5" fill="#b6cdea"/>
+  <rect x="592" y="246" width="180" height="5" rx="2.5" fill="url(#timerl)">
+    <animate attributeName="width" values="180;0;180" keyTimes="0;0.92;1" dur="9s" repeatCount="indefinite"/></rect>
+  <text x="592" y="270" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="8.5" letter-spacing="1.8" fill="#68809f">SPEAKING TIME</text></svg>

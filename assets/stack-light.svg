@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 280" width="840" height="280" role="img">
+  <defs>
+    <linearGradient id="bgl" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#eaf1fb"/>
+      <stop offset="100%" stop-color="#e1ebf9"/>
+    </linearGradient>
+    <pattern id="gridl" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#2a6ac4" stroke-opacity="0.10" stroke-width="1"/>
+    </pattern>
+    <filter id="glowl" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="46"/>
+    </filter>
+    <filter id="softl" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#1e3050" flood-opacity="0.14"/>
+    </filter>
+    <linearGradient id="fadel" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2a6ac4" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#2a6ac4" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#2a6ac4" stop-opacity="0"/>
+    </linearGradient>
+  </defs><rect width="840" height="280" rx="0" fill="url(#bgl)"/><rect width="840" height="280" rx="0" fill="url(#gridl)"/><ellipse cx="420" cy="150" rx="320" ry="130" fill="#2a6ac4" opacity="0.06" filter="url(#glowl)"/><text x="420" y="44" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" letter-spacing="3.4" fill="#68809f">ONE TYPE-SAFE PIPELINE, SCHEMA TO SCREEN</text><g filter="url(#softl)"><rect x="31" y="74" width="172" height="108" rx="13"
+      fill="#ffffff" fill-opacity="1" stroke="#cdddf2"/></g>
+    <rect x="31" y="74" width="172" height="3.5" rx="1.75" fill="#1e3050"/>
+    <text x="117.0" y="112" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#121f33">Svelte 5</text>
+    <text x="117.0" y="138" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" fill="#40567a">runes · Tailwind v4</text>
+    <text x="117.0" y="156" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" fill="#68809f">DaisyUI · Paraglide</text><line x1="203" y1="128.0" x2="233" y2="128.0" stroke="#b6cdea" stroke-width="1.6"/><circle cx="203" cy="128.0" r="3.2" fill="#1e3050">
+      <animate attributeName="cx" values="203;233" dur="2.6s" begin="0.0s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="2.6s" begin="0.0s" repeatCount="indefinite"/></circle><g filter="url(#softl)"><rect x="233" y="74" width="172" height="108" rx="13"
+      fill="#ffffff" fill-opacity="1" stroke="#cdddf2"/></g>
+    <rect x="233" y="74" width="172" height="3.5" rx="1.75" fill="#2a6ac4"/>
+    <text x="319.0" y="112" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#121f33">urql</text>
+    <text x="319.0" y="138" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" fill="#40567a">offline graphcache</text>
+    <text x="319.0" y="156" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" fill="#68809f">graphql-ws live</text><line x1="405" y1="128.0" x2="435" y2="128.0" stroke="#b6cdea" stroke-width="1.6"/><circle cx="405" cy="128.0" r="3.2" fill="#1e3050">
+      <animate attributeName="cx" values="405;435" dur="2.6s" begin="0.55s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="2.6s" begin="0.55s" repeatCount="indefinite"/></circle><g filter="url(#softl)"><rect x="435" y="74" width="172" height="108" rx="13"
+      fill="#ffffff" fill-opacity="1" stroke="#cdddf2"/></g>
+    <rect x="435" y="74" width="172" height="3.5" rx="1.75" fill="#a8701a"/>
+    <text x="521.0" y="112" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#121f33">Rumble</text>
+    <text x="521.0" y="138" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" fill="#40567a">Pothos schema +</text>
+    <text x="521.0" y="156" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" fill="#68809f">ability guards</text><line x1="607" y1="128.0" x2="637" y2="128.0" stroke="#b6cdea" stroke-width="1.6"/><circle cx="607" cy="128.0" r="3.2" fill="#1e3050">
+      <animate attributeName="cx" values="607;637" dur="2.6s" begin="1.1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;1;0" dur="2.6s" begin="1.1s" repeatCount="indefinite"/></circle><g filter="url(#softl)"><rect x="637" y="74" width="172" height="108" rx="13"
+      fill="#ffffff" fill-opacity="1" stroke="#cdddf2"/></g>
+    <rect x="637" y="74" width="172" height="3.5" rx="1.75" fill="#0f8a5f"/>
+    <text x="723.0" y="112" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="600" fill="#121f33">Drizzle</text>
+    <text x="723.0" y="138" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" fill="#40567a">PostgreSQL</text>
+    <text x="723.0" y="156" text-anchor="middle" font-family="'SF Mono','DejaVu Sans Mono',Consolas,'Courier New',monospace" font-size="10" fill="#68809f">typed migrations</text><rect x="127" y="216" width="33" height="24" rx="12" fill="#f4f8fe" fill-opacity="1" stroke="#cdddf2"/>
+    <text x="143" y="232" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" fill="#40567a">Bun</text><rect x="170" y="216" width="72" height="24" rx="12" fill="#f4f8fe" fill-opacity="1" stroke="#cdddf2"/>
+    <text x="206" y="232" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" fill="#40567a">SvelteKit</text><rect x="252" y="216" width="92" height="24" rx="12" fill="#f4f8fe" fill-opacity="1" stroke="#cdddf2"/>
+    <text x="298" y="232" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" fill="#40567a">Node adapter</text><rect x="354" y="216" width="99" height="24" rx="12" fill="#f4f8fe" fill-opacity="1" stroke="#cdddf2"/>
+    <text x="404" y="232" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" fill="#40567a">Redis pub/sub</text><rect x="463" y="216" width="39" height="24" rx="12" fill="#f4f8fe" fill-opacity="1" stroke="#cdddf2"/>
+    <text x="483" y="232" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" fill="#40567a">OIDC</text><rect x="512" y="216" width="99" height="24" rx="12" fill="#f4f8fe" fill-opacity="1" stroke="#cdddf2"/>
+    <text x="562" y="232" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" fill="#40567a">Tauri desktop</text><rect x="621" y="216" width="92" height="24" rx="12" fill="#f4f8fe" fill-opacity="1" stroke="#cdddf2"/>
+    <text x="667" y="232" text-anchor="middle" font-family="'Segoe UI',Helvetica,Arial,sans-serif" font-size="11" fill="#40567a">de · en · pt</text></svg>

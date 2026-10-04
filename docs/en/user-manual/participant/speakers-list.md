@@ -40,7 +40,7 @@ You can't add yourself if:
 Once you're on a list, your card shows either:
 
 - **You're up!**: it's your turn to speak right now.
-- **You are #N on the list**: how many places are ahead of you, so #1 means you're next. It updates live as speeches happen.
+- **You are #N on the list**: your place in the queue, so #1 means you're next. It updates live as speeches happen.
 
 You can leave at any time with **Remove from list**, even after the chair has closed the list.
 

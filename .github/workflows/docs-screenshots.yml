@@ -44,8 +44,13 @@ jobs:
       - run: bunx svelte-kit sync
       - run: bunx playwright install --with-deps chromium
       - run: bun run docs:screenshots
+      # PRs opened with the default GITHUB_TOKEN don't trigger other workflows, so the
+      # required checks never run on them. Set a DOCS_SCREENSHOTS_TOKEN secret (a PAT or
+      # app token with contents and pull-requests write) to get them. The repo also needs
+      # "Allow GitHub Actions to create and approve pull requests" enabled.
       - uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.DOCS_SCREENSHOTS_TOKEN || github.token }}
           branch: docs/screenshots
           add-paths: static/docs-assets/screenshots
           commit-message: 'docs: regenerate manual screenshots'

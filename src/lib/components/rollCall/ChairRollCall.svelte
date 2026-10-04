@@ -91,6 +91,10 @@
 			.catch(() => {});
 	};
 
+	// Leave the rollCall scope when the component unmounts mid roll call (e.g. the chair
+	// navigates away), otherwise every 'all' shortcut stays dead until a reload
+	$effect(() => () => hotkeys.deleteScope('rollCall'));
+
 	$effect(() => {
 		if (active) {
 			(document.activeElement as HTMLElement | null)?.blur();

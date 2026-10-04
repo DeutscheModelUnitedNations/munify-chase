@@ -40,7 +40,7 @@ Du kannst dich nicht selbst eintragen, wenn:
 Stehst du auf einer Liste, zeigt deine Karte entweder:
 
 - **Du bist dran!**: Du sprichst jetzt.
-- **Du bist #N auf der Liste**: wie viele Plätze vor dir liegen. #1 heißt also, du bist als Nächstes dran. Die Anzeige aktualisiert sich live, während Reden stattfinden.
+- **Du bist #N auf der Liste**: dein Platz in der Warteschlange. #1 heißt also, du bist als Nächstes dran. Die Anzeige aktualisiert sich live, während Reden stattfinden.
 
 Mit **Von der Liste entfernen** kannst du dich jederzeit wieder austragen, auch wenn der Vorsitz die Liste schon geschlossen hat.
 

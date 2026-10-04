@@ -40,7 +40,7 @@ Não se pode inscrever se:
 Depois de entrar numa lista, o seu cartão mostra uma de duas coisas:
 
 - **É a sua vez!**: é a sua vez de falar agora mesmo.
-- **Você é o N.º na lista**: quantos lugares tem à sua frente, por isso 1.º significa que é o próximo. Atualiza-se em tempo real à medida que os discursos acontecem.
+- **Você é o N.º na lista**: o seu lugar na fila, por isso 1.º significa que é o próximo. Atualiza-se em tempo real à medida que os discursos acontecem.
 
 Pode sair a qualquer momento com **Remover da lista**, mesmo depois de a presidência ter fechado a lista.
 

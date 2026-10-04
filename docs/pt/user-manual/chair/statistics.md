@@ -8,9 +8,9 @@ description: Gráficos e classificações de toda a conferência
 
 A página **Estatísticas** (menu do avatar) mostra números de toda a conferência que abrangem toda a gente. As estatísticas pessoais só aparecem para delegados e ANE (consulte a página do participante [As suas estatísticas](../participant/statistics)), por isso, como presidência, vê a secção da conferência:
 
-- **Atividade de Fala na Conferência**: o tempo de fala ao longo do tempo.
+- **Conference Speaking Activity** (Atividade de Fala na Conferência): o tempo de fala ao longo do tempo.
 - **Classificação de Tempo de Fala**: alterna entre discursos e Pontos de Informação.
-- **Atividade dos Atores Não Estatais**: a classificação dos ANE.
+- **Non-State Actor Activity** (Atividade dos Atores Não Estatais): a classificação dos ANE.
 - **Tempo de Fala por Região**.
 - **Equidade na Distribuição de Fala**: o coeficiente de Gini, uma métrica de equidade que mede quão uniformemente o tempo de fala está distribuído pelas delegações (uma forma comum de quantificar a desigualdade, vinda da economia).
 - **Atividade dos Comités**.

@@ -7,7 +7,6 @@
 	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { commandPalette, PALETTE_SHORTCUT } from '$lib/commands/palette.svelte';
 	import { routeHelp } from './routeHelp';
-	import { startTour } from './runTour';
 
 	const help = $derived(page.route.id ? routeHelp[page.route.id] : undefined);
 	const manualHref = $derived(resolve('/(pages)/docs/[...slug]', { slug: help?.docs ?? '' }));
@@ -16,7 +15,9 @@
 		if (!help?.tour) return;
 		// Close the dropdown so it doesn't sit on top of the first highlighted element
 		(document.activeElement as HTMLElement | null)?.blur();
-		startTour(await help.tour());
+		// driver.js and its styles load only when a tour actually starts
+		const [{ startTour }, tour] = await Promise.all([import('./runTour'), help.tour()]);
+		startTour(tour);
 	}
 
 	function openCommands() {

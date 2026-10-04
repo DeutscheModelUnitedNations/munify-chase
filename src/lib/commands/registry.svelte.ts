@@ -55,9 +55,15 @@ export function bindCommandShortcuts() {
 		const shortcuts = shortcutKeys ? shortcutKeys.split('\n') : [];
 		const handlers = untrack(() => shortcuts).map((shortcut) => {
 			const handler = (event: KeyboardEvent) => {
+				// Hidden commands still own their key, so the browser default (e.g. Alt+N
+				// switching tabs) stays suppressed on the page the shortcut would open
+				const owned = [...sources.values()].some((source) =>
+					source().some((command) => command.shortcut === shortcut)
+				);
+				if (!owned) return;
+				event.preventDefault();
 				const matching = getCommands().filter((command) => command.shortcut === shortcut);
 				if (matching.length === 0) return;
-				event.preventDefault();
 				if (dev && matching.length > 1) {
 					console.warn(
 						`Shortcut ${shortcut} is used by several commands:`,
@@ -72,7 +78,9 @@ export function bindCommandShortcuts() {
 		});
 
 		return () => {
-			for (const [shortcut, handler] of handlers) hotkeys.unbind(shortcut, handler);
+			// Name the scope, otherwise hotkeys-js only unbinds from the current one (e.g.
+			// rollCall) and the handlers bound in 'all' pile up
+			for (const [shortcut, handler] of handlers) hotkeys.unbind(shortcut, 'all', handler);
 		};
 	});
 }

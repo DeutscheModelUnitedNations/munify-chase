@@ -1,0 +1,18 @@
+{
+	"$schema": "./node_modules/fallow/schema.json",
+	// Generated output — mirrors the ignores in eslint.config.js and .prettierignore.
+	"ignorePatterns": [
+		"src/lib/paraglide/**",
+		"src/lib/api/rumbleClient/**",
+		"src/api/db/seed-data/schema.d.ts",
+		"drizzle/**"
+	],
+	"rules": {
+		// The SvelteKit/Vite build bundles all app code, so frontend packages belong in
+		// devDependencies on purpose. Only what `node server.js` still requires at runtime
+		// is a real dependency (see the --production install in the Dockerfile), which makes
+		// these two rules pure false positives for this repo.
+		"dev-dependencies-in-production": "off",
+		"test-only-dependencies": "off"
+	}
+}

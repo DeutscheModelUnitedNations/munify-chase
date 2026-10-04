@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
+	import { client, type SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { nanoid } from '$lib/helpers/nanoid';
 	import Combobox from '$lib/components/Combobox.svelte';
 	import Flag from '$lib/components/Flag.svelte';
@@ -8,8 +9,8 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import Fuse, { type IFuseOptions } from 'fuse.js';
-	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
+	import { listCommandScope } from './listCommands';
 
 	type MemberLike = {
 		id: string;
@@ -33,12 +34,13 @@
 	};
 
 	interface Props {
+		type: SpeakerslistcategoryEnum;
 		speakersList?: SpeakersListLike | null;
 		committeeMembers: MemberLike[];
 		conferenceMembers: MemberLike[];
 	}
 
-	let { speakersList, committeeMembers, conferenceMembers }: Props = $props();
+	let { type, speakersList, committeeMembers, conferenceMembers }: Props = $props();
 
 	type Member = MergeWithUndefined<
 		NonNullable<typeof committeeMembers>[number],
@@ -121,24 +123,27 @@
 		value = '';
 	};
 
-	$effect(() => {
-		if (!focused) {
-			hotkeys('alt+a, alt+shift+a', (event, handler) => {
-				event.preventDefault();
-				switch (handler.key) {
-					case 'alt+a':
-						if (speakersList?.type === 'SPEAKERS_LIST') {
-							focused = true;
-						}
-						break;
-					case 'alt+shift+a':
-						if (speakersList?.type === 'COMMENT_LIST') {
-							focused = true;
-						}
-						break;
-				}
-			});
-		}
+	const focusSearch = () => {
+		focused = true;
+	};
+
+	const shortcut = $derived(type === 'COMMENT_LIST' ? 'alt+shift+a' : 'alt+a');
+
+	registerCommands(() => {
+		const { idPrefix, context, keywords } = listCommandScope(type);
+		return [
+			{
+				id: `${idPrefix}.add-speaker`,
+				title: m.commandSpeakersListAddSpeaker,
+				context,
+				keywords,
+				group: 'page',
+				icon: 'user-plus',
+				shortcut,
+				enabled: () => !!speakersList,
+				run: focusSearch
+			}
+		];
 	});
 </script>
 
@@ -150,7 +155,7 @@
 	placeholder="Search for a country"
 	getStringValue={(member) => getName(member)}
 	getKey={(member) => member.id}
-	kbd={speakersList?.type === 'COMMENT_LIST' ? 'alt+shift+A' : 'alt+A'}
+	kbd={shortcut}
 	submit={() => addSpeakerToList()}
 >
 	{#snippet ListItem(option)}

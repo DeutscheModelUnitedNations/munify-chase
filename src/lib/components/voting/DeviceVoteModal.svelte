@@ -5,6 +5,7 @@
 	import { nanoid } from '$lib/helpers/nanoid';
 	import DeviceVotingCountdown from './DeviceVotingCountdown.svelte';
 	import toast from 'svelte-french-toast';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 
 	interface Props {
 		active: boolean;
@@ -60,6 +61,41 @@
 			toast.error(m.deviceVoteError());
 		}
 	}
+
+	// The vote buttons, while the modal is open. They stop working once the window expired.
+	const voteContext = () => voteName || m.deviceBasedVoting();
+	registerCommands(() => [
+		{
+			id: 'participant.device-vote.pro',
+			title: m.commandVoteInFavor,
+			context: voteContext,
+			group: 'page',
+			icon: 'circle-plus',
+			visible: () => open,
+			enabled: () => !expired,
+			run: () => cast('PRO')
+		},
+		{
+			id: 'participant.device-vote.con',
+			title: m.commandVoteAgainst,
+			context: voteContext,
+			group: 'page',
+			icon: 'circle-minus',
+			visible: () => open,
+			enabled: () => !expired,
+			run: () => cast('CON')
+		},
+		{
+			id: 'participant.device-vote.abstain',
+			title: m.commandVoteAbstain,
+			context: voteContext,
+			group: 'page',
+			icon: 'circle',
+			visible: () => open && !!withAbstentions,
+			enabled: () => !expired,
+			run: () => cast('ABSTAIN')
+		}
+	]);
 </script>
 
 <Modal bind:open closeOnEsc={false}>

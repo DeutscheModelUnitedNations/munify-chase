@@ -4,6 +4,7 @@
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
 	import { isTauri } from '$lib/platform';
 	import { getCachedAccessToken } from '$lib/platform/oidc';
+	import CommandPalette from '$lib/commands/CommandPalette.svelte';
 
 	let { children } = $props();
 
@@ -33,3 +34,5 @@
 </script>
 
 {@render children()}
+
+<CommandPalette />

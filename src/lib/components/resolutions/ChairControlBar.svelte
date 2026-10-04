@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { PAPER_STATUS_ORDER, statusLabel, type PaperStatus } from './paperContext';
@@ -141,6 +142,74 @@
 		else if (canRevertTo(status, index)) revertTarget = status;
 	}
 
+	function resumeVote() {
+		const active = committee.activeVotingSession;
+		if (!active) return;
+		resumeVotingModal({
+			voteType: active.mode as 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED',
+			voteName: active.voteName ?? paper.title,
+			majority: (active.majority ?? 'ABSOLUTE') as 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS',
+			withAbstentions: active.withAbstentions ?? true
+		});
+	}
+
+	function startClauseVote() {
+		onStartClauseVote!(currentClauseId!, currentClauseLabel ?? '');
+	}
+
+	function startVote() {
+		openVotingModal({
+			voteName: paper.title,
+			voteType: 'ROLL_CALL',
+			majority: 'ABSOLUTE',
+			withAbstentions: true
+		});
+	}
+
+	const inVotingPhase = () => paper.status === 'VOTING_PHASE';
+
+	registerCommands(() => [
+		{
+			id: 'chair-paper.advance',
+			title: (_inputs, options) =>
+				nextStatus ? m.advanceToStatus({ status: statusLabel(nextStatus) }, options) : '',
+			group: 'page',
+			icon: 'forward-step',
+			visible: () => !!nextStatus,
+			enabled: () => !busy,
+			run: advance
+		},
+		{
+			id: 'chair-paper.resume-vote',
+			title: m.resumeVote,
+			group: 'page',
+			icon: 'rotate-right',
+			visible: () => inVotingPhase() && !!committee.activeVotingSession,
+			run: resumeVote
+		},
+		{
+			id: 'chair-paper.start-clause-vote',
+			title: m.startClauseVote,
+			context: () => currentClauseLabel ?? '',
+			group: 'page',
+			icon: 'person-booth',
+			visible: () =>
+				inVotingPhase() &&
+				!committee.activeVotingSession &&
+				!!currentClauseId &&
+				!!onStartClauseVote,
+			run: startClauseVote
+		},
+		{
+			id: 'chair-paper.start-vote',
+			title: m.startVote,
+			group: 'page',
+			icon: 'gavel',
+			visible: () => inVotingPhase() && !committee.activeVotingSession,
+			run: startVote
+		}
+	]);
+
 	let revertTarget = $state<PaperStatus | null>(null);
 	async function confirmRevert() {
 		if (!revertTarget) return;
@@ -166,7 +235,7 @@
 	<!-- Lifecycle chain: current highlighted. The next stage's bubble becomes a
 	     play button (advance); revertable earlier bubbles show a play icon on
 	     hover and move back through a confirm. -->
-	<ul class="steps steps-horizontal text-sm">
+	<ul class="steps steps-horizontal text-sm" data-tour="chair-paper.phases">
 		{#each PAPER_STATUS_ORDER as status, i (status)}
 			{@const clickable = isClickable(status, i)}
 			<li
@@ -203,47 +272,29 @@
 
 	{#if paper.status === 'VOTING_PHASE'}
 		{@const active = committee.activeVotingSession}
-		{#if active}
-			<button
-				class="btn btn-sm btn-warning"
-				title={m.resumeVote()}
-				onclick={() =>
-					resumeVotingModal({
-						voteType: active.mode as 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED',
-						voteName: active.voteName ?? paper.title,
-						majority: (active.majority ?? 'ABSOLUTE') as 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS',
-						withAbstentions: active.withAbstentions ?? true
-					})}
-			>
-				<i class="fas fa-rotate-right"></i>
-				{m.resumeVote()}
-			</button>
-		{:else}
-			{#if currentClauseId && onStartClauseVote}
-				<button
-					class="btn btn-sm btn-secondary"
-					title={m.startClauseVote()}
-					onclick={() => onStartClauseVote!(currentClauseId!, currentClauseLabel ?? '')}
-				>
-					<i class="fas fa-person-booth"></i>
-					{m.startClauseVote()}
+		<div class="flex flex-wrap items-center gap-x-4 gap-y-2" data-tour="chair-paper.vote-actions">
+			{#if active}
+				<button class="btn btn-sm btn-warning" title={m.resumeVote()} onclick={resumeVote}>
+					<i class="fas fa-rotate-right"></i>
+					{m.resumeVote()}
+				</button>
+			{:else}
+				{#if currentClauseId && onStartClauseVote}
+					<button
+						class="btn btn-sm btn-secondary"
+						title={m.startClauseVote()}
+						onclick={startClauseVote}
+					>
+						<i class="fas fa-person-booth"></i>
+						{m.startClauseVote()}
+					</button>
+				{/if}
+				<button class="btn btn-sm btn-success" title={m.startVote()} onclick={startVote}>
+					<i class="fas fa-gavel"></i>
+					{m.startVote()}
 				</button>
 			{/if}
-			<button
-				class="btn btn-sm btn-success"
-				title={m.startVote()}
-				onclick={() =>
-					openVotingModal({
-						voteName: paper.title,
-						voteType: 'ROLL_CALL',
-						majority: 'ABSOLUTE',
-						withAbstentions: true
-					})}
-			>
-				<i class="fas fa-gavel"></i>
-				{m.startVote()}
-			</button>
-		{/if}
+		</div>
 	{/if}
 </div>
 

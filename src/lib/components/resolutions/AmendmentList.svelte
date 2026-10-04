@@ -580,7 +580,7 @@
 									{m.present()}
 								</button>
 							{/if}
-							<div class="join ml-auto">
+							<div class="join ml-auto" data-tour="chair-paper.decide">
 								<button
 									class="btn btn-xs btn-primary join-item"
 									disabled={busyId === a.id || busyId === 'unpresent' || a.status === 'PENDING'}

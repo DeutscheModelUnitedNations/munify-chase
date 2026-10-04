@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import dmunLogo from '$assets/dmunlogo/logo.png';
+	import dmunLogo from '$assets/dmunlogo/dmun-lang.svg';
+	import dmunLogoDark from '$assets/dmunlogo/dmun-lang-darkmode.svg';
 	import { configPublic } from '$config/public';
 	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
 	import * as m from '$lib/paraglide/messages.js';
@@ -9,12 +10,12 @@
 
 <div class="w-full p-4">
 	<footer
-		class="footer footer-center bg-base-100 text-base-content mt-3 flex flex-col rounded-xl p-10"
+		class="footer footer-center bg-base-100 text-base-content mt-3 flex flex-col rounded-box p-10"
 	>
 		<nav class="flex flex-col flex-wrap justify-center gap-4 md:flex-row">
 			<a class="link-hover link" href={resolve('/(pages)')}>{m.home()}</a>
 			<!-- eslint-disable svelte/no-at-html-tags -- translation string, not user input -->
-			<a class="link-hover link" href="https://dmun.de/impressum" target="_blank"
+			<a class="link-hover link" href="https://dmun.de/legal" target="_blank"
 				>{@html m.imprintAndPrivacy()}</a
 			>
 			<!-- eslint-enable svelte/no-at-html-tags -->
@@ -28,12 +29,6 @@
 				<a href="https://www.instagram.com/dmun_ev/" aria-label="Instagram">
 					<i class="fa-brands fa-instagram text-3xl"></i>
 				</a>
-				<a href="https://x.com/DMUN_eV" aria-label="X / Twitter">
-					<i class="fa-brands fa-x-twitter text-3xl"></i>
-				</a>
-				<a href="https://www.facebook.com/deutschemodelunitednations/" aria-label="Facebook">
-					<i class="fa-brands fa-facebook text-3xl"></i>
-				</a>
 				<a href="https://www.youtube.com/user/DeutscheMUNeV" aria-label="YouTube">
 					<i class="fa-brands fa-youtube text-3xl"></i>
 				</a>
@@ -45,7 +40,16 @@
 		<aside>
 			<p>{m.aServiceBy()}</p>
 			<a href="https://dmun.de" target="_blank" class="transition-all duration-300 hover:scale-105">
-				<img src={dmunLogo} alt="DMUN Logo" class="w-40 dark:hue-rotate-180 dark:invert" />
+				<img
+					src={dmunLogo}
+					alt="DMUN – Deutsche Model United Nations e.V."
+					class="w-60 dark:hidden"
+				/>
+				<img
+					src={dmunLogoDark}
+					alt="DMUN – Deutsche Model United Nations e.V."
+					class="hidden w-60 dark:block"
+				/>
 			</a>
 			<p>
 				Copyright © {new Date().getFullYear() !== 2024 ? '2024-' : ''}{new Date().getFullYear()} - {m.allRightsReservedby()}

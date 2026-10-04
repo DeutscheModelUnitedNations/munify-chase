@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
+	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { m } from '$lib/paraglide/messages';
 	import StateOfDebateChanger from './StateOfDebateChanger.svelte';
 
 	interface Props {
@@ -12,17 +14,22 @@
 
 	let open = $state(false);
 
+	registerCommands(() => [
+		{
+			id: 'chair.state-of-debate',
+			title: m.commandChangeStateOfDebate,
+			group: 'page',
+			icon: 'comments',
+			shortcut: 'alt+d',
+			run: () => (open = !open)
+		}
+	]);
+
+	// Esc only closes the dialog, so it stays a local binding
 	$effect(() => {
-		hotkeys('alt+d, esc', (event, handler) => {
+		hotkeys('esc', (event) => {
 			event.preventDefault();
-			switch (handler.key) {
-				case 'alt+d':
-					open = !open;
-					break;
-				case 'esc':
-					open = false;
-					break;
-			}
+			open = false;
 		});
 	});
 </script>

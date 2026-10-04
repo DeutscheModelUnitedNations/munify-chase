@@ -3,6 +3,7 @@
 	import { getPresentationLayoutPresets } from '$lib/data/presentationLayoutPresets';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import toast from 'svelte-french-toast';
 
@@ -42,18 +43,20 @@
 		}
 	});
 
-	const changeLayoutKey = async (e: Event) => {
+	const changeLayout = async (presentationLayout: string) => {
 		await toast.promise(
 			client.mutate.updateCommittee({
 				__args: {
 					id: committeeId,
-					presentationLayout: (e.target as HTMLSelectElement).value
+					presentationLayout
 				},
 				id: true
 			}),
 			promiseToastStrings(m.layout(), 'update')
 		);
 	};
+
+	const changeLayoutKey = (e: Event) => changeLayout((e.target as HTMLSelectElement).value);
 
 	const toggleRegionalGroups = async (tab: boolean | undefined) => {
 		await toast.promise(
@@ -77,6 +80,27 @@
 			faIcon: 'fa-xmark'
 		}
 	];
+
+	registerCommands(() => [
+		...getPresentationLayoutPresets().map((preset) => ({
+			id: `setup.presentation-layout.${preset}`,
+			title: m.commandSetPresentationLayout,
+			context: layoutPresetLabels[preset] ?? (() => preset),
+			group: 'page' as const,
+			icon: 'table-layout',
+			visible: () => committeeData?.presentationLayout !== preset,
+			run: () => changeLayout(preset)
+		})),
+		{
+			id: 'setup.regional-groups',
+			title: committeeData?.displayRegionalGroups
+				? m.commandHideRegionalGroups
+				: m.commandShowRegionalGroups,
+			group: 'page',
+			icon: 'earth-europe',
+			run: () => toggleRegionalGroups(!committeeData?.displayRegionalGroups)
+		}
+	]);
 </script>
 
 <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">

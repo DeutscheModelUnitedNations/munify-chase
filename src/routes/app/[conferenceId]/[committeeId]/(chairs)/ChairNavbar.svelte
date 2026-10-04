@@ -11,9 +11,6 @@
 	} from '$lib/components/navbar/conferenceNavItems';
 
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import hotkeys from 'hotkeys-js';
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 
 	type SpeakersList =
 		| {
@@ -106,46 +103,6 @@
 			isGlobalAdmin: !!isGlobalAdmin
 		})
 	);
-
-	$effect(() => {
-		hotkeys('alt+1, alt+2, alt+3, alt+4', (event, handler) => {
-			event.preventDefault();
-			switch (handler.key) {
-				case 'alt+1':
-					goto(
-						resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
-							conferenceId,
-							committeeId
-						})
-					);
-					break;
-				case 'alt+2':
-					goto(
-						resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
-							conferenceId,
-							committeeId
-						})
-					);
-					break;
-				case 'alt+3':
-					goto(
-						resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
-							conferenceId,
-							committeeId
-						})
-					);
-					break;
-				case 'alt+4':
-					goto(
-						resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
-							conferenceId,
-							committeeId
-						})
-					);
-					break;
-			}
-		});
-	});
 </script>
 
 <!-- Slim top bar -->

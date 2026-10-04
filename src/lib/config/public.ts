@@ -9,7 +9,7 @@ const schema = z.object({
 	PUBLIC_DEFAULT_LOCALE: z.string().default('de'),
 	PUBLIC_OIDC_LOGIN_CALLBACK_ROUTE: z.string().optional(),
 	PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE: z.string().optional(),
-	PUBLIC_CONTACT_EMAIL: z.string().optional(),
+	PUBLIC_CONTACT_EMAIL: z.string().default('vorstand@dmun.de'),
 	PUBLIC_API_URL: z.string().default('https://chase.munify.cloud/api/graphql')
 });
 

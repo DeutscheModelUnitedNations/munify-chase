@@ -1,12 +1,11 @@
 {
 	"devDependencies": {
-		"@deutschemodelunitednations/corporate-identity": "^1.1.10",
+		"@deutschemodelunitednations/corporate-identity": "^2.0.0",
 		"@deutschemodelunitednations/munify-resolution-editor": "^0.6.0",
 		"@eslint/compat": "^2.1.0",
 		"@eslint/js": "^10.0.1",
 		"@fontsource/outfit": "^5.3.0",
 		"@fontsource/roboto-mono": "^5.3.0",
-		"@fontsource/vollkorn": "^5.3.0",
 		"@friendofsvelte/tipex": "^0.2.0",
 		"@hocuspocus/provider": "^4.6.0",
 		"@inlang/cli": "^3.3.3",
@@ -51,11 +50,13 @@
 		"convert-iso-codes": "^1.0.10",
 		"daisyui": "^5.7.20",
 		"dayjs": "^1.11.23",
+		"driver.js": "^1.9.0",
 		"eslint": "^10.9.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.23.0",
 		"flag-icons": "^7.5.0",
 		"fuse.js": "^7.5.0",
+		"github-slugger": "^2.0.0",
 		"globals": "^17.11.0",
 		"graphql": "^16.14.2",
 		"graphql-sse": "^2.6.0",
@@ -66,6 +67,7 @@
 		"json-schema-to-typescript": "^15.0.4",
 		"lefthook": "^2.1.10",
 		"lib0": "^0.2.117",
+		"marked": "^18.0.14",
 		"nanoid": "^6.0.1",
 		"oidc-client-ts": "^3.5.0",
 		"prettier": "^3.9.6",
@@ -125,5 +127,5 @@
 		"polka": "^0.5.2",
 		"ws": "^8.21.3"
 	},
-	"version": "3.0.55"
+	"version": "3.1.0"
 }

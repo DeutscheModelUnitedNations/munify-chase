@@ -22,7 +22,7 @@ import { getCachedAccessToken } from '$lib/platform/oidc';
 import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 import {
 	localDemoConferenceUpdates,
-	resolveLocalDemoRootField,
+	resolveLocalDemoQuery,
 	seedLocalDemoConference,
 	withLocalDemoMutationCommits
 } from './localDemo/seedConference';
@@ -198,25 +198,16 @@ const localDemoExchange: Exchange =
 			map((op) => makeSuccessResult(op, getLocalDemoSeed(op)))
 		);
 
-		// Queries with a canned answer (see resolveLocalDemoRootField) succeed with that
-		// data instead of falling into the generic offline error below — otherwise every
-		// page under the local conference would render in a permanent error state on a
-		// completely empty, first-ever-load cache. `data === null` means this exact
-		// operation already got its canned answer on a previous run (see
-		// resolveLocalDemoRootField's doc comment) — deliberately excluded here (and from
-		// localOfflineResults$ below) so it neither re-answers nor errors, just defers to
-		// whatever the cache already holds.
-		const queryAnswers$ = pipe(
+		// Every query succeeds with its canned answer, or an empty-but-valid one synthesized
+		// from the schema (see resolveLocalDemoQuery) — an error would leave the page in a
+		// permanent error state on a completely empty, first-ever-load cache. `data === null`
+		// means this exact operation already got its canned answer on a previous run (see
+		// resolveLocalDemoRootField's doc comment) — deliberately excluded here so it doesn't
+		// re-answer, just defers to whatever the cache already holds.
+		const cannedResults$ = pipe(
 			ops$,
 			filter((op) => op.kind === 'query' && isLocalConferenceActive() && !getLocalDemoSeed(op)),
-			map((op) => ({
-				op,
-				data: resolveLocalDemoRootField(getRootFieldName(op), op.variables, op.key)
-			}))
-		);
-
-		const cannedResults$ = pipe(
-			queryAnswers$,
+			map((op) => ({ op, data: resolveLocalDemoQuery(op.query, op.variables, op.key) })),
 			filter((x): x is { op: Operation; data: Record<string, unknown> } => !!x.data),
 			map(({ op, data }) => makeSuccessResult(op, data))
 		);
@@ -229,19 +220,7 @@ const localDemoExchange: Exchange =
 			map((op) => makeLocalDemoMutationResult(op))
 		);
 
-		const localOfflineResults$ = pipe(
-			queryAnswers$,
-			filter((x) => x.data === undefined),
-			map(({ op }) => makeOfflineErrorResult(op))
-		);
-
-		return merge([
-			remoteOps$,
-			seedResults$,
-			cannedResults$,
-			mutationResults$,
-			localOfflineResults$
-		]);
+		return merge([remoteOps$, seedResults$, cannedResults$, mutationResults$]);
 	};
 
 if (browser) {

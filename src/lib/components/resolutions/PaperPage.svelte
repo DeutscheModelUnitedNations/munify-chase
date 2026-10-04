@@ -61,6 +61,7 @@
 		type AiPreference
 	} from '$lib/ai/aiPreference.svelte';
 	import AiOnboardingModal from './AiOnboardingModal.svelte';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 
 	interface Props {
 		paperId: string;
@@ -112,7 +113,7 @@
 		documentNumber: true,
 		updatedAt: true,
 		committee: { id: true },
-		agendaItem: { title: true },
+		agendaItem: { id: true, title: true },
 		creatorCommitteeMember: {
 			id: true,
 			representation: { id: true, name: true, alpha3Code: true }
@@ -136,6 +137,7 @@
 		simpleMajority: true,
 		twoThirdsMajority: true,
 		activeDraftResolutionId: true,
+		activeAgendaItemId: true,
 		activeAmendmentId: true,
 		currentOperativeIndex: true,
 		amendmentSubmissionOpen: true,
@@ -711,6 +713,18 @@
 			committees?.[0]?.activeDraftResolutionId === papers?.[0]?.id
 	);
 	let togglingActiveDr = $state(false);
+
+	// Mirrors the server rules of setActiveDraftResolution, so the chair sees why a paper
+	// can't become active instead of only getting an error after clicking
+	const activeDrBlocker = $derived.by(() => {
+		if (isActiveDr) return undefined;
+		if (paper?.status === 'WORKING_PAPER') return m.setActiveDrWorkingPaper();
+		const activeAgendaItemId = committees?.[0]?.activeAgendaItemId;
+		if (activeAgendaItemId && paper?.agendaItem?.id !== activeAgendaItemId) {
+			return m.setActiveDrOtherAgendaItem();
+		}
+		return undefined;
+	});
 	async function toggleActiveDr() {
 		const cId = committees?.[0]?.id;
 		const pId = papers?.[0]?.id;
@@ -729,6 +743,54 @@
 		}
 	}
 
+	function startEditingDocNum() {
+		docNumDraft = paper?.documentNumber ?? '';
+		editingDocNum = true;
+	}
+	function openAiSettings() {
+		aiOnboardingOpen = true;
+	}
+	function openHistory() {
+		historyOpen = true;
+	}
+
+	// Chair-only header actions
+	registerCommands(() => [
+		{
+			id: 'paper.chair.active-dr',
+			title: isActiveDr ? m.commandUnsetActiveDr : m.commandSetActiveDr,
+			group: 'page',
+			icon: 'star',
+			visible: () => team,
+			enabled: () => !togglingActiveDr && !activeDrBlocker,
+			run: toggleActiveDr
+		},
+		{
+			id: 'paper.chair.document-number',
+			title: m.commandSetDocumentNumber,
+			group: 'page',
+			icon: 'pen',
+			visible: () => team && status === 'SUBMITTED' && !editingDocNum,
+			run: startEditingDocNum
+		},
+		{
+			id: 'paper.chair.history',
+			title: m.documentHistory,
+			group: 'page',
+			icon: 'clock-rotate-left',
+			visible: () => team,
+			run: openHistory
+		},
+		{
+			id: 'paper.chair.ai-settings',
+			title: m.aiOnboardingOpenSettings,
+			group: 'page',
+			icon: 'robot',
+			visible: () => team,
+			run: openAiSettings
+		}
+	]);
+
 	let isExportingPdf = $state(false);
 	async function exportPdf() {
 		const snapshot = yClient?.store.snapshot;
@@ -744,6 +806,63 @@
 			isExportingPdf = false;
 		}
 	}
+
+	function openSubmitConfirm() {
+		submitConfirmOpen = true;
+	}
+	function openShareCodes() {
+		shareOpen = true;
+	}
+	function toggleSponsors() {
+		detailsOpen = !detailsOpen;
+	}
+	function showPreview() {
+		previewOpen = true;
+	}
+	function hidePreview() {
+		previewOpen = false;
+	}
+
+	// The side panels only exist on wide screens (lg)
+	const isWideScreen = () => browser && window.matchMedia('(min-width: 1024px)').matches;
+
+	// Participant header actions. Chairs see the same buttons with their own controls, these
+	// commands only cover the participant view.
+	registerCommands(() => [
+		{
+			id: 'paper.participant.submit',
+			title: m.commandSubmitPaper,
+			group: 'page',
+			icon: 'paper-plane',
+			visible: () => !team && status === 'WORKING_PAPER' && isCreator,
+			enabled: () => !submitting,
+			run: openSubmitConfirm
+		},
+		{
+			id: 'paper.participant.share-codes',
+			title: m.shareCodes,
+			group: 'page',
+			icon: 'share-nodes',
+			visible: () => !team && status === 'WORKING_PAPER' && isCreator,
+			run: openShareCodes
+		},
+		{
+			id: 'paper.participant.sponsors',
+			title: m.sponsors,
+			group: 'page',
+			icon: 'users-gear',
+			visible: () => !team,
+			run: toggleSponsors
+		},
+		{
+			id: 'paper.participant.preview',
+			title: previewOpen ? m.resolutionHidePreview : m.resolutionShowPreview,
+			group: 'page',
+			icon: 'eye',
+			visible: () => !team && status !== 'FINAL' && isWideScreen(),
+			run: previewOpen ? hidePreview : showPreview
+		}
+	]);
 
 	async function submitPaper() {
 		submitConfirmOpen = false;
@@ -802,10 +921,7 @@
 							<button
 								class="btn btn-ghost btn-xs opacity-50 hover:opacity-100"
 								title="Set document number"
-								onclick={() => {
-									docNumDraft = paper.documentNumber ?? '';
-									editingDocNum = true;
-								}}
+								onclick={startEditingDocNum}
 							>
 								<i class="fas fa-pen text-xs"></i>
 							</button>
@@ -831,7 +947,7 @@
 				/>
 			{:else}
 				<!-- Read-only lifecycle chain for participants -->
-				<ul class="steps steps-horizontal text-xs">
+				<ul class="steps steps-horizontal text-xs" data-tour="paper.lifecycle">
 					{#each PAPER_STATUS_ORDER as s, i (s)}
 						<li class="step {i <= currentStatusIdx ? 'step-primary' : ''}">
 							<span
@@ -892,7 +1008,8 @@
 				{#if status === 'WORKING_PAPER' && (isCreator || team)}
 					<button
 						class="btn btn-ghost btn-sm"
-						onclick={() => (shareOpen = true)}
+						data-tour={team ? 'chair-paper.share' : 'paper.share'}
+						onclick={openShareCodes}
 						title={m.shareCodes()}
 					>
 						<i class="fas fa-share-nodes"></i>
@@ -901,7 +1018,8 @@
 				{/if}
 				<button
 					class="btn btn-ghost btn-sm"
-					onclick={() => (detailsOpen = !detailsOpen)}
+					data-tour={team ? 'chair-paper.sponsors' : 'paper.sponsors'}
+					onclick={toggleSponsors}
 					title={m.sponsors()}
 				>
 					<i class="fas fa-users-gear"></i>
@@ -927,14 +1045,16 @@
 					</div>
 					<button
 						class="btn btn-ghost btn-sm"
-						onclick={() => (aiOnboardingOpen = true)}
+						data-tour="chair-paper.ai"
+						onclick={openAiSettings}
 						title={m.aiOnboardingOpenSettings()}
 					>
 						<i class="fas fa-robot"></i>
 					</button>
 					<button
 						class="btn btn-ghost btn-sm"
-						onclick={() => (historyOpen = true)}
+						data-tour="chair-paper.history"
+						onclick={openHistory}
 						title={m.documentHistory()}
 					>
 						<i class="fas fa-clock-rotate-left"></i>
@@ -943,9 +1063,9 @@
 						class="btn btn-sm"
 						class:btn-secondary={isActiveDr}
 						class:btn-ghost={!isActiveDr}
-						disabled={togglingActiveDr}
+						disabled={togglingActiveDr || !!activeDrBlocker}
 						onclick={toggleActiveDr}
-						title={isActiveDr ? m.activeDraftResolution() : m.setActiveDr()}
+						title={activeDrBlocker ?? (isActiveDr ? m.activeDraftResolution() : m.setActiveDr())}
 					>
 						<i class="fas fa-star"></i>
 						{isActiveDr ? m.activeDraftResolution() : m.setActiveDr()}
@@ -954,8 +1074,9 @@
 				{#if status === 'WORKING_PAPER' && (isCreator || team)}
 					<button
 						class="btn btn-primary btn-sm"
+						data-tour={team ? undefined : 'paper.submit'}
 						disabled={submitting}
-						onclick={() => (submitConfirmOpen = true)}
+						onclick={openSubmitConfirm}
 					>
 						<i class="fas fa-paper-plane"></i>
 						{m.submit()}
@@ -991,6 +1112,7 @@
 					<aside
 						class="hidden shrink-0 flex-col overflow-hidden lg:flex"
 						style="width: {previewWidth}px;"
+						data-tour={team ? undefined : 'paper.preview'}
 					>
 						<div class="border-base-300 flex items-center justify-between border-b px-3 py-2">
 							<span class="text-sm font-semibold">
@@ -999,7 +1121,7 @@
 							<button
 								class="btn btn-ghost btn-xs"
 								title={m.resolutionHidePreview()}
-								onclick={() => (previewOpen = false)}
+								onclick={hidePreview}
 							>
 								<i class="fas fa-chevron-left"></i>
 							</button>
@@ -1037,7 +1159,7 @@
 						<button
 							class="btn btn-ghost btn-xs"
 							title={m.resolutionShowPreview()}
-							onclick={() => (previewOpen = true)}
+							onclick={showPreview}
 						>
 							<i class="fas fa-chevron-right"></i>
 						</button>
@@ -1046,7 +1168,7 @@
 			{/if}
 
 			<!-- Center: preview (FINAL) or editor -->
-			<div class="min-h-0 flex-1 overflow-auto">
+			<div class="min-h-0 flex-1 overflow-auto" data-tour={team ? undefined : 'paper.editor'}>
 				{#if browser && yClient}
 					{#if status === 'FINAL'}
 						<div class="min-h-0 flex-1 overflow-auto p-4">
@@ -1100,6 +1222,7 @@
 				<aside
 					class="hidden shrink-0 overflow-hidden lg:flex lg:flex-col"
 					style="width: {contextWidth}px;"
+					data-tour={team ? 'chair-paper.amendments' : 'paper.context'}
 				>
 					<ClauseContextPanel
 						{paperId}

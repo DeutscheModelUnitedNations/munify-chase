@@ -5,6 +5,7 @@
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import Modal from '$lib/components/Modal.svelte';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 
 	interface Props {
 		conferenceId: string;
@@ -92,6 +93,25 @@
 			promiseToastStrings(m.requests(), 'delete')
 		);
 	}
+
+	registerCommands(() => [
+		{
+			id: 'participant.requests.make',
+			title: m.makeARequest,
+			group: 'page',
+			icon: 'hand',
+			enabled: () => pickableTypes.length > 0,
+			run: openPicker
+		},
+		...sortedMyRequests.map((req) => ({
+			id: `participant.requests.withdraw.${req.id}`,
+			title: m.withdrawRequestAction,
+			context: () => req.requestType?.name ?? '',
+			group: 'page' as const,
+			icon: 'xmark',
+			run: () => withdraw(req.id)
+		}))
+	]);
 </script>
 
 <div class="card bg-base-100 shadow-sm">

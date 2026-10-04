@@ -5,12 +5,15 @@
 	let { children } = $props();
 </script>
 
-{#if !isTauri()}
-	<Navbar />
-{/if}
+<!-- The public pages sit on white (DMUN: white + navy), unlike the app's tinted ground -->
+<div class="bg-base-100 min-h-screen">
+	{#if !isTauri()}
+		<Navbar />
+	{/if}
 
-{@render children()}
+	{@render children()}
 
-{#if !isTauri()}
-	<Footer />
-{/if}
+	{#if !isTauri()}
+		<Footer />
+	{/if}
+</div>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '$lib/commands/registry.svelte';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
 	import BasicCard from '$lib/components/BasicCard.svelte';
@@ -124,6 +125,21 @@
 		}
 	];
 
+	function openRollCall() {
+		rollCallActive = true;
+	}
+
+	registerCommands(() => [
+		{
+			id: 'presence.roll-call',
+			title: activeSession ? m.resumeRollCall : m.rollCall,
+			group: 'page',
+			icon: activeSession ? 'rotate-right' : 'user-magnifying-glass',
+			visible: () => !!committee,
+			run: openRollCall
+		}
+	]);
+
 	const setPresence = (tab: boolean, id: string) => {
 		toast.promise(
 			client.mutate.setPresenceForCommitteeMembers({
@@ -151,7 +167,7 @@
 						{minAmendmentSponsors}
 					/>
 				</BasicCard>
-				<BasicCard>
+				<BasicCard data-tour="presence.roll-call">
 					<div class="flex flex-col gap-2">
 						{#if activeSession}
 							<div class="alert alert-info p-2 text-sm">
@@ -163,12 +179,12 @@
 									})}
 								</span>
 							</div>
-							<button class="btn btn-warning btn-xl" onclick={() => (rollCallActive = true)}>
+							<button class="btn btn-warning btn-xl" onclick={openRollCall}>
 								<i class="fas fa-rotate-right mr-2"></i>
 								{m.resumeRollCall()}
 							</button>
 						{:else}
-							<button class="btn btn-primary btn-xl" onclick={() => (rollCallActive = true)}>
+							<button class="btn btn-primary btn-xl" onclick={openRollCall}>
 								<i class="fas fa-user-magnifying-glass mr-2"></i>
 								{m.rollCall()}
 							</button>
@@ -218,7 +234,7 @@
 						{/if}
 					</div>
 				</BasicCard>
-				<BasicCard>
+				<BasicCard data-tour="presence.bulk-actions">
 					<PresenceActions memberIds={committee.members.map((x) => x.id)} />
 				</BasicCard>
 			</div>
@@ -227,10 +243,11 @@
 					<NsaAttendanceCard conferenceId={committee.conference!.id} committeeId={committee.id} />
 				{/if}
 				<BasicCard title={m.delegations()}>
-					{#each countries as member (member.id)}
+					{#each countries as member, index (member.id)}
 						{@const rep = member.representation}
 						<div
 							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
+							data-tour={index === 0 ? 'presence.delegations' : undefined}
 						>
 							<Flag representation={rep} size="sm" />
 							<h3 class="flex-1 text-lg">
@@ -269,7 +286,7 @@
 						</div>
 					{/each}
 				</BasicCard>
-				<BasicCard title={m.unActors()}>
+				<BasicCard title={m.unActors()} data-tour="presence.un-actors">
 					{#each un as member (member.id)}
 						{@const rep = member.representation}
 						<div

@@ -112,7 +112,7 @@
 		documentNumber: true,
 		updatedAt: true,
 		committee: { id: true },
-		agendaItem: { title: true },
+		agendaItem: { id: true, title: true },
 		creatorCommitteeMember: {
 			id: true,
 			representation: { id: true, name: true, alpha3Code: true }
@@ -136,6 +136,7 @@
 		simpleMajority: true,
 		twoThirdsMajority: true,
 		activeDraftResolutionId: true,
+		activeAgendaItemId: true,
 		activeAmendmentId: true,
 		currentOperativeIndex: true,
 		amendmentSubmissionOpen: true,
@@ -706,6 +707,18 @@
 			committees?.[0]?.activeDraftResolutionId === papers?.[0]?.id
 	);
 	let togglingActiveDr = $state(false);
+
+	// Mirrors the server rules of setActiveDraftResolution, so the chair sees why a paper
+	// can't become active instead of only getting an error after clicking
+	const activeDrBlocker = $derived.by(() => {
+		if (isActiveDr) return undefined;
+		if (paper?.status === 'WORKING_PAPER') return m.setActiveDrWorkingPaper();
+		const activeAgendaItemId = committees?.[0]?.activeAgendaItemId;
+		if (activeAgendaItemId && paper?.agendaItem?.id !== activeAgendaItemId) {
+			return m.setActiveDrOtherAgendaItem();
+		}
+		return undefined;
+	});
 	async function toggleActiveDr() {
 		const cId = committees?.[0]?.id;
 		const pId = papers?.[0]?.id;
@@ -743,7 +756,7 @@
 			group: 'page',
 			icon: 'star',
 			visible: () => team,
-			enabled: () => !togglingActiveDr,
+			enabled: () => !togglingActiveDr && !activeDrBlocker,
 			run: toggleActiveDr
 		},
 		{
@@ -1044,9 +1057,9 @@
 						class="btn btn-sm"
 						class:btn-secondary={isActiveDr}
 						class:btn-ghost={!isActiveDr}
-						disabled={togglingActiveDr}
+						disabled={togglingActiveDr || !!activeDrBlocker}
 						onclick={toggleActiveDr}
-						title={isActiveDr ? m.activeDraftResolution() : m.setActiveDr()}
+						title={activeDrBlocker ?? (isActiveDr ? m.activeDraftResolution() : m.setActiveDr())}
 					>
 						<i class="fas fa-star"></i>
 						{isActiveDr ? m.activeDraftResolution() : m.setActiveDr()}

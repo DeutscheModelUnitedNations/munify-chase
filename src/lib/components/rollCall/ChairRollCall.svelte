@@ -138,29 +138,34 @@
 			// client-side id and pass it through so the optimistic write and the eventual
 			// server insert land on the same row. Read externalActiveSessionId untracked
 			// so a subscription update later doesn't restart the session.
-			const id = untrack(() => externalActiveSessionId) ?? nanoid();
-			sessionId = id;
+			// Start a session once per opening. The effect can re-run while the modal stays
+			// open (e.g. when the page state behind the committeeId prop updates), and a
+			// second start would create another session that is never completed.
+			if (!untrack(() => sessionId)) {
+				const id = untrack(() => externalActiveSessionId) ?? nanoid();
+				sessionId = id;
 
-			client.mutate
-				.startRollCallSession({
-					__args: { committeeId, id },
-					id: true,
-					currentMemberIndex: true
-				})
-				.then((result) => {
-					// Server may return an existing session with a different id if one was
-					// already running and the parent query hadn't surfaced it yet. Adopt
-					// whatever the server returned so subsequent mutations target the right
-					// row. For the index, only jump forward (resume case) — if the user has
-					// already advanced locally while the round trip was in flight, snapping
-					// back to the server-stored value would reset their progress and feel
-					// like the modal lost their input.
-					sessionId = result.id;
-					if (result.currentMemberIndex > currentIndex) {
-						currentIndex = result.currentMemberIndex;
-					}
-				})
-				.catch(() => {});
+				client.mutate
+					.startRollCallSession({
+						__args: { committeeId, id },
+						id: true,
+						currentMemberIndex: true
+					})
+					.then((result) => {
+						// Server may return an existing session with a different id if one was
+						// already running and the parent query hadn't surfaced it yet. Adopt
+						// whatever the server returned so subsequent mutations target the right
+						// row. For the index, only jump forward (resume case) — if the user has
+						// already advanced locally while the round trip was in flight, snapping
+						// back to the server-stored value would reset their progress and feel
+						// like the modal lost their input.
+						sessionId = result.id;
+						if (result.currentMemberIndex > currentIndex) {
+							currentIndex = result.currentMemberIndex;
+						}
+					})
+					.catch(() => {});
+			}
 		} else {
 			hotkeys.deleteScope('rollCall');
 

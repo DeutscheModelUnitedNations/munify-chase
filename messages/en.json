@@ -993,6 +993,8 @@
 	"setActiveAmendment": "Discuss",
 	"setActiveDr": "Set Active",
 	"setActiveDrHint": "Set a draft resolution as active in the chair view to display it here.",
+	"setActiveDrOtherAgendaItem": "Only papers on the active agenda item can be set as active.",
+	"setActiveDrWorkingPaper": "Working papers can't be active. Submit or promote the paper first.",
 	"setAllAbsent": "Set All Absent",
 	"setAllPresent": "Set All Present",
 	"setAsCurrentClause": "Set as current clause",

@@ -993,6 +993,8 @@
 	"setActiveAmendment": "Debater",
 	"setActiveDr": "Definir como Ativo",
 	"setActiveDrHint": "Defina um projeto de resolução como ativo na vista da presidência para exibi-lo aqui.",
+	"setActiveDrOtherAgendaItem": "Só documentos do ponto da ordem de trabalhos ativo podem ser definidos como ativos.",
+	"setActiveDrWorkingPaper": "Documentos de trabalho não podem estar ativos. Submeta ou promova o documento primeiro.",
 	"setAllAbsent": "Marcar Todos como Ausentes",
 	"setAllPresent": "Marcar Todos como Presentes",
 	"setAsCurrentClause": "Definir como cláusula atual",

@@ -993,6 +993,8 @@
 	"setActiveAmendment": "Behandeln",
 	"setActiveDr": "Aktiv setzen",
 	"setActiveDrHint": "Setze einen Resolutionsentwurf in der Vorsitzansicht als aktiv, um ihn hier anzuzeigen.",
+	"setActiveDrOtherAgendaItem": "Nur Papiere zum aktiven Tagesordnungspunkt können aktiv gesetzt werden.",
+	"setActiveDrWorkingPaper": "Arbeitspapiere können nicht aktiv sein. Reiche das Papier zuerst ein oder befördere es.",
 	"setAllAbsent": "Alle Abwesend setzen",
 	"setAllPresent": "Alle Anwesend setzen",
 	"setAsCurrentClause": "Als aktuellen Absatz festlegen",

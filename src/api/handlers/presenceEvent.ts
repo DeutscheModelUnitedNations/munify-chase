@@ -23,7 +23,7 @@ abilityBuilder.presenceEvent.allow(['update', 'delete']).when((ctx) => ({
 	where: { committee: isAdminInConference(ctx) }
 }));
 
-export const PresenceEventRef = object({ table: 'presenceEvent' });
+const PresenceEventRef = object({ table: 'presenceEvent' });
 
 const pubsub = rumblePubsub({ table: 'presenceEvent' });
 query({ table: 'presenceEvent' });

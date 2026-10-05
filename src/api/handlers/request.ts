@@ -31,7 +31,7 @@ abilityBuilder.request.allow('delete').when((ctx) => {
 	};
 });
 
-export const RequestRef = object({ table: 'request' });
+const RequestRef = object({ table: 'request' });
 
 const pubsub = rumblePubsub({ table: 'request' });
 query({ table: 'request' });

@@ -7,7 +7,7 @@ import {
 } from './services/syntheticRequestEvent';
 import { OIDC } from './services/OIDC';
 
-export const oidcRoles = ['admin', 'member', 'service_user'] as const;
+const oidcRoles = ['admin', 'member', 'service_user'] as const;
 
 export function context(req: RequestEvent) {
 	const source: unknown =

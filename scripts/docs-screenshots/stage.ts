@@ -17,7 +17,7 @@ const db = drizzle(process.env.DATABASE_URL!);
 const MINUTE = 60 * 1000;
 const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * MINUTE);
 
-export const STAGE = {
+const STAGE = {
 	conferenceTitle: 'Dev Conference',
 	committeeAbbreviation: 'GV',
 	presentShare: 0.75,

@@ -935,7 +935,7 @@ const answeredOperationKeys = new Set<number>();
  * `null`: a handled field whose answer has already been served for this exact operation
  * — caller should neither error nor emit new data, deferring entirely to the cache.
  */
-export type LocalDemoFieldAnswer = Record<string, unknown> | undefined | null;
+type LocalDemoFieldAnswer = Record<string, unknown> | undefined | null;
 
 /**
  * Canned answers for the handful of queries pages under the local conference route need
@@ -944,7 +944,7 @@ export type LocalDemoFieldAnswer = Record<string, unknown> | undefined | null;
  * client.ts. `operationKey` is urql's `Operation.key` — omit it (e.g. from SSR, which has
  * no persistent cache to defer to) to always get a fresh answer.
  */
-export function resolveLocalDemoRootField(
+function resolveLocalDemoRootField(
 	fieldName: string | undefined,
 	variables: unknown,
 	operationKey?: number

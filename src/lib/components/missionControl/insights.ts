@@ -145,7 +145,7 @@ export function speakerLabel(
 	);
 }
 
-export function currentSpeakerFor(committee: InsightCommittee) {
+function currentSpeakerFor(committee: InsightCommittee) {
 	for (const list of committee.activeAgendaItem?.speakersList ?? []) {
 		if (list.isClosed || !list.startTimestamp) continue;
 		const speaker = list.speakers.toSorted(compareSpeakers).at(0);
@@ -161,7 +161,7 @@ export function currentSpeakerFor(committee: InsightCommittee) {
 // The open (running) speakers/comment list with at least one speaker queued —
 // "something is going on" here, worth spotlighting the whole queue rather
 // than just the current speaker.
-export function openSpeakersListFor(committee: InsightCommittee) {
+function openSpeakersListFor(committee: InsightCommittee) {
 	for (const list of committee.activeAgendaItem?.speakersList ?? []) {
 		if (list.isClosed || !list.startTimestamp) continue;
 		const speakers = list.speakers.toSorted(compareSpeakers);

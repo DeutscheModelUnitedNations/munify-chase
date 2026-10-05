@@ -32,7 +32,6 @@ abilityBuilder.speakerOnList.allow(['update', 'delete']).when((ctx) => {
 });
 
 const ref = object({ table: 'speakerOnList' });
-export const SpeakerOnListRef = ref;
 
 const pubsub = rumblePubsub({ table: 'speakerOnList' });
 query({ table: 'speakerOnList' });

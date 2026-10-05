@@ -8,8 +8,6 @@ type RouteHelp = {
 	tour?: () => Promise<Tour>;
 };
 
-const lazy = (load: () => Promise<{ tour: Tour }>) => async () => (await load()).tour;
-
 /**
  * Help shown by the help button for each app route. Keyed by `RouteId`, so renaming
  * or removing a route breaks the typecheck until this map is updated. The docs test
@@ -24,25 +22,25 @@ export const routeHelp: Partial<Record<RouteId, RouteHelp>> = {
 	'/app/[conferenceId]/mission-control/config': { docs: 'user-manual/admin/conference-setup' },
 	'/app/[conferenceId]/statistics': {
 		docs: 'user-manual/participant/statistics',
-		tour: lazy(() => import('./shared/statistics.tour'))
+		tour: () => import('./shared/statistics.tour').then((m) => m.tour)
 	},
 
 	// Participants
 	'/app/[conferenceId]/participant': {
 		docs: 'user-manual/participant/getting-started',
-		tour: lazy(() => import('./participant/overview.tour'))
+		tour: () => import('./participant/overview.tour').then((m) => m.tour)
 	},
 	'/app/[conferenceId]/participant/[committeeId]': {
 		docs: 'user-manual/participant/committee-overview',
-		tour: lazy(() => import('./participant/committee.tour'))
+		tour: () => import('./participant/committee.tour').then((m) => m.tour)
 	},
 	'/app/[conferenceId]/participant/[committeeId]/papers': {
 		docs: 'user-manual/participant/resolutions-basics',
-		tour: lazy(() => import('./participant/papers.tour'))
+		tour: () => import('./participant/papers.tour').then((m) => m.tour)
 	},
 	'/app/[conferenceId]/participant/[committeeId]/papers/[paperId]': {
 		docs: 'user-manual/participant/writing-resolutions',
-		tour: lazy(() => import('./participant/paper.tour'))
+		tour: () => import('./participant/paper.tour').then((m) => m.tour)
 	},
 
 	// Chairs
@@ -51,31 +49,31 @@ export const routeHelp: Partial<Record<RouteId, RouteHelp>> = {
 	},
 	'/app/[conferenceId]/[committeeId]/(chairs)/setup': {
 		docs: 'user-manual/chair/committee-setup',
-		tour: lazy(() => import('./chair/setup.tour'))
+		tour: () => import('./chair/setup.tour').then((m) => m.tour)
 	},
 	'/app/[conferenceId]/[committeeId]/(chairs)/presence': {
 		docs: 'user-manual/chair/roll-call-attendance',
-		tour: lazy(() => import('./chair/presence.tour'))
+		tour: () => import('./chair/presence.tour').then((m) => m.tour)
 	},
 	'/app/[conferenceId]/[committeeId]/(chairs)/speakers-list': {
 		docs: 'user-manual/chair/speakers-list',
-		tour: async () =>
-			(await import('$lib/components/speakersList/speakersList.tour')).chairSpeakersListTour
+		tour: () =>
+			import('$lib/components/speakersList/speakersList.tour').then((m) => m.chairSpeakersListTour)
 	},
 	'/app/[conferenceId]/[committeeId]/(chairs)/voting': {
 		docs: 'user-manual/chair/voting',
-		tour: lazy(() => import('./chair/voting.tour'))
+		tour: () => import('./chair/voting.tour').then((m) => m.tour)
 	},
 	'/app/[conferenceId]/[committeeId]/(chairs)/requests': {
 		docs: 'user-manual/chair/requests',
-		tour: lazy(() => import('./chair/requests.tour'))
+		tour: () => import('./chair/requests.tour').then((m) => m.tour)
 	},
 	'/app/[conferenceId]/[committeeId]/(chairs)/resolutions': {
 		docs: 'user-manual/chair/resolutions',
-		tour: lazy(() => import('./chair/resolutions.tour'))
+		tour: () => import('./chair/resolutions.tour').then((m) => m.tour)
 	},
 	'/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]': {
 		docs: 'user-manual/chair/amendments-review',
-		tour: lazy(() => import('./chair/paper.tour'))
+		tour: () => import('./chair/paper.tour').then((m) => m.tour)
 	}
 };

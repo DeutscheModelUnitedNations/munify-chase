@@ -14,7 +14,7 @@ abilityBuilder.requestType.allow(['update', 'delete']).when((ctx) => ({
 	where: isAdminInConference(ctx)
 }));
 
-export const RequestTypeRef = object({ table: 'requestType' });
+const RequestTypeRef = object({ table: 'requestType' });
 
 const pubsub = rumblePubsub({ table: 'requestType' });
 query({ table: 'requestType' });

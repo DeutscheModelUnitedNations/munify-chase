@@ -2,19 +2,12 @@ import type { IncomingMessage } from 'node:http';
 import type { WebSocket } from 'ws';
 import type { Context } from '$api/context';
 import { hocuspocus } from './server';
+import { toHeaders } from '$api/services/auth';
 
 /** Build the WHATWG Request Hocuspocus reads the URL and headers from. */
 function buildRequest(req: IncomingMessage): Request {
 	const url = new URL(req.url ?? '/', 'http://localhost');
-	const headers = new Headers();
-	for (const [key, value] of Object.entries(req.headers)) {
-		if (typeof value === 'string') {
-			headers.set(key, value);
-		} else if (Array.isArray(value)) {
-			headers.set(key, value.join(', '));
-		}
-	}
-	return new Request(url, { headers });
+	return new Request(url, { headers: toHeaders(req.headers) });
 }
 
 export function openYjsRoom(

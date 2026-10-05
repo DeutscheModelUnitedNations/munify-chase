@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { toDateInputValue } from '$lib/helpers/dateInput';
 	import { m } from '$lib/paraglide/messages';
 	import type { z } from 'zod/v4';
 	import type { importDataSchema } from '$lib/utils/import';
@@ -18,16 +19,6 @@
 		{ icon: 'flag', label: () => m.delegations() },
 		{ icon: 'circle-check', label: () => m.editStep() }
 	];
-
-	function toDateInputValue(d: Date | string | undefined | null): string {
-		if (!d) return '';
-		const date = d instanceof Date ? d : new Date(d);
-		if (Number.isNaN(date.getTime())) return '';
-		const year = date.getUTCFullYear();
-		const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-		const day = String(date.getUTCDate()).padStart(2, '0');
-		return `${year}-${month}-${day}`;
-	}
 
 	function fromDateInputValue(value: string): Date | undefined {
 		if (!value) return undefined;

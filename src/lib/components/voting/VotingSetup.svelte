@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { VotingCommittee } from './types';
 	import type { VotingMajority } from './votingModal';
 	import { m } from '$lib/paraglide/messages';
 	import { registerCommands } from '$lib/commands/registry.svelte';
@@ -8,23 +9,7 @@
 	import VotingSetupForm from './VotingSetupForm.svelte';
 
 	interface Props {
-		committee: {
-			id: string;
-			totalPresent: number;
-			simpleMajority: number;
-			twoThirdsMajority: number;
-			members: Array<{
-				id: string;
-				present: boolean;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					faIcon?: string | null;
-					type?: string | null;
-				} | null;
-			}>;
-		};
+		committee: VotingCommittee;
 		activeVotingSession?: {
 			id: string;
 			mode: string;

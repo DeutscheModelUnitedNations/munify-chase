@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { VotingCommittee } from './types';
 	import Flag from '$lib/components/Flag.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
@@ -14,24 +15,7 @@
 
 	interface Props {
 		committeeId: string;
-		committee?: {
-			id: string;
-			totalPresent: number;
-			simpleMajority: number;
-			twoThirdsMajority: number;
-			members: Array<{
-				id: string;
-				present: boolean;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					faIcon?: string | null;
-					type?: string | null;
-					regionalGroup?: string | null;
-				} | null;
-			}>;
-		} | null;
+		committee?: VotingCommittee | null;
 	}
 	let { committeeId, committee }: Props = $props();
 

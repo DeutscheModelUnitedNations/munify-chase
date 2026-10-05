@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { VotingCommittee } from './types';
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { untrack } from 'svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -16,23 +17,7 @@
 
 	interface Props {
 		active: boolean;
-		committee: {
-			id: string;
-			totalPresent: number;
-			simpleMajority: number;
-			twoThirdsMajority: number;
-			members: Array<{
-				id: string;
-				present: boolean;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					faIcon?: string | null;
-					type?: string | null;
-				} | null;
-			}>;
-		};
+		committee: VotingCommittee;
 		voteName?: string;
 		majority?: VotingMajority;
 		withAbstentions?: boolean;

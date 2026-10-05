@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
+	import { readChartColors } from './chartColors';
 
 	export interface TrendPoint {
 		date: string;
@@ -22,17 +23,7 @@
 			const { Chart } = await import('chart.js/auto');
 			if (destroyed || !canvas) return;
 
-			const el = Object.assign(document.createElement('div'), {
-				className: 'text-primary bg-transparent',
-				style: 'position:absolute;visibility:hidden'
-			});
-			document.body.appendChild(el);
-			const primaryColor = getComputedStyle(el).color;
-			el.className = 'text-base-content/20 bg-transparent';
-			const gridColor = getComputedStyle(el).color;
-			el.className = 'text-base-content/60 bg-transparent';
-			const labelColor = getComputedStyle(el).color;
-			el.remove();
+			const { primaryColor, gridColor, labelColor } = readChartColors();
 
 			localChart = new Chart(canvas, {
 				type: 'line',

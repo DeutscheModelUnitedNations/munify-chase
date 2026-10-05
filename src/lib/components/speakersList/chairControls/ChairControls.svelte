@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { ListedSpeaker } from '../types';
 	import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
 	import SpeechControls from './SpeechControls.svelte';
 	import MoreOptions from './MoreOptions.svelte';
@@ -12,31 +13,7 @@
 		speakingTime: number;
 		startTimestamp?: Date | null;
 		timeLeft: number;
-		speakers: Array<{
-			id: string;
-			position: number;
-			overwriteName?: string | null;
-			committeeMember?: {
-				id: string;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					faIcon?: string | null;
-					type?: string | null;
-				} | null;
-			} | null;
-			conferenceMember?: {
-				id: string;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					faIcon?: string | null;
-					type?: string | null;
-				} | null;
-			} | null;
-		}>;
+		speakers: ListedSpeaker[];
 	} | null;
 
 	type MemberLike = {

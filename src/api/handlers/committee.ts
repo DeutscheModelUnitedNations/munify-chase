@@ -17,6 +17,7 @@ import { and, count, eq, isNull, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '$lib/utils/majorities';
 import { nanoidValidation } from '$lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
+import { nullsToUndefined } from '$api/services/nullsToUndefined';
 
 abilityBuilder.committee.allow('read').when((ctx) => {
 	return {
@@ -194,27 +195,11 @@ schemaBuilder.mutationFields((t) => {
 				displayRegionalGroups: t.arg.boolean()
 			},
 			resolve: async (query, _root, args, ctx) => {
+				const { id: _id, ...fields } = args;
 				await db.transaction(async (tx) => {
 					await tx
 						.update(schema.committee)
-						.set({
-							name: args.name ?? undefined,
-							abbreviation: args.abbreviation ?? undefined,
-							whiteboardContent: args.whiteboardContent ?? undefined,
-							showWhiteboard: args.showWhiteboard ?? undefined,
-							status: args.status ?? undefined,
-							statusHeadline: args.statusHeadline ?? undefined,
-							statusUntil: args.statusUntil ?? undefined,
-							stateOfDebate: args.stateOfDebate ?? undefined,
-							activeAgendaItemId: args.activeAgendaItemId ?? undefined,
-							allowDelegationsToAddThemselvesToSpeakersList:
-								args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined,
-							allowRequests: args.allowRequests ?? undefined,
-							presentationLayout: args.presentationLayout ?? undefined,
-							presentationRootFontSize: args.presentationRootFontSize ?? undefined,
-							presentationResolutionFontSize: args.presentationResolutionFontSize ?? undefined,
-							displayRegionalGroups: args.displayRegionalGroups ?? undefined
-						})
+						.set(nullsToUndefined(fields))
 						.where(
 							ctx.abilities.committee.filter('update').merge({ where: { id: args.id } }).sql.where
 						);
@@ -349,14 +334,10 @@ schemaBuilder.mutationFields((t) => {
 				currentOperativeIndex: t.arg.int()
 			},
 			resolve: async (query, _root, args, ctx) => {
+				const { committeeId: _committeeId, ...fields } = args;
 				await db
 					.update(schema.committee)
-					.set({
-						supportReevaluationOpen: args.supportReevaluationOpen ?? undefined,
-						amendmentSubmissionOpen: args.amendmentSubmissionOpen ?? undefined,
-						amendmentSponsoringOpen: args.amendmentSponsoringOpen ?? undefined,
-						currentOperativeIndex: args.currentOperativeIndex ?? undefined
-					})
+					.set(nullsToUndefined(fields))
 					.where(
 						ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).sql
 							.where

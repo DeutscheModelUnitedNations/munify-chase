@@ -2,11 +2,11 @@
 	import { m } from '$lib/paraglide/messages';
 	import type { z } from 'zod/v4';
 	import type { importDataSchema } from '$lib/utils/import';
-	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { SvelteSet } from 'svelte/reactivity';
 	import StepHeader from './StepHeader.svelte';
+	import { validateImport } from './validateImport';
 
 	type ImportData = z.infer<typeof importDataSchema>;
-	type Validation = { severity: 'error' | 'warning'; step: number; msg: string };
 
 	interface Props {
 		data: ImportData;
@@ -35,52 +35,7 @@
 	);
 	const totalRequestTypes = $derived((data.requestTypes ?? []).length);
 
-	const validations = $derived.by<Validation[]>(() => {
-		const v: Validation[] = [];
-		if (!data.title) v.push({ severity: 'error', step: 1, msg: m.missingConferenceTitle() });
-		if (data.committees.length === 0)
-			v.push({ severity: 'error', step: 2, msg: m.noCommitteesCreated() });
-		const nameCounts = new SvelteMap<string, number>();
-		const abbrCounts = new SvelteMap<string, number>();
-		for (const c of data.committees) {
-			if (!c.abbreviation || !c.name) {
-				v.push({
-					severity: 'error',
-					step: 2,
-					msg: m.committeeIncomplete({ name: c.abbreviation || c.name || m.unbenamedCommittee() })
-				});
-			}
-			if (c.name) nameCounts.set(c.name, (nameCounts.get(c.name) ?? 0) + 1);
-			if (c.abbreviation) abbrCounts.set(c.abbreviation, (abbrCounts.get(c.abbreviation) ?? 0) + 1);
-			const memberCount = (data.committeeMembers ?? []).filter(
-				(cm) => cm.committeeId === c.id
-			).length;
-			if (memberCount === 0) {
-				v.push({
-					severity: 'warning',
-					step: 3,
-					msg: m.committeeNoDelegations({
-						name: c.abbreviation || c.name || m.unbenamedCommittee()
-					})
-				});
-			}
-		}
-		for (const [name, count] of nameCounts) {
-			if (count > 1) {
-				v.push({ severity: 'error', step: 2, msg: m.duplicateCommitteeName({ name }) });
-			}
-		}
-		for (const [abbreviation, count] of abbrCounts) {
-			if (count > 1) {
-				v.push({
-					severity: 'error',
-					step: 2,
-					msg: m.duplicateCommitteeAbbreviation({ abbreviation })
-				});
-			}
-		}
-		return v;
-	});
+	const validations = $derived(validateImport(data));
 
 	const hasErrors = $derived(validations.some((x) => x.severity === 'error'));
 

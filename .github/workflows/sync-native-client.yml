@@ -58,32 +58,44 @@ jobs:
             exit 0
           fi
 
+          # Files the fork owns outright: main's version never merges in, so they
+          # never conflict either.
+          #   - ci.yml: the fork has its own CI pipeline (textual merges splice
+          #     main's jobs into the diverged file, producing valid-but-wrong YAML
+          #     that verification can't catch).
+          #   - the landing page: the native app shows NativeLoginPage instead and
+          #     must not get main's server-backed sections (e.g. downloads).
+          fork_owned=(
+            .github/workflows/ci.yml
+            'src/routes/(pages)/+page.svelte'
+          )
+
           if ! git merge --no-commit origin/main; then
             # Auto-resolve delete/modify conflicts: the fork deleted the file,
             # main modified it — keep it deleted. A file with a stage-2 entry
-            # was modified on BOTH sides and needs a human.
-            conflicted=false
+            # was modified on BOTH sides and needs a human, unless the fork
+            # owns it (restored below).
+            conflicted=()
             while IFS= read -r file; do
-              if git ls-files -u -- "$file" | awk '{print $3}' | grep -qx '2'; then
-                conflicted=true
+              if printf '%s\n' "${fork_owned[@]}" | grep -qxF -- "$file"; then
+                continue
+              elif git ls-files -u -- "$file" | awk '{print $3}' | grep -qx '2'; then
+                conflicted+=("$file")
               else
                 git rm -qf -- "$file"
               fi
             done < <(git diff --name-only --diff-filter=U)
 
-            if [ "$conflicted" = true ]; then
+            if [ "${#conflicted[@]}" -gt 0 ]; then
               echo "Conflicts need manual resolution:" >> "$GITHUB_STEP_SUMMARY"
-              git diff --name-only --diff-filter=U | sed 's/^/- `/;s/$/`/' >> "$GITHUB_STEP_SUMMARY" || true
+              printf -- '- `%s`\n' "${conflicted[@]}" >> "$GITHUB_STEP_SUMMARY"
               git merge --abort
               echo "result=conflicted" >> "$GITHUB_OUTPUT"
               exit 0
             fi
           fi
 
-          # The fork has its own CI pipeline — never let main's ci.yml merge
-          # into it (textual merges splice main's jobs into the diverged file,
-          # producing valid-but-wrong YAML that verification can't catch).
-          git checkout HEAD -- .github/workflows/ci.yml
+          git checkout HEAD -- "${fork_owned[@]}"
 
           # Fork policy: the native client has no server. Drop server-only
           # paths main may have added since the last sync.
@@ -91,6 +103,7 @@ jobs:
             src/api \
             src/routes/api \
             src/routes/download \
+            'src/routes/(pages)/DownloadSection.svelte' \
             src/params/downloadPlatform.ts \
             src/routes/logout \
             src/routes/app/+layout.server.ts \

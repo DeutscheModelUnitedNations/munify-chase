@@ -7,19 +7,12 @@
 		INSTALL_GUIDE_URL,
 		platformLabel,
 		RELEASES_PAGE_URL,
-		type DownloadPlatform,
-		type LatestRelease
+		type DownloadPlatform
 	} from '$lib/helpers/downloads';
+	import { getDownloads } from '$api/downloads.remote';
 	import SplitSection from './SplitSection.svelte';
 
-	interface Props {
-		/** Detected from the User-Agent, null on phones and unknown systems */
-		platform: DownloadPlatform | null;
-		release: Promise<LatestRelease | null>;
-	}
-
-	// fallow-ignore-next-line unused-component-prop -- release is read by the {#await} block
-	let { platform, release }: Props = $props();
+	const { platform, version } = $derived(await getDownloads());
 
 	const others = $derived(DOWNLOAD_PLATFORMS.filter((p) => p !== platform));
 
@@ -54,11 +47,9 @@
 	</div>
 
 	<p class="max-w-[66ch] text-sm italic opacity-80">
-		{#await release then latest}
-			{#if latest}
-				{m.homeDownloadVersion({ version: latest.version })}
-			{/if}
-		{/await}
+		{#if version}
+			{m.homeDownloadVersion({ version })}
+		{/if}
 		{m.homeDownloadUnsignedNote()}
 	</p>
 

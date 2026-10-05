@@ -71,7 +71,7 @@
 	<p class="max-w-[66ch] text-sm italic opacity-80">{m.homeOfflineBetaNote()}</p>
 </SplitSection>
 
-<DownloadSection platform={data.downloadPlatform} release={data.latestRelease} />
+<DownloadSection />
 
 <SplitSection title={m.homeDocsTitle()} text={m.homeDocsText()}>
 	<div class="flex flex-wrap gap-3">

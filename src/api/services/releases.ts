@@ -58,11 +58,19 @@ export function createReleaseCache({
 	}
 
 	/** Never rejects, resolves to null when no release could be loaded yet. */
-	return function getLatestRelease(): Promise<LatestRelease | null> {
+	function get(): Promise<LatestRelease | null> {
 		if (entry && entry.expiresAt > now()) return Promise.resolve(entry.release);
 		pending ??= refresh().finally(() => (pending = undefined));
 		return pending;
-	};
+	}
+
+	/** Returns the cached release right away and refreshes it in the background when stale. */
+	function peek(): LatestRelease | null {
+		if (!entry || entry.expiresAt <= now()) void get();
+		return entry?.release ?? null;
+	}
+
+	return { get, peek };
 }
 
 function requestHeaders(token?: string, etag?: string) {
@@ -85,7 +93,10 @@ const toLatestRelease = (data: GitHubRelease): LatestRelease => ({
 const ttlFor = (release: LatestRelease | null) =>
 	release && Object.keys(release.assets).length > 0 ? TTL_MS : RETRY_MS;
 
-let instance: (() => Promise<LatestRelease | null>) | undefined;
+let instance: ReturnType<typeof createReleaseCache> | undefined;
 
-export const getLatestRelease = () =>
-	(instance ??= createReleaseCache({ token: configPrivate.GITHUB_TOKEN }))();
+const releaseCache = () => (instance ??= createReleaseCache({ token: configPrivate.GITHUB_TOKEN }));
+
+export const getLatestRelease = () => releaseCache().get();
+
+export const peekLatestRelease = () => releaseCache().peek();

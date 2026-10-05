@@ -21,8 +21,11 @@ function setup(...responses: (Response | Error)[]) {
 		return next instanceof Error ? Promise.reject(next) : Promise.resolve(next);
 	});
 	vi.spyOn(console, 'warn').mockImplementation(() => {});
-	const get = createReleaseCache({ fetch: fetch as typeof globalThis.fetch, now: () => time });
-	return { get, fetch, advance: (ms: number) => (time += ms) };
+	const { get, peek } = createReleaseCache({
+		fetch: fetch as typeof globalThis.fetch,
+		now: () => time
+	});
+	return { get, peek, fetch, advance: (ms: number) => (time += ms) };
 }
 
 describe('createReleaseCache', () => {
@@ -81,6 +84,22 @@ describe('createReleaseCache', () => {
 		expect(await get()).toEqual(first);
 		advance(3 * MINUTE);
 		expect(await get()).toEqual(first);
+	});
+
+	it('peeks without waiting and refreshes in the background', async () => {
+		const { get, peek, fetch, advance } = setup(
+			json(release('v1.0.0', ['a.dmg'])),
+			json(release('v1.1.0', ['b.dmg']), '"b"')
+		);
+		expect(peek()).toBeNull();
+		await get();
+		expect(fetch).toHaveBeenCalledTimes(1);
+		expect(peek()?.version).toBe('1.0.0');
+		advance(16 * MINUTE);
+		expect(peek()?.version).toBe('1.0.0');
+		await get();
+		expect(peek()?.version).toBe('1.1.0');
+		expect(fetch).toHaveBeenCalledTimes(2);
 	});
 
 	it('resolves to null when nothing was ever loaded', async () => {

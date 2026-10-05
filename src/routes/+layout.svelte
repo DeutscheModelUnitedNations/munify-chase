@@ -6,7 +6,7 @@
 	import dayjs from 'dayjs';
 	import duration from 'dayjs/plugin/duration';
 	import '../app.css';
-	import '/node_modules/flag-icons/css/flag-icons.min.css';
+	import 'flag-icons/css/flag-icons.min.css';
 
 	import { dev } from '$app/environment';
 	import { initialSetTheme } from '$lib/utils/theme.svelte';

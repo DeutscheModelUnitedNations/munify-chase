@@ -68,7 +68,6 @@ function devAutoRestart() {
 
 export default defineConfig({
 	plugins: [
-		// mkcert(),
 		devAutoRestart(),
 		// Local OIDC provider for development, users are configured in oidc-mock.yaml
 		oidcMock(),

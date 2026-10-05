@@ -7,3 +7,5 @@ schema.graphql
 drizzle/meta/**
 src/lib/api/rumbleClient/**
 src-tauri
+# Feature video tooling: local pipeline, not linted or formatted
+scripts/feature-video/**

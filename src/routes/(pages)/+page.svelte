@@ -96,6 +96,14 @@
 		>
 			{m.homeDocsAdminLabel()}
 		</a>
+		<a
+			class="btn btn-outline w-full sm:w-auto"
+			href="https://munify.cloud/chase/selfhost/getting-started"
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			{m.homeDocsTechnicalLabel()}
+		</a>
 	</div>
 </SplitSection>
 

@@ -502,6 +502,7 @@
 	"homeDocsButtonLabel": "Read the Docs",
 	"homeDocsChairLabel": "For Chairs",
 	"homeDocsParticipantLabel": "For Participants",
+	"homeDocsTechnicalLabel": "Technical docs (self-hosting)",
 	"homeDocsText": "New to CHASE? Our documentation covers everything from setting up a conference to running debates and votes, with dedicated guides for chairs, participants, and admins.",
 	"homeDocsTitle": "Documentation",
 	"homeFeaturesEyebrow": "Features",

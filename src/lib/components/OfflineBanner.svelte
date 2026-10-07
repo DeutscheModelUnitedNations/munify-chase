@@ -8,6 +8,9 @@
 	// Presentation view sits at /app/{conferenceId}/{committeeId} with no further segments.
 	let isPresentation = $derived(/^\/app\/[^/]+\/[^/]+\/?$/.test(page.url.pathname));
 
+	// Home page and conference selection don't need the offline hint.
+	let isHomeOrSelection = $derived(/^\/(app(\/import)?)?\/?$/.test(page.url.pathname));
+
 	// Only show offline banner once we have a confirmed disconnected state — not while
 	// the initial WS handshake is still in progress (null).
 	let showBanner = $derived(getWsConnected() === false && !isPresentation);

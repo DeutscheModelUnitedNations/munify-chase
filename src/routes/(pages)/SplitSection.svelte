@@ -5,13 +5,14 @@
 		title: string;
 		text: string;
 		inverse?: boolean;
+		id?: string;
 		children?: Snippet;
 	}
 
-	let { title, text, inverse = false, children }: Props = $props();
+	let { title, text, inverse = false, id, children }: Props = $props();
 </script>
 
-<section class={inverse ? 'bg-neutral text-neutral-content' : ''}>
+<section {id} class={inverse ? 'bg-neutral text-neutral-content' : ''}>
 	<div
 		class="mx-auto flex max-w-[1200px] flex-wrap items-start gap-x-16 gap-y-8 px-4 py-16 md:px-12 lg:py-24"
 	>

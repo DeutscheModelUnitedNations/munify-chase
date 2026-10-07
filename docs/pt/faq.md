@@ -44,7 +44,7 @@ Consulte o [guia de alojamento próprio](https://munify.cloud/chase/selfhost/get
 
 ## Existe uma aplicação para computador?
 
-Sim. O CHASE tem uma aplicação nativa para macOS, Windows e Linux. Descarregue o instalador mais recente na [página de releases do GitHub](https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest).
+Sim. O CHASE tem uma aplicação nativa para macOS, Windows e Linux. Descarregue o instalador mais recente na [secção de transferências da página inicial](/#download). Ela sugere o ficheiro certo para o seu sistema, e todos os instaladores estão também na [página de releases do GitHub](https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest).
 
 A aplicação publicada liga-se ao servidor CHASE para o qual foi compilada e continua a funcionar quando a ligação cai por momentos. Se alojar o CHASE por si, use a aplicação web no navegador ou compile a aplicação para computador com o endereço do seu próprio servidor.
 

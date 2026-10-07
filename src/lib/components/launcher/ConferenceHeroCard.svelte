@@ -32,7 +32,7 @@
 </script>
 
 <article
-	class="card bg-base-100 border-primary/15 relative flex flex-col gap-5 overflow-hidden border p-6 shadow-md"
+	class="card bg-base-200 border-primary/15 relative flex flex-col gap-5 overflow-hidden border p-6 shadow-md"
 >
 	<div
 		class="from-accent pointer-events-none absolute top-0 right-0 h-full w-1 bg-gradient-to-b to-transparent"

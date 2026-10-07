@@ -207,21 +207,19 @@
 	<title>{m.launcher()} - MUNify CHASE</title>
 </svelte:head>
 
-<div class="bg-base-200 flex min-h-screen flex-col">
-	<div class="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
-		<header class="mb-6 flex flex-col gap-4">
-			<div class="flex items-center justify-between gap-3">
-				<div class="inline-flex items-center gap-2 text-base font-bold tracking-tight">
-					<span
-						class="bg-base-100 text-primary grid size-8 place-items-center rounded-lg text-base shadow-sm"
-					>
-						<i class="fa-duotone fa-podium"></i>
-					</span>
-					<span>MUNify <span class="text-primary">CHASE</span></span>
-				</div>
-				<AvatarMenu givenName={user.givenName} familyName={user.familyName} email={user.email} />
-			</div>
+<!-- Same ground, header and content width as the public pages (see (pages)/Navbar.svelte) -->
+<div class="bg-base-100 flex min-h-screen flex-col">
+	<header
+		class="mx-auto flex w-full max-w-[1200px] items-center justify-between gap-x-8 px-4 py-7 md:px-12"
+	>
+		<a class="text-xl leading-none" href={resolve('/(pages)')}>
+			<span class="font-light">MUNify</span> <span class="font-bold">CHASE</span>
+		</a>
+		<AvatarMenu givenName={user.givenName} familyName={user.familyName} email={user.email} />
+	</header>
 
+	<div class="mx-auto flex w-full max-w-[1200px] flex-1 flex-col px-4 pb-6 md:px-12">
+		<header class="mb-6 flex flex-col gap-4">
 			<div>
 				<p class="text-base-content/60 m-0 text-sm">
 					{#if isGlobalAdmin}
@@ -269,7 +267,7 @@
 										{section.items.length}
 									</span>
 								</div>
-								<div class="card bg-base-100 p-0 shadow-sm">
+								<div class="card bg-base-200 p-0">
 									{#each section.items as c, i (c.id)}
 										<div class:is-first={i === 0} class:is-last={i === section.items.length - 1}>
 											<AdminConferenceRow conference={c} onDelete={openDelete} />
@@ -293,8 +291,8 @@
 
 		{#if isGlobalAdmin}
 			<footer
-				class="from-base-200 sticky bottom-0 mt-8 flex flex-col gap-2 bg-gradient-to-b from-35% to-transparent py-4 [&>.btn]:w-full"
-				style="background: linear-gradient(180deg, transparent 0%, var(--color-base-200) 35%);"
+				class="from-base-100 sticky bottom-0 mt-8 flex flex-col gap-2 bg-gradient-to-b from-35% to-transparent py-4 [&>.btn]:w-full"
+				style="background: linear-gradient(180deg, transparent 0%, var(--color-base-100) 35%);"
 			>
 				<a class="btn btn-primary btn-lg" href={resolve('/app/(launcher)/import')}>
 					<i class="fa-solid fa-plus"></i>

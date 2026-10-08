@@ -275,51 +275,51 @@
 	let speakersListOvertimeAlerted = $state(false);
 	let commentListOvertimeAlerted = $state(false);
 
+	type ActiveCommittee = NonNullable<typeof committee>;
+	type ActiveSpeakersList = NonNullable<
+		NonNullable<ActiveCommittee['activeAgendaItem']>['speakersList']
+	>[number];
+
+	function alertStatusExpiry(c: ActiveCommittee) {
+		if (dayjs(c.statusUntil).diff(getServerTime()) >= 0) {
+			committeeStatusExpiredAlerted = false;
+			return;
+		}
+		if (committeeStatusExpiredAlerted) return;
+		toast.error(
+			m.committeeStatusExpired({ status: getCommitteeStatusText(c.status, c.statusHeadline) }),
+			{ icon: BellIcon, duration: 10000 }
+		);
+		committeeStatusExpiredAlerted = true;
+	}
+
+	function setOvertimeAlerted(type: string, alerted: boolean) {
+		if (type === 'SPEAKERS_LIST') speakersListOvertimeAlerted = alerted;
+		else if (type === 'COMMENT_LIST') commentListOvertimeAlerted = alerted;
+	}
+
+	function alertSpeakersListOvertime(speakersList: ActiveSpeakersList) {
+		const overtime =
+			dayjs(speakersList.startTimestamp).diff(getServerTime(), 'seconds') + speakersList.timeLeft <
+			0;
+
+		//	XAND only fire if both are false. Both true can be ignored, case should not happen.
+		if (overtime && speakersListOvertimeAlerted === commentListOvertimeAlerted) {
+			toast.error(m.speakersListOvertime(), { icon: BellIcon });
+			setOvertimeAlerted(speakersList.type, true);
+		} else if (!overtime) {
+			setOvertimeAlerted(speakersList.type, false);
+		}
+	}
+
 	$effect(() => {
 		// Toast Effect
 		if (!committee) return;
 
 		const interval = setInterval(() => {
-			if (dayjs(committee.statusUntil).diff(getServerTime()) < 0) {
-				if (!committeeStatusExpiredAlerted) {
-					toast.error(
-						m.committeeStatusExpired({
-							status: getCommitteeStatusText(committee.status, committee.statusHeadline)
-						}),
-						{
-							icon: BellIcon,
-							duration: 10000
-						}
-					);
-					committeeStatusExpiredAlerted = true;
-				}
-			} else {
-				committeeStatusExpiredAlerted = false;
-			}
-
+			alertStatusExpiry(committee);
 			for (const speakersList of committee.activeAgendaItem?.speakersList ?? []) {
-				const overtime =
-					dayjs(speakersList.startTimestamp).diff(getServerTime(), 'seconds') +
-						speakersList.timeLeft <
-					0;
-
-				//	XAND only fire if both are false. Both true can be ignored, case should not happen.
-				if (overtime && speakersListOvertimeAlerted === commentListOvertimeAlerted) {
-					toast.error(m.speakersListOvertime(), {
-						icon: BellIcon
-					});
-					if (speakersList.type === 'SPEAKERS_LIST') {
-						speakersListOvertimeAlerted = true;
-					} else if (speakersList.type === 'COMMENT_LIST') {
-						commentListOvertimeAlerted = true;
-					}
-				} else if (!overtime) {
-					if (speakersList.type === 'SPEAKERS_LIST') {
-						speakersListOvertimeAlerted = false;
-					} else if (speakersList.type === 'COMMENT_LIST') {
-						commentListOvertimeAlerted = false;
-					}
-				}
+				alertSpeakersListOvertime(speakersList);
 			}
 		}, 1000);
 		return () => clearInterval(interval);

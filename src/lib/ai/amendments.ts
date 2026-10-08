@@ -1,6 +1,7 @@
 import { serializeClause } from '@deutschemodelunitednations/munify-resolution-editor';
 import { callAI, type AiMode } from './call';
 import { getAiPreference, preferenceToMode } from './aiPreference.svelte';
+import { robustJsonParse, safeTextParse } from './parseOutput';
 
 function defaultMode(): AiMode {
 	return preferenceToMode(getAiPreference());
@@ -27,102 +28,6 @@ function toText(raw: string | null | undefined): string {
 	} catch {
 		return raw;
 	}
-}
-
-function extractJson(raw: string): string {
-	const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)(?:```|$)/);
-	if (fenced) return fenced[1].trim();
-
-	const start = raw.search(/[{[]/);
-	if (start < 0) return raw.trim();
-
-	// Walk forward to find the matching close bracket, so trailing model
-	// commentary after the JSON object doesn't break JSON.parse.
-	const openChar = raw[start];
-	const closeChar = openChar === '{' ? '}' : ']';
-	let depth = 0;
-	let inString = false;
-	let escape = false;
-	for (let i = start; i < raw.length; i++) {
-		const c = raw[i];
-		if (escape) {
-			escape = false;
-			continue;
-		}
-		if (c === '\\' && inString) {
-			escape = true;
-			continue;
-		}
-		if (c === '"') {
-			inString = !inString;
-			continue;
-		}
-		if (inString) continue;
-		if (c === openChar) depth++;
-		else if (c === closeChar && --depth === 0) return raw.slice(start, i + 1);
-	}
-
-	// Truncated — return from start to end for closeJson to complete.
-	return raw.slice(start);
-}
-
-/**
- * Attempts to close a truncated JSON string by tracking open strings and
- * unclosed braces/brackets, then appending the minimum suffix to make it valid.
- */
-function closeJson(s: string): string {
-	let inString = false;
-	let escape = false;
-	const stack: string[] = [];
-	for (let i = 0; i < s.length; i++) {
-		const c = s[i];
-		if (escape) {
-			escape = false;
-			continue;
-		}
-		if (c === '\\' && inString) {
-			escape = true;
-			continue;
-		}
-		if (c === '"') {
-			inString = !inString;
-			continue;
-		}
-		if (inString) continue;
-		if (c === '{') stack.push('}');
-		else if (c === '[') stack.push(']');
-		else if (c === '}' || c === ']') stack.pop();
-	}
-	return s + (inString ? '"' : '') + stack.reverse().join('');
-}
-
-function safeTextParse(raw: string): string {
-	return raw
-		.replace(/<think>[\s\S]*?<\/think>/g, '')
-		.replace(/<think>[\s\S]*/g, '')
-		.trim()
-		.replace(/^["']|["']$/g, '');
-}
-
-function robustJsonParse(raw: string): unknown {
-	const stripped = safeTextParse(raw);
-	// LLMs sometimes emit literal newlines/tabs inside JSON string values, which is invalid.
-	const sanitize = (s: string) => s.replace(/[\r\n\t]+/g, ' ');
-
-	const cleaned = sanitize(extractJson(stripped));
-	try {
-		return JSON.parse(cleaned);
-	} catch {
-		/* continue */
-	}
-
-	try {
-		return JSON.parse(closeJson(cleaned));
-	} catch {
-		/* continue */
-	}
-
-	throw new SyntaxError(`Could not parse LLM output: ${raw.slice(0, 120)}`);
 }
 
 export interface ObsolescenceResult {

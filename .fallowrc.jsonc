@@ -3,6 +3,8 @@
 	// Generated output — mirrors the ignores in eslint.config.js and .prettierignore.
 	// Production entry: the Dockerfile copies it next to the adapter-node build output and runs it.
 	"entry": ["src/server.js"],
+	// Not imported directly: pins the patched version that minimatch@10 resolves to (see .trivyignore).
+	"ignoreDependencies": ["brace-expansion"],
 	"ignorePatterns": [
 		"src/lib/paraglide/**",
 		"src/lib/api/rumbleClient/**",

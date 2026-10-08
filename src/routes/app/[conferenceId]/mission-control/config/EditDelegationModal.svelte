@@ -9,7 +9,7 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 
-	interface Representation {
+	export interface Representation {
 		id: string;
 		name: string | null;
 		alpha2Code: string | null;
@@ -18,7 +18,7 @@
 		faIcon: string | null;
 	}
 
-	interface Committee {
+	export interface Committee {
 		id: string;
 		name: string;
 		abbreviation: string;

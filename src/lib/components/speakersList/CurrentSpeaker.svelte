@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { ListedSpeaker } from './types';
 	import Flag from '../Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -15,31 +16,7 @@
 			speakingTime: number;
 			startTimestamp?: Date | null;
 			timeLeft: number;
-			speakers: Array<{
-				id: string;
-				position: number;
-				overwriteName?: string | null;
-				committeeMember?: {
-					id: string;
-					representation?: {
-						name?: string | null;
-						alpha2Code?: string | null;
-						alpha3Code?: string | null;
-						faIcon?: string | null;
-						type?: string | null;
-					} | null;
-				} | null;
-				conferenceMember?: {
-					id: string;
-					representation?: {
-						name?: string | null;
-						alpha2Code?: string | null;
-						alpha3Code?: string | null;
-						faIcon?: string | null;
-						type?: string | null;
-					} | null;
-				} | null;
-			}>;
+			speakers: ListedSpeaker[];
 		} | null;
 	}
 

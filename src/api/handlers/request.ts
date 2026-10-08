@@ -6,7 +6,10 @@ import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '$lib/helpers/nanoid';
 
-abilityBuilder.request.allow('read').when((ctx) => {
+// Chairs see every request in their committee, submitters see their own. The same
+// holds for withdrawing: the submitter may withdraw their own request, chairs any
+// request in their committee.
+abilityBuilder.request.allow(['read', 'delete']).when((ctx) => {
 	const userId = ctx.mustBeLoggedIn().sub;
 	return {
 		where: {
@@ -19,17 +22,6 @@ abilityBuilder.request.allow('read').when((ctx) => {
 abilityBuilder.request.allow('update').when((ctx) => ({
 	where: { committee: isTeamInConference(ctx) }
 }));
-
-// The submitter may withdraw their own request; chairs may withdraw any
-// request in their committee too.
-abilityBuilder.request.allow('delete').when((ctx) => {
-	const userId = ctx.mustBeLoggedIn().sub;
-	return {
-		where: {
-			OR: [{ committee: isTeamInConference(ctx) }, { conferenceUser: { user: { id: userId } } }]
-		}
-	};
-});
 
 const RequestRef = object({ table: 'request' });
 

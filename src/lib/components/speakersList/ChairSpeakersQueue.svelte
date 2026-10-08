@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { ListedSpeaker } from './types';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { flip } from 'svelte/animate';
@@ -11,31 +12,7 @@
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import { compareSpeakers } from '$lib/helpers/speakerSort';
 
-	type Speaker = {
-		id: string;
-		position: number;
-		overwriteName?: string | null;
-		committeeMember?: {
-			id: string;
-			representation?: {
-				name?: string | null;
-				alpha2Code?: string | null;
-				alpha3Code?: string | null;
-				faIcon?: string | null;
-				type?: string | null;
-			} | null;
-		} | null;
-		conferenceMember?: {
-			id: string;
-			representation?: {
-				name?: string | null;
-				alpha2Code?: string | null;
-				alpha3Code?: string | null;
-				faIcon?: string | null;
-				type?: string | null;
-			} | null;
-		} | null;
-	};
+	type Speaker = ListedSpeaker;
 
 	interface Props {
 		rawSpeakers?: Speaker[];

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { NavbarSpeakersList } from './types';
 	import dayjs from 'dayjs';
 	import { client } from '$lib/api/rumbleClient/client';
 	import Flag from '$lib/components/Flag.svelte';
@@ -9,46 +10,9 @@
 	import Kbd from '$lib/components/Kbd.svelte';
 	import { compareSpeakers } from '$lib/helpers/speakerSort';
 
-	type SpeakersList =
-		| {
-				id: string;
-				type: string;
-				speakingTime: number;
-				startTimestamp?: Date | null;
-				timeLeft: number;
-				phase?: string | null;
-				speakers: Array<{
-					id: string;
-					position: number;
-					overwriteName?: string | null;
-					committeeMember?: {
-						id: string;
-						representation?: {
-							name?: string | null;
-							alpha2Code?: string | null;
-							alpha3Code?: string | null;
-							faIcon?: string | null;
-							type?: string | null;
-						} | null;
-					} | null;
-					conferenceMember?: {
-						id: string;
-						representation?: {
-							name?: string | null;
-							alpha2Code?: string | null;
-							alpha3Code?: string | null;
-							faIcon?: string | null;
-							type?: string | null;
-						} | null;
-					} | null;
-				}>;
-		  }
-		| null
-		| undefined;
-
 	interface Props {
-		speakersList?: SpeakersList;
-		commentList?: SpeakersList;
+		speakersList?: NavbarSpeakersList;
+		commentList?: NavbarSpeakersList;
 	}
 
 	let { speakersList, commentList }: Props = $props();

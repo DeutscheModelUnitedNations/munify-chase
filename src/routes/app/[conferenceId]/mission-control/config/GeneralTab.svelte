@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { toDateInputValue } from '$lib/helpers/dateInput';
 	import { m } from '$lib/paraglide/messages';
 	import BasicCard from '$lib/components/BasicCard.svelte';
 	import { client } from '$lib/api/rumbleClient/client';
@@ -60,16 +61,6 @@
 
 	function removeLogo() {
 		logoSvg = '';
-	}
-
-	function toDateInputValue(d: Date | string | null | undefined): string {
-		if (!d) return '';
-		const date = d instanceof Date ? d : new Date(d);
-		if (Number.isNaN(date.getTime())) return '';
-		const year = date.getUTCFullYear();
-		const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-		const day = String(date.getUTCDate()).padStart(2, '0');
-		return `${year}-${month}-${day}`;
 	}
 
 	// Seed the form from the conference ONCE per conference (keyed by id).

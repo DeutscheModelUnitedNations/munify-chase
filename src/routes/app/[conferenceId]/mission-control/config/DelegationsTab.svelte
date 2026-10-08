@@ -8,29 +8,10 @@
 	import Flag from '$lib/components/Flag.svelte';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import AddCountriesModal from '$lib/components/AddCountriesModal.svelte';
-	import EditDelegationModal from './EditDelegationModal.svelte';
-
-	interface Representation {
-		id: string;
-		name: string | null;
-		alpha2Code: string | null;
-		alpha3Code: string | null;
-		type: string;
-		faIcon: string | null;
-	}
-
-	interface Committee {
-		id: string;
-		name: string;
-		abbreviation: string;
-		members: {
-			id: string;
-			representation: {
-				id: string;
-				type: string;
-			};
-		}[];
-	}
+	import EditDelegationModal, {
+		type Committee,
+		type Representation
+	} from './EditDelegationModal.svelte';
 
 	interface Props {
 		conferenceId: string;

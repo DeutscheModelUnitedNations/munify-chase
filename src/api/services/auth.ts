@@ -21,6 +21,19 @@ function getRequestOrigin(headers: IncomingMessage['headers']): string {
 	return `${proto}://${host}${port ? `:${port}` : ''}`;
 }
 
+/** Copies Node's incoming headers into a WHATWG `Headers`, joining repeated values. */
+export function toHeaders(incoming: IncomingMessage['headers']): Headers {
+	const headers = new Headers();
+	for (const [key, value] of Object.entries(incoming)) {
+		if (typeof value === 'string') {
+			headers.set(key, value);
+		} else if (Array.isArray(value)) {
+			headers.set(key, value.join(', '));
+		}
+	}
+	return headers;
+}
+
 export function nativeToRequestEvent(
 	source: Pick<IncomingMessage, 'headers' | 'url'>,
 	{ setHeaders }: { setHeaders?: (headers: Record<string, string>) => void } = {}
@@ -28,14 +41,7 @@ export function nativeToRequestEvent(
 	const url = new URL(source.url ?? '/', getRequestOrigin(source.headers));
 	const jar = parseCookies(source.headers.cookie ?? '');
 
-	const headers = new Headers();
-	for (const [key, value] of Object.entries(source.headers)) {
-		if (typeof value === 'string') {
-			headers.set(key, value);
-		} else if (Array.isArray(value)) {
-			headers.set(key, value.join(', '));
-		}
-	}
+	const headers = toHeaders(source.headers);
 
 	return {
 		url,

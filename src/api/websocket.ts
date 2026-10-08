@@ -15,10 +15,6 @@ import { context, type Context } from './context';
 const gqlWSS = new WebSocketServer({ noServer: true });
 const yjsWSS = new WebSocketServer({ noServer: true });
 
-export {
-	SYNTHETIC_EVENT_FIELD,
-	hasSyntheticSvelteRequestEvent
-} from './services/syntheticRequestEvent';
 import { SYNTHETIC_EVENT_FIELD } from './services/syntheticRequestEvent';
 
 // Stash the raw TCP socket on the upgrade IncomingMessage so the graphql-ws

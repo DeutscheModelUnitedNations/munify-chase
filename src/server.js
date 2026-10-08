@@ -2,6 +2,7 @@
 // @ts-nocheck — imports ./env.js and ./handler.js which are adapter-node build outputs
 import { createServer } from 'node:http';
 import polka from 'polka';
+// fallow-ignore-next-line unresolved-import -- adapter-node build output, sits next to this file in the image
 import { env, timeout_env } from './env.js';
 
 const port = parseInt(env('PORT', '3000'));
@@ -9,6 +10,7 @@ const host = env('HOST', '0.0.0.0');
 
 const httpServer = createServer();
 
+// fallow-ignore-next-line unresolved-import -- adapter-node build output, sits next to this file in the image
 const { handler } = await import('./handler.js');
 
 const keepAlive = timeout_env('KEEP_ALIVE_TIMEOUT');

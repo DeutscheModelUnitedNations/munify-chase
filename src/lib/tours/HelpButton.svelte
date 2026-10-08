@@ -16,7 +16,10 @@
 		// Close the dropdown so it doesn't sit on top of the first highlighted element
 		(document.activeElement as HTMLElement | null)?.blur();
 		// driver.js and its styles load only when a tour actually starts
-		const [{ startTour }, tour] = await Promise.all([import('./runTour'), help.tour()]);
+		const [startTour, tour] = await Promise.all([
+			import('./runTour').then((m) => m.startTour),
+			help.tour()
+		]);
 		startTour(tour);
 	}
 

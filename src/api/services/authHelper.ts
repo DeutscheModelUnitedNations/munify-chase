@@ -2,7 +2,7 @@ import type { Context } from '$api/context';
 import { configPrivate } from '$config/private';
 import { GraphQLError } from 'graphql';
 
-export function isAdminEmail(email: string) {
+function isAdminEmail(email: string) {
 	const whitelistEmails = configPrivate.ADMIN_EMAIL_WHITELIST.split(',').filter(Boolean);
 	const whitelistDomains = configPrivate.ADMIN_DOMAIN_WHITELIST.split(',').filter(Boolean);
 	const domain = email.split('@')[1];

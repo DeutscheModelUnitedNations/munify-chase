@@ -8,7 +8,7 @@ export function initialSetTheme() {
 	setThemeInHTML(getTheme());
 }
 
-export function setThemeInHTML(newTheme: Theme) {
+function setThemeInHTML(newTheme: Theme) {
 	const html = document.querySelector('html');
 	if (html) {
 		if (newTheme === 'system') {
@@ -19,14 +19,14 @@ export function setThemeInHTML(newTheme: Theme) {
 	}
 }
 
-export function setTheme(newTheme: Theme) {
+function setTheme(newTheme: Theme) {
 	if (!browser) return;
 	localStorage.setItem('theme', newTheme);
 	theme = newTheme;
 	setThemeInHTML(newTheme);
 }
 
-export function updateTheme() {
+function updateTheme() {
 	if (!browser) return;
 	const storedTheme = localStorage.getItem('theme') as Theme | 'undefined';
 	if (storedTheme === 'undefined' || !storedTheme) {

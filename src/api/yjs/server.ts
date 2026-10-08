@@ -31,11 +31,11 @@ const REAUTH_INTERVAL_MS = 30_000;
 
 // `ctx` is undefined when upgrade-time auth failed (native client without a
 // session cookie); onAuthenticate resolves it from the in-band Bearer token.
-export interface YjsConnectionContext {
+interface YjsConnectionContext {
 	ctx: Context | undefined;
 }
 
-export class CorruptYjsStateError extends Error {
+class CorruptYjsStateError extends Error {
 	/**
 	 * Sent verbatim to the client in the permission-denied message, so the UI
 	 * can distinguish a corrupt doc from a plain authorization failure.

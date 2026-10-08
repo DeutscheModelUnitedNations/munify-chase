@@ -13,10 +13,6 @@ function sourceFor(locale: string, slug: string) {
 	return sources[`/docs/${locale}/${slug}.md`];
 }
 
-export function docExists(slug: string) {
-	return sourceFor(baseLocale, slug) !== undefined;
-}
-
 export type LoadedDoc = RenderedDoc & {
 	/** Locale the page was actually rendered in, differs from the request on fallback */
 	locale: string;

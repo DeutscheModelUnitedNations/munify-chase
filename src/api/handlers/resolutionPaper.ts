@@ -82,7 +82,6 @@ abilityBuilder.resolutionPaper.allow('update').when((ctx) => {
 });
 
 const ref = object({ table: 'resolutionPaper' });
-export const ResolutionPaperRef = ref;
 
 const statusEnum = enum_({ tsName: 'paperStatus' });
 

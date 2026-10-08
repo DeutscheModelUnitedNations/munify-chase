@@ -12,4 +12,3 @@ const conf = {
 export const db = building ? drizzle.mock(conf) : drizzle(configPrivate.DATABASE_URL, conf);
 
 export const schema = schemaInternal;
-export const relations = relationsInternal;

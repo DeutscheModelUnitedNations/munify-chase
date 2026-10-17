@@ -18,8 +18,13 @@ const config = {
 			precompress: true
 		}),
 		typescript: {
-			// Typecheck the docs screenshot scripts with the app, they import its schema
-			config: (config) => ({ ...config, include: [...config.include, '../scripts/**/*.ts'] })
+			// Typecheck the docs screenshot scripts with the app, they import its schema.
+			// The feature video tooling is a local, best-effort pipeline and stays unchecked.
+			config: (config) => ({
+				...config,
+				include: [...config.include, '../scripts/**/*.ts'],
+				exclude: [...(config.exclude ?? []), '../scripts/feature-video/**']
+			})
 		},
 		alias: {
 			$api: 'src/api',

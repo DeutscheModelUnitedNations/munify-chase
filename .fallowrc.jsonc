@@ -5,7 +5,9 @@
 		"src/lib/paraglide/**",
 		"src/lib/api/rumbleClient/**",
 		"src/api/db/seed-data/schema.d.ts",
-		"drizzle/**"
+		"drizzle/**",
+		// Feature video tooling: local pipeline, kept out of reports and the audit gate
+		"scripts/feature-video/**"
 	],
 	"rules": {
 		// The SvelteKit/Vite build bundles all app code, so frontend packages belong in

@@ -40,7 +40,9 @@ export default ts.config(
 		ignores: [
 			'src/lib/paraglide/**',
 			'src/lib/api/rumbleClient/**',
-			'src/api/db/seed-data/schema.d.ts'
+			'src/api/db/seed-data/schema.d.ts',
+			// Feature video tooling: local pipeline, not linted
+			'scripts/feature-video/**'
 		]
 	},
 	{

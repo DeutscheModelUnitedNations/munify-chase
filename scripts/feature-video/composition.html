@@ -1,0 +1,441 @@
+<!doctype html>
+<!--
+	Landing page feature video, drawn as a pure function of time: renderAt(t) sets every
+	element for second t. render.ts captures it frame by frame.
+
+	Screens come from capture.ts (assets/*.png) and every position that points at UI
+	(highlights, rings, camera targets, cursor targets) comes from anchors.json, so a UI
+	change only needs a new capture, not new numbers here. Timings are in seconds; the
+	whoosh/click/bell cues in audio.ts follow them.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CHASE feature video</title>
+<style>
+@font-face { font-family: Outfit; font-weight: 200; src: url(fonts/outfit-latin-200-normal.woff2); }
+@font-face { font-family: Outfit; font-weight: 300; src: url(fonts/outfit-latin-300-normal.woff2); }
+@font-face { font-family: Outfit; font-weight: 400; src: url(fonts/outfit-latin-400-normal.woff2); }
+@font-face { font-family: Outfit; font-weight: 700; src: url(fonts/outfit-latin-700-normal.woff2); }
+@font-face { font-family: RMono; font-weight: 500; src: url(fonts/roboto-mono-latin-500-normal.woff2); }
+:root {
+	--primary: #01548f; --accent: #6d9392; --accent-600: #4f7473; --neutral: #1b1837;
+	--base-200: #f0eff5; --base-300: #d8d8d8; --ink: #000;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #fff; }
+body { font-family: Outfit, system-ui, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+#stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #fff; }
+.abs { position: absolute; }
+.scene { position: absolute; inset: 0; visibility: hidden; }
+[data-in] { opacity: 0; will-change: transform, opacity; }
+
+.stripe { height: 8px; border-radius: 999px; background: var(--accent); width: 176px; transform-origin: left center; }
+.eyebrow { font-size: 19px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-600); }
+.h2 { font-size: 66px; line-height: 1.02; font-weight: 700; color: var(--primary); letter-spacing: -0.01em; }
+.lede { font-size: 27px; line-height: 1.32; font-weight: 300; max-width: 30ch; }
+.textcol { position: absolute; left: 112px; top: 0; bottom: 0; width: 560px; display: flex; flex-direction: column; justify-content: center; gap: 26px; }
+
+.wordmark { position: absolute; left: 112px; top: 64px; font-size: 26px; font-weight: 300; letter-spacing: 0.01em; }
+.wordmark b { font-weight: 700; }
+
+.browser { position: absolute; left: 724px; top: 208px; width: 1100px; height: 665px; background: #fff; border: 1px solid var(--base-300);
+	border-radius: 10px; overflow: hidden; box-shadow: 0 30px 80px -30px rgba(27, 24, 55, 0.35), 0 8px 24px -12px rgba(27, 24, 55, 0.2); }
+.bar { height: 44px; background: var(--base-200); display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid var(--base-300); }
+.dot { width: 12px; height: 12px; border-radius: 50%; background: #cfcdd8; }
+.url { margin-left: 18px; flex: 1; height: 28px; border-radius: 6px; background: #fff; font-size: 15px; color: #555; display: flex; align-items: center; padding: 0 14px; gap: 8px; }
+.url i { width: 10px; height: 12px; border: 2px solid #9a98a8; border-radius: 2px; display: inline-block; }
+.view { position: relative; width: 1100px; height: 619px; overflow: hidden; background: #fff; }
+.layer { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.layer img { display: block; }
+.ring { position: absolute; border: 4px solid var(--accent); border-radius: 999px; opacity: 0; }
+.hl { position: absolute; border: 4px solid var(--accent); border-radius: 4px; opacity: 0; box-shadow: 0 0 0 6px rgba(109, 147, 146, 0.25); }
+
+.card { position: absolute; background: #fff; border: 1px solid var(--base-300); box-shadow: 0 30px 70px -30px rgba(27, 24, 55, 0.35); overflow: hidden; }
+.card img { display: block; width: 100%; }
+.caption { position: absolute; font-size: 19px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #666; }
+
+.kbd { position: absolute; display: flex; gap: 10px; align-items: center; font-family: RMono, monospace; font-weight: 500; }
+.kbd span { display: inline-block; min-width: 64px; padding: 14px 18px; text-align: center; font-size: 30px; background: #fff; color: var(--neutral);
+	border: 2px solid var(--neutral); border-bottom-width: 6px; border-radius: 8px; }
+.kbd em { font-style: normal; font-size: 28px; color: var(--neutral); }
+
+#cursor { position: absolute; left: 0; top: 0; width: 34px; height: 44px; z-index: 50; opacity: 0; pointer-events: none; }
+#click { position: absolute; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; border: 3px solid var(--primary); z-index: 49; opacity: 0; }
+
+.chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.chip { font-size: 19px; font-weight: 700; padding: 8px 16px; border: 1.5px solid rgba(255,255,255,0.55); color: #fff; }
+.badge { display: inline-block; font-size: 15px; font-weight: 700; padding: 3px 8px; background: #f9b77a; color: #5b2e05; text-transform: uppercase; letter-spacing: 0.04em; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div id="stage">
+	<div id="bg" class="abs" style="inset:0;background:#fff"></div>
+
+	<!-- persistent wordmark -->
+	<div id="wm" class="wordmark" data-in="5.2" data-out="37.1" data-dy="0">MUNify <b>CHASE</b></div>
+
+	<!-- S1 hook -->
+	<div class="scene" id="s1" data-from="0" data-to="5.1">
+		<div class="abs" style="left:112px;top:250px;width:860px;display:flex;flex-direction:column;gap:30px">
+			<div id="s1stripe" class="stripe"></div>
+			<div style="font-size:31px;font-weight:700" data-in="0.45" data-out="4.55">Debate management for Model United Nations</div>
+			<div style="font-size:132px;line-height:0.98;font-weight:200;letter-spacing:-0.02em" data-in="0.75" data-out="4.6" data-dy="40"><b style="font-weight:700">MUN</b> in the<br />21st century</div>
+			<div style="font-size:29px;font-weight:300;line-height:1.3;max-width:34ch" data-in="1.5" data-out="4.65">Debate management at Model United Nations conferences finally gets an upgrade.</div>
+		</div>
+		<div id="fan1" class="card" style="left:1040px;top:150px;width:780px"><img data-img="presentation" /></div>
+		<div id="fan2" class="card" style="left:1470px;top:455px;width:380px"><img data-img="voting-show-of-hands" /></div>
+		<div id="fan3" class="card" style="left:980px;top:585px;width:600px"><img data-img="amendment-review" /></div>
+	</div>
+
+	<!-- S2 speakers list -->
+	<div class="scene" id="s2" data-from="5.0" data-to="13.6">
+		<div class="textcol">
+			<div class="eyebrow" data-in="5.3" data-out="13.1">Speakers list</div>
+			<div class="h2" data-in="5.45" data-out="13.12">Every speech on time.</div>
+			<div class="lede" data-in="5.7" data-out="13.14">Speakers list and Points of Information side by side, driven by keyboard shortcuts.</div>
+			<div class="lede" style="font-weight:700;color:var(--primary)" data-in="10.35" data-out="13.16">…and live on the projector.</div>
+		</div>
+		<div class="browser" id="b2" data-frame="speakers-list" data-in="5.2" data-out="13.15" data-dy="50">
+			<div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url"><i></i><span id="u2"></span></div></div>
+			<div class="view">
+				<div class="layer" id="l2a"><img data-img="speakers-list" />
+					<div class="hl" id="hl2" data-anchor="speakers-list:nextSpeech" data-pad="4"></div></div>
+				<div class="layer" id="l2b" style="opacity:0"><img data-img="presentation" /></div>
+				<div id="dip2" class="abs" style="inset:0;background:#fff;opacity:0"></div>
+			</div>
+		</div>
+		<div class="kbd" id="kbd2" style="left:770px" data-below="b2" data-in="8.2" data-out="9.9"><span>Alt</span><em>+</em><span>N</span><em style="font-family:Outfit;font-size:24px;margin-left:10px;font-weight:700">Next speech</em></div>
+	</div>
+
+	<!-- S3 voting -->
+	<div class="scene" id="s3" data-from="13.5" data-to="22.1">
+		<div class="textcol">
+			<div class="eyebrow" data-in="13.8" data-out="21.6">Voting</div>
+			<div class="h2" data-in="13.95" data-out="21.62">Votes counted in seconds.</div>
+			<div class="lede" data-in="14.2" data-out="21.64">Count a show of hands, or let every delegate vote on their own device.</div>
+		</div>
+		<div class="caption" style="left:742px;top:190px" data-in="14.4" data-out="21.6">Chair · show of hands</div>
+		<div class="card" id="c3a" style="left:742px;top:232px;width:560px" data-in="14.0" data-out="21.62" data-dy="50"><img data-img="voting-show-of-hands" /></div>
+		<div class="caption" style="left:1360px;top:420px" data-in="15.9" data-out="21.6">Delegate · own device</div>
+		<div class="card" id="c3b" style="left:1360px;top:462px;width:470px" data-in="15.6" data-out="21.64" data-dy="50"><img data-img="device-vote" />
+			<div id="vote3" class="abs" data-anchor="device-vote:pro" style="background:#8fd5a0;mix-blend-mode:multiply;opacity:0"></div></div>
+	</div>
+
+	<!-- S4 resolutions -->
+	<div class="scene" id="s4" data-from="22.0" data-to="31.1">
+		<div class="textcol">
+			<div class="eyebrow" data-in="22.3" data-out="30.6">Resolution editing</div>
+			<div class="h2" data-in="22.45" data-out="30.62">From working paper to adopted resolution.</div>
+			<div class="lede" data-in="22.7" data-out="30.64">Write together, sponsor, amend and vote clause by clause.</div>
+		</div>
+		<div class="browser" id="b4" data-frame="amendment-review" data-in="22.2" data-out="30.65" data-dy="50">
+			<div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url"><i></i><span>chase.munify.cloud/app/…/resolutions/GV-I-DR.2</span></div></div>
+			<div class="view">
+				<div class="layer" id="l4"><img data-img="amendment-review" />
+					<div class="ring" id="r4_0" data-anchor="amendment-review:step0" data-pad="4"></div>
+					<div class="ring" id="r4_1" data-anchor="amendment-review:step1" data-pad="4"></div>
+					<div class="ring" id="r4_2" data-anchor="amendment-review:step2" data-pad="4"></div>
+					<div class="ring" id="r4_3" data-anchor="amendment-review:step3" data-pad="4"></div>
+					<div class="hl" id="hl4" data-anchor="amendment-review:startVote" data-pad="3"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- S5 docs on every page -->
+	<div class="scene" id="s5" data-from="31.0" data-to="37.6">
+		<div class="textcol">
+			<div class="eyebrow" data-in="31.3" data-out="37.1">Help on every page</div>
+			<div class="h2" data-in="31.45" data-out="37.12">The manual is one click away.</div>
+			<div class="lede" data-in="31.7" data-out="37.14">Every screen links to its own manual page and a guided tour.</div>
+		</div>
+		<div class="browser" id="b5" data-frame="demo-speakers-list" data-in="31.2" data-out="37.15" data-dy="50">
+			<div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url"><i></i><span id="u5"></span></div></div>
+			<div class="view">
+				<div class="layer" id="l5a"><img data-img="demo-speakers-list" /></div>
+				<div class="layer" id="l5b" style="opacity:0"><img data-img="demo-help-open" /></div>
+				<div class="layer" id="l5c" style="opacity:0"><img data-img="docs-speakers-list" /></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- S6 offline -->
+	<div class="scene" id="s6" data-from="37.4" data-to="43.1">
+		<div class="textcol" style="color:#fff">
+			<div class="eyebrow" style="color:#a9c6c5" data-in="37.8" data-out="42.6">Try it now</div>
+			<div class="h2" style="color:#fff" data-in="37.95" data-out="42.62">No account.<br />No server.</div>
+			<div class="lede" data-in="38.2" data-out="42.64">Try CHASE right now, entirely in your browser, or install the desktop app for macOS, Windows and Linux.</div>
+			<div class="chips" data-in="38.7" data-out="42.66"><span class="chip">Browser</span><span class="chip">macOS</span><span class="chip">Windows</span><span class="chip">Linux</span></div>
+		</div>
+		<div class="browser" id="b6" data-frame="landing" style="border-color:#3a3660" data-in="37.7" data-out="42.65" data-dy="50">
+			<div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url"><i></i><span id="u6"></span></div></div>
+			<div class="view">
+				<div class="layer" id="l6a"><img data-img="landing" /></div>
+				<div class="layer" id="l6b" style="opacity:0"><img data-img="demo-mission-control" /></div>
+				<div id="dip6" class="abs" style="inset:0;background:#fff;opacity:0"></div>
+			</div>
+		</div>
+		<div class="abs" style="left:724px;font-size:20px;color:rgba(255,255,255,0.8)" data-below="b6" data-in="40.4" data-out="42.6"><span class="badge">Beta</span>&nbsp; Offline mode stores your data only in this browser.</div>
+	</div>
+
+	<!-- S7 self-host + end card -->
+	<div class="scene" id="s7" data-from="42.9" data-to="49.1">
+		<div class="abs" style="left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:42px;font-size:92px;letter-spacing:-0.01em">
+			<span style="font-weight:700" data-in="43.4" data-out="45.7">Free.</span>
+			<span style="font-weight:200" data-in="43.85" data-out="45.72">Open source.</span>
+			<span style="font-weight:700;color:var(--primary)" data-in="44.3" data-out="45.74">Self-hostable.</span>
+		</div>
+		<div class="abs" style="left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px">
+			<div id="s7stripe" class="stripe"></div>
+			<div style="font-size:128px;font-weight:200;letter-spacing:-0.01em" data-in="46.1" data-out="99" data-dy="30">MUNify <b style="font-weight:700">CHASE</b></div>
+			<div style="font-size:44px;font-weight:700;color:var(--primary)" data-in="46.45" data-out="99">chase.munify.cloud</div>
+			<div style="font-size:28px;font-weight:300" data-in="46.7" data-out="99">Documentation for every page at <b style="font-weight:700">chase.munify.cloud/docs</b></div>
+			<div style="font-size:21px;font-weight:400;color:#666;margin-top:26px" data-in="47.0" data-out="99">by Deutsche Model United Nations e.V.</div>
+		</div>
+	</div>
+
+	<div id="click"></div>
+	<svg id="cursor" viewBox="0 0 34 44"><path d="M3 2 L3 34 L11 27 L17 41 L23 38 L17 25 L28 25 Z" fill="#111" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" /></svg>
+</div>
+
+<script type="module">
+const DURATION = 49;
+const FRAME_W = 1100, BAR_H = 44;
+
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const ramp = (t, a, b) => clamp((t - a) / (b - a));
+const eOut = (x) => 1 - Math.pow(1 - x, 3);
+const eInOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const lerp = (a, b, x) => a + (b - a) * x;
+const $ = (id) => document.getElementById(id);
+
+// ── Captures and anchors (image pixels) ─────────────────────────────────────
+const A = await (await fetch('anchors.json')).json();
+const size = (name) => [A[name].w, A[name].h];
+const anchor = (name, key) => {
+	const r = A[name]?.anchors?.[key];
+	if (!r) throw new Error(`Missing anchor ${name}:${key}, run video:capture`);
+	return r;
+};
+const mid = (r) => [r.x + r.w / 2, r.y + r.h / 2];
+const union = (...rs) => {
+	const x = Math.min(...rs.map((r) => r.x)), y = Math.min(...rs.map((r) => r.y));
+	return { x, y, w: Math.max(...rs.map((r) => r.x + r.w)) - x, h: Math.max(...rs.map((r) => r.y + r.h)) - y };
+};
+const full = (name) => [A[name].w / 2, A[name].h / 2];
+
+for (const img of document.querySelectorAll('img[data-img]')) {
+	img.src = `assets/${img.dataset.img}.png`;
+	// Layers are drawn at capture size and scaled by the camera; cards scale to their width
+	if (img.closest('.layer')) [img.width, img.height] = size(img.dataset.img);
+}
+// Frames take their screenshot's aspect ratio, so a screen is never cropped at rest
+for (const b of document.querySelectorAll('.browser[data-frame]')) {
+	const [w, h] = size(b.dataset.frame);
+	const viewH = Math.round((FRAME_W * h) / w);
+	b.querySelector('.view').style.height = `${viewH}px`;
+	b.style.height = `${BAR_H + viewH}px`;
+	b.style.top = `${Math.round((1080 - BAR_H - viewH) / 2)}px`;
+}
+for (const el of document.querySelectorAll('[data-below]')) {
+	const b = $(el.dataset.below);
+	el.style.top = `${parseFloat(b.style.top) + parseFloat(b.style.height) + 22}px`;
+}
+for (const el of document.querySelectorAll('[data-anchor]')) {
+	const [name, key] = el.dataset.anchor.split(':');
+	const r = anchor(name, key);
+	const card = el.closest('.card');
+	const s = card && !el.closest('.layer') ? parseFloat(card.style.width) / A[name].w : 1;
+	const pad = +(el.dataset.pad ?? 0);
+	Object.assign(el.style, {
+		left: `${r.x * s - pad}px`, top: `${r.y * s - pad}px`,
+		width: `${r.w * s + 2 * pad}px`, height: `${r.h * s + 2 * pad}px`
+	});
+}
+
+// ── Animation helpers ───────────────────────────────────────────────────────
+const IN_DUR = 0.65, OUT_DUR = 0.4;
+const animated = [...document.querySelectorAll('[data-in]')].map((el) => ({
+	el, tIn: +el.dataset.in, tOut: +el.dataset.out, dy: el.dataset.dy !== undefined ? +el.dataset.dy : 22
+}));
+const scenes = [...document.querySelectorAll('.scene')].map((el) => ({ el, from: +el.dataset.from, to: +el.dataset.to }));
+
+/** Keyframed camera. keys: [time, [focusX, focusY], zoom] in image pixels; returns image → view mapping */
+function camera(layer, name, keys, t) {
+	const [IW, IH] = size(name);
+	const VW = FRAME_W, VH = layer.parentElement.offsetHeight;
+	let k0 = keys[0], k1 = keys[0];
+	for (let i = 0; i < keys.length; i++) if (t >= keys[i][0]) { k0 = keys[i]; k1 = keys[i + 1] || keys[i]; }
+	if (t < keys[0][0]) k0 = k1 = keys[0];
+	const x = k1 === k0 ? 0 : eInOut(ramp(t, k0[0], k1[0]));
+	const fx = lerp(k0[1][0], k1[1][0], x), fy = lerp(k0[1][1], k1[1][1], x), z = lerp(k0[2], k1[2], x);
+	const s = Math.max(VW / IW, VH / IH) * z;
+	const tx = clamp(VW / 2 - fx * s, VW - IW * s, 0);
+	const ty = clamp(VH / 2 - fy * s, VH - IH * s, 0);
+	layer.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
+	return ([ix, iy]) => [tx + ix * s, ty + iy * s];
+}
+
+/** Stage position of an image point inside a browser frame */
+function inView(browserEl, map, point) {
+	const [vx, vy] = map(point);
+	const r = browserEl.getBoundingClientRect();
+	return [r.left + vx, r.top + BAR_H + vy];
+}
+
+/** Cursor path: [time, x, y] stage points; clicks: times */
+function cursor(t, path, clicks, show) {
+	const c = $('cursor'), k = $('click');
+	if (!show) { c.style.opacity = 0; k.style.opacity = 0; return; }
+	let p0 = path[0], p1 = path[0];
+	for (let i = 0; i < path.length; i++) if (t >= path[i][0]) { p0 = path[i]; p1 = path[i + 1] || path[i]; }
+	if (t < path[0][0]) p0 = p1 = path[0];
+	const x = p1 === p0 ? 0 : eInOut(ramp(t, p0[0], p1[0]));
+	const cx = lerp(p0[1], p1[1], x), cy = lerp(p0[2], p1[2], x);
+	let press = 1, ring = 0, rs = 0;
+	for (const ct of clicks) {
+		const d = t - ct;
+		if (d > -0.12 && d < 0.12) press = 0.85;
+		if (d >= 0 && d < 0.5) { ring = 1 - d / 0.5; rs = 0.4 + d * 1.6; }
+	}
+	c.style.opacity = show;
+	c.style.transform = `translate(${cx - 3}px, ${cy - 2}px) scale(${press})`;
+	k.style.opacity = ring * show;
+	k.style.left = `${cx}px`; k.style.top = `${cy}px`;
+	k.style.transform = `scale(${rs})`;
+}
+
+// ── Camera targets from anchors ─────────────────────────────────────────────
+const speakerFocus = mid(union(anchor('speakers-list', 'currentSpeaker'), anchor('speakers-list', 'nextSpeech')));
+const stepsFocus = mid(union(...[0, 1, 2, 3].map((i) => anchor('amendment-review', `step${i}`))));
+const startVote = mid(anchor('amendment-review', 'startVote'));
+const helpButton = mid(anchor('demo-help-open', 'help'));
+const manualItem = mid(anchor('demo-help-open', 'manual'));
+const tryOffline = mid(anchor('landing', 'tryOffline'));
+const pro = anchor('device-vote', 'pro');
+
+function renderAt(t) {
+	for (const s of scenes) s.el.style.visibility = t >= s.from && t <= s.to ? 'visible' : 'hidden';
+	for (const a of animated) {
+		const i = eOut(ramp(t, a.tIn, a.tIn + IN_DUR));
+		const o = eInOut(ramp(t, a.tOut, a.tOut + OUT_DUR));
+		a.el.style.opacity = i * (1 - o);
+		a.el.style.transform = `translateY(${(1 - i) * a.dy - o * a.dy * 0.4}px)`;
+	}
+
+	// Neutral background for the offline scene
+	const dark = ramp(t, 37.3, 37.8) * (1 - ramp(t, 42.8, 43.3));
+	const mix = (a, b) => Math.round(lerp(a, b, dark));
+	$('bg').style.background = `rgb(${mix(255, 27)},${mix(255, 24)},${mix(255, 55)})`;
+
+	// S1 hook
+	$('s1stripe').style.transform = `scaleX(${eOut(ramp(t, 0.15, 0.95)) * (1 - eInOut(ramp(t, 4.5, 4.9)))})`;
+	for (const [el, d, rot, i] of [[$('fan1'), 0.35, -4, 0], [$('fan2'), 0.6, 3, 1], [$('fan3'), 0.85, -2, 2]]) {
+		const e = eOut(ramp(t, d, d + 1.0));
+		const out = eInOut(ramp(t, 4.45 + i * 0.05, 4.95));
+		const drift = t * (6 + i * 3);
+		el.style.opacity = e * (1 - out);
+		el.style.transform = `translate(${(1 - e) * 260 + out * 140 - drift * 0.6}px, ${(1 - e) * 30 - drift * 0.2}px) rotate(${rot * e}deg)`;
+	}
+
+	let cur = null;
+
+	// S2 speakers list, then the projector view
+	if (t >= 5 && t <= 13.6) {
+		camera($('l2a'), 'speakers-list', [[5.2, full('speakers-list'), 1], [6.6, full('speakers-list'), 1], [8.0, speakerFocus, 1.4], [9.9, speakerFocus, 1.42]], t);
+		camera($('l2b'), 'presentation', [[10.2, full('presentation'), 1], [13.5, full('presentation'), 1.05]], t);
+		$('dip2').style.opacity = ramp(t, 9.85, 10.1) * (1 - ramp(t, 10.15, 10.45));
+		const projector = t >= 10.12;
+		$('l2b').style.opacity = projector ? 1 : 0;
+		$('l2a').style.opacity = projector ? 0 : 1;
+		$('u2').textContent = projector ? 'chase.munify.cloud/app/…/GV' : 'chase.munify.cloud/app/…/speakers-list';
+		const press = t >= 8.75 && t < 8.95;
+		for (const k of $('kbd2').querySelectorAll('span')) {
+			k.style.transform = press ? 'translateY(4px)' : '';
+			k.style.borderBottomWidth = press ? '2px' : '6px';
+			k.style.background = press ? '#eaf2f2' : '#fff';
+		}
+		$('hl2').style.opacity = ramp(t, 8.78, 8.95) * (1 - ramp(t, 9.6, 9.9));
+	}
+
+	// S3 voting
+	if (t >= 13.5 && t <= 22.1) {
+		const r = $('c3b').getBoundingClientRect();
+		const s = r.width / A['device-vote'].w;
+		const [px, py] = mid(pro);
+		const target = [r.left + px * s + 6, r.top + py * s + 6];
+		$('vote3').style.opacity = 0.55 * ramp(t, 18.25, 18.45);
+		cur = { path: [[17.0, 1700, 1010], [18.1, ...target], [21.2, ...target]], clicks: [18.25],
+			show: ramp(t, 16.9, 17.2) * (1 - ramp(t, 21.0, 21.4)) };
+	}
+
+	// S4 resolutions: phase stepper, then the amendment queue
+	if (t >= 22 && t <= 31.1) {
+		const m = camera($('l4'), 'amendment-review', [[22.2, full('amendment-review'), 1], [23.6, full('amendment-review'), 1], [25.0, stepsFocus, 1.45], [26.9, stepsFocus, 1.45], [28.3, startVote, 1.35], [30.9, startVote, 1.36]], t);
+		for (let i = 0; i < 4; i++) {
+			const t0 = 25.1 + i * 0.4;
+			const el = $(`r4_${i}`);
+			el.style.opacity = ramp(t, t0, t0 + 0.15) * (i === 3 ? 1 - ramp(t, 27.6, 28.0) : 1 - ramp(t, t0 + 0.45, t0 + 0.7));
+			el.style.transform = `scale(${1.25 - 0.25 * eOut(ramp(t, t0, t0 + 0.3))})`;
+		}
+		$('hl4').style.opacity = ramp(t, 29.65, 29.8) * (1 - ramp(t, 30.4, 30.6));
+		const [sx, sy] = inView($('b4'), m, startVote);
+		cur = { path: [[28.4, sx + 120, sy + 160], [29.4, sx + 4, sy + 4], [30.6, sx + 4, sy + 4]], clicks: [29.6],
+			show: ramp(t, 28.3, 28.6) * (1 - ramp(t, 30.4, 30.65)) };
+	}
+
+	// S5 help menu, then the manual page
+	if (t >= 31 && t <= 37.6) {
+		const keys = [[31.2, full('demo-speakers-list'), 1], [32.3, full('demo-speakers-list'), 1], [33.4, manualItem, 1.7], [35.2, manualItem, 1.7]];
+		const m = camera($('l5a'), 'demo-speakers-list', keys, t);
+		camera($('l5b'), 'demo-help-open', keys, t);
+		const open = t >= 33.7;
+		$('l5a').style.opacity = open ? 0 : 1;
+		$('l5b').style.opacity = open ? 1 : 0;
+		const lc = $('l5c');
+		const slide = eOut(ramp(t, 35.3, 36.0));
+		camera(lc, 'docs-speakers-list', [[35.3, full('docs-speakers-list'), 1], [37.5, [A['docs-speakers-list'].w / 2, A['docs-speakers-list'].h * 0.52], 1.04]], t);
+		lc.style.opacity = t >= 35.3 ? 1 : 0;
+		lc.style.transform = `translate(0px, ${(1 - slide) * lc.parentElement.offsetHeight}px) ${lc.style.transform}`;
+		$('u5').textContent = t >= 35.3 ? 'chase.munify.cloud/docs/user-manual/chair/speakers-list' : 'chase.munify.cloud/app/…/speakers-list';
+		const [hx, hy] = inView($('b5'), m, helpButton);
+		const [mx, my] = inView($('b5'), m, manualItem);
+		cur = { path: [[32.4, 1500, 760], [33.4, hx + 2, hy + 4], [33.95, hx + 2, hy + 4], [34.8, mx, my], [36.0, mx, my]], clicks: [33.6, 35.0],
+			show: ramp(t, 32.3, 32.6) * (1 - ramp(t, 35.3, 35.6)) };
+	}
+
+	// S6 offline demo
+	if (t >= 37.4 && t <= 43.1) {
+		const m = camera($('l6a'), 'landing', [[37.7, full('landing'), 1], [38.4, full('landing'), 1], [39.3, tryOffline, 1.3]], t);
+		camera($('l6b'), 'demo-mission-control', [[39.9, full('demo-mission-control'), 1], [43.0, full('demo-mission-control'), 1.04]], t);
+		$('dip6').style.opacity = ramp(t, 39.7, 39.92) * (1 - ramp(t, 39.95, 40.25));
+		const demo = t >= 39.93;
+		$('l6a').style.opacity = demo ? 0 : 1;
+		$('l6b').style.opacity = demo ? 1 : 0;
+		$('u6').textContent = demo ? 'chase.munify.cloud/app/localconference/mission-control' : 'chase.munify.cloud';
+		const [bx, by] = inView($('b6'), m, tryOffline);
+		cur = { path: [[38.4, bx + 220, by + 200], [39.3, bx, by + 4], [39.8, bx, by + 4]], clicks: [39.45],
+			show: ramp(t, 38.3, 38.6) * (1 - ramp(t, 39.75, 39.9)) };
+	}
+
+	// S7 end card
+	$('s7stripe').style.transform = `scaleX(${eOut(ramp(t, 45.95, 46.6))})`;
+
+	if (cur) cursor(t, cur.path, cur.clicks, cur.show);
+	else cursor(t, [[0, 0, 0]], [], 0);
+}
+
+window.renderAt = renderAt;
+window.DURATION = DURATION;
+window.ready = Promise.all([
+	document.fonts.ready,
+	...['200', '300', '400', '700'].map((w) => document.fonts.load(`${w} 40px Outfit`)),
+	document.fonts.load('500 30px RMono'),
+	...[...document.images].map((i) => i.decode().catch(() => {}))
+]);
+const q = new URLSearchParams(location.search).get('t');
+renderAt(q ? +q : 0);
+</script>
+</body>
+</html>

@@ -6,6 +6,7 @@
 	import TextSection from './TextSection.svelte';
 	import ContactSection from './ContactSection.svelte';
 	import SplitSection from './SplitSection.svelte';
+	import VideoSection from './VideoSection.svelte';
 	import { resolve } from '$app/paths';
 	import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
 
@@ -56,6 +57,8 @@
 </svelte:head>
 
 <LandingHero illustration={data.hero.illustration} shape={data.hero.shape} />
+
+<VideoSection />
 
 <CardSection />
 

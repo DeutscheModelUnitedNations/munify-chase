@@ -28,7 +28,7 @@
 		placeholder,
 		side,
 		kbd,
-		triggerClass = 'btn btn-square input-lg join-item',
+		triggerClass = 'btn btn-square btn-lg join-item',
 		filter,
 		getStringValue,
 		getKey,
@@ -36,6 +36,11 @@
 		AdditionalButtons,
 		submit
 	}: Props = $props();
+
+	// The popover is as wide as the input and opens above daisyUI modals, which sit at z-index 999
+	const contentClass =
+		// fallow-ignore-next-line css-token-drift -- must stack above daisyUI's modal (999)
+		'bg-base-100 border-base-300 shadow-popover card z-[1000] max-h-60 w-(--bits-combobox-anchor-width) min-w-(--bits-combobox-anchor-width) border px-1 py-3 shadow-lg outline-hidden select-none data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1';
 
 	let filteredOptions: T[] = $derived(filter(options, value));
 
@@ -50,7 +55,12 @@
 	});
 </script>
 
-<Combobox.Root type="single" bind:value bind:open>
+<!--
+	The typed text doubles as the selected value, so picking the option matching
+	the text would count as a second click on it and clear the field without
+	allowDeselect off. Esc is the way to clear.
+-->
+<Combobox.Root type="single" bind:value bind:open allowDeselect={false}>
 	<div class="join">
 		<Combobox.Trigger class={triggerClass}>
 			<i class="fas fa-magnifying-glass"></i>
@@ -94,11 +104,7 @@
 		{/if}
 	</div>
 	<Combobox.Portal>
-		<Combobox.Content
-			class="bg-base-100 border-base-300 shadow-popover card z-[1000] max-h-60 w-[var(--bits-combobox-anchor-width)] min-w-[var(--bits-combobox-anchor-width)] border px-1 py-3 shadow-lg outline-hidden select-none data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
-			sideOffset={10}
-			{side}
-		>
+		<Combobox.Content class={contentClass} sideOffset={10} {side}>
 			<Combobox.ScrollUpButton class="flex w-full justify-center py-1">
 				<i class="fas fa-caret-up"></i>
 			</Combobox.ScrollUpButton>

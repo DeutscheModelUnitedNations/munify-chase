@@ -12,7 +12,10 @@ const config = {
 	},
 	kit: {
 		experimental: {
-			remoteFunctions: true
+			remoteFunctions: true,
+			// Environment variables are declared and validated in `src/env.ts` and read from
+			// `$app/env/private` and `$app/env/public`; `$env/*` is off.
+			explicitEnvironmentVariables: true
 		},
 		adapter: adapter({
 			precompress: true
@@ -23,8 +26,7 @@ const config = {
 		},
 		alias: {
 			$api: 'src/api',
-			$assets: 'src/assets',
-			$config: 'src/lib/config'
+			$assets: 'src/assets'
 		}
 	}
 };

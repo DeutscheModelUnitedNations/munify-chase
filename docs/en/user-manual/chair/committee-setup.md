@@ -31,6 +31,7 @@ The **Presentation View** card controls the shared screen:
 - **Layout**: choose **Default Layout** or **Layout for Small Screens**, depending on your room's display.
 - Two font size sliders (10 to 50, previewed live): one for the base font size and one for the resolution text. These are separate, so you can size the resolution text differently from everything else on screen.
 - **Display Regional Blocs**: toggle whether regional-group breakdowns appear on the shared screen.
+- **Show requests** (**On** by default): while requests are pending, the shared screen lists them in their own tile. Only shown when **Requests** is on for your committee. Admins can hide single request types in the conference settings. The command palette offers **Show requests on presentation** and **Hide requests on presentation**.
 
 See [Presentation Mode](./presentation-mode) for what actually shows up automatically as your session progresses.
 

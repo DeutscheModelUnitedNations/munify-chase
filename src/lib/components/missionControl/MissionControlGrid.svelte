@@ -209,18 +209,23 @@
 	the navigation-critical info); stats follow.
 -->
 {#snippet committeeCard(committee: InsightCommittee, dueSoon: boolean)}
+	<!-- A primary border and an explicit Open button mark the card as the way into the
+	     committee, the hover lift alone was too subtle -->
 	<a
-		class="card bg-base-100 relative flex w-full flex-col shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-md {dueSoon
+		class="card bg-base-100 border-primary/40 hover:border-primary group relative flex w-full cursor-pointer flex-col border-2 shadow-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg {dueSoon
 			? 'mission-control-due-soon'
 			: ''}"
 		href={getHref(committee.id)}
 	>
-		<i
-			class="fas fa-arrow-right-to-bracket text-base-content/25 absolute top-4 right-4 text-xl"
+		<span
+			class="btn btn-primary btn-sm pointer-events-none absolute top-4 right-4 gap-2 transition-transform group-hover:scale-105"
 			aria-hidden="true"
-		></i>
+		>
+			{m.open()}
+			<i class="fas fa-arrow-right-to-bracket"></i>
+		</span>
 		<div class="card-body flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-5">
-			<div class="mb-1 flex w-full min-w-0 shrink-0 flex-col gap-1 pr-8">
+			<div class="mb-1 flex w-full min-w-0 shrink-0 flex-col gap-1 pr-24">
 				<h2
 					class="card-title text-5xl"
 					style="view-transition-name: committee-abbr-{committee.id};"
@@ -238,7 +243,13 @@
 					textClass="text-2xl"
 				/>
 				<IconInfoBox
-					text={getCommitteeStatusText(committee.status)}
+					text={committee.stateOfDebate || '—'}
+					faIcon="diagram-next"
+					textClass="text-2xl"
+				/>
+				<!-- Same text as the presentation view: the chairs' own headline when set -->
+				<IconInfoBox
+					text={committee.statusHeadline || getCommitteeStatusText(committee.status)}
 					faIcon={getCommitteeStatusIcon(committee.status)}
 					committeeStatus={committee.status}
 					until={new Date(committee.statusUntil)}

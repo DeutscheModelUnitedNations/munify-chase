@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { m } from '$lib/paraglide/messages';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { nanoid } from '$lib/helpers/nanoid';

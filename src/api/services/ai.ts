@@ -1,4 +1,4 @@
-import { configPrivate } from '$lib/config/private';
+import { AI_PROVIDERS } from '$app/env/private';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createAnthropic } from '@ai-sdk/anthropic';
@@ -19,7 +19,7 @@ import { generateText } from 'ai';
 
 let currentProviderIndex = 0;
 
-const providers = configPrivate.AI_PROVIDERS?.map((config) => {
+const providers = AI_PROVIDERS?.map((config) => {
 	const [providerName, ...modelParts] = config.model.split('/');
 	const modelName = modelParts.join('/');
 

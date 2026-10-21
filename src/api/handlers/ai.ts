@@ -6,7 +6,7 @@ import { GraphQLError } from 'graphql';
 import z from 'zod';
 import { jsonSchema, Output } from 'ai';
 import type { Context } from '$api/context';
-import { configPrivate } from '$lib/config/private';
+import { AI_PROVIDERS } from '$app/env/private';
 
 const RATE_LIMIT_WINDOW_MS = 1000 * 60 * 4; // 4 minutes
 const RATE_LIMIT_MAX = 100;
@@ -129,7 +129,7 @@ schemaBuilder.queryFields((t) => ({
 	hasAiProviders: t.boolean({
 		resolve: async (_root, _args, ctx) => {
 			await requireChairAccess(ctx);
-			return (configPrivate.AI_PROVIDERS?.length ?? 0) > 0;
+			return (AI_PROVIDERS?.length ?? 0) > 0;
 		}
 	})
 }));

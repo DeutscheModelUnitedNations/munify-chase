@@ -18,15 +18,12 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { getCurrentUser, getIsGlobalAdmin } from '$lib/state/currentUser.svelte';
+	import { displayNameOf } from '$lib/helpers/displayName';
 
 	const currentUser = await getCurrentUser();
 	const userId = currentUser.id ?? '';
-	const userDisplayName =
-		[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
-		currentUser.preferredUsername ||
-		currentUser.email ||
-		'';
+	const userDisplayName = displayNameOf(currentUser);
 
 	// Role check first — redirect participants before making the heavy conference query.
 	const [conferenceUsersEarly, isGlobalAdmin] = await Promise.all([
@@ -40,7 +37,7 @@
 			id: true,
 			conferenceUserType: true
 		}),
-		client.query.isGlobalAdmin()
+		getIsGlobalAdmin()
 	]);
 	const earlyRole = conferenceUsersEarly?.[0]?.conferenceUserType;
 	if (!isGlobalAdmin && earlyRole !== 'ADMIN' && earlyRole !== 'TEAM') {

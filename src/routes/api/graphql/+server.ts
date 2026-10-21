@@ -1,5 +1,5 @@
 import { createYoga } from '$api/rumble';
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 
 import '$api/handlers/register';
 

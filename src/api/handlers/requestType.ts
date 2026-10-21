@@ -27,7 +27,8 @@ schemaBuilder.mutationFields((t) => ({
 			conferenceId: t.arg.id({ required: true }),
 			name: t.arg.string({ required: true }),
 			faIcon: t.arg.string(),
-			delegatesOnly: t.arg.boolean()
+			delegatesOnly: t.arg.boolean(),
+			showOnPresentation: t.arg.boolean()
 		},
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.conference
@@ -54,7 +55,8 @@ schemaBuilder.mutationFields((t) => ({
 						name: args.name,
 						faIcon: args.faIcon ?? undefined,
 						priority,
-						delegatesOnly: args.delegatesOnly ?? undefined
+						delegatesOnly: args.delegatesOnly ?? undefined,
+						showOnPresentation: args.showOnPresentation ?? undefined
 					})
 					.returning()
 					.then(assertFirstEntryExists);
@@ -81,7 +83,8 @@ schemaBuilder.mutationFields((t) => ({
 			faIcon: t.arg.string(),
 			priority: t.arg.int(),
 			enabled: t.arg.boolean(),
-			delegatesOnly: t.arg.boolean()
+			delegatesOnly: t.arg.boolean(),
+			showOnPresentation: t.arg.boolean()
 		},
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.requestType
@@ -97,6 +100,8 @@ schemaBuilder.mutationFields((t) => ({
 			if (args.enabled !== undefined && args.enabled !== null) updateSet.enabled = args.enabled;
 			if (args.delegatesOnly !== undefined && args.delegatesOnly !== null)
 				updateSet.delegatesOnly = args.delegatesOnly;
+			if (args.showOnPresentation !== undefined && args.showOnPresentation !== null)
+				updateSet.showOnPresentation = args.showOnPresentation;
 
 			if (Object.keys(updateSet).length > 0) {
 				await db

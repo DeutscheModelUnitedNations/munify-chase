@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import { configPublic } from '$config/public';
+	import { PUBLIC_CONTACT_EMAIL } from '$app/env/public';
 	import AccentStripe from '$lib/components/AccentStripe.svelte';
 	import zweig from '$assets/dmunlogo/dmun-zweig-halbtransparent.svg';
 </script>
 
-{#if configPublic.PUBLIC_CONTACT_EMAIL}
+{#if PUBLIC_CONTACT_EMAIL}
 	<section class="bg-neutral text-neutral-content relative overflow-hidden">
 		<img
 			src={zweig}
@@ -21,11 +21,11 @@
 			<p class="max-w-[56ch] text-[15px] leading-[1.3]">{m.homeContactText()}</p>
 			<a
 				class="btn border-neutral-content bg-neutral-content text-neutral"
-				href="mailto:{configPublic.PUBLIC_CONTACT_EMAIL}"
+				href="mailto:{PUBLIC_CONTACT_EMAIL}"
 			>
 				{m.homeContactButton()}
 			</a>
-			<p class="text-xs opacity-80">{configPublic.PUBLIC_CONTACT_EMAIL}</p>
+			<p class="text-xs opacity-80">{PUBLIC_CONTACT_EMAIL}</p>
 		</div>
 	</section>
 {/if}

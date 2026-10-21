@@ -40,3 +40,7 @@ Changed your mind? Tap the **×** (**Withdraw request**) next to a pending reque
 ## What happens next
 
 The chairs get a **New request** notification and handle requests in order of type, then by time. Once a chair marks your request as resolved, it disappears from your card. You don't get a separate notification. After that you can send the same type of request again.
+
+Pending requests are usually also listed on the presentation screen, with your flag, your delegation's name and the request type. Chairs and admins can hide them there.
+
+If you raise your placard instead, the chairs can add the request for you. It joins their queue like any other, but it doesn't show up in your **Requests** card.

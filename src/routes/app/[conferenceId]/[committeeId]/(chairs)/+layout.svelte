@@ -13,6 +13,8 @@
 	import { getCommitteeStatusText } from '$lib/utils/committeeStatus';
 	import BellIcon from '$lib/components/toast/BellIcon.svelte';
 	import RequestNotificationToast from '$lib/components/requests/RequestNotificationToast.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { requestRepresentation } from '$lib/helpers/requests';
 	import { getServerTime } from '$lib/state/serverTime.svelte';
 	import { registerCommands } from '$lib/commands/registry.svelte';
 	import VotingModal from '$lib/components/voting/VotingModal.svelte';
@@ -138,9 +140,12 @@
 		conferenceUser: {
 			name: true,
 			userEmail: true,
-			committeeMember: { representation: { name: true } },
-			conferenceMember: { representation: { name: true } }
-		}
+			committeeMember: { id: true, representation: { name: true, alpha3Code: true } },
+			conferenceMember: { id: true, representation: { name: true, alpha3Code: true } }
+		},
+		// Set instead of conferenceUser on requests the chairs added themselves
+		committeeMember: { id: true, representation: { name: true, alpha3Code: true } },
+		conferenceMember: { id: true, representation: { name: true, alpha3Code: true } }
 	});
 
 	const dockItems = $derived([
@@ -335,14 +340,11 @@
 	let requestNotificationsInitialized = false;
 
 	function requesterLabelForNotification(
-		conferenceUser: NonNullable<
-			NonNullable<typeof pendingRequestsForNotifications>[number]['conferenceUser']
-		> | null
+		req: NonNullable<typeof pendingRequestsForNotifications>[number]
 	) {
-		const rep =
-			conferenceUser?.committeeMember?.representation ??
-			conferenceUser?.conferenceMember?.representation;
-		return conferenceUser?.name ?? rep?.name ?? conferenceUser?.userEmail ?? m.unknown();
+		const rep = requestRepresentation(req);
+		const seatName = rep && (rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code));
+		return req.conferenceUser?.name ?? seatName ?? req.conferenceUser?.userEmail ?? m.unknown();
 	}
 
 	$effect(() => {
@@ -368,7 +370,7 @@
 				duration: Infinity,
 				props: {
 					requestTypeName: req.requestType?.name ?? '',
-					requesterLabel: requesterLabelForNotification(req.conferenceUser),
+					requesterLabel: requesterLabelForNotification(req),
 					conferenceId,
 					committeeId
 				}
@@ -433,6 +435,7 @@
 				: ''}"
 		>
 			<span class="relative inline-flex">
+				<!-- fallow-ignore-next-line css-token-drift -- daisyUI's dock icon size, relative to the label -->
 				<i class="fa-duotone {item.icon} size-[1.2em]"></i>
 				{#if item.key === 'requests' && (pendingRequestsForNotifications?.length ?? 0) > 0}
 					<span class="absolute -top-1 -right-1 flex size-2.5">

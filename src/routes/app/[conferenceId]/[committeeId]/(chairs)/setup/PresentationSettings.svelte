@@ -4,6 +4,7 @@
 	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import { registerCommands } from '$lib/commands/registry.svelte';
+	import type { Command } from '$lib/commands/types';
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import toast from 'svelte-french-toast';
 
@@ -24,7 +25,9 @@
 		presentationLayout: true,
 		presentationRootFontSize: true,
 		presentationResolutionFontSize: true,
-		displayRegionalGroups: true
+		displayRegionalGroups: true,
+		allowRequests: true,
+		presentationShowRequests: true
 	});
 
 	// Local state for slider instant preview — initialized to defaults; $effects below sync from server
@@ -68,7 +71,17 @@
 		);
 	};
 
-	const regionalGroupTabs = [
+	const toggleShowRequests = async (tab: boolean | undefined) => {
+		await toast.promise(
+			client.mutate.updateCommittee({
+				__args: { id: committeeId, presentationShowRequests: tab ?? false },
+				id: true
+			}),
+			promiseToastStrings(m.presentationShowRequests(), 'update')
+		);
+	};
+
+	const onOffTabs = [
 		{
 			id: true,
 			label: m.on(),
@@ -81,6 +94,30 @@
 		}
 	];
 
+	const regionalGroupsCommand = (): Command => {
+		const shown = !!committeeData?.displayRegionalGroups;
+		return {
+			id: 'setup.regional-groups',
+			title: shown ? m.commandHideRegionalGroups : m.commandShowRegionalGroups,
+			group: 'page',
+			icon: 'earth-europe',
+			run: () => toggleRegionalGroups(!shown)
+		};
+	};
+
+	// Only offered while the committee accepts requests, like the setting itself
+	const presentationRequestsCommand = (): Command => {
+		const shown = !!committeeData?.presentationShowRequests;
+		return {
+			id: 'setup.presentation-requests',
+			title: shown ? m.commandHideRequestsOnPresentation : m.commandShowRequestsOnPresentation,
+			group: 'page',
+			icon: 'hand',
+			visible: () => !!committeeData?.allowRequests,
+			run: () => toggleShowRequests(!shown)
+		};
+	};
+
 	registerCommands(() => [
 		...getPresentationLayoutPresets().map((preset) => ({
 			id: `setup.presentation-layout.${preset}`,
@@ -91,15 +128,8 @@
 			visible: () => committeeData?.presentationLayout !== preset,
 			run: () => changeLayout(preset)
 		})),
-		{
-			id: 'setup.regional-groups',
-			title: committeeData?.displayRegionalGroups
-				? m.commandHideRegionalGroups
-				: m.commandShowRegionalGroups,
-			group: 'page',
-			icon: 'earth-europe',
-			run: () => toggleRegionalGroups(!committeeData?.displayRegionalGroups)
-		}
+		regionalGroupsCommand(),
+		presentationRequestsCommand()
 	]);
 </script>
 
@@ -169,7 +199,19 @@
 	<legend class="fieldset-legend">{m.displayRegionalGroups()}</legend>
 	<Tabs
 		activeTab={committeeData?.displayRegionalGroups}
-		tabs={regionalGroupTabs}
+		tabs={onOffTabs}
 		onTabChange={toggleRegionalGroups}
 	/>
 </fieldset>
+
+{#if committeeData?.allowRequests}
+	<fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
+		<legend class="fieldset-legend">{m.presentationShowRequests()}</legend>
+		<Tabs
+			activeTab={committeeData.presentationShowRequests}
+			tabs={onOffTabs}
+			onTabChange={toggleShowRequests}
+		/>
+		<p class="label w-full whitespace-normal">{m.presentationShowRequestsDescription()}</p>
+	</fieldset>
+{/if}

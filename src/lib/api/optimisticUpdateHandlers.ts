@@ -48,6 +48,13 @@ function removeFromList(cache: Cache, parent: Entity, fieldName: string, childKe
 	}
 }
 
+/** Every cached variant of the args-filtered Query.requests, see the request updates */
+function invalidateRequestLists(cache: Cache) {
+	for (const f of cache.inspectFields('Query').filter((x) => x.fieldName === 'requests')) {
+		cache.invalidate('Query', 'requests', f.arguments);
+	}
+}
+
 /** Resolve a referenced entity key to a partial fragment, or null on cache miss. */
 function readEntity<T extends Record<string, unknown>>(
 	cache: Cache,
@@ -340,6 +347,7 @@ export const optimistic: OptimisticMutationConfig = {
 			statusUntil: new Date(),
 			stateOfDebate: null,
 			allowDelegationsToAddThemselvesToSpeakersList: false,
+			allowRequests: false,
 			activeAgendaItemId: null,
 			activeAgendaItem: null,
 			customSimpleMajority: null,
@@ -348,6 +356,7 @@ export const optimistic: OptimisticMutationConfig = {
 			presentationRootFontSize: 16,
 			presentationResolutionFontSize: 16,
 			displayRegionalGroups: false,
+			presentationShowRequests: true,
 			simpleMajority: 0,
 			twoThirdsMajority: 0,
 			totalPresent: 0,
@@ -367,11 +376,13 @@ export const optimistic: OptimisticMutationConfig = {
 			'abbreviation',
 			'activeAgendaItemId',
 			'allowDelegationsToAddThemselvesToSpeakersList',
+			'allowRequests',
 			'displayRegionalGroups',
 			'name',
 			'presentationLayout',
 			'presentationRootFontSize',
 			'presentationResolutionFontSize',
+			'presentationShowRequests',
 			'showWhiteboard',
 			'stateOfDebate',
 			'status',
@@ -1881,6 +1892,8 @@ export const optimistic: OptimisticMutationConfig = {
 			faIcon: (args.faIcon as string | undefined) ?? null,
 			priority: 0,
 			enabled: true,
+			delegatesOnly: (args.delegatesOnly as boolean | undefined) ?? false,
+			showOnPresentation: (args.showOnPresentation as boolean | undefined) ?? true,
 			requests: [],
 			createdAt: new Date(),
 			updatedAt: null
@@ -1891,7 +1904,14 @@ export const optimistic: OptimisticMutationConfig = {
 			__typename: 'Requesttype',
 			id: args.id
 		};
-		for (const field of ['name', 'faIcon', 'priority', 'enabled']) {
+		for (const field of [
+			'name',
+			'faIcon',
+			'priority',
+			'enabled',
+			'delegatesOnly',
+			'showOnPresentation'
+		]) {
 			if ((args as Record<string, unknown>)[field] !== undefined) {
 				result[field] = (args as Record<string, unknown>)[field];
 			}
@@ -2677,6 +2697,31 @@ export const updates: UpdatesConfig = {
 		setVoteForMember: (result, args, cache) => {
 			const vote = (result as Record<string, Record<string, unknown>>).setVoteForMember;
 			if (!vote?.id) return;
+			// The server upserts one vote per member and session, returning the existing
+			// row's id. A result under a fresh id (the offline demo echoes the client's id)
+			// replaces the member's earlier vote instead of counting twice.
+			const previousId = findExistingVoteId(
+				cache,
+				args.sessionId as string,
+				args.committeeMemberId as string
+			);
+			if (previousId && previousId !== vote.id) {
+				const previousKey = cache.keyOfEntity({ __typename: 'Votingvote', id: previousId });
+				if (previousKey) {
+					removeFromList(
+						cache,
+						{ __typename: 'Votingsession', id: args.sessionId as string },
+						'votes',
+						previousKey
+					);
+					removeFromList(
+						cache,
+						{ __typename: 'Committeemember', id: args.committeeMemberId as string },
+						'votingVotes',
+						previousKey
+					);
+				}
+			}
 			addToList(cache, { __typename: 'Votingsession', id: args.sessionId as string }, 'votes', {
 				__typename: 'Votingvote',
 				id: vote.id as string
@@ -3205,22 +3250,17 @@ export const updates: UpdatesConfig = {
 		// every cached variant of the field so it refetches.
 		// ---------------------------------------------------------------
 		createRequest: (result, _args, cache) => {
-			const created = (result as Record<string, Record<string, unknown>>).createRequest;
-			if (!created?.id) return;
-			for (const f of cache.inspectFields('Query').filter((x) => x.fieldName === 'requests')) {
-				cache.invalidate('Query', 'requests', f.arguments);
+			if ((result as Record<string, Record<string, unknown>>).createRequest?.id) {
+				invalidateRequestLists(cache);
 			}
 		},
-		resolveRequest: (_result, _args, cache) => {
-			for (const f of cache.inspectFields('Query').filter((x) => x.fieldName === 'requests')) {
-				cache.invalidate('Query', 'requests', f.arguments);
+		createManualRequest: (result, _args, cache) => {
+			if ((result as Record<string, Record<string, unknown>>).createManualRequest?.id) {
+				invalidateRequestLists(cache);
 			}
 		},
-		withdrawRequest: (_result, _args, cache) => {
-			for (const f of cache.inspectFields('Query').filter((x) => x.fieldName === 'requests')) {
-				cache.invalidate('Query', 'requests', f.arguments);
-			}
-		},
+		resolveRequest: (_result, _args, cache) => invalidateRequestLists(cache),
+		withdrawRequest: (_result, _args, cache) => invalidateRequestLists(cache),
 
 		// ---------------------------------------------------------------
 		// importDelegatorConference — too coarse to optimistically project; just

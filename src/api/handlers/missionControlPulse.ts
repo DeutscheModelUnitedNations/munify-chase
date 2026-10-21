@@ -1,7 +1,7 @@
 import { schemaBuilder } from '$api/rumble';
 import { db, schema } from '$api/db/db';
 import { and, count, desc, eq, gte, isNotNull, sql } from 'drizzle-orm';
-import { building } from '$app/environment';
+import { building } from '$app/env';
 import { refreshMaterializedViewsWithLock } from '$api/db/refreshMaterializedViews';
 
 // Mission control is a near-live dashboard (client polls every 60s, see

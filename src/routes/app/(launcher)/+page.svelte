@@ -11,7 +11,7 @@
 	import type { LauncherConference } from '$lib/components/launcher/types';
 	import { client } from '$lib/api/rumbleClient/client';
 	import type { ConferenceusertypeEnum } from '$lib/api/rumbleClient/client';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { getCurrentUser, getIsGlobalAdmin } from '$lib/state/currentUser.svelte';
 
 	const user = await getCurrentUser();
 
@@ -60,7 +60,7 @@
 		}
 	});
 
-	const isGlobalAdmin = await client.query.isGlobalAdmin();
+	const isGlobalAdmin = await getIsGlobalAdmin();
 
 	const allConferences = await client.liveQuery.conferences({
 		id: true,

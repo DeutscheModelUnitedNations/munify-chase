@@ -186,8 +186,9 @@ type LocalDemoCommittee = {
 	activeAgendaItem: LocalDemoAgendaItemEntry | null;
 	activeAgendaItemId: string | null;
 	agendaItems: LocalDemoAgendaItemEntry[];
-	activeRollCallSession: { __typename: 'Rollcallsession'; id: string } | null;
-	activeVotingSession: { __typename: 'Votingsession'; id: string } | null;
+	activeRollCallSession: Record<string, unknown> | null;
+	activeRollCallSessionId?: string | null;
+	activeVotingSession: Record<string, unknown> | null;
 	activeVotingSessionId: string | null;
 	activeDraftResolutionId: string | null;
 	activeDraftResolution: { __typename: 'Resolutionpaper'; id: string } | null;
@@ -522,6 +523,13 @@ function loadPersistedLocalDemoCommittees() {
 
 	localDemoCommittees.length = 0;
 	localDemoCommittees.push(...persisted);
+	// JSON turns the shared agenda item into two copies. Re-point the active one at its
+	// entry in agendaItems, which is the copy every speakers list change updates.
+	for (const committee of localDemoCommittees) {
+		committee.activeAgendaItem = committee.activeAgendaItemId
+			? (committee.agendaItems.find((item) => item.id === committee.activeAgendaItemId) ?? null)
+			: null;
+	}
 	for (const key of [...localDemoEntitiesById.keys()]) {
 		if (key.startsWith('Committee:') || key.startsWith('Committeemember:')) {
 			localDemoEntitiesById.delete(key);
@@ -530,6 +538,17 @@ function loadPersistedLocalDemoCommittees() {
 	for (const committee of localDemoCommittees) {
 		localDemoEntitiesById.set(`Committee:${committee.id}`, committee);
 		registerCommitteeMembers(committee);
+		registerActiveSessions(committee);
+	}
+}
+
+/** A running vote or roll call is stored on its committee, registered here so later
+ * scalar commits (tallies, current member) patch that same object */
+function registerActiveSessions(committee: LocalDemoCommittee) {
+	for (const session of [committee.activeVotingSession, committee.activeRollCallSession]) {
+		if (typeof session?.__typename === 'string' && typeof session.id === 'string') {
+			localDemoEntitiesById.set(`${session.__typename}:${session.id}`, session);
+		}
 	}
 }
 
@@ -710,24 +729,65 @@ const localDemoExtraMutationEffects: Record<
 	string,
 	(args: Variables, producedEntities: LocalDemoCommittableEntity[]) => void
 > = {
-	startRollCallSession: (_args, [entity]) => {
+	// Guards below check that the target belongs to the demo: a real conference's mutation
+	// relayed from another tab runs these handlers too while this tab shows the demo.
+	startRollCallSession: (args, [entity]) => {
 		if (!entity?.id) return;
-		if (localDemoRollCallSessions.some((s) => s.id === entity.id)) return;
-		localDemoRollCallSessions.push(entity);
-		localDemoEntitiesById.set(`Rollcallsession:${entity.id}`, entity);
-		persistLocalDemoRollCallSessions();
+		const committee = findLocalDemoCommittee(args.committeeId as string);
+		if (!committee) return;
+		let session = localDemoRollCallSessions.find((s) => s.id === entity.id);
+		if (!session) {
+			session = entity;
+			localDemoRollCallSessions.push(session);
+			localDemoEntitiesById.set(`Rollcallsession:${entity.id}`, session);
+			persistLocalDemoRollCallSessions();
+		}
+		// The cache only learns about the open roll call through the updates handler,
+		// so mirror it here for reloads and a newly opened presentation window
+		committee.activeRollCallSessionId = entity.id as string;
+		committee.activeRollCallSession = session;
+		persistLocalDemoCommittees();
 	},
 	completeRollCallSession: (args) => {
 		const session = localDemoRollCallSessions.find((s) => s.id === args.id);
-		if (!session) return;
-		session.completedAt = new Date();
-		persistLocalDemoRollCallSessions();
+		if (session) {
+			session.completedAt = new Date();
+			persistLocalDemoRollCallSessions();
+		}
+		for (const committee of localDemoCommittees) {
+			if (committee.activeRollCallSessionId !== args.id) continue;
+			committee.activeRollCallSessionId = null;
+			committee.activeRollCallSession = null;
+			persistLocalDemoCommittees();
+		}
+	},
+	// Same as the roll call above. Resuming passes the running session's id again,
+	// which keeps its tallies.
+	startVotingSession: (args, [entity]) => {
+		if (!entity?.id) return;
+		const committee = findLocalDemoCommittee(args.committeeId as string);
+		if (!committee) return;
+		const key = `Votingsession:${entity.id}`;
+		const session = localDemoEntitiesById.get(key) ?? entity;
+		localDemoEntitiesById.set(key, session);
+		committee.activeVotingSessionId = entity.id as string;
+		committee.activeVotingSession = session;
+		persistLocalDemoCommittees();
+	},
+	completeVotingSession: (args) => {
+		for (const committee of localDemoCommittees) {
+			if (committee.activeVotingSessionId !== args.id) continue;
+			committee.activeVotingSessionId = null;
+			committee.activeVotingSession = null;
+			persistLocalDemoCommittees();
+		}
 	},
 	// ---------------------------------------------------------------
 	// committee.ts
 	// ---------------------------------------------------------------
-	createCommittee: (_args, [entity]) => {
+	createCommittee: (args, [entity]) => {
 		if (!entity?.id) return;
+		if (args.conferenceId !== LOCAL_CONFERENCE_ID) return;
 		if (findLocalDemoCommittee(entity.id as string)) return;
 		const committee = makeLocalDemoCommittee({
 			id: entity.id as string,
@@ -773,8 +833,9 @@ const localDemoExtraMutationEffects: Record<
 	// ---------------------------------------------------------------
 	// representation.ts
 	// ---------------------------------------------------------------
-	createRepresentation: (_args, [entity]) => {
+	createRepresentation: (args, [entity]) => {
 		if (!entity?.id) return;
+		if (args.conferenceId !== LOCAL_CONFERENCE_ID) return;
 		if (localDemoRepresentations.some((r) => r.id === entity.id)) return;
 		localDemoRepresentations.push(entity as LocalDemoRepresentation);
 		localDemoEntitiesById.set(`Representation:${entity.id}`, entity);
@@ -995,13 +1056,28 @@ export function resolveLocalDemoQuery(
 	);
 }
 
+/** Presence edits only touch the members, so the derived counts are recomputed before
+ * every answer, as the server computes them on every read */
+function refreshLocalDemoMajorities() {
+	for (const committee of localDemoCommittees) {
+		const present = (
+			committee.members as { present?: boolean; representation?: { type?: string } }[]
+		).filter((m) => m.present && m.representation?.type === 'DELEGATION').length;
+		committee.totalPresent = present;
+		committee.simpleMajority = calculateMajority(present, 'simple');
+		committee.twoThirdsMajority = calculateMajority(present, 'twoThirds');
+	}
+}
+
 function computeLocalDemoCannedAnswer(
 	fieldName: string | undefined,
 	variables: unknown
 ): Record<string, unknown> | undefined {
 	switch (fieldName) {
-		case 'isGlobalAdmin':
-			return { isGlobalAdmin: true };
+		// The demo clock is the device clock. Without this the synthesized answer would be
+		// the epoch and serverTime's periodic resync would jump every timer to 1970.
+		case 'serverTime':
+			return { serverTime: new Date() };
 		case 'conferenceUsers':
 			return { conferenceUsers: [] };
 		case 'committeeMembers':
@@ -1015,14 +1091,17 @@ function computeLocalDemoCannedAnswer(
 		case 'conference': {
 			const id = (variables as { id?: string } | null | undefined)?.id;
 			if (id !== undefined && id !== LOCAL_CONFERENCE_ID) return undefined;
+			refreshLocalDemoMajorities();
 			return { conference: localDemoConference };
 		}
 		case 'conferences':
+			refreshLocalDemoMajorities();
 			return { conferences: [localDemoConference] };
 		case 'committee': {
 			const id = (variables as { id?: string } | null | undefined)?.id;
 			const match = id !== undefined ? findLocalDemoCommittee(id) : localDemoCommittees[0];
 			if (!match) return undefined;
+			refreshLocalDemoMajorities();
 			return { committee: match };
 		}
 		default:
@@ -1132,6 +1211,18 @@ function commitLocalDemoEntity(cache: Cache, entity: LocalDemoCommittableEntity 
 		for (const name of relationFieldNames) known[name] = fields[name];
 		for (const name of scalarFieldNames) known[name] = fields[name];
 		persistLocalDemoState();
+	}
+
+	// Speakers lists live inside each committee's agenda items rather than in
+	// localDemoEntitiesById, so their scalars (timer start/stop, time left, closed,
+	// speaking time, phase) are patched there. Otherwise a reload or a newly opened
+	// presentation window gets the original values back.
+	if (__typename === 'Speakerslist' && scalarFieldNames.length > 0) {
+		const list = findLocalDemoSpeakersList(entity.id as string);
+		if (list) {
+			for (const name of scalarFieldNames) list[name] = fields[name];
+			persistLocalDemoCommittees();
+		}
 	}
 
 	// `optimistic.updateCommittee` only produces a minimal `{__typename, id}` stub for

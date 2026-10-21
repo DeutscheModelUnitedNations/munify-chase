@@ -7,6 +7,7 @@ import {
 	date,
 	unique,
 	uniqueIndex,
+	check,
 	pgEnum,
 	boolean,
 	smallint,
@@ -103,6 +104,7 @@ export const committee = snakeCase.table(
 		presentationRootFontSize: smallint().notNull().default(16),
 		presentationResolutionFontSize: smallint().notNull().default(16),
 		displayRegionalGroups: boolean().notNull().default(false),
+		presentationShowRequests: boolean().notNull().default(true),
 		lastResolutionAdoptionDate: timestamp({ mode: 'date' })
 	},
 	(t) => [unique().on(t.conferenceId, t.name), unique().on(t.conferenceId, t.abbreviation)]
@@ -610,8 +612,8 @@ export const requestType = snakeCase.table(
 		// hierarchy of request types). Lower sorts first.
 		priority: smallint().notNull(),
 		enabled: boolean().notNull().default(true),
-		// Restricts this request type to delegates
-		delegatesOnly: boolean().notNull().default(false)
+		delegatesOnly: boolean().notNull().default(false),
+		showOnPresentation: boolean().notNull().default(true)
 	},
 	(t) => [unique().on(t.conferenceId, t.name)]
 );
@@ -626,12 +628,9 @@ export const request = snakeCase.table(
 		requestTypeId: text()
 			.notNull()
 			.references(() => requestType.id),
-		// Identifies the submitter directly (not via committeeMember) since NSAs
-		// are not permanently bound to a single committee and have no
-		// committeeMember row - see presenceEvent for the same pattern.
-		conferenceUserId: text()
-			.notNull()
-			.references(() => conferenceUser.id, { onDelete: 'cascade' }),
+		conferenceUserId: text().references(() => conferenceUser.id, { onDelete: 'cascade' }),
+		committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
+		conferenceMemberId: text().references(() => conferenceMember.id, { onDelete: 'cascade' }),
 		status: requestStatus().notNull().default('PENDING'),
 		resolvedByConferenceUserId: text().references(() => conferenceUser.id, {
 			onDelete: 'set null'
@@ -644,7 +643,17 @@ export const request = snakeCase.table(
 		// type after it was resolved or withdrawn.
 		uniqueIndex('request_pending_unique')
 			.on(t.committeeId, t.conferenceUserId, t.requestTypeId)
-			.where(sql`${t.status} = 'PENDING'`)
+			.where(sql`${t.status} = 'PENDING'`),
+		uniqueIndex('request_pending_committee_member_unique')
+			.on(t.committeeId, t.committeeMemberId, t.requestTypeId)
+			.where(sql`${t.status} = 'PENDING'`),
+		uniqueIndex('request_pending_conference_member_unique')
+			.on(t.committeeId, t.conferenceMemberId, t.requestTypeId)
+			.where(sql`${t.status} = 'PENDING'`),
+		check(
+			'request_has_requester',
+			sql`num_nonnulls(${t.conferenceUserId}, ${t.committeeMemberId}, ${t.conferenceMemberId}) >= 1`
+		)
 	]
 );
 

@@ -74,7 +74,6 @@ bun run preview          # Preview production build
 
 - **`components/`**: Svelte 5 components using runes (not stores)
 - **`state/`**: Client-side reactive state (`*.svelte.ts`): connection, presentation window, server clock/time, current user
-- **`config/`**: Zod-validated env wrappers — `public.ts` (`$env/dynamic/public`), `private.ts` (`$env/dynamic/private`), via `getConfig.ts`
 - **`utils/`**, **`helpers/`**: pure helpers (theme, toast, nation/enum translation, majorities, nanoid, etc.)
 - **`data/`**: Static data (country names, flags)
 - **`paraglide/`**: Auto-generated i18n code (do not edit)
@@ -113,7 +112,7 @@ bun run preview          # Preview production build
 - **Database columns**: snake_case (configured in Drizzle)
 - **i18n**: Messages in `messages/de.json`, `messages/en.json`, and `messages/pt.json`, auto-translated via `bun run machine-translate`
 - **Styling**: Tailwind CSS v4 with DaisyUI components, DMUN corporate identity package
-- **Env access**: read config through the Zod wrappers in `src/lib/config/`, not `$env` directly
+- **Env access**: every variable is declared, described and validated (Zod) in `src/env.ts` and imported by name from `$app/env/private` (server only) or `$app/env/public`. `browser`, `building` and `dev` come from `$app/env`. `$env/*` is off (`kit.experimental.explicitEnvironmentVariables`) and `$app/environment` is deprecated. When adding a variable, also document it in `.env.example`. Standalone scripts (`db:seed:dev`, `db:reset`, `drizzle.config.ts`, `src/server.js`) run outside SvelteKit and read `process.env` directly. A test that needs a variable mocks the module
 
 ## Codebase Intelligence (fallow)
 

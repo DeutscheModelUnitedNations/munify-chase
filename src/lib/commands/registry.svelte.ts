@@ -1,7 +1,7 @@
 import { untrack } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 import hotkeys from 'hotkeys-js';
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import type { Command } from './types';
 
 // Every mounted component that offers commands adds one source. The palette and the

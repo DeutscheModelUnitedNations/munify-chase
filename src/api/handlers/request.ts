@@ -89,6 +89,25 @@ schemaBuilder.mutationFields((t) => ({
 				}
 			}
 
+			// The chairs may already have queued this type for the delegate's seat
+			const seats = [
+				...(self.committeeMemberId ? [{ committeeMemberId: self.committeeMemberId }] : []),
+				...(self.conferenceMemberId ? [{ conferenceMemberId: self.conferenceMemberId }] : [])
+			];
+			if (seats.length > 0) {
+				const queuedByChairs = await db.query.request.findFirst({
+					where: {
+						committeeId: committee.id,
+						requestTypeId: requestType.id,
+						status: 'PENDING',
+						OR: seats
+					}
+				});
+				if (queuedByChairs) {
+					throw new GraphQLError('The chairs already queued this request for you.');
+				}
+			}
+
 			let result;
 			try {
 				result = await db
@@ -104,6 +123,99 @@ schemaBuilder.mutationFields((t) => ({
 			} catch (err) {
 				if ((err as { code?: string }).code === '23505') {
 					throw new GraphQLError('You already have a pending request of this type.');
+				}
+				throw err;
+			}
+
+			pubsub.created();
+
+			return db.query.request
+				.findFirst(
+					query(
+						ctx.abilities.request.filter('read').merge({ where: { id: result.id } }).query.single
+					)
+				)
+				.then(assertFindFirstExists);
+		}
+	}),
+
+	// Chairs queue a request on behalf of a seat, e.g. a raised placard or a
+	// delegation without an account. Mirrors addSpeakerOnList's seat arguments.
+	createManualRequest: t.drizzleField({
+		type: RequestRef,
+		args: {
+			id: t.arg.id().validate(nanoidValidation),
+			committeeId: t.arg.id({ required: true }),
+			requestTypeId: t.arg.id({ required: true }),
+			committeeMemberId: t.arg.id(),
+			conferenceMemberId: t.arg.id()
+		},
+		resolve: async (query, _root, args, ctx) => {
+			if (!!args.committeeMemberId === !!args.conferenceMemberId) {
+				throw new GraphQLError('Set exactly one of committeeMemberId and conferenceMemberId.');
+			}
+
+			const committee = await db.query.committee
+				.findFirst(
+					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
+						.single
+				)
+				.then(assertFindFirstExists);
+
+			const requestType = await db.query.requestType
+				.findFirst({
+					where: { id: args.requestTypeId, conferenceId: committee.conferenceId, enabled: true }
+				})
+				.then(assertFindFirstExists);
+
+			if (args.committeeMemberId) {
+				await db.query.committeeMember
+					.findFirst({ where: { id: args.committeeMemberId, committeeId: committee.id } })
+					.then(assertFindFirstExists);
+			} else {
+				await db.query.conferenceMember
+					.findFirst({
+						where: { id: args.conferenceMemberId!, conferenceId: committee.conferenceId }
+					})
+					.then(assertFindFirstExists);
+				// Conference members are the NSAs, who never get delegates-only types
+				if (requestType.delegatesOnly) {
+					throw new GraphQLError('This request type is only available to delegates.');
+				}
+			}
+
+			// The seat may already be in the queue through a delegate's own request
+			const seat = args.committeeMemberId
+				? { committeeMemberId: args.committeeMemberId }
+				: { conferenceMemberId: args.conferenceMemberId! };
+			const duplicate = await db.query.request.findFirst({
+				where: {
+					committeeId: committee.id,
+					requestTypeId: requestType.id,
+					status: 'PENDING',
+					OR: [seat, { conferenceUser: seat }]
+				}
+			});
+			if (duplicate) {
+				throw new GraphQLError('This seat already has a pending request of this type.');
+			}
+
+			let result;
+			try {
+				result = await db
+					.insert(schema.request)
+					.values({
+						id: args.id,
+						committeeId: committee.id,
+						requestTypeId: requestType.id,
+						committeeMemberId: args.committeeMemberId,
+						conferenceMemberId: args.conferenceMemberId
+					})
+					.returning()
+					.then(assertFirstEntryExists);
+			} catch (err) {
+				if ((err as { code?: string }).code === '23505') {
+					throw new GraphQLError('This seat already has a pending request of this type.');
 				}
 				throw err;
 			}

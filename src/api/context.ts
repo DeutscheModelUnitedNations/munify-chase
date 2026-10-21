@@ -1,4 +1,4 @@
-import { configPrivate } from '$config/private';
+import { OIDC_ROLE_CLAIM } from '$app/env/private';
 import type { RequestEvent } from '@sveltejs/kit';
 import { GraphQLError } from 'graphql';
 import {
@@ -17,14 +17,10 @@ export function context(req: RequestEvent) {
 	}
 
 	const OIDCRoleNames: (typeof oidcRoles)[number][] = [];
-	if (configPrivate.OIDC_ROLE_CLAIM) {
+	if (OIDC_ROLE_CLAIM) {
 		const rolesRaw =
-			(req.locals.oidc?.accessToken as Record<string, unknown> | undefined)?.[
-				configPrivate.OIDC_ROLE_CLAIM
-			] ??
-			(req.locals.oidc?.idToken as Record<string, unknown> | undefined)?.[
-				configPrivate.OIDC_ROLE_CLAIM
-			];
+			(req.locals.oidc?.accessToken as Record<string, unknown> | undefined)?.[OIDC_ROLE_CLAIM] ??
+			(req.locals.oidc?.idToken as Record<string, unknown> | undefined)?.[OIDC_ROLE_CLAIM];
 		if (rolesRaw) {
 			// Support both Logto format (array of role objects/strings) and Zitadel format (object with role keys)
 			const collected: string[] = [];

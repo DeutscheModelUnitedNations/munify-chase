@@ -15,6 +15,7 @@
 		priority: number;
 		enabled: boolean;
 		delegatesOnly: boolean;
+		showOnPresentation: boolean;
 	}
 
 	interface Props {
@@ -95,6 +96,13 @@
 		);
 	}
 
+	async function toggleShowOnPresentation(id: string, showOnPresentation: boolean) {
+		await toast.promise(
+			client.mutate.updateRequestType({ __args: { id, showOnPresentation }, id: true }),
+			promiseToastStrings(m.requestTypes(), 'update')
+		);
+	}
+
 	async function moveRequestType(index: number, direction: -1 | 1) {
 		const target = index + direction;
 		if (target < 0 || target >= sorted.length) return;
@@ -133,13 +141,14 @@
 					<th>{m.name()}</th>
 					<th>{m.enabled()}</th>
 					<th>{m.delegatesOnly()}</th>
+					<th>{m.showOnPresentation()}</th>
 					<th></th>
 				</tr>
 			</thead>
 			<tbody>
 				{#if sorted.length === 0}
 					<tr>
-						<td colspan="7" class="text-base-content/60 text-center">{m.noData()}</td>
+						<td colspan="8" class="text-base-content/60 text-center">{m.noData()}</td>
 					</tr>
 				{:else}
 					{#each sorted as rt, i (rt.id)}
@@ -202,6 +211,16 @@
 									aria-label={m.delegatesOnlyHint()}
 									checked={rt.delegatesOnly}
 									onchange={(e) => toggleDelegatesOnly(rt.id, e.currentTarget.checked)}
+								/>
+							</td>
+							<td>
+								<input
+									type="checkbox"
+									class="toggle toggle-sm"
+									aria-label={m.showOnPresentationHint()}
+									title={m.showOnPresentationHint()}
+									checked={rt.showOnPresentation}
+									onchange={(e) => toggleShowOnPresentation(rt.id, e.currentTarget.checked)}
 								/>
 							</td>
 							<td>

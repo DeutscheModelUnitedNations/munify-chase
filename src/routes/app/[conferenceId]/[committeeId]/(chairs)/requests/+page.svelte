@@ -9,8 +9,44 @@
 	import emptyStreet from '$assets/undraw/empty_street.svg';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '$lib/utils/toast';
+	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import AddManualRequest from '$lib/components/requests/AddManualRequest.svelte';
+	import {
+		compareRequests,
+		requestRepresentation,
+		toPendingSeatRequest
+	} from '$lib/helpers/requests';
 
 	const committeeId = page.params.committeeId!;
+	const conferenceId = page.params.conferenceId!;
+
+	const representationFields = {
+		type: true,
+		name: true,
+		alpha2Code: true,
+		alpha3Code: true,
+		faIcon: true
+	} as const;
+
+	// Seats a chair can add a request for, same sources as the speakers list
+	const committee = await client.liveQuery.committee({
+		__args: { id: committeeId },
+		id: true,
+		members: { id: true, present: true, representation: representationFields },
+		conference: {
+			id: true,
+			uniqueConferenceMembers: { id: true, representation: representationFields }
+		}
+	});
+
+	const requestTypes = await client.liveQuery.requestTypes({
+		__args: { where: { conferenceId: { eq: conferenceId }, enabled: { eq: true } } },
+		id: true,
+		name: true,
+		faIcon: true,
+		priority: true,
+		delegatesOnly: true
+	});
 
 	const pendingRequests = await client.liveQuery.requests({
 		__args: {
@@ -24,27 +60,11 @@
 			id: true,
 			name: true,
 			userEmail: true,
-			committeeMember: {
-				id: true,
-				representation: {
-					type: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true,
-					faIcon: true
-				}
-			},
-			conferenceMember: {
-				id: true,
-				representation: {
-					type: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true,
-					faIcon: true
-				}
-			}
-		}
+			committeeMember: { id: true, representation: representationFields },
+			conferenceMember: { id: true, representation: representationFields }
+		},
+		committeeMember: { id: true, representation: representationFields },
+		conferenceMember: { id: true, representation: representationFields }
 	});
 
 	const history = await client.liveQuery.requests({
@@ -64,57 +84,32 @@
 			id: true,
 			name: true,
 			userEmail: true,
-			committeeMember: {
-				id: true,
-				representation: {
-					type: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true,
-					faIcon: true
-				}
-			},
-			conferenceMember: {
-				id: true,
-				representation: {
-					type: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true,
-					faIcon: true
-				}
-			}
+			committeeMember: { id: true, representation: representationFields },
+			conferenceMember: { id: true, representation: representationFields }
 		},
+		committeeMember: { id: true, representation: representationFields },
+		conferenceMember: { id: true, representation: representationFields },
 		resolvedBy: { id: true, name: true, userEmail: true }
 	});
 
-	type Requester = NonNullable<NonNullable<typeof pendingRequests>[number]['conferenceUser']>;
-
-	function requesterRepresentation(conferenceUser: Requester | null | undefined) {
-		return (
-			conferenceUser?.committeeMember?.representation ??
-			conferenceUser?.conferenceMember?.representation ??
-			null
-		);
-	}
+	type Request = NonNullable<typeof pendingRequests>[number];
+	type Requester = Pick<Request, 'conferenceUser' | 'committeeMember' | 'conferenceMember'>;
 
 	// The delegation/NSA name is the primary label; the person's own name (when
 	// set) is shown alongside it for context, but only if it adds information.
-	function requesterLabel(conferenceUser: Requester | null | undefined) {
-		const rep = requesterRepresentation(conferenceUser);
-		const personName = conferenceUser?.name;
-		const primary = rep?.name ?? personName ?? conferenceUser?.userEmail ?? m.unknown();
-		const secondary = personName && personName !== rep?.name ? personName : null;
+	function requesterLabel(req: Requester) {
+		const rep = requestRepresentation(req);
+		const personName = req.conferenceUser?.name;
+		const primary = rep
+			? (rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code))
+			: (personName ?? req.conferenceUser?.userEmail ?? m.unknown());
+		const secondary = personName && personName !== primary ? personName : null;
 		return { primary, secondary };
 	}
 
-	let sortedPending = $derived(
-		[...(pendingRequests ?? [])].sort((a, b) => {
-			const priorityDiff = (a.requestType?.priority ?? 0) - (b.requestType?.priority ?? 0);
-			if (priorityDiff !== 0) return priorityDiff;
-			return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-		})
-	);
+	const pendingSeats = $derived((pendingRequests ?? []).map(toPendingSeatRequest));
+
+	let sortedPending = $derived([...(pendingRequests ?? [])].sort(compareRequests));
 
 	function formatTime(ts: string | Date) {
 		const d = ts instanceof Date ? ts : new Date(ts);
@@ -139,7 +134,7 @@
 	const nextRequest = $derived(sortedPending[0]);
 	const nextRequestContext = () =>
 		nextRequest
-			? `${nextRequest.requestType?.name ?? ''} (${requesterLabel(nextRequest.conferenceUser).primary})`
+			? `${nextRequest.requestType?.name ?? ''} (${requesterLabel(nextRequest).primary})`
 			: '';
 
 	registerCommands(() => [
@@ -164,20 +159,31 @@
 	]);
 </script>
 
-{#if sortedPending.length === 0 && (history?.length ?? 0) === 0}
-	<UndrawError
-		undrawImage={emptyStreet}
-		title={m.noPendingRequests()}
-		description={m.noRequestsYetDescription()}
-	/>
-{:else}
-	<div class="flex h-full w-full items-center justify-center">
-		<div class="flex h-full w-full max-w-screen-lg flex-col gap-6 p-6">
+<div class="flex h-full w-full items-center justify-center">
+	<div class="flex h-full w-full max-w-screen-lg flex-col gap-6 p-6">
+		<BasicCard title={m.addRequest()}>
+			<p class="mb-4 text-sm opacity-70">{m.addRequestDescription()}</p>
+			<AddManualRequest
+				{committeeId}
+				committeeMembers={committee?.members ?? []}
+				conferenceMembers={committee?.conference?.uniqueConferenceMembers ?? []}
+				requestTypes={requestTypes ?? []}
+				pending={pendingSeats}
+			/>
+		</BasicCard>
+
+		{#if sortedPending.length === 0 && (history?.length ?? 0) === 0}
+			<UndrawError
+				undrawImage={emptyStreet}
+				title={m.noPendingRequests()}
+				description={m.noRequestsYetDescription()}
+			/>
+		{:else}
 			<BasicCard title={m.requests()} data-tour="requests.queue">
 				{#if sortedPending.length > 0}
 					<ul class="flex flex-col gap-2">
 						{#each sortedPending as req (req.id)}
-							{@const label = requesterLabel(req.conferenceUser)}
+							{@const label = requesterLabel(req)}
 							<li
 								class="bg-base-200 flex flex-wrap items-center gap-3 rounded-lg px-4 py-3 sm:flex-nowrap"
 								data-tour="requests.request"
@@ -186,9 +192,18 @@
 									class="fas fa-{(req.requestType?.faIcon ?? 'fa-flag').replace('fa-', '')} text-xl"
 								></i>
 								<div class="flex min-w-0 flex-1 items-center gap-2">
-									<Flag representation={requesterRepresentation(req.conferenceUser)} size="xs" />
+									<Flag representation={requestRepresentation(req)} size="xs" />
 									<div class="flex min-w-0 flex-col">
-										<span class="font-medium">{req.requestType?.name}</span>
+										<span class="font-medium">
+											{req.requestType?.name}
+											{#if !req.conferenceUser}
+												<i
+													class="fas fa-user-pen text-base-content/40 ml-1 text-xs"
+													title={m.requestAddedByChairs()}
+													aria-label={m.requestAddedByChairs()}
+												></i>
+											{/if}
+										</span>
 										<span class="text-base-content/60 truncate text-sm">
 											{label.primary}
 											{#if label.secondary}
@@ -234,11 +249,11 @@
 					</summary>
 					<ul class="mt-2 flex flex-col gap-1">
 						{#each history as req (req.id)}
-							{@const label = requesterLabel(req.conferenceUser)}
+							{@const label = requesterLabel(req)}
 							<li class="bg-base-200 flex items-center gap-3 rounded-lg px-4 py-2 text-sm">
 								<i class="fas fa-{(req.requestType?.faIcon ?? 'fa-flag').replace('fa-', '')}"></i>
 								<span class="flex-1">{req.requestType?.name}</span>
-								<Flag representation={requesterRepresentation(req.conferenceUser)} size="xs" />
+								<Flag representation={requestRepresentation(req)} size="xs" />
 								<span class="text-base-content/60">
 									{label.primary}
 									{#if label.secondary}
@@ -260,6 +275,6 @@
 					</ul>
 				</details>
 			{/if}
-		</div>
+		{/if}
 	</div>
-{/if}
+</div>

@@ -18,7 +18,19 @@ Der Präsentationsbildschirm (geöffnet mit **Alt+P** oder dem Button **Präsent
 
 :::live chair/presentation
 
-Kurz gesagt: Alles, was du an anderer Stelle in der Vorsitzoberfläche tust (eine Abstimmung starten, einen Änderungsantrag präsentieren, das Whiteboard bearbeiten), steuert diesen Bildschirm. Auf dem Präsentationsbildschirm selbst gibt es nichts auszuwählen. Anträge werden dort nie angezeigt.
+Kurz gesagt: Alles, was du an anderer Stelle in der Vorsitzoberfläche tust (eine Abstimmung starten, einen Änderungsantrag präsentieren, das Whiteboard bearbeiten), steuert diesen Bildschirm. Auf dem Präsentationsbildschirm selbst gibt es nichts auszuwählen.
+
+## Ausstehende Anträge
+
+Sind [Anträge](./requests) aktiviert, erscheint eine Kachel **Anträge**, sobald etwas aussteht. Sie listet jeden Antrag mit Symbol, Flagge und Namen der Delegation oder des NA und der Antragsart, in derselben Reihenfolge wie deine Warteschlange. Ein Badge zeigt, wie viele ausstehen. Passen nicht alle hinein, fasst eine Zeile "+N weitere" den Rest zusammen.
+
+Die Kachel nimmt sich ihren Platz von anderen Kacheln:
+
+- **Standard Layout**: sie teilt sich die Spalte des Whiteboards, das Whiteboard wird also kleiner.
+- **Layout für kleine Bildschirme**: die Kommentarliste wird kleiner und das Whiteboard rutscht nach unten.
+- Resolutionslayout: die Kommentarliste wird kleiner.
+
+Ist die Warteschlange leer, verschwindet die Kachel und das Layout kehrt zum Normalzustand zurück. Ausschalten kannst du sie pro Gremium mit **Anträge anzeigen** auf der Setup-Seite. Admins können einzelne Antragsarten vom Bildschirm fernhalten, zum Beispiel persönliche Anliegen, indem sie bei den [Antragsarten](../admin/requests) **In Präsentation** ausschalten.
 
 ## Layout & Größe
 
@@ -27,3 +39,4 @@ Im [Gremien-Setup](./committee-setup) steuerst du:
 - **Layout**: **Standard Layout** oder **Layout für kleine Bildschirme**, je nach Bildschirm im Raum. Das Layout für kleine Bildschirme lässt Gremientitel und Tagesordnungspunkt weg. Solange ein Resolutionsentwurf aktiv ist, wird unabhängig von dieser Wahl das Resolutionslayout genutzt.
 - Basis-Schriftgröße und Resolutions-Schriftgröße: zwei unabhängige Schieberegler, weil der Resolutionstext oft eine andere Größe braucht als der Rest.
 - **Regionalgruppenanzeige**: legt fest, ob die Aufteilung nach Regionalgruppen erscheint.
+- **Anträge anzeigen**: legt fest, ob ausstehende Anträge eine eigene Kachel bekommen. Erscheint nur, wenn Anträge aktiviert sind.

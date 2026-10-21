@@ -1,10 +1,10 @@
 import type { Context } from '$api/context';
-import { configPrivate } from '$config/private';
+import { ADMIN_DOMAIN_WHITELIST, ADMIN_EMAIL_WHITELIST } from '$app/env/private';
 import { GraphQLError } from 'graphql';
 
 export function isAdminEmail(email: string) {
-	const whitelistEmails = configPrivate.ADMIN_EMAIL_WHITELIST.split(',').filter(Boolean);
-	const whitelistDomains = configPrivate.ADMIN_DOMAIN_WHITELIST.split(',').filter(Boolean);
+	const whitelistEmails = ADMIN_EMAIL_WHITELIST.split(',').filter(Boolean);
+	const whitelistDomains = ADMIN_DOMAIN_WHITELIST.split(',').filter(Boolean);
 	const domain = email.split('@')[1];
 
 	return whitelistEmails.includes(email) || whitelistDomains.includes(domain);

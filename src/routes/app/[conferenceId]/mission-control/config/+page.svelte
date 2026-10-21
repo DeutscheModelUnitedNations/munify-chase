@@ -17,7 +17,7 @@
 	import { page } from '$app/state';
 	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { getCurrentUser, getIsGlobalAdmin } from '$lib/state/currentUser.svelte';
 
 	const currentUser = await getCurrentUser();
 
@@ -106,7 +106,8 @@
 			faIcon: true,
 			priority: true,
 			enabled: true,
-			delegatesOnly: true
+			delegatesOnly: true,
+			showOnPresentation: true
 		}
 	});
 
@@ -121,7 +122,7 @@
 		conferenceUserType: true
 	});
 
-	const isGlobalAdmin = await client.query.isGlobalAdmin();
+	const isGlobalAdmin = await getIsGlobalAdmin();
 
 	let currentUserRole = $derived(conferenceUsers?.[0]);
 	let isAdmin = $derived(isGlobalAdmin || currentUserRole?.conferenceUserType === 'ADMIN');
@@ -147,7 +148,12 @@
 		{ id: 'requestTypes', title: m.requestTypes, icon: 'hand' }
 	];
 
-	// Same as clicking the tab. The users tab is hidden in the offline demo
+	// Not offered in the offline demo: other users make no sense on one device, and
+	// requests are not part of the demo, so request types would not be kept
+	const isTabAvailable = (tabId: string) =>
+		!isLocalConferenceActive() || (tabId !== 'users' && tabId !== 'requestTypes');
+
+	// Same as clicking the tab
 	registerCommands(() =>
 		configTabs.map((tab) => ({
 			id: `configuration.tab.${tab.id}`,
@@ -155,11 +161,7 @@
 			context: tab.title,
 			group: 'page' as const,
 			icon: tab.icon,
-			visible: () =>
-				isAdmin &&
-				!!conference &&
-				activeTab !== tab.id &&
-				(tab.id !== 'users' || !isLocalConferenceActive()),
+			visible: () => isAdmin && !!conference && activeTab !== tab.id && isTabAvailable(tab.id),
 			run: () => (activeTab = tab.id)
 		}))
 	);
@@ -220,7 +222,7 @@
 				>
 					{m.general()}
 				</button>
-				{#if !isLocalConferenceActive()}
+				{#if isTabAvailable('users')}
 					<button
 						role="tab"
 						class="tab"
@@ -254,19 +256,21 @@
 				>
 					{m.nonStateActors()}
 				</button>
-				<button
-					role="tab"
-					class="tab"
-					class:tab-active={activeTab === 'requestTypes'}
-					onclick={() => (activeTab = 'requestTypes')}
-				>
-					{m.requestTypes()}
-				</button>
+				{#if isTabAvailable('requestTypes')}
+					<button
+						role="tab"
+						class="tab"
+						class:tab-active={activeTab === 'requestTypes'}
+						onclick={() => (activeTab = 'requestTypes')}
+					>
+						{m.requestTypes()}
+					</button>
+				{/if}
 			</div>
 
 			{#if activeTab === 'general'}
 				<GeneralTab {conference} />
-			{:else if activeTab === 'users' && !isLocalConferenceActive()}
+			{:else if activeTab === 'users' && isTabAvailable('users')}
 				<UsersTab {conference} {currentUserEmail} />
 			{:else if activeTab === 'committees'}
 				<CommitteesTab conferenceId={conference.id} committees={conference.committees ?? []} />
@@ -278,7 +282,7 @@
 				/>
 			{:else if activeTab === 'nsa'}
 				<NsaTab conferenceId={conference.id} representations={conference.representations ?? []} />
-			{:else if activeTab === 'requestTypes'}
+			{:else if activeTab === 'requestTypes' && isTabAvailable('requestTypes')}
 				<RequestTypesTab
 					conferenceId={conference.id}
 					requestTypes={conference.requestTypes ?? []}

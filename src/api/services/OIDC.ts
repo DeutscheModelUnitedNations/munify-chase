@@ -1,8 +1,14 @@
 import { db, schema } from '$api/db/db';
 import { eq } from 'drizzle-orm';
-import { building, dev } from '$app/environment';
-import { configPrivate } from '$config/private';
-import { configPublic } from '$config/public';
+import { building, dev } from '$app/env';
+import { OIDC_CLIENT_SECRET, OIDC_SCOPES } from '$app/env/private';
+import {
+	PUBLIC_DEFAULT_LOCALE,
+	PUBLIC_OIDC_AUTHORITY,
+	PUBLIC_OIDC_CLIENT_ID,
+	PUBLIC_OIDC_LOGIN_CALLBACK_ROUTE,
+	PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE
+} from '$app/env/public';
 import { makeOIDC } from '@m1212e/sveltekit-oidc';
 
 type NormalizedOIDCClaims = {
@@ -61,12 +67,12 @@ function normalizeOIDCClaims(claims: Record<string, unknown>): NormalizedOIDCCla
 export const OIDC = !building
 	? await makeOIDC({
 			development: dev,
-			oidcAuthority: configPublic.PUBLIC_OIDC_AUTHORITY,
-			oidcClientId: configPublic.PUBLIC_OIDC_CLIENT_ID,
-			oidcClientSecret: configPrivate.OIDC_CLIENT_SECRET,
-			oidcScope: configPrivate.OIDC_SCOPES,
-			loginCallbackRoute: configPublic.PUBLIC_OIDC_LOGIN_CALLBACK_ROUTE,
-			logoutCallbackRoute: configPublic.PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE,
+			oidcAuthority: PUBLIC_OIDC_AUTHORITY,
+			oidcClientId: PUBLIC_OIDC_CLIENT_ID,
+			oidcClientSecret: OIDC_CLIENT_SECRET,
+			oidcScope: OIDC_SCOPES,
+			loginCallbackRoute: PUBLIC_OIDC_LOGIN_CALLBACK_ROUTE,
+			logoutCallbackRoute: PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE,
 			authenticatedRoutes: ['/app'],
 			logoutPath: '',
 			allowBearerToken: true,
@@ -80,7 +86,7 @@ export const OIDC = !building
 					.insert(schema.user)
 					.values({
 						id: normalized.sub,
-						locale: normalized.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
+						locale: normalized.locale ?? PUBLIC_DEFAULT_LOCALE,
 						preferredUsername,
 						email: normalized.email,
 						familyName: normalized.family_name ?? '',
@@ -89,7 +95,7 @@ export const OIDC = !building
 					.onConflictDoUpdate({
 						target: schema.user.id,
 						set: {
-							locale: normalized.locale ?? configPublic.PUBLIC_DEFAULT_LOCALE,
+							locale: normalized.locale ?? PUBLIC_DEFAULT_LOCALE,
 							preferredUsername,
 							email: normalized.email,
 							familyName: normalized.family_name ?? '',

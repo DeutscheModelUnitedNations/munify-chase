@@ -12,7 +12,7 @@ import { Redis as RedisExtension } from '@hocuspocus/extension-redis';
 import { Redis } from 'ioredis';
 import * as Y from 'yjs';
 import { db, schema } from '../db/db';
-import { configPrivate } from '$config/private';
+import { REDIS_URL } from '$app/env/private';
 import { context, type Context } from '$api/context';
 import {
 	isParticipantInConference,
@@ -144,7 +144,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 					});
 			}
 		}),
-		...(configPrivate.REDIS_URL
+		...(REDIS_URL
 			? [
 					new RedisExtension({
 						// The extension bundles its own older ioredis whose types are
@@ -153,7 +153,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 						createClient: () =>
 							// protocol: 2 — see the matching comment in rumble.ts; keeps ioredis v6 on
 							// the RESP2 wire format the extension's bundled (older) ioredis expects.
-							new Redis(configPrivate.REDIS_URL as string, {
+							new Redis(REDIS_URL as string, {
 								protocol: 2
 							}) as unknown as ReturnType<
 								NonNullable<ConstructorParameters<typeof RedisExtension>[0]['createClient']>

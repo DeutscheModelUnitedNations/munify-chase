@@ -1,7 +1,7 @@
 import { schemaBuilder } from '$api/rumble';
 import { db, schema } from '$api/db/db';
 import { and, count, eq, isNotNull, or, sql } from 'drizzle-orm';
-import { building } from '$app/environment';
+import { building } from '$app/env';
 import { refreshMaterializedViewsWithLock } from '$api/db/refreshMaterializedViews';
 
 // Conference-wide stats are heavy aggregations, not time-critical — refreshed

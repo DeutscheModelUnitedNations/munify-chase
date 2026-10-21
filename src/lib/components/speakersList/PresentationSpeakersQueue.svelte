@@ -2,12 +2,12 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import { flip } from 'svelte/animate';
 	import Flag from '../Flag.svelte';
-	import { cubicInOut, cubicOut } from 'svelte/easing';
+	import { queueFlip, queueIn, queueOut } from '$lib/helpers/queueTransitions';
 	import { fly } from 'svelte/transition';
 	import StripesAlert from './StripesAlert.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import Marquee from 'svelte-fast-marquee';
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { onMount } from 'svelte';
 	import { compareSpeakers } from '$lib/helpers/speakerSort';
 
@@ -85,9 +85,9 @@
 			{@const member = speaker.committeeMember || speaker.conferenceMember}
 			<div
 				class="flex items-center gap-4 py-2"
-				animate:flip={{ duration: 500, easing: cubicInOut }}
-				in:fly={{ duration: 500, y: 20, easing: cubicOut }}
-				out:fly={{ duration: 500, y: -20, easing: cubicOut }}
+				animate:flip={queueFlip}
+				in:fly={queueIn}
+				out:fly={queueOut}
 			>
 				<div class="w-4 text-sm opacity-50">{i + 1}.</div>
 				<Flag representation={member?.representation} size="sm" />

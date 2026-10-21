@@ -8,7 +8,7 @@
 	import '../app.css';
 	import '/node_modules/flag-icons/css/flag-icons.min.css';
 
-	import { dev } from '$app/environment';
+	import { dev } from '$app/env';
 	import { initialSetTheme } from '$lib/utils/theme.svelte';
 	import { onMount } from 'svelte';
 	import Alert from '$lib/components/Alert/PromiseAlert.svelte';

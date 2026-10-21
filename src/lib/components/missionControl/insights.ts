@@ -24,6 +24,9 @@ export interface InsightCommittee {
 	name: string;
 	status: CommitteestatusEnum;
 	statusUntil: Date;
+	// Set by the chairs: a custom status text and the state of debate
+	statusHeadline?: string | null;
+	stateOfDebate?: string | null;
 	totalPresent?: number | null;
 	members?: Array<{ present: boolean; representation?: { type?: string | null } | null }> | null;
 	activeAgendaItem?: {

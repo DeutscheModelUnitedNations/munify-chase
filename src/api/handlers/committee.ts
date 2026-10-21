@@ -191,7 +191,8 @@ schemaBuilder.mutationFields((t) => {
 				presentationLayout: t.arg.string(),
 				presentationRootFontSize: t.arg.int(),
 				presentationResolutionFontSize: t.arg.int(),
-				displayRegionalGroups: t.arg.boolean()
+				displayRegionalGroups: t.arg.boolean(),
+				presentationShowRequests: t.arg.boolean()
 			},
 			resolve: async (query, _root, args, ctx) => {
 				await db.transaction(async (tx) => {
@@ -213,7 +214,8 @@ schemaBuilder.mutationFields((t) => {
 							presentationLayout: args.presentationLayout ?? undefined,
 							presentationRootFontSize: args.presentationRootFontSize ?? undefined,
 							presentationResolutionFontSize: args.presentationResolutionFontSize ?? undefined,
-							displayRegionalGroups: args.displayRegionalGroups ?? undefined
+							displayRegionalGroups: args.displayRegionalGroups ?? undefined,
+							presentationShowRequests: args.presentationShowRequests ?? undefined
 						})
 						.where(
 							ctx.abilities.committee.filter('update').merge({ where: { id: args.id } }).sql.where

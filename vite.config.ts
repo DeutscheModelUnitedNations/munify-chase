@@ -66,8 +66,29 @@ function devAutoRestart() {
 	};
 }
 
+// web-llm ships one self-contained 6.5MB module whose only `new URL(..., import.meta.url)`
+// is a JSDoc example. That match makes vite:asset-import-meta-url run its literal-stripping
+// regex over the whole file, which overflows the stack the first time a page lazily imports
+// web-llm (e.g. mission control). Changing the case inside the comment skips that scan and
+// keeps every position in the file unchanged.
+function webLlmImportMetaUrlFix() {
+	const example = "new URL('./worker.ts', import.meta.url)";
+	return {
+		name: 'web-llm-import-meta-url-fix',
+		enforce: 'pre' as const,
+		transform(code: string, id: string) {
+			if (!id.includes('/@mlc-ai/web-llm/lib/index.js') || !code.includes(example)) return;
+			return {
+				code: code.replace(example, "new URL('./worker.ts', import.meta.URL)"),
+				map: null
+			};
+		}
+	};
+}
+
 export default defineConfig({
 	plugins: [
+		webLlmImportMetaUrlFix(),
 		// mkcert(),
 		devAutoRestart(),
 		// Local OIDC provider for development, users are configured in oidc-mock.yaml
@@ -100,7 +121,14 @@ export default defineConfig({
 		// with its own module-init scope → "Yjs was already imported" warning.
 		// Excluded, every `import 'yjs'` resolves to the single source file
 		// at chase/node_modules/yjs/dist/yjs.mjs, ESM-cached once.
-		exclude: ['yjs']
+		// web-llm: prebundling runs the same overflowing scan (see webLlmImportMetaUrlFix),
+		// and config plugins don't apply there. It is a self-contained ES module, so it can
+		// be served as is.
+		exclude: ['yjs', '@mlc-ai/web-llm']
+	},
+	// worker.ts imports web-llm too, and worker bundles get their own plugin list
+	worker: {
+		plugins: () => [webLlmImportMetaUrlFix()]
 	},
 	server: {
 		allowedHosts: ['svelte-dev.munify.cloud'],

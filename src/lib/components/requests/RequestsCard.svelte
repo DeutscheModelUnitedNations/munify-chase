@@ -6,6 +6,7 @@
 	import { promiseToastStrings } from '$lib/utils/toast';
 	import Modal from '$lib/components/Modal.svelte';
 	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { compareRequests } from '$lib/helpers/requests';
 
 	interface Props {
 		conferenceId: string;
@@ -29,13 +30,7 @@
 	});
 
 	// Same order as the chairs' pending-requests list: requestType.priority, then createdAt.
-	let sortedMyRequests = $derived(
-		[...(myRequests ?? [])].sort((a, b) => {
-			const priorityDiff = (a.requestType?.priority ?? 0) - (b.requestType?.priority ?? 0);
-			if (priorityDiff !== 0) return priorityDiff;
-			return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-		})
-	);
+	let sortedMyRequests = $derived([...(myRequests ?? [])].sort(compareRequests));
 
 	const requestTypes = await client.liveQuery.requestTypes({
 		__args: {

@@ -7,7 +7,7 @@
 	import ClauseVotePanel from './ClauseVotePanel.svelte';
 	import { isTeam, type ResolutionViewer } from './paperContext';
 	import type { OperativeClause } from '@deutschemodelunitednations/munify-resolution-editor';
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { registerCommands } from '$lib/commands/registry.svelte';
 
 	interface Props {

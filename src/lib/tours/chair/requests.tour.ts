@@ -10,6 +10,11 @@ export const tour: Tour = {
 			body: () => m.tourRequestsIntroBody()
 		},
 		{
+			anchor: 'requests.add',
+			title: () => m.tourRequestsAddTitle(),
+			body: () => m.tourRequestsAddBody()
+		},
+		{
 			anchor: 'requests.queue',
 			title: () => m.tourRequestsQueueTitle(),
 			body: () => m.tourRequestsQueueBody()

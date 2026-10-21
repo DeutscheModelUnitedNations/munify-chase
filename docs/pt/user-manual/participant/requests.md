@@ -40,3 +40,7 @@ Mudou de ideias? Toque no **×** (**Retirar pedido**) ao lado de um pedido pende
 ## O que acontece a seguir
 
 A presidência recebe uma notificação **Novo pedido** e trata os pedidos por ordem de tipo e depois por hora. Quando um membro da presidência marca o seu pedido como resolvido, este desaparece do seu cartão. Não recebe uma notificação à parte. A partir daí, pode voltar a enviar um pedido do mesmo tipo.
+
+Os pedidos pendentes costumam aparecer também no ecrã de apresentação, com a sua bandeira, o nome da sua delegação e o tipo de pedido. A presidência e os administradores podem ocultá-los aí.
+
+Se, em vez disso, levantar a sua placa, a presidência pode adicionar o pedido por si. Entra na fila como qualquer outro, mas não aparece no seu cartão **Pedidos**.

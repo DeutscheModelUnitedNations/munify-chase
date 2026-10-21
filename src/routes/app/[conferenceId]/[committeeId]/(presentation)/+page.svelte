@@ -22,10 +22,12 @@
 	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
 	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
 	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { client } from '$lib/api/rumbleClient/client';
 	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
 	import { page } from '$app/state';
+	import PresentationRequests from '$lib/components/requests/PresentationRequests.svelte';
+	import { compareRequests, requestRepresentation } from '$lib/helpers/requests';
 
 	const committeeId = page.params.committeeId!;
 
@@ -45,6 +47,8 @@
 		presentationRootFontSize: true,
 		presentationResolutionFontSize: true,
 		displayRegionalGroups: true,
+		allowRequests: true,
+		presentationShowRequests: true,
 		currentOperativeIndex: true,
 		activeDraftResolutionId: true,
 		activeDraftResolution: { id: true, status: true },
@@ -141,6 +145,49 @@
 		}
 	});
 
+	const requesterRepresentationFields = {
+		name: true,
+		alpha2Code: true,
+		alpha3Code: true,
+		faIcon: true,
+		type: true
+	} as const;
+
+	const pendingRequests = await client.liveQuery.requests({
+		__args: {
+			where: { committeeId: { eq: committeeId }, status: 'PENDING' },
+			orderBy: { createdAt: 'asc' }
+		},
+		id: true,
+		createdAt: true,
+		requestType: { id: true, name: true, faIcon: true, priority: true, showOnPresentation: true },
+		committeeMember: { id: true, representation: requesterRepresentationFields },
+		conferenceMember: { id: true, representation: requesterRepresentationFields },
+		conferenceUser: {
+			id: true,
+			committeeMember: { id: true, representation: requesterRepresentationFields },
+			conferenceMember: { id: true, representation: requesterRepresentationFields }
+		}
+	});
+
+	// Same order as the chairs' queue
+	const presentationRequests = $derived(
+		committee?.allowRequests && committee.presentationShowRequests
+			? (pendingRequests ?? [])
+					.filter((req) => req.requestType?.showOnPresentation)
+					.sort(compareRequests)
+					.map((req) => ({
+						id: req.id,
+						requestType: req.requestType,
+						representation: requestRepresentation(req)
+					}))
+			: []
+	);
+
+	// A boolean of its own so the layout only changes when the tile appears or
+	// disappears, not on every queue update
+	const hasPresentationRequests = $derived(presentationRequests.length > 0);
+
 	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
 	const activePaperId = $derived(committee?.activeDraftResolutionId ?? null);
@@ -149,7 +196,8 @@
 		getPresentationLayoutPreset(
 			activePaperId != null
 				? 'resolution'
-				: ((committee?.presentationLayout as PresentationLayoutPresetOptions) ?? undefined)
+				: ((committee?.presentationLayout as PresentationLayoutPresetOptions) ?? undefined),
+			{ showRequests: hasPresentationRequests }
 		)
 	);
 
@@ -309,6 +357,12 @@
 						? (committee.activeAmendment ?? null)
 						: null}
 				/>
+			</GridItem>
+		{/if}
+		{#if layout.requests}
+			{@const gridProps = layout.requests}
+			<GridItem {...gridProps} class="card bg-base-100 overflow-hidden p-4" id="requests">
+				<PresentationRequests requests={presentationRequests} />
 			</GridItem>
 		{/if}
 	</Grid>

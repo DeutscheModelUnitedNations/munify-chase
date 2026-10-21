@@ -17,6 +17,7 @@ Abra **Configuração** e mude para o separador **Pedidos**. Cada tipo de pedido
 - **Nome**: o que os delegados veem no botão.
 - **Ativado**: desligue um tipo para o ocultar sem o eliminar.
 - **Apenas delegados**: quando está ligado, os ANE não podem fazer este pedido.
+- **Na apresentação**: quando está ligado (por defeito), os pedidos pendentes deste tipo aparecem na vista de apresentação. Desligue-o para os tipos que devem ficar entre o delegado e a presidência, como as necessidades pessoais. A presidência também pode ocultar a lista inteira por comité (consulte [Modo de apresentação](../chair/presentation-mode)).
 - O ícone do caixote do lixo remove o tipo depois de uma confirmação.
 
 As alterações são guardadas assim que edita um campo.
@@ -37,5 +38,6 @@ Os pedidos estão desligados em todos os comités por predefinição. A presidê
 ## Bom saber
 
 - Cada pessoa só pode ter um pedido pendente por tipo num comité. Depois de resolvido ou retirado, pode enviá-lo de novo.
+- A presidência também pode adicionar pedidos para qualquer lugar do seu comité, por exemplo quando alguém levanta a placa. Não pode adicionar um tipo que esse lugar já tenha pendente.
 - Os delegados só podem enviar pedidos ao comité em que têm lugar. Os ANE podem enviá-los a qualquer comité.
 - Só os administradores podem alterar os tipos de pedido.

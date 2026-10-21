@@ -13,7 +13,7 @@ import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
 import { crossTabSyncExchange } from '@m1212e/urql-crosstab-sync';
 import { empty, filter, fromPromise, fromValue, map, merge, mergeMap, onPush, pipe } from 'wonka';
 import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { schema } from './rumbleClient/schema';
 import { optimistic, updates, ensureId } from './optimisticUpdateHandlers';
 import { setWsConnected, DISCONNECT_GRACE_MS } from '$lib/state/connection.svelte';
@@ -203,7 +203,10 @@ const LOCAL_DEMO_MUTATION_RESULT_SHAPES: Record<
 		__typename: 'Rollcallsession',
 		id: variables.id,
 		currentMemberIndex: 0
-	})
+	}),
+	// The echo would write the target position onto the speaker before the commit re-runs
+	// the optimistic handler, which then sees "already there" and skips shifting the others
+	moveSpeakerToPosition: (variables) => ({ __typename: 'Speakeronlist', id: variables.id })
 };
 
 function unwrapNamedTypeName(typeRef: {
@@ -268,13 +271,24 @@ function makeLocalDemoMutationResult(operation: Operation) {
 	return makeSuccessResult(operation, { [fieldName]: echoed ?? null });
 }
 
+/**
+ * Whether an operation belongs to the offline demo. Mutations carry the mode they were
+ * dispatched in (see trackQueriesExchange), so a real conference's offline queue that
+ * graphcache flushes while this tab shows the demo still goes to the server instead of
+ * being answered with a fake success and dropped.
+ */
+function isLocalDemoOperation(op: Operation) {
+	const stamped = op.context.localDemo as boolean | undefined;
+	return stamped ?? isLocalConferenceActive();
+}
+
 const localDemoExchange: Exchange =
 	({ forward }) =>
 	(ops$) => {
 		const remoteOps$ = pipe(
 			ops$,
 			filter(
-				(op) => op.kind === 'teardown' || (!isLocalConferenceActive() && !getLocalDemoSeed(op))
+				(op) => op.kind === 'teardown' || (!isLocalDemoOperation(op) && !getLocalDemoSeed(op))
 			),
 			forward
 		);
@@ -297,7 +311,15 @@ const localDemoExchange: Exchange =
 		const cannedResults$ = pipe(
 			ops$,
 			filter((op) => op.kind === 'query' && isLocalConferenceActive() && !getLocalDemoSeed(op)),
-			map((op) => ({ op, data: resolveLocalDemoQuery(op.query, op.variables, op.key) })),
+			map((op) => {
+				// A cache miss (or a partial hit) must always be answered, even for an operation
+				// answered before: deferring to a cache that lacks the data would leave the query
+				// pending forever, e.g. after a new committee was created that is missing fields
+				// another page's query selects.
+				const outcome = op.context.meta?.cacheOutcome;
+				const operationKey = outcome === 'miss' || outcome === 'partial' ? undefined : op.key;
+				return { op, data: resolveLocalDemoQuery(op.query, op.variables, operationKey) };
+			}),
 			filter((x): x is { op: Operation; data: Record<string, unknown> } => !!x.data),
 			map(({ op, data }) => makeSuccessResult(op, data))
 		);
@@ -306,7 +328,7 @@ const localDemoExchange: Exchange =
 		// erroring, since there's no real backend to eventually retry against.
 		const mutationResults$ = pipe(
 			ops$,
-			filter((op) => op.kind === 'mutation' && isLocalConferenceActive() && !getLocalDemoSeed(op)),
+			filter((op) => op.kind === 'mutation' && isLocalDemoOperation(op) && !getLocalDemoSeed(op)),
 			map((op) => makeLocalDemoMutationResult(op))
 		);
 
@@ -366,6 +388,13 @@ if (browser) {
 					if (op.kind === 'query') activeQueries.set(op.key, op);
 					else if (op.kind === 'teardown') activeQueries.delete(op.key);
 				}),
+				// Record whether a mutation was made in the demo, see isLocalDemoOperation.
+				// Re-dispatches from the offline queue keep the stamp of the first dispatch.
+				map((op) =>
+					op.kind === 'mutation' && op.context.localDemo === undefined
+						? makeOperation(op.kind, op, { ...op.context, localDemo: isLocalConferenceActive() })
+						: op
+				),
 				forward
 			);
 		};
@@ -439,7 +468,13 @@ if (browser) {
 				SpeakingFairness: () => null
 			}
 		}),
-		crossTabSyncExchange({ channelName: 'chase-cross-tab-sync' }),
+		crossTabSyncExchange({
+			channelName: 'chase-cross-tab-sync',
+			// The demo's canned query answers must not warm other tabs' caches, where a real
+			// conference would read them. Demo mutations still sync, the presentation window
+			// relies on them.
+			shouldSync: (op) => op.kind === 'mutation' || !isLocalConferenceActive()
+		}),
 		localDemoExchange
 	);
 

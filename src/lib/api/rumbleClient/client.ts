@@ -11,6 +11,22 @@ import { nativeDateExchange } from '@m1212e/rumble/client';
 import { schema } from './schema';
 import { makeLiveQuery, makeMutation, makeSubscription, makeQuery } from '@m1212e/rumble/client';
 
+export type Address = {
+  countryCode: String | null,
+  locality: String | null,
+  postalCode: String | null,
+  region: String | null,
+  streetAddress: String | null    
+};
+		
+export type AddressInput = {
+  countryCode: String,
+  locality?: String | null | undefined,
+  postalCode?: String | null | undefined,
+  region?: String | null | undefined,
+  streetAddress: String    
+};
+		
 export type Agendaitem = {
   committee: (p?: {
     orderBy?: CommitteeOrderInputArgument | null | undefined,
@@ -397,6 +413,7 @@ export type Committee = {
   presentationLayout: String,
   presentationResolutionFontSize: Int,
   presentationRootFontSize: Int,
+  presentationShowRequests: Boolean,
   requests: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
@@ -467,6 +484,7 @@ export type CommitteeOrderInputArgument = {
   presentationLayout?: SortingParameter | null | undefined,
   presentationResolutionFontSize?: SortingParameter | null | undefined,
   presentationRootFontSize?: SortingParameter | null | undefined,
+  presentationShowRequests?: SortingParameter | null | undefined,
   showWhiteboard?: SortingParameter | null | undefined,
   stateOfDebate?: SortingParameter | null | undefined,
   status?: SortingParameter | null | undefined,
@@ -520,6 +538,7 @@ export type CommitteeWhereInputArgument = {
   presentationLayout?: StringWhereInputArgument | null | undefined,
   presentationResolutionFontSize?: IntWhereInputArgument | null | undefined,
   presentationRootFontSize?: IntWhereInputArgument | null | undefined,
+  presentationShowRequests?: BooleanWhereInputArgument | null | undefined,
   requests?: RequestWhereInputArgument | null | undefined,
   resolutionPapers?: ResolutionpaperWhereInputArgument | null | undefined,
   rollCallSessions?: RollcallsessionWhereInputArgument | null | undefined,
@@ -940,6 +959,8 @@ export type DelegationSpeakingStats = {
   totalSeconds: Int    
 };
 		
+export type EmailAddress = unknown;
+		
 export type Float = number;
 		
 export type FloatWhereInputArgument = {
@@ -1104,6 +1125,8 @@ export type JSONWhereInputArgument = {
   notIn?: JSON[] | undefined    
 };
 		
+export type Locale = unknown;
+		
 export type LongestSpeechToday = {
   committeeAbbreviation: String,
   committeeId: ID,
@@ -1232,6 +1255,13 @@ export type Mutation = {
     name?: String | null | undefined,
     userEmail: String
   }) => Conferenceuser,
+  createManualRequest: (p: {
+    committeeId: ID,
+    committeeMemberId?: ID | null | undefined,
+    conferenceMemberId?: ID | null | undefined,
+    id?: ID | null | undefined,
+    requestTypeId: ID
+  }) => Request,
   createManualSnapshot: (p: {
     id?: ID | null | undefined,
     paperId: ID
@@ -1260,7 +1290,8 @@ export type Mutation = {
     delegatesOnly?: Boolean | null | undefined,
     faIcon?: String | null | undefined,
     id?: ID | null | undefined,
-    name: String
+    name: String,
+    showOnPresentation?: Boolean | null | undefined
   }) => Requesttype,
   createResolutionComment: (p: {
     clauseId?: String | null | undefined,
@@ -1453,6 +1484,7 @@ export type Mutation = {
     presentationLayout?: String | null | undefined,
     presentationResolutionFontSize?: Int | null | undefined,
     presentationRootFontSize?: Int | null | undefined,
+    presentationShowRequests?: Boolean | null | undefined,
     showWhiteboard?: Boolean | null | undefined,
     stateOfDebate?: String | null | undefined,
     status?: CommitteestatusEnum | null | undefined,
@@ -1490,7 +1522,8 @@ export type Mutation = {
     faIcon?: String | null | undefined,
     id: ID,
     name?: String | null | undefined,
-    priority?: Int | null | undefined
+    priority?: Int | null | undefined,
+    showOnPresentation?: Boolean | null | undefined
   }) => Requesttype,
   updateResolutionComment: (p: {
     content: String,
@@ -1722,6 +1755,8 @@ export type PapersponsorWhereInputArgument = {
 		
 export type PaperstatusEnum = "AMENDMENT_PHASE" | "DRAFT_RESOLUTION" | "FINAL" | "SUBMITTED" | "VOTING_PHASE" | "WORKING_PAPER";
 		
+export type PersonName = unknown;
+		
 export type PersonalActivityStats = {
   amendmentsAccepted: Int,
   amendmentsProposed: Int,
@@ -1757,6 +1792,8 @@ export type PersonalVotingStats = {
   pro: Int,
   total: Int    
 };
+		
+export type PhoneNumber = unknown;
 		
 export type Presenceevent = {
   committee: (p?: {
@@ -2170,11 +2207,21 @@ export type Request = {
     where?: CommitteeWhereInputArgument | null | undefined
   }) => Committee,
   committeeId: ID,
+  committeeMember: (p?: {
+    orderBy?: CommitteememberOrderInputArgument | null | undefined,
+    where?: CommitteememberWhereInputArgument | null | undefined
+  }) => Committeemember | null,
+  committeeMemberId: ID | null,
+  conferenceMember: (p?: {
+    orderBy?: ConferencememberOrderInputArgument | null | undefined,
+    where?: ConferencememberWhereInputArgument | null | undefined
+  }) => Conferencemember | null,
+  conferenceMemberId: ID | null,
   conferenceUser: (p?: {
     orderBy?: ConferenceuserOrderInputArgument | null | undefined,
     where?: ConferenceuserWhereInputArgument | null | undefined
-  }) => Conferenceuser,
-  conferenceUserId: ID,
+  }) => Conferenceuser | null,
+  conferenceUserId: ID | null,
   createdAt: DateTime,
   id: ID,
   requestType: (p?: {
@@ -2194,6 +2241,8 @@ export type Request = {
 		
 export type RequestOrderInputArgument = {
   committeeId?: SortingParameter | null | undefined,
+  committeeMemberId?: SortingParameter | null | undefined,
+  conferenceMemberId?: SortingParameter | null | undefined,
   conferenceUserId?: SortingParameter | null | undefined,
   createdAt?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
@@ -2210,6 +2259,10 @@ export type RequestWhereInputArgument = {
   OR?: RequestWhereInputArgument[] | undefined,
   committee?: CommitteeWhereInputArgument | null | undefined,
   committeeId?: IDWhereInputArgument | null | undefined,
+  committeeMember?: CommitteememberWhereInputArgument | null | undefined,
+  committeeMemberId?: IDWhereInputArgument | null | undefined,
+  conferenceMember?: ConferencememberWhereInputArgument | null | undefined,
+  conferenceMemberId?: IDWhereInputArgument | null | undefined,
   conferenceUser?: ConferenceuserWhereInputArgument | null | undefined,
   conferenceUserId?: IDWhereInputArgument | null | undefined,
   createdAt?: DateTimeWhereInputArgument | null | undefined,
@@ -2244,6 +2297,7 @@ export type Requesttype = {
     orderBy?: RequestOrderInputArgument | null | undefined,
     where?: RequestWhereInputArgument | null | undefined
   }) => Request[],
+  showOnPresentation: Boolean,
   updatedAt: DateTime | null    
 };
 		
@@ -2256,6 +2310,7 @@ export type RequesttypeOrderInputArgument = {
   id?: SortingParameter | null | undefined,
   name?: SortingParameter | null | undefined,
   priority?: SortingParameter | null | undefined,
+  showOnPresentation?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined    
 };
 		
@@ -2273,6 +2328,7 @@ export type RequesttypeWhereInputArgument = {
   name?: StringWhereInputArgument | null | undefined,
   priority?: IntWhereInputArgument | null | undefined,
   requests?: RequestWhereInputArgument | null | undefined,
+  showOnPresentation?: BooleanWhereInputArgument | null | undefined,
   updatedAt?: DateTimeWhereInputArgument | null | undefined    
 };
 		

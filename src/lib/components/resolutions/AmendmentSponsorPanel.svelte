@@ -6,7 +6,7 @@
 	import { isTeam, type ResolutionViewer } from './paperContext';
 	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
 	import Flag from '$lib/components/Flag.svelte';
-	import Combobox from '$lib/components/Combobox.svelte';
+	import SponsorPicker from './SponsorPicker.svelte';
 	import Fuse, { type IFuseOptions } from 'fuse.js';
 
 	interface Props {
@@ -176,30 +176,13 @@
 	{/if}
 
 	{#if team}
-		<Combobox
+		<SponsorPicker
 			bind:value={pickValue}
-			options={members}
+			{members}
 			filter={filterMembers}
-			getStringValue={getName}
-			getKey={(mem) => mem.id}
-			placeholder={m.selectMember()}
-			submit={addByName}
-			triggerClass="btn btn-neutral btn-square btn-lg join-item"
-		>
-			{#snippet ListItem(option)}
-				<Flag size="xs" representation={option.representation} />
-				<span class="ml-2 flex-1">{getName(option)}</span>
-			{/snippet}
-			{#snippet AdditionalButtons()}
-				<button
-					class="btn btn-neutral btn-lg btn-square join-item"
-					aria-label={m.addSponsor()}
-					disabled={busy || !pickValue}
-					onclick={addByName}
-				>
-					<i class="fas fa-plus"></i>
-				</button>
-			{/snippet}
-		</Combobox>
+			{getName}
+			{busy}
+			add={addByName}
+		/>
 	{/if}
 </div>

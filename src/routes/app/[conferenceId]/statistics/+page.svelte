@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/state';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
@@ -9,6 +8,8 @@
 		roleLabelFor
 	} from '$lib/components/navbar/conferenceNavItems';
 	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { loadConferenceViewer } from '$lib/state/conferenceViewer';
+	import { displayNameOf } from '$lib/helpers/displayName';
 	import PersonalStatsSection from './PersonalStatsSection.svelte';
 	import ConferenceStatsSection from './ConferenceStatsSection.svelte';
 	import BasicCard from '$lib/components/BasicCard.svelte';
@@ -16,34 +17,12 @@
 
 	const conferenceId = page.params.conferenceId!;
 	const currentUser = await getCurrentUser();
-	const userDisplayName =
-		[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
-		currentUser.preferredUsername ||
-		currentUser.email ||
-		'';
+	const userDisplayName = displayNameOf(currentUser);
 
-	const conferenceMeta = await client.liveQuery.conference({
-		__args: { id: conferenceId },
-		title: true,
-		committees: {
-			id: true,
-			name: true,
-			abbreviation: true
-		}
-	});
-
-	const conferenceUsers = await client.liveQuery.conferenceUsers({
-		__args: {
-			where: {
-				conference: { id: { eq: conferenceId } },
-				user: { id: { eq: currentUser.id ?? '' } }
-			}
-		},
-		id: true,
-		conferenceUserType: true
-	});
-
-	const isGlobalAdmin = await client.query.isGlobalAdmin();
+	const { conferenceMeta, conferenceUsers, isGlobalAdmin } = await loadConferenceViewer(
+		conferenceId,
+		currentUser.id ?? ''
+	);
 
 	let role = $derived(conferenceUsers?.[0]?.conferenceUserType);
 	let isAdmin = $derived(isGlobalAdmin || role === 'ADMIN');

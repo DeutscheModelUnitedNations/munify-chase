@@ -6,7 +6,7 @@ description: Receber e resolver pontos e moções enviados por delegados e ANE
 
 # Pedidos
 
-Com os pedidos ativados, os delegados e os atores não estatais enviam pontos e moções (por exemplo um Direito à Informação ou uma Votação Nominal) à presidência a partir do próprio dispositivo. Trata-os na página **Pedidos**.
+Com os pedidos ativados, os delegados e os atores não estatais enviam pontos e moções (por exemplo um Direito à Informação ou uma Votação Nominal) à presidência a partir do próprio dispositivo. Trata-os na página **Pedidos**, onde também pode adicionar pedidos.
 
 ![A página Pedidos da presidência, com a lista de pedidos pendentes e os botões Resolver e Retirar pedido](shot:chair/requests-page)
 
@@ -24,7 +24,7 @@ A lista de tipos de pedido é a mesma para toda a conferência e é gerida pelos
 
 - **Carregar conjunto padrão** adiciona os 15 pedidos padrão da DMUN. Direito à Informação, Direito à Restauração da Ordem, Direito ao Esclarecimento de um Mal-entendido, Votação Nominal e Sessão Informal estão abertos a todos. As restantes moções processuais estão marcadas como **Apenas delegados**.
 - Os ANE nunca veem os tipos de pedido marcados como **Apenas delegados**.
-- A ordem que os administradores dão aos tipos é a ordem pela qual os pedidos aparecem na sua página.
+- A ordem que os administradores dão aos tipos é a ordem pela qual os pedidos aparecem na sua página e no ecrã de apresentação.
 
 ## Receber notificações
 
@@ -34,14 +34,28 @@ Enquanto houver algo pendente, o ícone Pedidos na barra mostra um ponto vermelh
 
 ![Um aviso Novo pedido na interface da presidência, com uma ligação Ver pedidos](shot:chair/request-toast)
 
+## Adicionar pedidos
+
+Nem toda a gente usa o dispositivo. Quando alguém levanta a placa na sala, coloque o pedido na fila com o cartão **Adicionar pedido**, por cima da fila.
+
+O cartão mostra duas listas lado a lado: à esquerda todas as delegações e ANE, à direita todos os tipos de pedido na ordem definida pelos administradores. Pode percorrê-las ou filtrá-las com o campo de pesquisa por cima de cada lista.
+
+1. Clique na delegação ou no ANE.
+2. Clique no tipo de pedido.
+3. Clique em **Adicionar pedido**. O botão fica desativado até ambos estarem escolhidos.
+
+Pelo teclado: Alt+R (ou **Adicionar pedido** na paleta de comandos) salta para a pesquisa de delegações. Escreva algumas letras e prima Enter para escolher o melhor resultado, faça o mesmo para o tipo de pedido e prima Enter outra vez para o adicionar.
+
+Os tipos que esse lugar já tem pendentes, incluindo os que a própria delegação enviou, ficam marcados como "Já pendente" e não podem ser adicionados de novo. Os ANE não recebem tipos **Apenas delegados**. Funciona para qualquer lugar do comité, também para delegações sem conta ou sem sessão iniciada.
+
 ## Tratar a fila
 
-Cada pedido pendente mostra o ícone e o nome, a bandeira e o nome da delegação ou do ANE (com o nome da própria pessoa entre parênteses, se for diferente) e a hora de envio. A lista é ordenada por tipo de pedido, na ordem definida pelos administradores, e depois do mais antigo para o mais recente.
+Cada pedido pendente mostra o ícone e o nome, a bandeira e o nome da delegação ou do ANE (com o nome da própria pessoa entre parênteses, se for diferente) e a hora de envio. Os pedidos adicionados por si ou por outro membro da presidência têm um pequeno ícone de caneta junto ao nome ("Adicionado pela mesa"). A lista é ordenada por tipo de pedido, na ordem definida pelos administradores, e depois do mais antigo para o mais recente.
 
 - **Resolver** marca o pedido como tratado.
-- **Retirar pedido** descarta-o em nome de quem o enviou, por exemplo quando o ponto já não é relevante.
+- **Retirar pedido** descarta-o, por exemplo quando o ponto já não é relevante.
 
-As duas ações são atualizadas em tempo real para toda a presidência e para quem enviou o pedido. Se ainda não chegou nada, a página mostra "Sem pedidos pendentes."
+As duas ações funcionam da mesma forma para os pedidos enviados por uma delegação e para os adicionados pela presidência, e são atualizadas em tempo real para toda a presidência e para quem enviou o pedido. Se ainda não chegou nada, a página mostra "Sem pedidos pendentes."
 
 ## Histórico
 
@@ -49,6 +63,8 @@ A lista **N pedido(s) recente(s)** por baixo da fila mostra os últimos 20 pedid
 
 ## O que os delegados veem
 
-Os delegados e os ANE têm um cartão **Pedidos** na página do comité, com um botão **Fazer um pedido**, uma lista pesquisável de tipos de pedido e os seus próprios pedidos pendentes, cada um com um botão para o retirar. Cada pessoa pode ter um pedido pendente por tipo de cada vez. Os delegados só podem enviar pedidos ao próprio comité, os ANE a qualquer comité da conferência. Os espectadores não podem enviar pedidos. Os pedidos não aparecem no ecrã de apresentação.
+Os delegados e os ANE têm um cartão **Pedidos** na página do comité, com um botão **Fazer um pedido**, uma lista pesquisável de tipos de pedido e os seus próprios pedidos pendentes, cada um com um botão para o retirar. Cada pessoa pode ter um pedido pendente por tipo de cada vez. Os delegados só podem enviar pedidos ao próprio comité, os ANE a qualquer comité da conferência. Os espectadores não podem enviar pedidos. Um pedido adicionado pela presidência não aparece no cartão da própria delegação.
+
+Os pedidos pendentes aparecem também num bloco próprio no ecrã de apresentação, a menos que desligue **Mostrar pedidos** na página [Configurar](./committee-setup). Consulte [Modo de apresentação](./presentation-mode).
 
 Consulte [Pedidos para participantes](../participant/requests) para ver o lado deles.

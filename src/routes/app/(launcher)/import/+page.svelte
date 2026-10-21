@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { getIsGlobalAdmin } from '$lib/state/currentUser.svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -22,7 +23,7 @@
 
 	type ImportData = z.infer<typeof importDataSchema>;
 
-	const isAdmin = (await client.query.isGlobalAdmin()) as unknown as boolean;
+	const isAdmin = await getIsGlobalAdmin();
 
 	let step = $state(0);
 	let loading = $state(false);
@@ -249,6 +250,7 @@
 
 	<!-- Stepper -->
 	{#if step > 0}
+		<!-- fallow-ignore-next-line css-broken-reference -- border-b is a Tailwind utility -->
 		<div class="bg-base-100 border-base-content/10 flex justify-center border-b px-6 py-5">
 			<ul class="steps">
 				{#each STEP_LABELS as label, i (i)}

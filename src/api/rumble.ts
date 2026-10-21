@@ -1,18 +1,18 @@
 import { rumble } from '@m1212e/rumble';
 import { db, schema } from './db/db';
 import { context } from './context';
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import { Redis } from 'ioredis';
 import { createRedisEventTarget } from '@graphql-yoga/redis-event-target';
-import { configPrivate } from '$config/private';
+import { REDIS_URL } from '$app/env/private';
 import ValidationPlugin from '@pothos/plugin-validation';
 
 let eventTarget: ReturnType<typeof createRedisEventTarget> | undefined;
-if (configPrivate.REDIS_URL) {
+if (REDIS_URL) {
 	// ioredis v6 defaults to the RESP3 wire protocol, which changes reply shapes for some
 	// commands — pin the previously-default RESP2 protocol to keep behavior unchanged.
-	const publishClient = new Redis(configPrivate.REDIS_URL, { protocol: 2 });
-	const subscribeClient = new Redis(configPrivate.REDIS_URL, { protocol: 2 });
+	const publishClient = new Redis(REDIS_URL, { protocol: 2 });
+	const subscribeClient = new Redis(REDIS_URL, { protocol: 2 });
 
 	eventTarget = createRedisEventTarget({
 		publishClient,

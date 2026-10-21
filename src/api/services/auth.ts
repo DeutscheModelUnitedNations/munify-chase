@@ -1,7 +1,7 @@
 import type { IncomingMessage } from 'node:http';
 import type { RequestEvent } from '@sveltejs/kit';
 import { parse as parseCookies, type SerializeOptions } from 'cookie';
-import { configPrivate } from '$config/private';
+import { HOST_HEADER, ORIGIN, PORT_HEADER, PROTOCOL_HEADER } from '$app/env/private';
 
 function headerValue(
 	headers: IncomingMessage['headers'],
@@ -13,11 +13,10 @@ function headerValue(
 }
 
 function getRequestOrigin(headers: IncomingMessage['headers']): string {
-	if (configPrivate.ORIGIN) return configPrivate.ORIGIN;
-	const proto = headerValue(headers, configPrivate.PROTOCOL_HEADER) ?? 'https';
-	const host =
-		headerValue(headers, configPrivate.HOST_HEADER) ?? headerValue(headers, 'host') ?? 'localhost';
-	const port = headerValue(headers, configPrivate.PORT_HEADER);
+	if (ORIGIN) return ORIGIN;
+	const proto = headerValue(headers, PROTOCOL_HEADER) ?? 'https';
+	const host = headerValue(headers, HOST_HEADER) ?? headerValue(headers, 'host') ?? 'localhost';
+	const port = headerValue(headers, PORT_HEADER);
 	return `${proto}://${host}${port ? `:${port}` : ''}`;
 }
 

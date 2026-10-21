@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import type { MLCEngineInterface } from '@mlc-ai/web-llm';
 import { m } from '$lib/paraglide/messages';
 import { assessAiCapability, LOCAL_MODEL_TIERS } from './assess';

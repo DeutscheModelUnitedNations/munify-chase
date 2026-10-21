@@ -17,6 +17,7 @@ Mit Anträgen können Delegierte und NAs Anträge zur Geschäftsordnung und pers
 - **Name**: was Delegierte auf dem Button sehen.
 - **Aktiviert**: schalte eine Art aus, um sie auszublenden, ohne sie zu löschen.
 - **Nur Delegierte**: ist das an, können NAs diesen Antrag nicht stellen.
+- **In Präsentation**: ist das an (Standard), werden ausstehende Anträge dieser Art in der Präsentationsansicht aufgelistet. Schalte es für Arten aus, die zwischen Delegierten und Vorsitz bleiben sollen, etwa persönliche Anliegen. Der Vorsitz kann die ganze Liste außerdem pro Gremium ausblenden (siehe [Präsentationsansicht](../chair/presentation-mode)).
 - Das Papierkorb-Symbol entfernt die Art nach einer Rückfrage.
 
 Änderungen werden gespeichert, sobald du ein Feld bearbeitest.
@@ -37,5 +38,6 @@ Anträge sind in jedem Gremium standardmäßig aus. Der Vorsitz schaltet sie auf
 ## Gut zu wissen
 
 - Jede Person kann pro Art in einem Gremium nur einen offenen Antrag haben. Sobald er erledigt oder zurückgezogen ist, kann sie ihn erneut stellen.
+- Der Vorsitz kann auch selbst Anträge für jeden Sitz in seinem Gremium hinzufügen, zum Beispiel wenn ein Länderschild gehoben wird. Eine Art, die für diesen Sitz schon offen ist, kann er nicht noch einmal hinzufügen.
 - Delegierte können nur Anträge an das Gremium stellen, in dem sie sitzen. NAs können sie an jedes Gremium stellen.
 - Nur Admins können Antragsarten ändern.

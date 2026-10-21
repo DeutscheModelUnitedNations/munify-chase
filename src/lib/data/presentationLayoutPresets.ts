@@ -10,6 +10,7 @@ type PresentationLayoutPresets = {
 	speakersList?: ComponentProps<GridItem>;
 	commentsList?: ComponentProps<GridItem>;
 	resolutionPreview?: ComponentProps<GridItem>;
+	requests?: ComponentProps<GridItem>;
 };
 
 const commonCommitteeTitleProps: Partial<ComponentProps<GridItem>> = {
@@ -65,6 +66,13 @@ const commonResolutionPreviewProps: Partial<ComponentProps<GridItem>> = {
 	min: {
 		w: 4,
 		h: 4
+	}
+};
+
+const commonRequestsProps: Partial<ComponentProps<GridItem>> = {
+	min: {
+		w: 4,
+		h: 3
 	}
 };
 
@@ -208,10 +216,35 @@ const presentationLayoutPresets: Record<
 	}
 };
 
+// While requests are pending, each preset makes room for a requests tile by
+// shrinking whatever is least time-critical in that preset: the whiteboard in
+// the default layout, the comment list in the others.
+const requestsLayoutOverrides: Record<PresentationLayoutPresetOptions, PresentationLayoutPresets> =
+	{
+		resolution: {
+			speakersList: { x: 8, y: 2, w: 4, h: 4, ...commonSpeakersListProps },
+			commentsList: { x: 8, y: 6, w: 4, h: 4, ...commonCommentsListProps },
+			requests: { x: 8, y: 10, w: 4, h: 3, ...commonRequestsProps }
+		},
+		default: {
+			whiteboard: { x: 0, y: 4, w: 4, h: 4, ...commonWhiteboardProps },
+			requests: { x: 0, y: 8, w: 4, h: 5, ...commonRequestsProps }
+		},
+		smallScreen: {
+			commentsList: { x: 6, y: 2, w: 6, h: 4, ...commonCommentsListProps },
+			requests: { x: 6, y: 6, w: 6, h: 3, ...commonRequestsProps },
+			whiteboard: { x: 6, y: 9, w: 6, h: 4, ...commonWhiteboardProps }
+		}
+	};
+
 export const getPresentationLayoutPreset = (
-	preset: PresentationLayoutPresetOptions = 'default'
+	preset: PresentationLayoutPresetOptions = 'default',
+	{ showRequests = false }: { showRequests?: boolean } = {}
 ): PresentationLayoutPresets => {
-	return presentationLayoutPresets[preset];
+	const key = preset in presentationLayoutPresets ? preset : 'default';
+	const base = presentationLayoutPresets[key];
+	if (!showRequests) return base;
+	return { ...base, ...requestsLayoutOverrides[key] };
 };
 
 export const getPresentationLayoutPresets = () => {

@@ -3,7 +3,8 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { client } from '$lib/api/rumbleClient/client';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { getCurrentUser, getIsGlobalAdmin } from '$lib/state/currentUser.svelte';
+	import { displayNameOf } from '$lib/helpers/displayName';
 	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
 	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
 	import {
@@ -19,11 +20,7 @@
 
 	const currentUser = await getCurrentUser();
 	const userId = currentUser?.id ?? '';
-	const userDisplayName =
-		[currentUser?.givenName, currentUser?.familyName].filter(Boolean).join(' ').trim() ||
-		currentUser?.preferredUsername ||
-		currentUser?.email ||
-		'';
+	const userDisplayName = displayNameOf(currentUser);
 
 	const [conferenceUser] =
 		(await client.liveQuery.conferenceUsers({
@@ -39,7 +36,7 @@
 	const role = $derived(conferenceUser?.conferenceUserType);
 	const showBack = $derived(role !== 'DELEGATE');
 
-	const isGlobalAdmin = await client.query.isGlobalAdmin();
+	const isGlobalAdmin = await getIsGlobalAdmin();
 
 	const menubarItems = $derived(
 		buildConferenceNavItems({

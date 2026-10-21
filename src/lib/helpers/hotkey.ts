@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 const isMac = browser && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
 

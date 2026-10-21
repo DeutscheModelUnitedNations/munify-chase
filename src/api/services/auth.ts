@@ -1,6 +1,6 @@
 import type { IncomingMessage } from 'node:http';
 import type { RequestEvent } from '@sveltejs/kit';
-import { parse as parseCookies, type SerializeOptions } from 'cookie';
+import { parseCookie as parseCookies, type SerializeOptions } from 'cookie';
 import { HOST_HEADER, ORIGIN, PORT_HEADER, PROTOCOL_HEADER } from '$app/env/private';
 
 function headerValue(

@@ -1,11 +1,11 @@
-import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '#api/rumble';
 import { GraphQLError } from 'graphql';
-import { db, schema } from '$api/db/db';
+import { db, schema } from '#api/db/db';
 import { and, count, eq, gte, sql } from 'drizzle-orm';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { SpeakersListRef } from './speakersList';
-import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
-import { nanoidValidation } from '$lib/helpers/nanoid';
+import { isTeamInConference, isParticipantInConference } from '#api/services/authHelper';
+import { nanoidValidation } from '#lib/helpers/nanoid';
 
 abilityBuilder.speakerOnList.allow('read').when((ctx) => {
 	return {
@@ -55,7 +55,8 @@ schemaBuilder.mutationFields((t) => {
 						overwriteName: args.overwriteName ? args.overwriteName : null
 					})
 					.where(
-						ctx.abilities.speakerOnList.filter('update').merge({ where: { id: args.id } }).sql.where
+						(await ctx.abilities.speakerOnList.filter('update')).merge({ where: { id: args.id } })
+							.sql.where
 					)
 					.returning()
 					.then(assertFirstEntryExists);
@@ -65,8 +66,9 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakerOnList
 					.findFirst(
 						query(
-							ctx.abilities.speakerOnList.filter('read').merge({ where: { id: updated.id } }).query
-								.single
+							(await ctx.abilities.speakerOnList.filter('read')).merge({
+								where: { id: updated.id }
+							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -96,9 +98,9 @@ schemaBuilder.mutationFields((t) => {
 					async (tx) => {
 						const speakersList = await tx.query.speakersList
 							.findFirst(
-								ctx.abilities.speakersList
-									.filter('update')
-									.merge({ where: { id: args.speakersListId } }).query.single
+								(await ctx.abilities.speakersList.filter('update')).merge({
+									where: { id: args.speakersListId }
+								}).query.single
 							)
 							.then(assertFindFirstExists);
 
@@ -154,8 +156,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakerOnList
 					.findFirst(
 						query(
-							ctx.abilities.speakerOnList.filter('read').merge({ where: { id: createdId } }).query
-								.single
+							(await ctx.abilities.speakerOnList.filter('read')).merge({ where: { id: createdId } })
+								.query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -174,9 +176,9 @@ schemaBuilder.mutationFields((t) => {
 						const deleted = await tx
 							.delete(schema.speakerOnList)
 							.where(
-								ctx.abilities.speakerOnList
-									.filter('delete')
-									.merge({ where: { id: args.speakerOnListId } }).sql.where
+								(await ctx.abilities.speakerOnList.filter('delete')).merge({
+									where: { id: args.speakerOnListId }
+								}).sql.where
 							)
 							.returning()
 							.then(assertFirstEntryExists);
@@ -214,9 +216,9 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakersList
 					.findFirst(
 						query(
-							ctx.abilities.speakersList
-								.filter('read')
-								.merge({ where: { id: removed.speakersListId } }).query.single
+							(await ctx.abilities.speakersList.filter('read')).merge({
+								where: { id: removed.speakersListId }
+							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -371,8 +373,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakerOnList
 					.findFirst(
 						query(
-							ctx.abilities.speakerOnList.filter('read').merge({ where: { id: createdId } }).query
-								.single
+							(await ctx.abilities.speakerOnList.filter('read')).merge({ where: { id: createdId } })
+								.query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -496,9 +498,9 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakersList
 					.findFirst(
 						query(
-							ctx.abilities.speakersList
-								.filter('read')
-								.merge({ where: { id: removed.speakersListId } }).query.single
+							(await ctx.abilities.speakersList.filter('read')).merge({
+								where: { id: removed.speakersListId }
+							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -519,8 +521,9 @@ schemaBuilder.mutationFields((t) => {
 					async (tx) => {
 						const aboutToMoveSpeakerOnList = await tx.query.speakerOnList
 							.findFirst(
-								ctx.abilities.speakerOnList.filter('update').merge({ where: { id: args.id } }).query
-									.single
+								(await ctx.abilities.speakerOnList.filter('update')).merge({
+									where: { id: args.id }
+								}).query.single
 							)
 							.then(assertFindFirstExists);
 
@@ -633,8 +636,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.speakerOnList
 					.findFirst(
 						query(
-							ctx.abilities.speakerOnList.filter('read').merge({ where: { id: args.id } }).query
-								.single
+							(await ctx.abilities.speakerOnList.filter('read')).merge({ where: { id: args.id } })
+								.query.single
 						)
 					)
 					.then(assertFindFirstExists);

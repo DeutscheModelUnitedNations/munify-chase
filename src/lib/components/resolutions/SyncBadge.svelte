@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import type { YjsConnectionState } from '$lib/api/yjs/createPaperYjs.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import type { YjsConnectionState } from '#lib/api/yjs/createPaperYjs.svelte';
 
 	interface Props {
 		connectionState: YjsConnectionState;

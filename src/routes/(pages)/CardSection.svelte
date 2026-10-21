@@ -1,10 +1,10 @@
 <script lang="ts">
 	import Card from './Card.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 
-	import candidate from '$assets/undraw/candidate.svg';
-	import voting from '$assets/undraw/voting.svg';
-	import teamCollaboration from '$assets/undraw/team_collaboration.svg';
+	import candidate from '#assets/undraw/candidate.svg';
+	import voting from '#assets/undraw/voting.svg';
+	import teamCollaboration from '#assets/undraw/team_collaboration.svg';
 </script>
 
 <section class="mx-auto flex max-w-[1200px] flex-col gap-12 px-4 pb-16 md:px-12 lg:pb-32">

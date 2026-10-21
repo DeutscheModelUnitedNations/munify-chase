@@ -1,7 +1,7 @@
-import { createYoga } from '$api/rumble';
+import { createYoga } from '#api/rumble';
 import { dev } from '$app/env';
 
-import '$api/handlers/register';
+import '#api/handlers/register';
 
 const yogaInstance = createYoga({
 	graphqlEndpoint: '/api/graphql',

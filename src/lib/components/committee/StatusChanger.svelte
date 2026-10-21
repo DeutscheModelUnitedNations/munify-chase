@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
-	import Tabs from '$lib/components/Tabs.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import type { CommitteestatusEnum } from '#lib/api/rumbleClient/client';
+	import Tabs from '#lib/components/Tabs.svelte';
 	import dayjs from 'dayjs';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import { getServerTime } from '$lib/state/serverTime.svelte';
+	import { promiseToastStrings } from '#lib/utils/toast';
+	import { getServerTime } from '#lib/state/serverTime.svelte';
 
 	type Props = {
 		committeeId: string;

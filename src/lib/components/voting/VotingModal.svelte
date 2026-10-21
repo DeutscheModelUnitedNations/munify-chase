@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type VotingMajority } from './votingModal';
-	import { m } from '$lib/paraglide/messages';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 	import Modal from '../Modal.svelte';
 	import VotingSetupForm from './VotingSetupForm.svelte';
 	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';

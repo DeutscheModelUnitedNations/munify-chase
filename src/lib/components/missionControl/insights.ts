@@ -1,6 +1,6 @@
-import type { CommitteestatusEnum, VotingmodeEnum } from '$lib/api/rumbleClient/client';
-import { compareSpeakers } from '$lib/helpers/speakerSort';
-import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+import type { CommitteestatusEnum, VotingmodeEnum } from '#lib/api/rumbleClient/client';
+import { compareSpeakers } from '#lib/helpers/speakerSort';
+import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 
 export interface InsightRepresentation {
 	name?: string | null;

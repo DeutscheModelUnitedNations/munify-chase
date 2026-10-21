@@ -8,8 +8,8 @@ import type {
 	Variables
 } from '@urql/exchange-graphcache';
 import worldCountries from 'world-countries';
-import { calculateMajority } from '$lib/utils/majorities';
-import { LOCAL_CONFERENCE_ID, isLocalConferenceActive } from '$lib/state/localDemo.svelte';
+import { calculateMajority } from '#lib/utils/majorities';
+import { LOCAL_CONFERENCE_ID, isLocalConferenceActive } from '#lib/state/localDemo.svelte';
 import { densifySpeakers } from '../optimisticUpdateHandlers';
 import { schema } from '../rumbleClient/schema';
 import { completeLocalDemoQueryAnswer } from './completeAnswer';
@@ -17,7 +17,7 @@ import { completeLocalDemoQueryAnswer } from './completeAnswer';
 const now = new Date();
 
 // Mirrors src/api/db/seedUtils.ts's mapping for the real backend seeder — duplicated
-// here rather than imported since that file lives under the server-only `$api` tree.
+// here rather than imported since that file lives under the server-only `#api` tree.
 const regionalGroupMapping: Record<
 	(typeof worldCountries)[0]['unRegionalGroup'],
 	string | undefined

@@ -2,9 +2,9 @@
 	import Modal from '../Modal.svelte';
 	import StatusChanger from './StatusChanger.svelte';
 	import hotkeys from 'hotkeys-js';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import type { CommitteestatusEnum } from '#lib/api/rumbleClient/client';
 
 	interface Props {
 		committeeId: string;

@@ -1,11 +1,13 @@
+import { redirect } from '@sveltejs/kit';
+
 // import sockets here to ensure they are bundles with the rest of the application
-import '$api/websocket';
-import { type Handle, redirect } from '@sveltejs/kit';
-import { paraglideMiddleware } from '$lib/paraglide/server';
-import { sequence } from '@sveltejs/kit/hooks';
-import { OIDC } from '$api/services/OIDC';
-import { locales, baseLocale, cookieName, cookieMaxAge } from '$lib/paraglide/runtime';
-import { isLocalConferencePath } from '$lib/state/localDemo.svelte';
+import '#api/websocket';
+
+import { paraglideMiddleware } from '#lib/paraglide/server';
+import { sequence, type Handle } from '@sveltejs/kit/hooks';
+import { OIDC } from '#api/services/OIDC';
+import { locales, baseLocale, cookieName, cookieMaxAge } from '#lib/paraglide/runtime';
+import { isLocalConferencePath } from '#lib/state/localDemo.svelte';
 
 const TAURI_ORIGIN = 'tauri://localhost';
 
@@ -69,9 +71,9 @@ export const handle: Handle = sequence(
 	oidcOrLocalDemoBypass,
 	localeRedirect,
 	({ event, resolve }) =>
-		paraglideMiddleware(event.request, ({ request: localizedRequest, locale }) => {
-			event.request = localizedRequest;
-
+		// Without a url locale strategy the middleware's request equals event.request, so
+		// the event is passed on unchanged (its request is read-only since SvelteKit 3)
+		paraglideMiddleware(event.request, ({ locale }) => {
 			return resolve(event, {
 				transformPageChunk: ({ html }) => {
 					return html.replace('%lang%', locale);

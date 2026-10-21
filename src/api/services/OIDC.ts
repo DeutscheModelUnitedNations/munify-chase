@@ -1,4 +1,4 @@
-import { db, schema } from '$api/db/db';
+import { db, schema } from '#api/db/db';
 import { eq } from 'drizzle-orm';
 import { building, dev } from '$app/env';
 import { OIDC_CLIENT_SECRET, OIDC_SCOPES } from '$app/env/private';

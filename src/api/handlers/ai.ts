@@ -1,11 +1,11 @@
-import { db } from '$api/db/db';
-import { makeAICall } from '$api/services/ai';
-import { schemaBuilder } from '$api/rumble';
-import { isGlobalAdmin } from '$api/services/authHelper';
+import { db } from '#api/db/db';
+import { makeAICall } from '#api/services/ai';
+import { schemaBuilder } from '#api/rumble';
+import { isGlobalAdmin } from '#api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import z from 'zod';
 import { jsonSchema, Output } from 'ai';
-import type { Context } from '$api/context';
+import type { Context } from '#api/context';
 import { AI_PROVIDERS } from '$app/env/private';
 
 const RATE_LIMIT_WINDOW_MS = 1000 * 60 * 4; // 4 minutes

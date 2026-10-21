@@ -1,4 +1,4 @@
-import type { LauncherBadge } from '$lib/helpers/launcher';
+import type { LauncherBadge } from '#lib/helpers/launcher';
 
 export type LauncherRepresentation = {
 	type?: 'DELEGATION' | 'NSA' | 'UN' | null;

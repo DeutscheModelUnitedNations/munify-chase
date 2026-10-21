@@ -1,10 +1,10 @@
-import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
-import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
+import { db, schema } from '#api/db/db';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '#api/rumble';
+import { isAdminInConference, isParticipantInConference } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { count, eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '#lib/helpers/nanoid';
 
 abilityBuilder.requestType.allow('read').when((ctx) => ({
 	where: isParticipantInConference(ctx)
@@ -33,8 +33,9 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.conference
 				.findFirst(
-					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
-						.query.single
+					(await ctx.abilities.conference.filter('update')).merge({
+						where: { id: args.conferenceId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -67,8 +68,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.requestType
 				.findFirst(
 					query(
-						ctx.abilities.requestType.filter('read').merge({ where: { id: result.id } }).query
-							.single
+						(await ctx.abilities.requestType.filter('read')).merge({ where: { id: result.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -89,7 +90,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.requestType
 				.findFirst(
-					ctx.abilities.requestType.filter('update').merge({ where: { id: args.id } }).query.single
+					(await ctx.abilities.requestType.filter('update')).merge({ where: { id: args.id } }).query
+						.single
 				)
 				.then(assertFindFirstExists);
 
@@ -115,7 +117,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.requestType
 				.findFirst(
 					query(
-						ctx.abilities.requestType.filter('read').merge({ where: { id: args.id } }).query.single
+						(await ctx.abilities.requestType.filter('read')).merge({ where: { id: args.id } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -130,7 +133,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (_root, args, ctx) => {
 			const requestType = await db.query.requestType
 				.findFirst(
-					ctx.abilities.requestType.filter('delete').merge({ where: { id: args.id } }).query.single
+					(await ctx.abilities.requestType.filter('delete')).merge({ where: { id: args.id } }).query
+						.single
 				)
 				.then(assertFindFirstExists);
 

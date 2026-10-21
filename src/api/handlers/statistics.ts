@@ -1,8 +1,8 @@
-import { schemaBuilder } from '$api/rumble';
-import { db, schema } from '$api/db/db';
+import { schemaBuilder } from '#api/rumble';
+import { db, schema } from '#api/db/db';
 import { and, count, eq, isNotNull, or, sql } from 'drizzle-orm';
 import { building } from '$app/env';
-import { refreshMaterializedViewsWithLock } from '$api/db/refreshMaterializedViews';
+import { refreshMaterializedViewsWithLock } from '#api/db/refreshMaterializedViews';
 
 // Conference-wide stats are heavy aggregations, not time-critical — refreshed
 // every 5 minutes rather than on every request.
@@ -602,7 +602,8 @@ schemaBuilder.queryFields((t) => ({
 			const { conferenceId } = args;
 
 			const conference = await db.query.conference.findFirst(
-				ctx.abilities.conference.filter('read').merge({ where: { id: conferenceId } }).query.single
+				(await ctx.abilities.conference.filter('read')).merge({ where: { id: conferenceId } }).query
+					.single
 			);
 			if (!conference) return null;
 

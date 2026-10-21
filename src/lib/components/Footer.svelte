@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import dmunLogo from '$assets/dmunlogo/dmun-lang.svg';
-	import dmunLogoDark from '$assets/dmunlogo/dmun-lang-darkmode.svg';
+	import dmunLogo from '#assets/dmunlogo/dmun-lang.svg';
+	import dmunLogoDark from '#assets/dmunlogo/dmun-lang-darkmode.svg';
 	import { PUBLIC_SHA, PUBLIC_VERSION } from '$app/env/public';
-	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
-	import * as m from '$lib/paraglide/messages.js';
+	import LanguageSwitcher from '#lib/components/LanguageSwitcher.svelte';
+	import * as m from '#lib/paraglide/messages';
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
 </script>
 

@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import { flip } from 'svelte/animate';
 	import Flag from '../Flag.svelte';
-	import { queueFlip, queueIn, queueOut } from '$lib/helpers/queueTransitions';
+	import { queueFlip, queueIn, queueOut } from '#lib/helpers/queueTransitions';
 	import { fly } from 'svelte/transition';
 	import StripesAlert from './StripesAlert.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import Marquee from 'svelte-fast-marquee';
 	import { browser } from '$app/env';
 	import { onMount } from 'svelte';
-	import { compareSpeakers } from '$lib/helpers/speakerSort';
+	import { compareSpeakers } from '#lib/helpers/speakerSort';
 
 	interface Props {
 		// speaker on list

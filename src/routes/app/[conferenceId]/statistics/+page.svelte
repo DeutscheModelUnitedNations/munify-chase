@@ -1,18 +1,18 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { page } from '$app/state';
-	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
 	import {
 		buildConferenceNavItems,
 		roleBadgeClassFor,
 		roleLabelFor
-	} from '$lib/components/navbar/conferenceNavItems';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import { loadConferenceViewer } from '$lib/state/conferenceViewer';
-	import { displayNameOf } from '$lib/helpers/displayName';
+	} from '#lib/components/navbar/conferenceNavItems';
+	import { getCurrentUser } from '#lib/state/currentUser.svelte';
+	import { loadConferenceViewer } from '#lib/state/conferenceViewer';
+	import { displayNameOf } from '#lib/helpers/displayName';
 	import PersonalStatsSection from './PersonalStatsSection.svelte';
 	import ConferenceStatsSection from './ConferenceStatsSection.svelte';
-	import BasicCard from '$lib/components/BasicCard.svelte';
+	import BasicCard from '#lib/components/BasicCard.svelte';
 	import DownloadPresenceData from '../attendance/DownloadPresenceData.svelte';
 
 	const conferenceId = page.params.conferenceId!;

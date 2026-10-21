@@ -1,21 +1,21 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 	import { page } from '$app/state';
-	import { client } from '$lib/api/rumbleClient/client';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import UndrawError from '$lib/components/UndrawError.svelte';
-	import emptyStreet from '$assets/undraw/empty_street.svg';
+	import { client } from '#lib/api/rumbleClient/client';
+	import BasicCard from '#lib/components/BasicCard.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import UndrawError from '#lib/components/UndrawError.svelte';
+	import emptyStreet from '#assets/undraw/empty_street.svg';
 	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import AddManualRequest from '$lib/components/requests/AddManualRequest.svelte';
+	import { promiseToastStrings } from '#lib/utils/toast';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import AddManualRequest from '#lib/components/requests/AddManualRequest.svelte';
 	import {
 		compareRequests,
 		requestRepresentation,
 		toPendingSeatRequest
-	} from '$lib/helpers/requests';
+	} from '#lib/helpers/requests';
 
 	const committeeId = page.params.committeeId!;
 	const conferenceId = page.params.conferenceId!;

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { browser } from '$app/env';
-	import { m } from '$lib/paraglide/messages';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
+	import { m } from '#lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
 	import toast from 'svelte-french-toast';
 	import type { ResolutionViewer } from './paperContext';
 	import { isTeam } from './paperContext';
-	import Flag from '$lib/components/Flag.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 
 	interface Props {
 		paperId: string;

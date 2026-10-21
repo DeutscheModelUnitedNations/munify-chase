@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enableViewTransitionApi } from '$lib/helpers/viewTransitionApi.svelte';
+	import { enableViewTransitionApi } from '#lib/helpers/viewTransitionApi.svelte';
 	import { Toaster, useToasterStore } from 'svelte-french-toast';
 	import toast from 'svelte-french-toast';
 	import { page } from '$app/state';
@@ -9,10 +9,10 @@
 	import '/node_modules/flag-icons/css/flag-icons.min.css';
 
 	import { dev } from '$app/env';
-	import { initialSetTheme } from '$lib/utils/theme.svelte';
+	import { initialSetTheme } from '#lib/utils/theme.svelte';
 	import { onMount } from 'svelte';
-	import Alert from '$lib/components/Alert/PromiseAlert.svelte';
-	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
+	import Alert from '#lib/components/Alert/PromiseAlert.svelte';
+	import OfflineBanner from '#lib/components/OfflineBanner.svelte';
 	import Inspect from 'svelte-inspect-value';
 
 	dayjs.extend(duration);

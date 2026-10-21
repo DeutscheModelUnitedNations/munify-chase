@@ -60,7 +60,7 @@ export const routeHelp: Partial<Record<RouteId, RouteHelp>> = {
 	'/app/[conferenceId]/[committeeId]/(chairs)/speakers-list': {
 		docs: 'user-manual/chair/speakers-list',
 		tour: async () =>
-			(await import('$lib/components/speakersList/speakersList.tour')).chairSpeakersListTour
+			(await import('#lib/components/speakersList/speakersList.tour')).chairSpeakersListTour
 	},
 	'/app/[conferenceId]/[committeeId]/(chairs)/voting': {
 		docs: 'user-manual/chair/voting',

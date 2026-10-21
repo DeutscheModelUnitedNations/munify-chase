@@ -1,14 +1,14 @@
 <script lang="ts">
-	import Kbd from '$lib/components/Kbd.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import Kbd from '#lib/components/Kbd.svelte';
+	import { m } from '#lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import ScrollingCountryList from './ScrollingCountryList.svelte';
 	import { untrack } from 'svelte';
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
-	import { client } from '$lib/api/rumbleClient/client';
+	import { client } from '#lib/api/rumbleClient/client';
 	import { SvelteSet } from 'svelte/reactivity';
-	import { nanoid } from '$lib/helpers/nanoid';
+	import { nanoid } from '#lib/helpers/nanoid';
 
 	interface Props {
 		active: boolean;

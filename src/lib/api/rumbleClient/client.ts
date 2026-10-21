@@ -959,7 +959,7 @@ export type DelegationSpeakingStats = {
   totalSeconds: Int    
 };
 		
-export type EmailAddress = unknown;
+export type EmailAddress = string;
 		
 export type Float = number;
 		
@@ -1125,7 +1125,7 @@ export type JSONWhereInputArgument = {
   notIn?: JSON[] | undefined    
 };
 		
-export type Locale = unknown;
+export type Locale = string;
 		
 export type LongestSpeechToday = {
   committeeAbbreviation: String,
@@ -1755,7 +1755,7 @@ export type PapersponsorWhereInputArgument = {
 		
 export type PaperstatusEnum = "AMENDMENT_PHASE" | "DRAFT_RESOLUTION" | "FINAL" | "SUBMITTED" | "VOTING_PHASE" | "WORKING_PAPER";
 		
-export type PersonName = unknown;
+export type PersonName = string;
 		
 export type PersonalActivityStats = {
   amendmentsAccepted: Int,
@@ -1793,7 +1793,7 @@ export type PersonalVotingStats = {
   total: Int    
 };
 		
-export type PhoneNumber = unknown;
+export type PhoneNumber = string;
 		
 export type Presenceevent = {
   committee: (p?: {

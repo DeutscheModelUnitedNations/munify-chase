@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import BasicCard from '$lib/components/BasicCard.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import BasicCard from '#lib/components/BasicCard.svelte';
 	import NsaScannerDrawer from './NsaScannerDrawer.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 

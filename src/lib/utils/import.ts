@@ -1,4 +1,4 @@
-import { emailValidation } from '$api/services/emailValidation';
+import { emailValidation } from '#api/services/emailValidation';
 import { z } from 'zod/v4';
 
 export const importDataSchema = z.object({

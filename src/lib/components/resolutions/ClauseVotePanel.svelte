@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { client } from '$lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { isTeam, type ResolutionViewer } from './paperContext';
 	import { launchClauseVote } from './resolutionVotes';

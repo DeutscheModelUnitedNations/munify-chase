@@ -1,5 +1,5 @@
-import { m } from '$lib/paraglide/messages';
-import type { Tour } from '$lib/tours/types';
+import { m } from '#lib/paraglide/messages';
+import type { Tour } from '#lib/tours/types';
 
 /** Conference statistics page. Anchors live in PersonalStatsSection and ConferenceStatsSection. */
 export const tour: Tour = {

@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import Flag from '$lib/components/Flag.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import BasicCard from '#lib/components/BasicCard.svelte';
+	import Flag from '#lib/components/Flag.svelte';
 	import AttendanceTrendChart from './AttendanceTrendChart.svelte';
 	import type { TrendPoint } from './AttendanceTrendChart.svelte';
 	import SpeakingActivityChart from './SpeakingActivityChart.svelte';
 	import type { TimelineBucket } from './SpeakingActivityChart.svelte';
-	import { getCountryNameFromCode } from '$lib/utils/nationTranslationHelper.svelte';
+	import { getCountryNameFromCode } from '#lib/utils/nationTranslationHelper.svelte';
 
 	interface Props {
 		conferenceId: string;

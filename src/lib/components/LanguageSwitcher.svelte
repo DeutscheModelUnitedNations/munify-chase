@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { locales, getLocale, setLocale } from '$lib/paraglide/runtime';
+	import { locales, getLocale, setLocale } from '#lib/paraglide/runtime';
 	import Modal from './Modal.svelte';
 	import Flag from './Flag.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 
 	const localeInfo: Record<string, { flag: string; label: string }> = {
 		de: { flag: 'de', label: 'Deutsch' },

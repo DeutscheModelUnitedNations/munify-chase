@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import Modal from '$lib/components/Modal.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
+	import { m } from '#lib/paraglide/messages';
+	import Modal from '#lib/components/Modal.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
 	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { promiseToastStrings } from '#lib/utils/toast';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 
 	interface Representation {

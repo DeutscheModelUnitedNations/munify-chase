@@ -15,16 +15,16 @@
 	// breaking the production build's static resolution.
 	import Masonry from 'svelte-widgets/Masonry.svelte';
 	import { resolve } from '$app/paths';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import IconInfoBox from '../IconInfoBox.svelte';
 	import Flag from '../Flag.svelte';
 	import MissionControlTile from './MissionControlTile.svelte';
 	import MissionControlBarList from './MissionControlBarList.svelte';
 	import MissionControlChart, { type MissionControlChartKind } from './MissionControlChart.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
-	import type { RegionalgroupEnum } from '$lib/api/rumbleClient/client';
-	import { getServerTime } from '$lib/state/serverTime.svelte';
+	import { getCommitteeStatusIcon, getCommitteeStatusText } from '#lib/utils/committeeStatus';
+	import { translateRegionalGroupEnum } from '#lib/utils/enumTranslationHelper';
+	import type { RegionalgroupEnum } from '#lib/api/rumbleClient/client';
+	import { getServerTime } from '#lib/state/serverTime.svelte';
 	import {
 		buildInsightTiles,
 		committeesOnBreak,

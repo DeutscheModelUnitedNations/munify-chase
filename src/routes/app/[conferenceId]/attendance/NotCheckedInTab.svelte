@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
-	import BasicCard from '$lib/components/BasicCard.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import BasicCard from '#lib/components/BasicCard.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
-	import Flag from '$lib/components/Flag.svelte';
+	import Flag from '#lib/components/Flag.svelte';
 
 	interface Props {
 		conferenceId: string;

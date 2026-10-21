@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Flag from '$lib/components/Flag.svelte';
+	import Flag from '#lib/components/Flag.svelte';
 	import dayjs from 'dayjs';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
-	import { getServerTime } from '$lib/state/serverTime.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
+	import { getServerTime } from '#lib/state/serverTime.svelte';
+	import { m } from '#lib/paraglide/messages';
 	import { cubicIn, cubicInOut, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import ResultChart from './ResultChart.svelte';
@@ -12,8 +12,8 @@
 	import { flip } from 'svelte/animate';
 	import FlagRow from './FlagRow.svelte';
 	import { crossfade } from 'svelte/transition';
-	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
-	import { calculateMajority } from '$lib/utils/majorities';
+	import { sortTranslatedCountries } from '#lib/utils/nationTranslationHelper.svelte';
+	import { calculateMajority } from '#lib/utils/majorities';
 
 	interface Props {
 		committeeId: string;

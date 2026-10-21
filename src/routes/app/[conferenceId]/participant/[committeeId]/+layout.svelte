@@ -1,20 +1,20 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { getCurrentUser, getIsGlobalAdmin } from '$lib/state/currentUser.svelte';
-	import { displayNameOf } from '$lib/helpers/displayName';
-	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
-	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { getCurrentUser, getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
+	import { displayNameOf } from '#lib/helpers/displayName';
+	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
+	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
 	import {
 		buildConferenceNavItems,
 		roleBadgeClassFor,
 		roleLabelFor
-	} from '$lib/components/navbar/conferenceNavItems';
+	} from '#lib/components/navbar/conferenceNavItems';
 	import type { Snippet } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 
 	let { children }: { children: Snippet } = $props();
 

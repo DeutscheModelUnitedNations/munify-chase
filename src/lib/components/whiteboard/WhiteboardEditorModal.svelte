@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
 	import WhiteboardEditor from './WhiteboardEditor.svelte';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import { promiseToastStrings } from '#lib/utils/toast';
 
 	interface Props {
 		open: boolean;

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { client } from '$lib/api/rumbleClient/client';
-	import Flag from '$lib/components/Flag.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { getServerTime } from '$lib/state/serverTime.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import Kbd from '$lib/components/Kbd.svelte';
-	import { compareSpeakers } from '$lib/helpers/speakerSort';
+	import { client } from '#lib/api/rumbleClient/client';
+	import Flag from '#lib/components/Flag.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { getServerTime } from '#lib/state/serverTime.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import Kbd from '#lib/components/Kbd.svelte';
+	import { compareSpeakers } from '#lib/helpers/speakerSort';
 
 	type SpeakersList =
 		| {

@@ -1,9 +1,9 @@
-import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
-import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
+import { db, schema } from '#api/db/db';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '#api/rumble';
+import { isTeamInConference, isParticipantInConference } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
-import { nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '#lib/helpers/nanoid';
 
 abilityBuilder.rollCallSession.allow('read').when((ctx) => ({
 	where: { committee: isParticipantInConference(ctx) }
@@ -31,8 +31,9 @@ schemaBuilder.mutationFields((t) => {
 			resolve: async (q, _root, args, ctx) => {
 				const committee = await db.query.committee
 					.findFirst(
-						ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } })
-							.query.single
+						(await ctx.abilities.committee.filter('update')).merge({
+							where: { id: args.committeeId }
+						}).query.single
 					)
 					.then(assertFindFirstExists);
 
@@ -43,9 +44,9 @@ schemaBuilder.mutationFields((t) => {
 					return db.query.rollCallSession
 						.findFirst(
 							q(
-								ctx.abilities.rollCallSession
-									.filter('read')
-									.merge({ where: { id: committee.activeRollCallSessionId } }).query.single
+								(await ctx.abilities.rollCallSession.filter('read')).merge({
+									where: { id: committee.activeRollCallSessionId }
+								}).query.single
 							)
 						)
 						.then(assertFindFirstExists);
@@ -83,8 +84,9 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.rollCallSession
 					.findFirst(
 						q(
-							ctx.abilities.rollCallSession.filter('read').merge({ where: { id: result.id } }).query
-								.single
+							(await ctx.abilities.rollCallSession.filter('read')).merge({
+								where: { id: result.id }
+							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -102,8 +104,8 @@ schemaBuilder.mutationFields((t) => {
 					.update(schema.rollCallSession)
 					.set({ currentMemberIndex: args.currentMemberIndex })
 					.where(
-						ctx.abilities.rollCallSession.filter('update').merge({ where: { id: args.id } }).sql
-							.where
+						(await ctx.abilities.rollCallSession.filter('update')).merge({ where: { id: args.id } })
+							.sql.where
 					);
 
 				pubsub.updated(args.id);
@@ -111,8 +113,8 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.rollCallSession
 					.findFirst(
 						q(
-							ctx.abilities.rollCallSession.filter('read').merge({ where: { id: args.id } }).query
-								.single
+							(await ctx.abilities.rollCallSession.filter('read')).merge({ where: { id: args.id } })
+								.query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -130,8 +132,8 @@ schemaBuilder.mutationFields((t) => {
 				// keeps the ability scope check intact.
 				const session = await db.query.rollCallSession
 					.findFirst(
-						ctx.abilities.rollCallSession.filter('update').merge({ where: { id: args.id } }).query
-							.single
+						(await ctx.abilities.rollCallSession.filter('update')).merge({ where: { id: args.id } })
+							.query.single
 					)
 					.then(assertFindFirstExists);
 
@@ -140,8 +142,9 @@ schemaBuilder.mutationFields((t) => {
 						.update(schema.rollCallSession)
 						.set({ completedAt: new Date() })
 						.where(
-							ctx.abilities.rollCallSession.filter('update').merge({ where: { id: args.id } }).sql
-								.where
+							(await ctx.abilities.rollCallSession.filter('update')).merge({
+								where: { id: args.id }
+							}).sql.where
 						);
 					await tx
 						.update(schema.committee)

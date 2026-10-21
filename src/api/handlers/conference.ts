@@ -1,7 +1,7 @@
-import { db, schema } from '$api/db/db';
-import { abilityBuilder, object, query, schemaBuilder, pubsub as rumblePubsub } from '$api/rumble';
+import { db, schema } from '#api/db/db';
+import { abilityBuilder, object, query, schemaBuilder, pubsub as rumblePubsub } from '#api/rumble';
 import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
-import { isAdmin, isGlobalAdmin, isParticipant } from '$api/services/authHelper';
+import { isAdmin, isGlobalAdmin, isParticipant } from '#api/services/authHelper';
 import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 
@@ -35,7 +35,7 @@ export const ConferenceRef = object({
 				return (
 					await db.query.conferenceMember.findMany(
 						query({
-							...ctx.abilities.conferenceMember.filter('read').merge({
+							...(await ctx.abilities.conferenceMember.filter('read')).merge({
 								where: {
 									...args.where,
 									conferenceId: parent.id
@@ -106,7 +106,8 @@ schemaBuilder.mutationFields((t) => ({
 					...logoSvgUpdate
 				})
 				.where(
-					ctx.abilities.conference.filter('update').merge({ where: { id: args.id } }).sql.where
+					(await ctx.abilities.conference.filter('update')).merge({ where: { id: args.id } }).sql
+						.where
 				);
 
 			pubsub.updated(args.id);
@@ -114,7 +115,7 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.conference
 				.findFirst(
 					query(
-						ctx.abilities.conference.filter('read').merge({
+						(await ctx.abilities.conference.filter('read')).merge({
 							where: { id: args.id }
 						}).query.single
 					)
@@ -131,7 +132,8 @@ schemaBuilder.mutationFields((t) => ({
 			await db
 				.delete(schema.conference)
 				.where(
-					ctx.abilities.conference.filter('delete').merge({ where: { id: args.id } }).sql.where
+					(await ctx.abilities.conference.filter('delete')).merge({ where: { id: args.id } }).sql
+						.where
 				);
 
 			pubsub.removed();

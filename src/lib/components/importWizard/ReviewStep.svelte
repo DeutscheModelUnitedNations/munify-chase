@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import type { z } from 'zod/v4';
-	import type { importDataSchema } from '$lib/utils/import';
+	import type { importDataSchema } from '#lib/utils/import';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import StepHeader from './StepHeader.svelte';
 

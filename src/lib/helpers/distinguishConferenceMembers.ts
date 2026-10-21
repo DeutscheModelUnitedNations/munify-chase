@@ -1,4 +1,4 @@
-import type { schema } from '$api/db/db';
+import type { schema } from '#api/db/db';
 
 type Member =
 	typeof schema.conferenceMember.$inferSelect | typeof schema.committeeMember.$inferSelect;

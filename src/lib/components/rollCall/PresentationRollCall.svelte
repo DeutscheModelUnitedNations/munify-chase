@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import ScrollingCountryList from './ScrollingCountryList.svelte';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
 
 	interface Props {
 		members: Array<{

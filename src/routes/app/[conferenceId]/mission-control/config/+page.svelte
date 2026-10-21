@@ -1,23 +1,23 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
 	import {
 		buildConferenceNavItems,
 		roleBadgeClassFor,
 		roleLabelFor
-	} from '$lib/components/navbar/conferenceNavItems';
+	} from '#lib/components/navbar/conferenceNavItems';
 	import GeneralTab from './GeneralTab.svelte';
 	import UsersTab from './UsersTab.svelte';
 	import CommitteesTab from './CommitteesTab.svelte';
 	import DelegationsTab from './DelegationsTab.svelte';
 	import NsaTab from './NsaTab.svelte';
 	import RequestTypesTab from './RequestTypesTab.svelte';
-	import { client } from '$lib/api/rumbleClient/client';
+	import { client } from '#lib/api/rumbleClient/client';
 	import { page } from '$app/state';
-	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
+	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
 
-	import { getCurrentUser, getIsGlobalAdmin } from '$lib/state/currentUser.svelte';
+	import { getCurrentUser, getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
 
 	const currentUser = await getCurrentUser();
 

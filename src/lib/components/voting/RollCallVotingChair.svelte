@@ -1,17 +1,17 @@
 <script lang="ts">
-	import Kbd from '$lib/components/Kbd.svelte';
+	import Kbd from '#lib/components/Kbd.svelte';
 	import { untrack } from 'svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
 	import toast from 'svelte-french-toast';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
 	import { type VotingMajority, type VotingOptions } from './votingModal';
 	import ScrollingCountryList from '../rollCall/ScrollingCountryList.svelte';
 	import ResultChart from './ResultChart.svelte';
-	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
-	import { calculateMajority } from '$lib/utils/majorities';
+	import { sortTranslatedCountries } from '#lib/utils/nationTranslationHelper.svelte';
+	import { calculateMajority } from '#lib/utils/majorities';
 	import type { VotingResult } from './votingModal';
 
 	interface Props {

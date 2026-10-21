@@ -1,5 +1,5 @@
 import type { ResolutionEditorLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages';
 
 export function getResolutionLabels(): ResolutionEditorLabels {
 	return {

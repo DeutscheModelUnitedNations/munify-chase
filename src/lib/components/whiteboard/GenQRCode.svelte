@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import QRCode from 'qrcode';
 	import Tabs from '../Tabs.svelte';
 	import toast from 'svelte-french-toast';

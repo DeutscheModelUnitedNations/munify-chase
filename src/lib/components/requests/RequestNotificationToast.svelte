@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { resolve } from '$app/paths';
 	import toastLib, { type Toast } from 'svelte-french-toast';
 

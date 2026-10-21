@@ -1,6 +1,6 @@
-import { client, type UserClaims } from '$lib/api/rumbleClient/client';
-import { urqlClient } from '$lib/api/client';
-import { isLocalConferenceActive, LOCAL_DEMO_GUEST_CLAIMS } from '$lib/state/localDemo.svelte';
+import { client, type UserClaims } from '#lib/api/rumbleClient/client';
+import { urqlClient } from '#lib/api/client';
+import { isLocalConferenceActive, LOCAL_DEMO_GUEST_CLAIMS } from '#lib/state/localDemo.svelte';
 
 let user = $state<UserClaims>();
 

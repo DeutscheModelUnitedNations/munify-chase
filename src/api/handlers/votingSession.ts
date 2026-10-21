@@ -1,4 +1,4 @@
-import { db, schema } from '$api/db/db';
+import { db, schema } from '#api/db/db';
 import {
 	abilityBuilder,
 	enum_,
@@ -6,12 +6,12 @@ import {
 	object,
 	pubsub as rumblePubsub,
 	query
-} from '$api/rumble';
-import { isTeamInConference, isParticipantInConference } from '$api/services/authHelper';
+} from '#api/rumble';
+import { isTeamInConference, isParticipantInConference } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '#lib/helpers/nanoid';
 
 abilityBuilder.votingSession.allow('read').when((ctx) => ({
 	where: { committee: isParticipantInConference(ctx) }
@@ -64,8 +64,9 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (q, _root, args, ctx) => {
 			const committee = await db.query.committee
 				.findFirst(
-					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
-						.single
+					(await ctx.abilities.committee.filter('update')).merge({
+						where: { id: args.committeeId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -75,9 +76,9 @@ schemaBuilder.mutationFields((t) => ({
 				return db.query.votingSession
 					.findFirst(
 						q(
-							ctx.abilities.votingSession
-								.filter('read')
-								.merge({ where: { id: committee.activeVotingSessionId } }).query.single
+							(await ctx.abilities.votingSession.filter('read')).merge({
+								where: { id: committee.activeVotingSessionId }
+							}).query.single
 						)
 					)
 					.then(assertFindFirstExists);
@@ -123,8 +124,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.votingSession
 				.findFirst(
 					q(
-						ctx.abilities.votingSession.filter('read').merge({ where: { id: result.id } }).query
-							.single
+						(await ctx.abilities.votingSession.filter('read')).merge({ where: { id: result.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -154,7 +155,8 @@ schemaBuilder.mutationFields((t) => ({
 					.update(schema.votingSession)
 					.set(updateSet)
 					.where(
-						ctx.abilities.votingSession.filter('update').merge({ where: { id: args.id } }).sql.where
+						(await ctx.abilities.votingSession.filter('update')).merge({ where: { id: args.id } })
+							.sql.where
 					);
 			}
 
@@ -163,8 +165,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.votingSession
 				.findFirst(
 					q(
-						ctx.abilities.votingSession.filter('read').merge({ where: { id: args.id } }).query
-							.single
+						(await ctx.abilities.votingSession.filter('read')).merge({ where: { id: args.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -230,7 +232,10 @@ schemaBuilder.mutationFields((t) => ({
 
 			return db.query.votingVote
 				.findFirst(
-					q(ctx.abilities.votingVote.filter('read').merge({ where: { id: resultId } }).query.single)
+					q(
+						(await ctx.abilities.votingVote.filter('read')).merge({ where: { id: resultId } }).query
+							.single
+					)
 				)
 				.then(assertFindFirstExists);
 		}
@@ -353,7 +358,10 @@ schemaBuilder.mutationFields((t) => ({
 
 			return db.query.votingVote
 				.findFirst(
-					q(ctx.abilities.votingVote.filter('read').merge({ where: { id: resultId } }).query.single)
+					q(
+						(await ctx.abilities.votingVote.filter('read')).merge({ where: { id: resultId } }).query
+							.single
+					)
 				)
 				.then(assertFindFirstExists);
 		}
@@ -371,8 +379,8 @@ schemaBuilder.mutationFields((t) => ({
 			// ability scope check.
 			const session = await db.query.votingSession
 				.findFirst(
-					ctx.abilities.votingSession.filter('update').merge({ where: { id: args.id } }).query
-						.single
+					(await ctx.abilities.votingSession.filter('update')).merge({ where: { id: args.id } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -381,7 +389,8 @@ schemaBuilder.mutationFields((t) => ({
 					.update(schema.votingSession)
 					.set({ completedAt: new Date(), outcome: args.outcome ?? null })
 					.where(
-						ctx.abilities.votingSession.filter('update').merge({ where: { id: args.id } }).sql.where
+						(await ctx.abilities.votingSession.filter('update')).merge({ where: { id: args.id } })
+							.sql.where
 					);
 				await tx
 					.update(schema.committee)

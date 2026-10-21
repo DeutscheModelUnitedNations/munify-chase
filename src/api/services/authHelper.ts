@@ -1,4 +1,4 @@
-import type { Context } from '$api/context';
+import type { Context } from '#api/context';
 import { ADMIN_DOMAIN_WHITELIST, ADMIN_EMAIL_WHITELIST } from '$app/env/private';
 import { GraphQLError } from 'graphql';
 

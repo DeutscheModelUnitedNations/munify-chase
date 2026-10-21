@@ -1,22 +1,11 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck — imports ./env.js and ./handler.js which are adapter-node build outputs
-import { createServer } from 'node:http';
-import polka from 'polka';
-import { env, timeout_env } from './env.js';
+// @ts-nocheck — imports ./index.js, the adapter-node build output
+// adapter-node's own server handles listening, timeouts and graceful shutdown. This only adds
+// the WebSocket upgrade for GraphQL subscriptions and Yjs (see src/api/websocket.ts).
+// fallow-ignore-next-line unresolved-import -- written next to this file by the build
+import { server } from './index.js';
 
-const port = parseInt(env('PORT', '3000'));
-const host = env('HOST', '0.0.0.0');
-
-const httpServer = createServer();
-
-const { handler } = await import('./handler.js');
-
-const keepAlive = timeout_env('KEEP_ALIVE_TIMEOUT');
-if (keepAlive !== undefined) httpServer.keepAliveTimeout = keepAlive * 1000;
-const headersTimeout = timeout_env('HEADERS_TIMEOUT');
-if (headersTimeout !== undefined) httpServer.headersTimeout = headersTimeout * 1000;
-
-httpServer.on('upgrade', (req, socket, head) => {
+server.on('upgrade', (req, socket, head) => {
 	if (globalThis.__wssUpgrade) {
 		globalThis.__wssUpgrade(req, socket, head);
 	} else {
@@ -24,9 +13,3 @@ httpServer.on('upgrade', (req, socket, head) => {
 		socket.destroy();
 	}
 });
-
-polka({ server: httpServer })
-	.use(handler)
-	.listen({ host, port }, () => {
-		console.log(`Listening on http://${host}:${port}`);
-	});

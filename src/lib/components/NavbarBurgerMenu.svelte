@@ -3,14 +3,14 @@
 	import { resolve } from '$app/paths';
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
-	import HelpButton from '$lib/tours/HelpButton.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import HelpButton from '#lib/tours/HelpButton.svelte';
+	import { m } from '#lib/paraglide/messages';
 	import type { Snippet } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import { getLocale, locales, setLocale } from '$lib/paraglide/runtime';
-	import { toggleTheme } from '$lib/utils/theme.svelte';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { getLocale, locales, setLocale } from '#lib/paraglide/runtime';
+	import { toggleTheme } from '#lib/utils/theme.svelte';
 
 	interface CommitteeLink {
 		id: string;

@@ -1,10 +1,10 @@
-import { db, schema } from '$api/db/db';
-import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
-import { isTeamInConference } from '$api/services/authHelper';
+import { db, schema } from '#api/db/db';
+import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '#api/rumble';
+import { isTeamInConference } from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
-import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoid, nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
-import { applyServerMutation, readPaperJson } from '$api/yjs/server';
+import { applyServerMutation, readPaperJson } from '#api/yjs/server';
 import { replaceResolution } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
 import type { Resolution } from '@deutschemodelunitednations/munify-resolution-editor/schema';
 
@@ -32,8 +32,9 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
-						.query.single
+					(await ctx.abilities.resolutionPaper.filter('update')).merge({
+						where: { id: args.paperId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -50,8 +51,9 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.paperContentSnapshot
 				.findFirst(
 					query(
-						ctx.abilities.paperContentSnapshot.filter('read').merge({ where: { id: args.id } })
-							.query.single
+						(await ctx.abilities.paperContentSnapshot.filter('read')).merge({
+							where: { id: args.id }
+						}).query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -66,7 +68,7 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			const snapshot = await db.query.paperContentSnapshot
 				.findFirst(
-					ctx.abilities.paperContentSnapshot.filter('read').merge({
+					(await ctx.abilities.paperContentSnapshot.filter('read')).merge({
 						where: { id: args.snapshotId }
 					}).query.single
 				)
@@ -74,7 +76,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({
+					(await ctx.abilities.resolutionPaper.filter('update')).merge({
 						where: { id: snapshot.paperId }
 					}).query.single
 				)
@@ -103,7 +105,7 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.paperContentSnapshot
 				.findFirst(
 					query(
-						ctx.abilities.paperContentSnapshot.filter('read').merge({
+						(await ctx.abilities.paperContentSnapshot.filter('read')).merge({
 							where: { id: args.snapshotId }
 						}).query.single
 					)

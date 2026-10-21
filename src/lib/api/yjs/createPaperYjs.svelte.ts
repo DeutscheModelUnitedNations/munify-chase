@@ -29,7 +29,7 @@ import type {
 	PresenceUser
 } from '@deutschemodelunitednations/munify-resolution-editor';
 import toast from 'svelte-french-toast';
-import { m } from '$lib/paraglide/messages';
+import { m } from '#lib/paraglide/messages';
 import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from './statelessMessages';
 
 export type YjsConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error';

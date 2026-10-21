@@ -3,9 +3,9 @@
 	generics="T extends { id: string; representation?: ComponentProps<typeof Flag>['representation'] }"
 >
 	import type { ComponentProps } from 'svelte';
-	import Combobox from '$lib/components/Combobox.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import Combobox from '#lib/components/Combobox.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import { m } from '#lib/paraglide/messages';
 
 	interface Props {
 		value: string;

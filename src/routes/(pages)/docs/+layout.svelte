@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { docsNav } from '$lib/docs/nav';
-	import { m } from '$lib/paraglide/messages';
+	import { docsNav } from '#lib/docs/nav';
+	import { m } from '#lib/paraglide/messages';
 
 	let { data, children } = $props();
 

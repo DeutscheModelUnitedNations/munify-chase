@@ -1,5 +1,5 @@
-import { type RegionalgroupEnum } from '$lib/api/rumbleClient/client';
-import { m } from '$lib/paraglide/messages';
+import { type RegionalgroupEnum } from '#lib/api/rumbleClient/client';
+import { m } from '#lib/paraglide/messages';
 
 export function translateRegionalGroupEnum(regionalGroup?: RegionalgroupEnum) {
 	if (!regionalGroup) return '';

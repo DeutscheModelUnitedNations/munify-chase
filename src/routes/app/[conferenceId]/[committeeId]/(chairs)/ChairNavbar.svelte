@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { client } from '$lib/api/rumbleClient/client';
-	import CurrentTime from '$lib/components/CurrentTime.svelte';
-	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
-	import NavbarSpeakersWidget from '$lib/components/speakersList/NavbarSpeakersWidget.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import CurrentTime from '#lib/components/CurrentTime.svelte';
+	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
+	import NavbarSpeakersWidget from '#lib/components/speakersList/NavbarSpeakersWidget.svelte';
 	import {
 		buildConferenceNavItems,
 		roleBadgeClassFor,
 		roleLabelFor
-	} from '$lib/components/navbar/conferenceNavItems';
+	} from '#lib/components/navbar/conferenceNavItems';
 
-	import { getCurrentUser, getIsGlobalAdmin } from '$lib/state/currentUser.svelte';
-	import { displayNameOf } from '$lib/helpers/displayName';
+	import { getCurrentUser, getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
+	import { displayNameOf } from '#lib/helpers/displayName';
 
 	type SpeakersList =
 		| {

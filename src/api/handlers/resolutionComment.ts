@@ -1,4 +1,4 @@
-import { db, schema } from '$api/db/db';
+import { db, schema } from '#api/db/db';
 import {
 	abilityBuilder,
 	enum_,
@@ -6,10 +6,10 @@ import {
 	query,
 	pubsub as rumblePubsub,
 	schemaBuilder
-} from '$api/rumble';
-import { isParticipantInConference, isTeamInConference } from '$api/services/authHelper';
+} from '#api/rumble';
+import { isParticipantInConference, isTeamInConference } from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
-import { nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 
 abilityBuilder.resolutionComment.allow('read').when((ctx) => {
@@ -63,8 +63,9 @@ schemaBuilder.mutationFields((t) => ({
 
 			const paper = await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper.filter('read').merge({ where: { id: args.paperId } }).query
-						.single
+					(await ctx.abilities.resolutionPaper.filter('read')).merge({
+						where: { id: args.paperId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -108,8 +109,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionComment
 				.findFirst(
 					query(
-						ctx.abilities.resolutionComment.filter('read').merge({ where: { id: args.id } }).query
-							.single
+						(await ctx.abilities.resolutionComment.filter('read')).merge({ where: { id: args.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -127,16 +128,16 @@ schemaBuilder.mutationFields((t) => ({
 				.update(schema.resolutionComment)
 				.set({ content: args.content })
 				.where(
-					ctx.abilities.resolutionComment.filter('update').merge({ where: { id: args.id } }).sql
-						.where
+					(await ctx.abilities.resolutionComment.filter('update')).merge({ where: { id: args.id } })
+						.sql.where
 				);
 			pubsub.updated(args.id);
 
 			return db.query.resolutionComment
 				.findFirst(
 					query(
-						ctx.abilities.resolutionComment.filter('read').merge({ where: { id: args.id } }).query
-							.single
+						(await ctx.abilities.resolutionComment.filter('read')).merge({ where: { id: args.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -150,8 +151,8 @@ schemaBuilder.mutationFields((t) => ({
 			await db
 				.delete(schema.resolutionComment)
 				.where(
-					ctx.abilities.resolutionComment.filter('delete').merge({ where: { id: args.id } }).sql
-						.where
+					(await ctx.abilities.resolutionComment.filter('delete')).merge({ where: { id: args.id } })
+						.sql.where
 				);
 			pubsub.removed();
 			return true;

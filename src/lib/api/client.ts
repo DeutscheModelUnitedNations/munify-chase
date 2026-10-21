@@ -12,17 +12,17 @@ import { offlineExchange } from '@urql/exchange-graphcache';
 import { makeDefaultStorage } from '@urql/exchange-graphcache/default-storage';
 import { crossTabSyncExchange } from '@m1212e/urql-crosstab-sync';
 import { empty, filter, fromPromise, fromValue, map, merge, mergeMap, onPush, pipe } from 'wonka';
-import { graphqlMutation, graphqlQuery } from '$api/graphql.remote';
+import { graphqlMutation, graphqlQuery } from '#api/graphql.remote';
 import { browser } from '$app/env';
 import { schema } from './rumbleClient/schema';
 import { optimistic, updates, ensureId } from './optimisticUpdateHandlers';
-import { setWsConnected, DISCONNECT_GRACE_MS } from '$lib/state/connection.svelte';
+import { setWsConnected, DISCONNECT_GRACE_MS } from '#lib/state/connection.svelte';
 import { createClient as createWSClient } from 'graphql-ws';
-import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
+import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
 import {
 	hasClearOfflineCacheMarker,
 	removeClearOfflineCacheMarker
-} from '$lib/helpers/clearOfflineCacheMarker';
+} from '#lib/helpers/clearOfflineCacheMarker';
 import {
 	localDemoConferenceUpdates,
 	resolveLocalDemoQuery,

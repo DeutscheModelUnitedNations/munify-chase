@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import QrCodeSvg from '$lib/components/qr/QrCodeSvg.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import QrCodeSvg from '#lib/components/qr/QrCodeSvg.svelte';
 
 	interface Props {
 		nsaUser: {

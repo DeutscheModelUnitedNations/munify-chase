@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PresenceAdapter } from '@deutschemodelunitednations/munify-resolution-editor';
-	import type { RemotePresence } from '$lib/api/yjs/createPaperYjs.svelte';
+	import type { RemotePresence } from '#lib/api/yjs/createPaperYjs.svelte';
 	import type { ResolutionViewer } from './paperContext';
 	import { isTeam } from './paperContext';
-	import { m } from '$lib/paraglide/messages';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import { scale } from 'svelte/transition';
 
 	interface Props {

@@ -1,3 +1,5 @@
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import adapter from '@sveltejs/adapter-node';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
@@ -24,9 +26,9 @@ function wsPlugin() {
 
 function devAutoRestart() {
 	const RACE_CONDITION_PATTERNS = [
-		'has not been implemented', // Pothos ObjectRef race condition
-		'Class extends value undefined is not a constructor or null', // urql/svelte race condition
-		'Received multiple implementations for plugin' // Pothos plugin re-registration after Vite reload
+		'has not been implemented' /* Pothos ObjectRef race condition */,
+		'Class extends value undefined is not a constructor or null' /* urql/svelte race condition */,
+		'Received multiple implementations for plugin' /* Pothos plugin re-registration after Vite reload */
 	];
 
 	return {
@@ -99,7 +101,16 @@ export default defineConfig({
 			outdir: './src/lib/paraglide',
 			strategy: ['cookie', 'preferredLanguage', 'baseLocale']
 		}),
-		sveltekit(),
+
+		sveltekit({
+			preprocess: vitePreprocess(),
+			compilerOptions: {
+				experimental: { async: true },
+				warningFilter: (warning) => warning.code !== 'state_referenced_locally'
+			},
+			experimental: { remoteFunctions: true },
+			adapter: adapter({ precompress: true })
+		}),
 		wsPlugin()
 	],
 	// Yjs throws "Yjs was already imported" if two copies are loaded.

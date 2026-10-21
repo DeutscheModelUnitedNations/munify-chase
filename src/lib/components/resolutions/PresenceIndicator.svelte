@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { RemotePresence } from '$lib/api/yjs/createPaperYjs.svelte';
+	import type { RemotePresence } from '#lib/api/yjs/createPaperYjs.svelte';
 	import type { ResolutionViewer } from './paperContext';
 	import { isTeam } from './paperContext';
-	import Flag from '$lib/components/Flag.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 
 	interface Props {
 		remotePresences: RemotePresence[];

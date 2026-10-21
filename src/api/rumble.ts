@@ -23,7 +23,7 @@ if (REDIS_URL) {
 // this tells the dev server to reload the cache of the schema builder to prevent buildup of non
 // existent fields/queries
 if (dev) {
-	import('$api/handlers/register');
+	import('#api/handlers/register');
 }
 
 export const {

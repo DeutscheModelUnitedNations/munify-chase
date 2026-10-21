@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
-	import Modal from '$lib/components/Modal.svelte';
-	import Tabs from '$lib/components/Tabs.svelte';
-	import QrScanner from '$lib/components/QrScanner.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import Modal from '#lib/components/Modal.svelte';
+	import Tabs from '#lib/components/Tabs.svelte';
+	import QrScanner from '#lib/components/QrScanner.svelte';
 
 	interface Props {
 		open: boolean;

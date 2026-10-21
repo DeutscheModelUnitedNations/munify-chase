@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
+	import { m } from '#lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
 	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import Modal from '$lib/components/Modal.svelte';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import { compareRequests } from '$lib/helpers/requests';
+	import { promiseToastStrings } from '#lib/utils/toast';
+	import Modal from '#lib/components/Modal.svelte';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { compareRequests } from '#lib/helpers/requests';
 
 	interface Props {
 		conferenceId: string;

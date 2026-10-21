@@ -1,4 +1,4 @@
-import { client } from '$lib/api/rumbleClient/client';
+import { client } from '#lib/api/rumbleClient/client';
 import { getIsGlobalAdmin } from './currentUser.svelte';
 
 /**

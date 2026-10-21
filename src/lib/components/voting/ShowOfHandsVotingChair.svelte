@@ -1,15 +1,15 @@
 <script lang="ts">
-	import Kbd from '$lib/components/Kbd.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import Kbd from '#lib/components/Kbd.svelte';
+	import { m } from '#lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
 	import { untrack } from 'svelte';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
 	import { type VotingMajority, type VotingStage } from './votingModal';
 	import VoteClicker from './VoteClicker.svelte';
 	import ResultChart from './ResultChart.svelte';
-	import { calculateMajority } from '$lib/utils/majorities';
+	import { calculateMajority } from '#lib/utils/majorities';
 	import type { VotingResult } from './votingModal';
 
 	interface Props {

@@ -13,15 +13,15 @@ import { Redis } from 'ioredis';
 import * as Y from 'yjs';
 import { db, schema } from '../db/db';
 import { REDIS_URL } from '$app/env/private';
-import { context, type Context } from '$api/context';
+import { context, type Context } from '#api/context';
 import {
 	isParticipantInConference,
 	isPaperEditor,
 	isTeamInConference
-} from '$api/services/authHelper';
-import { nativeToRequestEvent } from '$api/services/auth';
-import { OIDC } from '$api/services/OIDC';
-import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from '$lib/api/yjs/statelessMessages';
+} from '#api/services/authHelper';
+import { nativeToRequestEvent } from '#api/services/auth';
+import { OIDC } from '#api/services/OIDC';
+import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from '#lib/api/yjs/statelessMessages';
 
 const PERSIST_DEBOUNCE_MS = 1500;
 
@@ -192,7 +192,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 				event: syntheticEvent,
 				resolve: (event) => {
 					syntheticEvent = event;
-					return new Response();
+					return Promise.resolve(new Response());
 				}
 			});
 			const ctx = context(syntheticEvent);

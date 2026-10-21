@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 	import { page } from '$app/state';
-	import Tabs from '$lib/components/Tabs.svelte';
-	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import Tabs from '#lib/components/Tabs.svelte';
+	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
 	import {
 		buildConferenceNavItems,
 		roleBadgeClassFor,
 		roleLabelFor
-	} from '$lib/components/navbar/conferenceNavItems';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import { loadConferenceViewer } from '$lib/state/conferenceViewer';
-	import { displayNameOf } from '$lib/helpers/displayName';
+	} from '#lib/components/navbar/conferenceNavItems';
+	import { getCurrentUser } from '#lib/state/currentUser.svelte';
+	import { loadConferenceViewer } from '#lib/state/conferenceViewer';
+	import { displayNameOf } from '#lib/helpers/displayName';
 	import ByCommitteeTab from './ByCommitteeTab.svelte';
 	import ByNsaTab from './ByNsaTab.svelte';
 	import NotCheckedInTab from './NotCheckedInTab.svelte';

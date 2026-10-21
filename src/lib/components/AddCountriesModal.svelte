@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import Modal from './Modal.svelte';
 	import CountryBadge from './CountryBadge.svelte';
 	import WorldCountries from 'world-countries';

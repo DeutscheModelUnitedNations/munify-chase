@@ -1,5 +1,5 @@
 import { browser } from '$app/env';
-import { urqlClient } from '$lib/api/client';
+import { urqlClient } from '#lib/api/client';
 import dayjs from 'dayjs';
 import { setOffset, tick } from './serverClock.svelte';
 

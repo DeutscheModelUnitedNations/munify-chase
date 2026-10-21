@@ -2,7 +2,7 @@
 	import { AlertDialog } from 'bits-ui';
 	import { alertDialogStore } from './alert';
 	import { browser } from '$app/env';
-	import Kbd from '$lib/components/Kbd.svelte';
+	import Kbd from '#lib/components/Kbd.svelte';
 	import hotkeys from 'hotkeys-js';
 	import { fade, fly } from 'svelte/transition';
 

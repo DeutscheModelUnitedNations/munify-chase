@@ -1,11 +1,11 @@
 // make sure we register all handlers before generating the schema later
-import '$api/handlers/register';
+import '#api/handlers/register';
 
 import { WebSocketServer } from 'ws';
 import type { WebSocket } from 'ws';
 import type { Socket } from 'node:net';
 import { useServer } from 'graphql-ws/use/ws';
-import { createWs } from '$api/rumble';
+import { createWs } from '#api/rumble';
 import type { IncomingMessage } from 'node:http';
 import { openYjsRoom } from './yjs/wss';
 import { nativeToRequestEvent } from './services/auth';
@@ -60,7 +60,7 @@ createWs(
 					event: syntheticEvent,
 					resolve: (event) => {
 						syntheticEvent = event;
-						return new Response();
+						return Promise.resolve(new Response());
 					}
 				});
 				const ctx = context(syntheticEvent);
@@ -116,7 +116,7 @@ yjsWSS.on('headers', setHeaders);
 			event: syntheticSvelteRequestEvent,
 			resolve: (event) => {
 				syntheticSvelteRequestEvent = event;
-				return new Response();
+				return Promise.resolve(new Response());
 			}
 		});
 		const authedCtx = context(syntheticSvelteRequestEvent);

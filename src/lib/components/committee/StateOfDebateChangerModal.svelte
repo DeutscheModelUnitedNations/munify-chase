@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Modal from '../Modal.svelte';
 	import hotkeys from 'hotkeys-js';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { m } from '#lib/paraglide/messages';
 	import StateOfDebateChanger from './StateOfDebateChanger.svelte';
 
 	interface Props {

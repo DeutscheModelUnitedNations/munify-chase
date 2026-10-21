@@ -2,24 +2,24 @@
 	import { onMount } from 'svelte';
 	import MissionControlGrid, {
 		type MissionControlConference
-	} from '$lib/components/missionControl/MissionControlGrid.svelte';
-	import type { InsightPulse } from '$lib/components/missionControl/insights';
-	import CurrentTime from '$lib/components/CurrentTime.svelte';
-	import * as m from '$lib/paraglide/messages.js';
-	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	} from '#lib/components/missionControl/MissionControlGrid.svelte';
+	import type { InsightPulse } from '#lib/components/missionControl/insights';
+	import CurrentTime from '#lib/components/CurrentTime.svelte';
+	import * as m from '#lib/paraglide/messages';
+	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
 	import {
 		buildConferenceNavItems,
 		roleBadgeClassFor,
 		roleLabelFor
-	} from '$lib/components/navbar/conferenceNavItems';
-	import { client } from '$lib/api/rumbleClient/client';
+	} from '#lib/components/navbar/conferenceNavItems';
+	import { client } from '#lib/api/rumbleClient/client';
 	import { page } from '$app/state';
-	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
+	import AdoptionConfetti from '#lib/components/AdoptionConfetti.svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
-	import { getCurrentUser, getIsGlobalAdmin } from '$lib/state/currentUser.svelte';
-	import { displayNameOf } from '$lib/helpers/displayName';
+	import { getCurrentUser, getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
+	import { displayNameOf } from '#lib/helpers/displayName';
 
 	const currentUser = await getCurrentUser();
 	const userId = currentUser.id ?? '';

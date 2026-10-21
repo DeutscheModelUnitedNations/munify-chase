@@ -1,4 +1,4 @@
-import type { ConferenceusertypeEnum } from '$lib/api/rumbleClient/client';
+import type { ConferenceusertypeEnum } from '#lib/api/rumbleClient/client';
 
 export type LauncherStatus = 'upcoming' | 'active' | 'past';
 export type LauncherBadge = 'ADMIN' | 'CHAIR' | 'DELEGATE' | 'SPECTATOR';

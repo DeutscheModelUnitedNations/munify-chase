@@ -7,3 +7,7 @@ schema.graphql
 drizzle/meta/**
 src/lib/api/rumbleClient/**
 src-tauri
+
+# Generated, git-ignored through their own nested .gitignore files
+src/lib/paraglide/**
+project.inlang/cache/**

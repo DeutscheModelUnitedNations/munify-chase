@@ -1,24 +1,48 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import { client } from '$lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import BasicCard from '#lib/components/BasicCard.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import { promiseToastStrings } from '#lib/utils/toast';
 	import EditConferenceUserModal from './EditConferenceUserModal.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import {
-		createTable,
-		getCoreRowModel,
-		getSortedRowModel,
-		getFilteredRowModel,
-		getPaginationRowModel,
+		columnFilteringFeature,
+		constructTable,
+		createFilteredRowModel,
+		createPaginatedRowModel,
+		createSortedRowModel,
+		globalFilteringFeature,
+		rowPaginationFeature,
+		rowSortingFeature,
+		sortFn_alphanumeric,
+		sortFn_basic,
+		sortFn_text,
+		tableFeatures,
 		type ColumnDef,
 		type SortingState,
 		type PaginationState,
 		type Updater,
 		type FilterFn
 	} from '@tanstack/table-core';
+	import { storeReactivityBindings } from '@tanstack/table-core/store-reactivity-bindings';
+
+	// TanStack Table only provides the features registered here. 'auto' sorting picks
+	// among the registered sort functions, so register the ones it uses for text columns.
+	// Without a framework adapter the table needs the plain store reactivity bindings.
+	const features = tableFeatures({
+		coreReactivityFeature: storeReactivityBindings(),
+		columnFilteringFeature,
+		globalFilteringFeature,
+		rowSortingFeature,
+		rowPaginationFeature,
+		filteredRowModel: createFilteredRowModel(),
+		sortedRowModel: createSortedRowModel(),
+		paginatedRowModel: createPaginatedRowModel(),
+		sortFns: { alphanumeric: sortFn_alphanumeric, text: sortFn_text, basic: sortFn_basic }
+	});
+	type Features = typeof features;
 
 	interface Props {
 		conference: {
@@ -171,7 +195,7 @@
 		return full || '';
 	}
 
-	const globalFilterFn: FilterFn<ConferenceUserRow> = (row, _columnId, filterValue) => {
+	const globalFilterFn: FilterFn<Features, ConferenceUserRow> = (row, _columnId, filterValue) => {
 		const search = (filterValue as string).toLowerCase();
 		const user = row.original;
 		return (
@@ -185,7 +209,7 @@
 		);
 	};
 
-	const columns: ColumnDef<ConferenceUserRow, unknown>[] = [
+	const columns: ColumnDef<Features, ConferenceUserRow>[] = [
 		{ accessorKey: 'userEmail', header: 'Email' },
 		{ id: 'name', accessorFn: (row) => getUserDisplayName(row), header: 'Name' },
 		{ accessorKey: 'conferenceUserType', header: 'Role' },
@@ -219,35 +243,18 @@
 		return pages;
 	}
 
-	const _defaultState = createTable({
-		data: [] as ConferenceUserRow[],
-		columns,
-		state: {},
-		onStateChange: () => {},
-		getCoreRowModel: getCoreRowModel(),
-		renderFallbackValue: null
-	}).initialState;
-
+	// Sorting, search and paging live in this component's state, so the table is rebuilt
+	// from it whenever one of them or the data changes
 	let table = $derived(
-		createTable({
+		constructTable({
+			features,
 			data: conferenceUsers as ConferenceUserRow[],
 			columns,
-			state: {
-				..._defaultState,
-				sorting,
-				globalFilter,
-				pagination
-			},
-			onStateChange: () => {},
+			state: { sorting, globalFilter, pagination },
 			onSortingChange: handleSortingChange,
 			onGlobalFilterChange: handleGlobalFilterChange,
 			onPaginationChange: handlePaginationChange,
-			getCoreRowModel: getCoreRowModel(),
-			getSortedRowModel: getSortedRowModel(),
-			globalFilterFn,
-			getFilteredRowModel: getFilteredRowModel(),
-			getPaginationRowModel: getPaginationRowModel(),
-			renderFallbackValue: null
+			globalFilterFn
 		})
 	);
 
@@ -340,7 +347,8 @@
 			type="text"
 			class="input input-bordered w-full max-w-xs"
 			placeholder={m.searchUsers()}
-			bind:value={globalFilter}
+			value={globalFilter}
+			oninput={(e) => handleGlobalFilterChange(e.currentTarget.value)}
 		/>
 	</div>
 
@@ -466,9 +474,8 @@
 	{#if table.getPageCount() > 1}
 		<div class="mt-4 flex items-center justify-between">
 			<span class="text-base-content/60 text-sm">
-				{table.getState().pagination.pageIndex * table.getState().pagination.pageSize +
-					1}–{Math.min(
-					(table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+				{pagination.pageIndex * pagination.pageSize + 1}–{Math.min(
+					(pagination.pageIndex + 1) * pagination.pageSize,
 					table.getFilteredRowModel().rows.length
 				)} / {table.getFilteredRowModel().rows.length}
 			</span>
@@ -481,13 +488,13 @@
 				>
 					<i class="fas fa-chevron-left"></i>
 				</button>
-				{#each getVisiblePages(table.getState().pagination.pageIndex, table.getPageCount()) as item, i (item === 'ellipsis' ? `ellipsis-${i}` : item)}
+				{#each getVisiblePages(pagination.pageIndex, table.getPageCount()) as item, i (item === 'ellipsis' ? `ellipsis-${i}` : item)}
 					{#if item === 'ellipsis'}
 						<span class="join-item btn btn-sm btn-disabled">…</span>
 					{:else}
 						<button
 							class="join-item btn btn-sm"
-							class:btn-active={table.getState().pagination.pageIndex === item}
+							class:btn-active={pagination.pageIndex === item}
 							onclick={() => table.setPageIndex(item)}
 						>
 							{item + 1}

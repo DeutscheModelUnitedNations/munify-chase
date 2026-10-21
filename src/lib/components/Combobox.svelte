@@ -1,5 +1,5 @@
 <script lang="ts" generics="T">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { Combobox } from 'bits-ui';
 	import type { Snippet } from 'svelte';
 	import Kbd from './Kbd.svelte';

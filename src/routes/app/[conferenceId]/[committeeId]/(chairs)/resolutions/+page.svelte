@@ -2,21 +2,21 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
-	import { workingPaperName } from '$lib/helpers/paperName';
-	import { m } from '$lib/paraglide/messages';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import CommitteePhaseToggles from '$lib/components/resolutions/CommitteePhaseToggles.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
+	import { workingPaperName } from '#lib/helpers/paperName';
+	import { m } from '#lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import BasicCard from '#lib/components/BasicCard.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import CommitteePhaseToggles from '#lib/components/resolutions/CommitteePhaseToggles.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import {
 		statusLabel,
 		statusBadgeClass,
 		PAPER_STATUS_ORDER,
 		type PaperStatus
-	} from '$lib/components/resolutions/paperContext';
+	} from '#lib/components/resolutions/paperContext';
 	import toast from 'svelte-french-toast';
 
 	const conferenceId = $derived(page.params.conferenceId!);

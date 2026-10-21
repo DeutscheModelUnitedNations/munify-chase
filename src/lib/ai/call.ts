@@ -1,6 +1,6 @@
 import { getEngine, loadedModelSupportsThinking, resetIdleTimer } from './model';
-import { client } from '$lib/api/rumbleClient/client';
-import { urqlClient } from '$lib/api/client';
+import { client } from '#lib/api/rumbleClient/client';
+import { urqlClient } from '#lib/api/client';
 
 const AI_CALL_QUERY = `
 	query AiCall(

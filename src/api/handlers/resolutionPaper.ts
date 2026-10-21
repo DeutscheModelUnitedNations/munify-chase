@@ -1,4 +1,4 @@
-import { db, schema } from '$api/db/db';
+import { db, schema } from '#api/db/db';
 import {
 	abilityBuilder,
 	enum_,
@@ -6,16 +6,16 @@ import {
 	query,
 	pubsub as rumblePubsub,
 	schemaBuilder
-} from '$api/rumble';
+} from '#api/rumble';
 import {
 	isParticipantInConference,
 	isTeamInConference,
 	isPaperAuthor
-} from '$api/services/authHelper';
+} from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoid, nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
-import { readPaperJson } from '$api/yjs/server';
+import { readPaperJson } from '#api/yjs/server';
 import { and, count, eq, inArray } from 'drizzle-orm';
 import {
 	toRoman,
@@ -182,8 +182,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({ where: { id: args.id } }).query
-							.single
+						(await ctx.abilities.resolutionPaper.filter('read')).merge({ where: { id: args.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -199,9 +199,9 @@ schemaBuilder.mutationFields((t) => ({
 			deployConfetti: t.arg.boolean()
 		},
 		resolve: async (query, _root, args, ctx) => {
-			const updateFilter = ctx.abilities.resolutionPaper
-				.filter('update')
-				.merge({ where: { id: args.id } });
+			const updateFilter = (await ctx.abilities.resolutionPaper.filter('update')).merge({
+				where: { id: args.id }
+			});
 
 			const needsChairCheck =
 				args.documentNumber != null || (args.status != null && args.status !== 'SUBMITTED');
@@ -362,8 +362,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({ where: { id: args.id } }).query
-							.single
+						(await ctx.abilities.resolutionPaper.filter('read')).merge({ where: { id: args.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -377,7 +377,8 @@ schemaBuilder.mutationFields((t) => ({
 			await db
 				.delete(schema.resolutionPaper)
 				.where(
-					ctx.abilities.resolutionPaper.filter('delete').merge({ where: { id: args.id } }).sql.where
+					(await ctx.abilities.resolutionPaper.filter('delete')).merge({ where: { id: args.id } })
+						.sql.where
 				);
 			pubsub.removed();
 			return true;
@@ -411,8 +412,9 @@ schemaBuilder.mutationFields((t) => ({
 						voteVotingSessionId: args.votingSessionId
 					})
 					.where(
-						ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: args.paperId } })
-							.sql.where
+						(await ctx.abilities.resolutionPaper.filter('update')).merge({
+							where: { id: args.paperId }
+						}).sql.where
 					);
 				await tx.insert(schema.paperContentSnapshot).values({
 					id: nanoid(),
@@ -431,8 +433,9 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.resolutionPaper
 				.findFirst(
 					query(
-						ctx.abilities.resolutionPaper.filter('read').merge({ where: { id: args.paperId } })
-							.query.single
+						(await ctx.abilities.resolutionPaper.filter('read')).merge({
+							where: { id: args.paperId }
+						}).query.single
 					)
 				)
 				.then(assertFindFirstExists);

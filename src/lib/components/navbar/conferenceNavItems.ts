@@ -1,5 +1,5 @@
-import { m } from '$lib/paraglide/messages';
-import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
+import { m } from '#lib/paraglide/messages';
+import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
 
 export type ConferenceUserRole =
 	'ADMIN' | 'TEAM' | 'DELEGATE' | 'NON_STATE_ACTOR' | 'SPECTATOR' | undefined | null;

@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { m } from '$lib/paraglide/messages';
-	import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
-	import AccentStripe from '$lib/components/AccentStripe.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { LOCAL_CONFERENCE_ID } from '#lib/state/localDemo.svelte';
+	import AccentStripe from '#lib/components/AccentStripe.svelte';
 
-	import theWorldIsMine from '$assets/undraw/the_world_is_mine.svg';
-	import world from '$assets/undraw/world.svg';
-	import aroundTheWorld from '$assets/undraw/around_the_world.svg';
-	import blob1 from '$assets/misc/blobs/blob_1.svg';
-	import blob2 from '$assets/misc/blobs/blob_2.svg';
-	import blob3 from '$assets/misc/blobs/blob_3.svg';
-	import blob4 from '$assets/misc/blobs/blob_4.svg';
-	import blob5 from '$assets/misc/blobs/blob_5.svg';
+	import theWorldIsMine from '#assets/undraw/the_world_is_mine.svg';
+	import world from '#assets/undraw/world.svg';
+	import aroundTheWorld from '#assets/undraw/around_the_world.svg';
+	import blob1 from '#assets/misc/blobs/blob_1.svg';
+	import blob2 from '#assets/misc/blobs/blob_2.svg';
+	import blob3 from '#assets/misc/blobs/blob_3.svg';
+	import blob4 from '#assets/misc/blobs/blob_4.svg';
+	import blob5 from '#assets/misc/blobs/blob_5.svg';
 
 	interface Props {
 		// Indices picked per request in +page.server.ts
@@ -48,11 +48,14 @@
 			<span class="font-bold">MUN</span>
 			{m.homeCaption()}
 		</h1>
+
 		<p class="enter-up max-w-[34ch] text-xl leading-[1.3] font-light" style="--enter-delay: 450ms">
 			{m.homeHeroText()}
 		</p>
+
 		<div class="enter-up mt-1 flex flex-wrap gap-3" style="--enter-delay: 550ms">
-			<a class="btn btn-primary btn-lg" href={resolve('/app')}>{m.login()}</a>
+			<a class="btn btn-primary btn-lg" href={resolve('app')}>{m.login()}</a>
+
 			<a
 				class="btn btn-outline btn-lg"
 				href={resolve('/app/[conferenceId]/mission-control', { conferenceId: LOCAL_CONFERENCE_ID })}

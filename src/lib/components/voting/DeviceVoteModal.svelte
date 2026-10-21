@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import Modal from '../Modal.svelte';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
 	import DeviceVotingCountdown from './DeviceVotingCountdown.svelte';
 	import toast from 'svelte-french-toast';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 
 	interface Props {
 		active: boolean;

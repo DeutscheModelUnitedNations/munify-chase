@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
+	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
-	import AiSpinner from '$lib/components/AiSpinner.svelte';
+	import AiSpinner from '#lib/components/AiSpinner.svelte';
 	import AiResultBadge from './AiResultBadge.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import { OperativeParagraphPreview } from '@deutschemodelunitednations/munify-resolution-editor';
 	import { englishLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
 

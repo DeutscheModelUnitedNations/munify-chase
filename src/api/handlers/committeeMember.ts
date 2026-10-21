@@ -1,13 +1,13 @@
-import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
+import { db, schema } from '#api/db/db';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '#api/rumble';
 import {
 	isTeamInConference,
 	isAdminInConference,
 	isParticipantInConference
-} from '$api/services/authHelper';
+} from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
-import { nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '#lib/helpers/nanoid';
 
 abilityBuilder.committeeMember.allow('read').when((ctx) => {
 	return {
@@ -50,9 +50,9 @@ schemaBuilder.mutationFields((t) => {
 
 				await db.query.conference
 					.findFirst(
-						ctx.abilities.conference
-							.filter('update')
-							.merge({ where: { id: committee.conferenceId } }).query.single
+						(await ctx.abilities.conference.filter('update')).merge({
+							where: { id: committee.conferenceId }
+						}).query.single
 					)
 					.then(assertFindFirstExists);
 
@@ -71,7 +71,7 @@ schemaBuilder.mutationFields((t) => {
 				return db.query.committeeMember
 					.findFirst(
 						query(
-							ctx.abilities.committeeMember.filter('read').merge({
+							(await ctx.abilities.committeeMember.filter('read')).merge({
 								where: { id: result.id }
 							}).query.single
 						)
@@ -88,8 +88,8 @@ schemaBuilder.mutationFields((t) => {
 				await db
 					.delete(schema.committeeMember)
 					.where(
-						ctx.abilities.committeeMember.filter('delete').merge({ where: { id: args.id } }).sql
-							.where
+						(await ctx.abilities.committeeMember.filter('delete')).merge({ where: { id: args.id } })
+							.sql.where
 					);
 
 				pubsub.removed();
@@ -120,9 +120,9 @@ schemaBuilder.mutationFields((t) => {
 							present: args.present
 						})
 						.where(
-							ctx.abilities.committeeMember
-								.filter('update')
-								.merge({ where: { id: { in: args.ids } } }).sql.where
+							(await ctx.abilities.committeeMember.filter('update')).merge({
+								where: { id: { in: args.ids } }
+							}).sql.where
 						)
 						.returning({
 							id: schema.committeeMember.id,
@@ -158,7 +158,7 @@ schemaBuilder.mutationFields((t) => {
 
 				return db.query.committeeMember.findMany(
 					query(
-						ctx.abilities.committeeMember.filter('read').merge({
+						(await ctx.abilities.committeeMember.filter('read')).merge({
 							where: {
 								id: {
 									in: args.ids

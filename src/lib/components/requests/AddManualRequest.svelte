@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import { nanoid } from '$lib/helpers/nanoid';
-	import Kbd from '$lib/components/Kbd.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { nanoid } from '#lib/helpers/nanoid';
+	import Kbd from '#lib/components/Kbd.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import { promiseToastStrings } from '#lib/utils/toast';
 	import {
 		isPendingForSeat,
 		isRequestTypeAvailable,
@@ -15,7 +15,7 @@
 		typeEnterAction,
 		type PendingSeatRequest,
 		type SeatKind
-	} from '$lib/helpers/requests';
+	} from '#lib/helpers/requests';
 	import Fuse, { type IFuseOptions } from 'fuse.js';
 	import toast from 'svelte-french-toast';
 

@@ -82,7 +82,7 @@ export const variables = defineEnvVars({
 	// when explicitly configured
 	ORIGIN: {
 		description:
-			'Public origin of the app (e.g. https://chase.munify.cloud). Takes precedence over the forwarded headers below',
+			'Public origin of the app (e.g. https://chase.munify.cloud), used to authenticate WebSocket connections. Takes precedence over the forwarded headers below there. The HTTP server (adapter-node 6) ignores it and derives the origin from the headers instead',
 		schema: z.string().optional()
 	},
 	PROTOCOL_HEADER: {

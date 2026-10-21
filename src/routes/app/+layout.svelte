@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/env';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import CommandPalette from '$lib/commands/CommandPalette.svelte';
+	import { getCurrentUser } from '#lib/state/currentUser.svelte';
+	import CommandPalette from '#lib/commands/CommandPalette.svelte';
 
 	let { children } = $props();
 

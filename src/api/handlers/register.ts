@@ -29,7 +29,7 @@ import './ai';
 import './statistics';
 import './missionControlPulse';
 import { building, dev } from '$app/env';
-import { clientCreator } from '$api/rumble';
+import { clientCreator } from '#api/rumble';
 
 if (dev || building) {
 	await clientCreator({

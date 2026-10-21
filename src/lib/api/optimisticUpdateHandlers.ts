@@ -1,10 +1,10 @@
 import { gql } from '@urql/core';
 import type { Cache, OptimisticMutationConfig, UpdatesConfig } from '@urql/exchange-graphcache';
-import { nanoid } from '$lib/helpers/nanoid';
-import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
-import { getServerTime } from '$lib/state/serverClock.svelte';
-import { calculateMajority } from '$lib/utils/majorities';
-import { compareSpeakers } from '$lib/helpers/speakerSort';
+import { nanoid } from '#lib/helpers/nanoid';
+import { attendanceCode as generateAttendanceCode } from '#lib/helpers/attendanceCode';
+import { getServerTime } from '#lib/state/serverClock.svelte';
+import { calculateMajority } from '#lib/utils/majorities';
+import { compareSpeakers } from '#lib/helpers/speakerSort';
 
 // Optimistic / updates handlers that mirror the server resolvers in src/api/handlers.
 // The goal is to keep the cache aligned with what the server will eventually return so

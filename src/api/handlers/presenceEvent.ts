@@ -1,4 +1,4 @@
-import { db, schema } from '$api/db/db';
+import { db, schema } from '#api/db/db';
 import { ConferenceUserRef } from './conferenceUser';
 import {
 	abilityBuilder,
@@ -7,13 +7,13 @@ import {
 	object,
 	pubsub as rumblePubsub,
 	query
-} from '$api/rumble';
-import { isAdminInConference, isTeamInConference } from '$api/services/authHelper';
-import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
+} from '#api/rumble';
+import { isAdminInConference, isTeamInConference } from '#api/services/authHelper';
+import { attendanceCode as generateAttendanceCode } from '#lib/helpers/attendanceCode';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '#lib/helpers/nanoid';
 
 abilityBuilder.presenceEvent.allow('read').when((ctx) => ({
 	where: { committee: isTeamInConference(ctx) }
@@ -90,8 +90,9 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			const committee = await db.query.committee
 				.findFirst(
-					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
-						.single
+					(await ctx.abilities.committee.filter('update')).merge({
+						where: { id: args.committeeId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -153,7 +154,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.presenceEvent
 				.findFirst(
 					query(
-						ctx.abilities.presenceEvent.filter('read').merge({ where: { id: newId } }).query.single
+						(await ctx.abilities.presenceEvent.filter('read')).merge({ where: { id: newId } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -175,8 +177,9 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			const committee = await db.query.committee
 				.findFirst(
-					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
-						.single
+					(await ctx.abilities.committee.filter('update')).merge({
+						where: { id: args.committeeId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -228,8 +231,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.presenceEvent
 				.findFirst(
 					query(
-						ctx.abilities.presenceEvent.filter('read').merge({ where: { id: eventId } }).query
-							.single
+						(await ctx.abilities.presenceEvent.filter('read')).merge({ where: { id: eventId } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -251,8 +254,9 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			const committee = await db.query.committee
 				.findFirst(
-					ctx.abilities.committee.filter('update').merge({ where: { id: args.committeeId } }).query
-						.single
+					(await ctx.abilities.committee.filter('update')).merge({
+						where: { id: args.committeeId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -285,8 +289,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.presenceEvent
 				.findFirst(
 					query(
-						ctx.abilities.presenceEvent.filter('read').merge({ where: { id: inserted.id } }).query
-							.single
+						(await ctx.abilities.presenceEvent.filter('read')).merge({ where: { id: inserted.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -306,8 +310,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (q, _root, args, ctx) => {
 			const event = await db.query.presenceEvent
 				.findFirst(
-					ctx.abilities.presenceEvent.filter('update').merge({ where: { id: args.id } }).query
-						.single
+					(await ctx.abilities.presenceEvent.filter('update')).merge({ where: { id: args.id } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -347,8 +351,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.presenceEvent
 				.findFirst(
 					q(
-						ctx.abilities.presenceEvent.filter('read').merge({ where: { id: args.id } }).query
-							.single
+						(await ctx.abilities.presenceEvent.filter('read')).merge({ where: { id: args.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -368,8 +372,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (_query, _root, args, ctx) => {
 			const event = await db.query.presenceEvent
 				.findFirst(
-					ctx.abilities.presenceEvent.filter('delete').merge({ where: { id: args.id } }).query
-						.single
+					(await ctx.abilities.presenceEvent.filter('delete')).merge({ where: { id: args.id } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -391,9 +395,9 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			const target = await db.query.conferenceUser
 				.findFirst(
-					ctx.abilities.conferenceUser
-						.filter('update')
-						.merge({ where: { id: args.conferenceUserId } }).query.single
+					(await ctx.abilities.conferenceUser.filter('update')).merge({
+						where: { id: args.conferenceUserId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -406,8 +410,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.conferenceUser
 				.findFirst(
 					query(
-						ctx.abilities.conferenceUser.filter('read').merge({ where: { id: target.id } }).query
-							.single
+						(await ctx.abilities.conferenceUser.filter('read')).merge({ where: { id: target.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);

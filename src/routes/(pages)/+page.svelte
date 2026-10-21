@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { PUBLIC_CONTACT_EMAIL } from '$app/env/public';
 	import LandingHero from './LandingHero.svelte';
 	import CardSection from './CardSection.svelte';
@@ -7,7 +7,7 @@
 	import ContactSection from './ContactSection.svelte';
 	import SplitSection from './SplitSection.svelte';
 	import { resolve } from '$app/paths';
-	import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
+	import { LOCAL_CONFERENCE_ID } from '#lib/state/localDemo.svelte';
 
 	let { data } = $props();
 

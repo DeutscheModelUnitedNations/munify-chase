@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { page } from '$app/state';
-	import { client } from '$lib/api/rumbleClient/client';
+	import { client } from '#lib/api/rumbleClient/client';
 
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { getCurrentUser } from '#lib/state/currentUser.svelte';
 
 	let { children }: { children: Snippet } = $props();
 

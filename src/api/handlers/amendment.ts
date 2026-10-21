@@ -1,4 +1,4 @@
-import { db, schema } from '$api/db/db';
+import { db, schema } from '#api/db/db';
 import {
 	abilityBuilder,
 	enum_,
@@ -6,18 +6,18 @@ import {
 	query,
 	pubsub as rumblePubsub,
 	schemaBuilder
-} from '$api/rumble';
+} from '#api/rumble';
 import {
 	isParticipantInConference,
 	isTeamInConference,
 	committeeMemberForPaper,
 	isAmendmentProposer
-} from '$api/services/authHelper';
+} from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
-import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoid, nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 import { and, count, eq } from 'drizzle-orm';
-import { applyServerMutation, readPaperJson } from '$api/yjs/server';
+import { applyServerMutation, readPaperJson } from '#api/yjs/server';
 import {
 	yDocToJson,
 	replaceResolution
@@ -139,7 +139,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read').merge({ where: { id: args.id } }).query.single
+						(await ctx.abilities.amendment.filter('read')).merge({ where: { id: args.id } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -196,13 +197,15 @@ schemaBuilder.mutationFields((t) => ({
 				.update(schema.amendment)
 				.set({ status: 'SUBMITTED' })
 				.where(
-					ctx.abilities.amendment.filter('update').merge({ where: { id: args.id } }).sql.where
+					(await ctx.abilities.amendment.filter('update')).merge({ where: { id: args.id } }).sql
+						.where
 				);
 			pubsub.updated(args.id);
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read').merge({ where: { id: args.id } }).query.single
+						(await ctx.abilities.amendment.filter('read')).merge({ where: { id: args.id } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -218,7 +221,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			const amendment = await db.query.amendment
 				.findFirst(
-					ctx.abilities.amendment.filter('read').merge({ where: { id: args.id } }).query.single
+					(await ctx.abilities.amendment.filter('read')).merge({ where: { id: args.id } }).query
+						.single
 				)
 				.then(assertFindFirstExists);
 
@@ -226,8 +230,9 @@ schemaBuilder.mutationFields((t) => ({
 			// Gate accordingly on the caller's ability to update the paper.
 			await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: amendment.paperId } })
-						.query.single
+					(await ctx.abilities.resolutionPaper.filter('update')).merge({
+						where: { id: amendment.paperId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -341,7 +346,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read').merge({ where: { id: args.id } }).query.single
+						(await ctx.abilities.amendment.filter('read')).merge({ where: { id: args.id } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -356,13 +362,15 @@ schemaBuilder.mutationFields((t) => ({
 				.update(schema.amendment)
 				.set({ status: 'REJECTED' })
 				.where(
-					ctx.abilities.amendment.filter('update').merge({ where: { id: args.id } }).sql.where
+					(await ctx.abilities.amendment.filter('update')).merge({ where: { id: args.id } }).sql
+						.where
 				);
 			pubsub.updated(args.id);
 			return db.query.amendment
 				.findFirst(
 					query(
-						ctx.abilities.amendment.filter('read').merge({ where: { id: args.id } }).query.single
+						(await ctx.abilities.amendment.filter('read')).merge({ where: { id: args.id } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -377,7 +385,8 @@ schemaBuilder.mutationFields((t) => ({
 				.select({ id: schema.amendment.id, status: schema.amendment.status })
 				.from(schema.amendment)
 				.where(
-					ctx.abilities.amendment.filter('delete').merge({ where: { id: args.id } }).sql.where
+					(await ctx.abilities.amendment.filter('delete')).merge({ where: { id: args.id } }).sql
+						.where
 				);
 			if (!existing) throw new GraphQLError('Amendment not found or not authorized');
 

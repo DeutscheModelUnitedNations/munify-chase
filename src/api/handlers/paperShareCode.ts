@@ -1,4 +1,4 @@
-import { db, schema } from '$api/db/db';
+import { db, schema } from '#api/db/db';
 import {
 	abilityBuilder,
 	enum_,
@@ -6,10 +6,10 @@ import {
 	query,
 	pubsub as rumblePubsub,
 	schemaBuilder
-} from '$api/rumble';
-import { isTeamInConference } from '$api/services/authHelper';
+} from '#api/rumble';
+import { isTeamInConference } from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
-import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoid, nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 import { customAlphabet } from 'nanoid';
 
@@ -60,7 +60,7 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.resolutionPaper.findFirst(
-				ctx.abilities.resolutionPaper.filter('update').merge({
+				(await ctx.abilities.resolutionPaper.filter('update')).merge({
 					where: { id: args.paperId }
 				}).query.single
 			);
@@ -79,8 +79,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.paperShareCode
 				.findFirst(
 					query(
-						ctx.abilities.paperShareCode.filter('read').merge({ where: { id: args.id } }).query
-							.single
+						(await ctx.abilities.paperShareCode.filter('read')).merge({ where: { id: args.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -94,7 +94,8 @@ schemaBuilder.mutationFields((t) => ({
 			await db
 				.delete(schema.paperShareCode)
 				.where(
-					ctx.abilities.paperShareCode.filter('delete').merge({ where: { id: args.id } }).sql.where
+					(await ctx.abilities.paperShareCode.filter('delete')).merge({ where: { id: args.id } })
+						.sql.where
 				);
 			pubsub.removed();
 			return true;

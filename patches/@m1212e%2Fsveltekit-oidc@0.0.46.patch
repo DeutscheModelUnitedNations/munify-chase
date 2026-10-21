@@ -1,0 +1,25 @@
+diff --git a/dist/OIDC.d.ts b/dist/OIDC.d.ts
+index 492b1054fb567941d8f4f6558a59ce7727ed9312..79ca873ec09ea8794c3c7ec0504929b06fa4ebed 100644
+--- a/dist/OIDC.d.ts
++++ b/dist/OIDC.d.ts
+@@ -1,4 +1,5 @@
+-import { type Handle, type RequestEvent } from '@sveltejs/kit';
++import { type RequestEvent } from '@sveltejs/kit';
++import { type Handle } from '@sveltejs/kit/hooks';
+ import { type JWTPayload } from 'jose';
+ import { type IntrospectionResponse, type TokenEndpointResponse, type TokenEndpointResponseHelpers, skipSubjectCheck } from 'openid-client';
+ import { type Logger, type LogLevel } from './logger.js';
+diff --git a/dist/OIDC.js b/dist/OIDC.js
+index b07984419d33bf44a7da582abad369593631bd84..22460b1514706f11b67641f4221422922f6ccfd9 100644
+--- a/dist/OIDC.js
++++ b/dist/OIDC.js
+@@ -325,7 +325,8 @@ export async function makeOIDC({ development = false, oidcAuthority, oidcClientI
+                 secure: true,
+                 httpOnly: true
+             });
+-            redirect(302, redirect_uri.toString());
++            // SvelteKit 3 only redirects to another origin when explicitly allowed
++            redirect(302, redirect_uri.toString(), { external: true });
+         }
+     };
+     return {

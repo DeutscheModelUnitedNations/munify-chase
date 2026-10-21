@@ -1,6 +1,6 @@
 import type { IncomingMessage } from 'node:http';
 import type { WebSocket } from 'ws';
-import type { Context } from '$api/context';
+import type { Context } from '#api/context';
 import { hocuspocus } from './server';
 
 /** Build the WHATWG Request Hocuspocus reads the URL and headers from. */

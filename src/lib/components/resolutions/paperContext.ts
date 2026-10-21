@@ -1,4 +1,4 @@
-import { m } from '$lib/paraglide/messages';
+import { m } from '#lib/paraglide/messages';
 import { parseClauseFragment } from '@deutschemodelunitednations/munify-resolution-editor/res-markup';
 import type { AmendmentOverlay } from '@deutschemodelunitednations/munify-resolution-editor';
 

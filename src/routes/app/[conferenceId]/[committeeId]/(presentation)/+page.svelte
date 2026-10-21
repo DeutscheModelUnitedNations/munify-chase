@@ -1,33 +1,33 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import Grid, { GridItem } from 'svelte-grid-extended';
-	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
-	import Majorities from '$lib/components/Majorities.svelte';
+	import IconInfoBox from '#lib/components/IconInfoBox.svelte';
+	import { getCommitteeStatusIcon, getCommitteeStatusText } from '#lib/utils/committeeStatus';
+	import WhiteboardViewer from '#lib/components/whiteboard/WhiteboardViewer.svelte';
+	import Majorities from '#lib/components/Majorities.svelte';
 	import {
 		getPresentationLayoutPreset,
 		type PresentationLayoutPresetOptions
-	} from '$lib/data/presentationLayoutPresets';
-	import AbbreviationInfoBox from '$lib/components/AbbreviationInfoBox.svelte';
-	import UndrawError from '$lib/components/UndrawError.svelte';
-	import emptyStreet from '$assets/undraw/empty_street.svg';
+	} from '#lib/data/presentationLayoutPresets';
+	import AbbreviationInfoBox from '#lib/components/AbbreviationInfoBox.svelte';
+	import UndrawError from '#lib/components/UndrawError.svelte';
+	import emptyStreet from '#assets/undraw/empty_street.svg';
 	import RegionalGroups from './RegionalGroups.svelte';
-	import PresentationRollCall from '$lib/components/rollCall/PresentationRollCall.svelte';
-	import ShowOfHandsVotingPresentation from '$lib/components/voting/ShowOfHandsVotingPresentation.svelte';
-	import RollCallVotingPresentation from '$lib/components/voting/RollCallVotingPresentation.svelte';
-	import DeviceBasedVotingPresentation from '$lib/components/voting/DeviceBasedVotingPresentation.svelte';
-	import PresentationResolutionPreview from '$lib/components/resolutions/PresentationResolutionPreview.svelte';
-	import AdoptionConfetti from '$lib/components/AdoptionConfetti.svelte';
-	import { sortTranslatedCountries } from '$lib/utils/nationTranslationHelper.svelte';
-	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
-	import SpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
+	import PresentationRollCall from '#lib/components/rollCall/PresentationRollCall.svelte';
+	import ShowOfHandsVotingPresentation from '#lib/components/voting/ShowOfHandsVotingPresentation.svelte';
+	import RollCallVotingPresentation from '#lib/components/voting/RollCallVotingPresentation.svelte';
+	import DeviceBasedVotingPresentation from '#lib/components/voting/DeviceBasedVotingPresentation.svelte';
+	import PresentationResolutionPreview from '#lib/components/resolutions/PresentationResolutionPreview.svelte';
+	import AdoptionConfetti from '#lib/components/AdoptionConfetti.svelte';
+	import { sortTranslatedCountries } from '#lib/utils/nationTranslationHelper.svelte';
+	import CurrentSpeaker from '#lib/components/speakersList/CurrentSpeaker.svelte';
+	import SpeakersQueue from '#lib/components/speakersList/PresentationSpeakersQueue.svelte';
 	import { browser } from '$app/env';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
 	import { page } from '$app/state';
-	import PresentationRequests from '$lib/components/requests/PresentationRequests.svelte';
-	import { compareRequests, requestRepresentation } from '$lib/helpers/requests';
+	import PresentationRequests from '#lib/components/requests/PresentationRequests.svelte';
+	import { compareRequests, requestRepresentation } from '#lib/helpers/requests';
 
 	const committeeId = page.params.committeeId!;
 

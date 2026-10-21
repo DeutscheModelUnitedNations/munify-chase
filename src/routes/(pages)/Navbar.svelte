@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import * as m from '$lib/paraglide/messages.js';
-	import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
+	import * as m from '#lib/paraglide/messages';
+	import { LOCAL_CONFERENCE_ID } from '#lib/state/localDemo.svelte';
 </script>
 
 <header
@@ -32,8 +32,7 @@
 			<span class="badge badge-warning badge-xs font-bold uppercase">{m.betaTag()}</span>
 		</a>
 		<!-- Full page load: /app has no server load, so a client-side navigation would skip the OIDC check -->
-		<a class="btn btn-primary btn-sm" href={resolve('/app')} data-sveltekit-reload>
-			{m.login()}
-		</a>
+
+		<a class="btn btn-primary btn-sm" href={resolve('app')} data-sveltekit-reload>{m.login()}</a>
 	</nav>
 </header>

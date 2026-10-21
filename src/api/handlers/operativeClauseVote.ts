@@ -1,8 +1,8 @@
-import { db, schema } from '$api/db/db';
-import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
-import { isParticipantInConference, isTeamInConference } from '$api/services/authHelper';
+import { db, schema } from '#api/db/db';
+import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '#api/rumble';
+import { isParticipantInConference, isTeamInConference } from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
-import { nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '#lib/helpers/nanoid';
 
 abilityBuilder.operativeClauseVote.allow('read').when((ctx) => {
 	return { where: { paper: { committee: isParticipantInConference(ctx) } } };
@@ -50,7 +50,7 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.operativeClauseVote
 				.findFirst(
 					query(
-						ctx.abilities.operativeClauseVote.filter('read').merge({
+						(await ctx.abilities.operativeClauseVote.filter('read')).merge({
 							where: { paperId: args.paperId, clauseId: args.clauseId }
 						}).query.single
 					)
@@ -67,7 +67,7 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (_root, args, ctx) => {
 			await db.delete(schema.operativeClauseVote).where(
-				ctx.abilities.operativeClauseVote.filter('delete').merge({
+				(await ctx.abilities.operativeClauseVote.filter('delete')).merge({
 					where: { paperId: args.paperId, clauseId: args.clauseId }
 				}).sql.where
 			);

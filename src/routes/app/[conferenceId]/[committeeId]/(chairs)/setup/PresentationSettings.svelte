@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Tabs from '$lib/components/Tabs.svelte';
-	import { getPresentationLayoutPresets } from '$lib/data/presentationLayoutPresets';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import type { Command } from '$lib/commands/types';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import Tabs from '#lib/components/Tabs.svelte';
+	import { getPresentationLayoutPresets } from '#lib/data/presentationLayoutPresets';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import type { Command } from '#lib/commands/types';
+	import { promiseToastStrings } from '#lib/utils/toast';
 	import toast from 'svelte-french-toast';
 
 	interface Props {

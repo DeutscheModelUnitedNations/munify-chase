@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
+	import type { SpeakerslistcategoryEnum } from '#lib/api/rumbleClient/client';
 	import SpeechControls from './SpeechControls.svelte';
 	import MoreOptions from './MoreOptions.svelte';
 	import NextSpeech from './NextSpeech.svelte';

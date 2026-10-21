@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import type { z } from 'zod/v4';
-	import type { importDataSchema } from '$lib/utils/import';
-	import { nanoid } from '$lib/helpers/nanoid';
-	import { getDefaultRequestTypes } from '$lib/data/defaultRequestTypes';
+	import type { importDataSchema } from '#lib/utils/import';
+	import { nanoid } from '#lib/helpers/nanoid';
+	import { getDefaultRequestTypes } from '#lib/data/defaultRequestTypes';
 	import StepHeader from './StepHeader.svelte';
 
 	type ImportData = z.infer<typeof importDataSchema>;

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { PUBLIC_CONTACT_EMAIL } from '$app/env/public';
-	import AccentStripe from '$lib/components/AccentStripe.svelte';
-	import zweig from '$assets/dmunlogo/dmun-zweig-halbtransparent.svg';
+	import AccentStripe from '#lib/components/AccentStripe.svelte';
+	import zweig from '#assets/dmunlogo/dmun-zweig-halbtransparent.svg';
 </script>
 
 {#if PUBLIC_CONTACT_EMAIL}

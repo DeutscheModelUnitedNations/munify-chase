@@ -1,25 +1,25 @@
 <script lang="ts">
-	import { getIsGlobalAdmin } from '$lib/state/currentUser.svelte';
+	import { getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { m } from '$lib/paraglide/messages';
-	import { client } from '$lib/api/rumbleClient/client';
-	import type { RepresentationtypeEnum } from '$lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
+	import type { RepresentationtypeEnum } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
-	import { withBackendMessage } from '$lib/utils/toast';
-	import { importDataSchema } from '$lib/utils/import';
+	import { withBackendMessage } from '#lib/utils/toast';
+	import { importDataSchema } from '#lib/utils/import';
 	import { z } from 'zod/v4';
-	import AddCountriesModal from '$lib/components/AddCountriesModal.svelte';
+	import AddCountriesModal from '#lib/components/AddCountriesModal.svelte';
 	import WorldCountries from 'world-countries';
-	import { nanoid } from '$lib/helpers/nanoid';
-	import StartStep from '$lib/components/importWizard/StartStep.svelte';
-	import BasicsStep from '$lib/components/importWizard/BasicsStep.svelte';
-	import CommitteesStep from '$lib/components/importWizard/CommitteesStep.svelte';
-	import DelegationsStep from '$lib/components/importWizard/DelegationsStep.svelte';
-	import ActorsStep from '$lib/components/importWizard/ActorsStep.svelte';
-	import RequestTypesStep from '$lib/components/importWizard/RequestTypesStep.svelte';
-	import ReviewStep from '$lib/components/importWizard/ReviewStep.svelte';
+	import { nanoid } from '#lib/helpers/nanoid';
+	import StartStep from '#lib/components/importWizard/StartStep.svelte';
+	import BasicsStep from '#lib/components/importWizard/BasicsStep.svelte';
+	import CommitteesStep from '#lib/components/importWizard/CommitteesStep.svelte';
+	import DelegationsStep from '#lib/components/importWizard/DelegationsStep.svelte';
+	import ActorsStep from '#lib/components/importWizard/ActorsStep.svelte';
+	import RequestTypesStep from '#lib/components/importWizard/RequestTypesStep.svelte';
+	import ReviewStep from '#lib/components/importWizard/ReviewStep.svelte';
 
 	type ImportData = z.infer<typeof importDataSchema>;
 

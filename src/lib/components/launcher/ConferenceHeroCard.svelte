@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { resolve } from '$app/paths';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { deriveStatus, formatDateRange } from '$lib/helpers/launcher';
+	import { getLocale } from '#lib/paraglide/runtime';
+	import { deriveStatus, formatDateRange } from '#lib/helpers/launcher';
 	import LauncherFlag from './LauncherFlag.svelte';
 	import StatusDot from './StatusDot.svelte';
 	import RoleBadge from './RoleBadge.svelte';

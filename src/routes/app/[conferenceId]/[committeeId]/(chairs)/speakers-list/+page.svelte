@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { page } from '$app/state';
-	import { client } from '$lib/api/rumbleClient/client';
-	import question from '$assets/undraw/question.svg';
+	import { client } from '#lib/api/rumbleClient/client';
+	import question from '#assets/undraw/question.svg';
 
-	import UndrawError from '$lib/components/UndrawError.svelte';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import ChairControls from '$lib/components/speakersList/chairControls/ChairControls.svelte';
-	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
-	import SpeakersQueuePresentation from '$lib/components/speakersList/ChairSpeakersQueue.svelte';
+	import UndrawError from '#lib/components/UndrawError.svelte';
+	import BasicCard from '#lib/components/BasicCard.svelte';
+	import ChairControls from '#lib/components/speakersList/chairControls/ChairControls.svelte';
+	import CurrentSpeaker from '#lib/components/speakersList/CurrentSpeaker.svelte';
+	import SpeakersQueuePresentation from '#lib/components/speakersList/ChairSpeakersQueue.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
-	import Majorities from '$lib/components/Majorities.svelte';
-	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
+	import Majorities from '#lib/components/Majorities.svelte';
+	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },

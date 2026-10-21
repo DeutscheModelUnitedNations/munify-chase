@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import { resolve } from '$app/paths';
-import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
+import { LOCAL_CONFERENCE_ID } from '#lib/state/localDemo.svelte';
 import type { LayoutLoad } from './$types';
 
 // The resolutions feature has no offline equivalent — bounce straight back out even

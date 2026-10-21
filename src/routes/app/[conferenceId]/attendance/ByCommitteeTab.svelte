@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
 	import { resolve } from '$app/paths';
-	import BasicCard from '$lib/components/BasicCard.svelte';
+	import BasicCard from '#lib/components/BasicCard.svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-	import { getServerTime } from '$lib/state/serverTime.svelte';
+	import { getServerTime } from '#lib/state/serverTime.svelte';
 
 	interface Props {
 		conferenceId: string;

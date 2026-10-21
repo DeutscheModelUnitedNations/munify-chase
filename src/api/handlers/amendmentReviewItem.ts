@@ -1,4 +1,4 @@
-import { db, schema } from '$api/db/db';
+import { db, schema } from '#api/db/db';
 import {
 	abilityBuilder,
 	enum_,
@@ -6,8 +6,8 @@ import {
 	query,
 	pubsub as rumblePubsub,
 	schemaBuilder
-} from '$api/rumble';
-import { isParticipantInConference, isTeamInConference } from '$api/services/authHelper';
+} from '#api/rumble';
+import { isParticipantInConference, isTeamInConference } from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { eq } from 'drizzle-orm';
@@ -55,8 +55,9 @@ schemaBuilder.mutationFields((t) => ({
 
 			await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper.filter('update').merge({ where: { id: item.paperId } })
-						.query.single
+					(await ctx.abilities.resolutionPaper.filter('update')).merge({
+						where: { id: item.paperId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 

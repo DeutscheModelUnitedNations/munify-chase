@@ -13,6 +13,11 @@
 
 	let isDownloading = $state(false);
 
+	// The format MUNify Delegator imports (team/import there), described by the schema it serves.
+	// Raw presence records only: the delegator decides who attended, so the rules can change
+	// without a new export.
+	const DELEGATOR_PRESENCE_SCHEMA_URL = 'https://delegator.munify.cloud/schemata/presence';
+
 	async function download() {
 		if (!conferenceId) {
 			console.warn('Cannot export presence data without conferenceId');
@@ -21,30 +26,77 @@
 
 		isDownloading = true;
 		try {
-			const result = await client.query.committeeMembers({
-				__args: { where: { representation: { conferenceId } } },
+			const conferenceUsers = await client.query.conferenceUsers({
+				__args: { where: { conference: { id: { eq: conferenceId } } } },
 				id: true,
-				committeeId: true,
-				users: {
+				userEmail: true,
+				conferenceUserType: true,
+				committeeMember: {
 					id: true,
-					userEmail: true
+					committeeId: true,
+					representation: {
+						id: true,
+						alpha2Code: true,
+						alpha3Code: true,
+						faIcon: true,
+						type: true,
+						name: true
+					}
 				},
-				representation: {
+				conferenceMember: {
 					id: true,
-					alpha3Code: true,
-					alpha2Code: true,
-					faIcon: true,
+					representation: {
+						id: true,
+						alpha2Code: true,
+						alpha3Code: true,
+						faIcon: true,
+						type: true,
+						name: true
+					}
+				},
+				presenceEvents: {
+					id: true,
+					committeeId: true,
+					present: true,
 					type: true,
-					name: true
-				},
-				presenceChangedTimestamps: {
-					id: true,
-					presentSetTo: true,
 					timestamp: true
 				}
 			});
 
-			const blob = new Blob([JSON.stringify(result, null, 2)], {
+			const participants = conferenceUsers.flatMap((u) => {
+				if (u.conferenceUserType === 'DELEGATE') {
+					return [
+						{
+							email: u.userEmail,
+							kind: 'DELEGATE' as const,
+							committeeId: u.committeeMember?.committeeId ?? null,
+							representation: u.committeeMember?.representation ?? null,
+							events: u.presenceEvents
+						}
+					];
+				}
+				if (u.conferenceUserType === 'NON_STATE_ACTOR') {
+					return [
+						{
+							email: u.userEmail,
+							kind: 'NSA' as const,
+							committeeId: null,
+							representation: u.conferenceMember?.representation ?? null,
+							events: u.presenceEvents
+						}
+					];
+				}
+				return [];
+			});
+
+			const payload = {
+				$schema: DELEGATOR_PRESENCE_SCHEMA_URL,
+				exportedAt: new Date().toISOString(),
+				conferenceId,
+				participants
+			};
+
+			const blob = new Blob([JSON.stringify(payload, null, 2)], {
 				type: 'application/json'
 			});
 			const url = URL.createObjectURL(blob);

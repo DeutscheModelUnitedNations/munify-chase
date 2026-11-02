@@ -7,10 +7,25 @@ import {
 	query,
 	whereArg
 } from '#api/rumble';
-import { isAdminInConference, isParticipantInConference } from '#api/services/authHelper';
+import {
+	isAdminInConference,
+	isParticipantInConference,
+	linkedDelegator,
+	SYNCED_CONFERENCE
+} from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
+
+// The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
+abilityBuilder.conferenceMember
+	.allow('read')
+	.when(
+		linkedDelegator({
+			where: { conference: SYNCED_CONFERENCE },
+			columns: { id: true, conferenceId: true, representationId: true }
+		})
+	);
 
 abilityBuilder.conferenceMember.allow('read').when((ctx) => {
 	return {

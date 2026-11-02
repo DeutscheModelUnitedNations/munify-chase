@@ -1,10 +1,23 @@
 import { db, schema } from '#api/db/db';
 import { abilityBuilder, object, query, schemaBuilder, pubsub as rumblePubsub } from '#api/rumble';
 import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMember';
-import { isAdmin, isGlobalAdmin, isParticipant } from '#api/services/authHelper';
+import {
+	isAdmin,
+	isGlobalAdmin,
+	isParticipant,
+	linkedDelegator,
+	SYNCED_CONFERENCE
+} from '#api/services/authHelper';
 import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { assertNotManagedByDelegator } from '#api/services/link/managedRows';
+
+// The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
+abilityBuilder.conference
+	.allow('read')
+	.when(
+		linkedDelegator({ where: SYNCED_CONFERENCE, columns: { id: true, managedByDelegator: true } })
+	);
 
 abilityBuilder.conference.allow('read').when((ctx) => {
 	return { where: isParticipant(ctx) };

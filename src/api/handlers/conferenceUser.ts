@@ -11,7 +11,9 @@ import { db, schema } from '#api/db/db';
 import {
 	isAdminInConference,
 	isParticipantInConference,
-	isTeamInConference
+	isTeamInConference,
+	linkedDelegator,
+	SYNCED_CONFERENCE
 } from '#api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
@@ -19,6 +21,24 @@ import { emailValidation } from '#api/services/emailValidation';
 import { attendanceCode as generateAttendanceCode } from '#lib/helpers/attendanceCode';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
+
+// The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
+abilityBuilder.conferenceUser
+	.allow('read')
+	.when(
+		linkedDelegator({
+			where: { conference: SYNCED_CONFERENCE },
+			columns: {
+				id: true,
+				conferenceId: true,
+				conferenceUserType: true,
+				userEmail: true,
+				delegatorUserId: true,
+				committeeMemberId: true,
+				conferenceMemberId: true
+			}
+		})
+	);
 
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	return {

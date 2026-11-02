@@ -140,3 +140,20 @@ export function isPaperAuthor(ctx: Context) {
 		}
 	} as const;
 }
+
+/** The linked MUNify DELEGATOR calling with its token, once the link is approved. */
+export async function isLinkedDelegator(ctx: Context) {
+	return (await ctx.linkCaller())?.status === 'ACTIVE';
+}
+
+/** Conferences that came from the linked DELEGATOR: the only ones it reads back. */
+export const SYNCED_CONFERENCE = { managedByDelegator: true } as const;
+
+/**
+ * For `.when(linkedDelegator(...))`: what the linked DELEGATOR reads back
+ * (`docs/plans/delegator-link.md`), only of synced conferences and only these columns. Grants
+ * nothing to anybody else.
+ */
+export function linkedDelegator<R>(grant: R) {
+	return async (ctx: Context) => ((await isLinkedDelegator(ctx)) ? grant : undefined);
+}

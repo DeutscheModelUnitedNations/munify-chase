@@ -8,9 +8,11 @@ import {
 	schemaBuilder
 } from '#api/rumble';
 import {
-	isTeamInConference,
 	isAdminInConference,
-	isParticipantInConference
+	isParticipantInConference,
+	isTeamInConference,
+	linkedDelegator,
+	SYNCED_CONFERENCE
 } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, isNull, type InferSelectModel } from 'drizzle-orm';
@@ -19,6 +21,16 @@ import { nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 import { assertNotManagedByDelegator } from '#api/services/link/managedRows';
+
+// The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
+abilityBuilder.committee
+	.allow('read')
+	.when(
+		linkedDelegator({
+			where: { conference: SYNCED_CONFERENCE },
+			columns: { id: true, conferenceId: true }
+		})
+	);
 
 abilityBuilder.committee.allow('read').when((ctx) => {
 	return {

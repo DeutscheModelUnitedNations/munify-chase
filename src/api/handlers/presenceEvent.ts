@@ -8,12 +8,34 @@ import {
 	pubsub as rumblePubsub,
 	query
 } from '#api/rumble';
-import { isAdminInConference, isTeamInConference } from '#api/services/authHelper';
+import {
+	isAdminInConference,
+	isTeamInConference,
+	linkedDelegator,
+	SYNCED_CONFERENCE
+} from '#api/services/authHelper';
 import { attendanceCode as generateAttendanceCode } from '#lib/helpers/attendanceCode';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+
+// The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
+abilityBuilder.presenceEvent
+	.allow('read')
+	.when(
+		linkedDelegator({
+			where: { committee: { conference: SYNCED_CONFERENCE } },
+			columns: {
+				id: true,
+				conferenceUserId: true,
+				committeeId: true,
+				present: true,
+				type: true,
+				timestamp: true
+			}
+		})
+	);
 
 abilityBuilder.presenceEvent.allow('read').when((ctx) => ({
 	where: { committee: isTeamInConference(ctx) }

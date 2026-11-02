@@ -11,6 +11,8 @@ import { openYjsRoom } from './yjs/wss';
 import { nativeToRequestEvent } from './services/auth';
 import { OIDC } from './services/OIDC';
 import { context, type Context } from './context';
+import { findLinkCaller } from './services/link/linkCaller';
+import { LINK_TOKEN_HEADER } from './services/link/linkTokens';
 
 const gqlWSS = new WebSocketServer({ noServer: true });
 const yjsWSS = new WebSocketServer({ noServer: true });
@@ -37,9 +39,22 @@ createWs(
 			// synthetic event on the IncomingMessage — nothing more to do.
 			if ((req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD]) return;
 
+			const params = wsCtx.connectionParams as Record<string, unknown> | undefined;
+
+			// The linked DELEGATOR's link worker sends its link token instead of a session.
+			const linkToken = params?.[LINK_TOKEN_HEADER];
+			if (typeof linkToken === 'string') {
+				const caller = await findLinkCaller(linkToken);
+				if (caller?.status !== 'ACTIVE') return false;
+				const linkReq = Object.create(req) as IncomingMessage;
+				linkReq.headers = { ...req.headers, [LINK_TOKEN_HEADER]: linkToken };
+				(req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] =
+					nativeToRequestEvent(linkReq);
+				return;
+			}
+
 			// Clients that cannot set HTTP headers (e.g. native/Tauri) send their
 			// token as connectionParams.Authorization in the connection_init message.
-			const params = wsCtx.connectionParams as Record<string, unknown> | undefined;
 			const authHeader =
 				typeof params?.Authorization === 'string'
 					? params.Authorization

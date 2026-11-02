@@ -31,6 +31,12 @@ const defaultIdAndTimestamps = {
 	...defaultTimestamps
 };
 
+/**
+ * Rows a linked MUNify DELEGATOR owns (`docs/plans/delegator-link.md`): the sync writes them and
+ * CHASE shows them read-only. Rows without it are CHASE's own, which the sync never touches.
+ */
+const managedByDelegator = () => boolean().notNull().default(false);
+
 export const user = snakeCase.table('user', {
 	id: text().primaryKey().unique().notNull(),
 	...defaultTimestamps,
@@ -51,7 +57,8 @@ export const conference = snakeCase.table('conference', {
 	startDate: date({ mode: 'date' }),
 	endDate: date({ mode: 'date' }),
 	hasModeratedCaucus: boolean().notNull().default(false),
-	logoSvg: text()
+	logoSvg: text(),
+	managedByDelegator: managedByDelegator()
 });
 
 export const committeeStatus = pgEnum('committee_status', [
@@ -68,6 +75,7 @@ export const committee = snakeCase.table(
 		...defaultIdAndTimestamps,
 		name: text().notNull(),
 		abbreviation: text().notNull(),
+		managedByDelegator: managedByDelegator(),
 		conferenceId: text()
 			.notNull()
 			.references(() => conference.id, { onDelete: 'cascade' }),
@@ -137,6 +145,7 @@ export const representation = snakeCase.table(
 		type: representationType().notNull(),
 		faIcon: text(),
 		regionalGroup: regionalGroup(),
+		managedByDelegator: managedByDelegator(),
 		conferenceId: text()
 			.notNull()
 			.references(() => conference.id, { onDelete: 'cascade' })
@@ -149,6 +158,7 @@ export const representation = snakeCase.table(
 
 export const conferenceMember = snakeCase.table('conference_member', {
 	...defaultIdAndTimestamps,
+	managedByDelegator: managedByDelegator(),
 	conferenceId: text()
 		.notNull()
 		.references(() => conference.id, { onDelete: 'cascade' }),
@@ -159,6 +169,7 @@ export const conferenceMember = snakeCase.table('conference_member', {
 
 export const committeeMember = snakeCase.table('committee_member', {
 	...defaultIdAndTimestamps,
+	managedByDelegator: managedByDelegator(),
 	present: boolean().notNull().default(false),
 	committeeId: text()
 		.notNull()
@@ -178,6 +189,9 @@ export const conferenceUser = snakeCase.table(
 		// login, so we keep names on the conferenceUser instead. UI falls back to
 		// userEmail when null.
 		name: text(),
+		managedByDelegator: managedByDelegator(),
+		/** The person's DELEGATOR user id, which the codes on their nametag and card sign. */
+		delegatorUserId: text(),
 		conferenceId: text()
 			.notNull()
 			.references(() => conference.id, { onDelete: 'cascade' }),
@@ -197,7 +211,8 @@ export const agendaItem = snakeCase.table('agenda_item', {
 	committeeId: text()
 		.references((): AnyPgColumn => committee.id, { onDelete: 'cascade' })
 		.notNull(),
-	title: text().notNull()
+	title: text().notNull(),
+	managedByDelegator: managedByDelegator()
 });
 
 export const speakersListCategory = pgEnum('speakers_list_category', [
@@ -794,3 +809,32 @@ export const resolutionAdoptionStats = snakeCase
 		adoptedAt: timestamp({ mode: 'date' }).notNull()
 	})
 	.existing();
+
+export const instanceLinkStatus = pgEnum('instance_link_status', ['PENDING', 'ACTIVE', 'FROZEN']);
+
+/**
+ * The one link of this instance to a MUNify DELEGATOR instance (`docs/plans/delegator-link.md`).
+ * A system-level link, so at most one row: pairing again replaces a frozen one.
+ */
+export const instanceLink = snakeCase.table(
+	'instance_link',
+	{
+		...defaultIdAndTimestamps,
+		/** The DELEGATOR instance's origin. */
+		remoteUrl: text().notNull(),
+		status: instanceLinkStatus().notNull().default('PENDING'),
+		/** SHA-256 of the token DELEGATOR sends with its requests; null until approved. */
+		inboundTokenHash: text(),
+		/** The token this instance sends to DELEGATOR, encrypted with `LINK_SECRET`. */
+		outboundToken: text().notNull(),
+		/** Shown on both sides while pending, for the admins to compare. */
+		confirmationCode: text().notNull(),
+		linkedAt: timestamp({ mode: 'date' }),
+		/** The last notice the link worker received from DELEGATOR. */
+		lastEventAt: timestamp({ mode: 'date' }),
+		/** The last full reconcile, run on every (re)connect. */
+		lastReconcileAt: timestamp({ mode: 'date' }),
+		lastError: text()
+	},
+	() => [uniqueIndex('instance_link_single_row').using('btree', sql`(true)`)]
+);

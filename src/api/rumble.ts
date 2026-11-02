@@ -36,7 +36,8 @@ export const {
 	createYoga,
 	createWs,
 	enum_,
-	clientCreator
+	clientCreator,
+	buildSchema
 } = rumble({
 	db,
 	schema,

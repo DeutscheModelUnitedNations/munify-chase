@@ -6,6 +6,8 @@ import {
 	SYNTHETIC_EVENT_FIELD
 } from './services/syntheticRequestEvent';
 import { OIDC } from './services/OIDC';
+import { findLinkCaller, type LinkCaller } from './services/link/linkCaller';
+import { LINK_TOKEN_HEADER } from './services/link/linkTokens';
 
 export const oidcRoles = ['admin', 'member', 'service_user'] as const;
 
@@ -39,8 +41,14 @@ export function context(req: RequestEvent) {
 		}
 	}
 
+	// A synthetic WebSocket event carries the token as a header too (`websocket.ts`).
+	const linkToken = req.request?.headers.get(LINK_TOKEN_HEADER);
+	let linkCaller: Promise<LinkCaller | undefined> | undefined;
+
 	return {
 		...req.locals,
+		/** The linked DELEGATOR instance, when it is the one calling (`docs/plans/delegator-link.md`). */
+		linkCaller: () => (linkCaller ??= findLinkCaller(linkToken)),
 		mustBeLoggedIn: () => {
 			if (!req.locals.oidc?.user) {
 				throw new GraphQLError('Must be logged in');

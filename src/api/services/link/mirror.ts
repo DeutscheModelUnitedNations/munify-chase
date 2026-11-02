@@ -80,11 +80,21 @@ interface MirroredUser {
 	committeeMemberId: string | null;
 }
 
+interface MirroredRepresentation {
+	id: string;
+	type: 'DELEGATION' | 'NSA';
+	alpha2Code: string | null;
+	alpha3Code: string | null;
+	regionalGroup: ReturnType<typeof getCountryData>['regionalGroup'] | null;
+	name: string | null;
+	faIcon: string | null;
+}
+
 export function mirrorConference(source: MirrorSource) {
 	const conferenceId = source.conference.id;
 	const roleById = new Map(source.roles.map((role) => [role.id, role]));
 
-	const representations = source.roles.flatMap((role) => {
+	const representations = source.roles.flatMap((role): MirroredRepresentation[] => {
 		if (role.kind === 'NATION') {
 			const seated = source.committees.some((c) => c.roles.some((r) => r.id === role.id));
 			if (!seated || !role.nation) return [];
@@ -93,7 +103,7 @@ export function mirrorConference(source: MirrorSource) {
 			return [
 				{
 					id: role.id,
-					type: 'DELEGATION' as const,
+					type: 'DELEGATION',
 					alpha2Code: country.alpha2Code,
 					alpha3Code: country.alpha3Code,
 					regionalGroup: country.regionalGroup ?? null,
@@ -106,7 +116,7 @@ export function mirrorConference(source: MirrorSource) {
 			return [
 				{
 					id: role.id,
-					type: 'NSA' as const,
+					type: 'NSA',
 					alpha2Code: null,
 					alpha3Code: null,
 					regionalGroup: null,

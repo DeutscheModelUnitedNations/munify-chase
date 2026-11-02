@@ -1,10 +1,10 @@
-import { redirect, type ServerInit } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 
 // import sockets here to ensure they are bundles with the rest of the application
 import '#api/websocket';
 
 import { paraglideMiddleware } from '#lib/paraglide/server';
-import { sequence, type Handle } from '@sveltejs/kit/hooks';
+import { sequence, type Handle, type ServerInit } from '@sveltejs/kit/hooks';
 import { OIDC } from '#api/services/OIDC';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '#lib/paraglide/runtime';
 import { isLocalConferencePath } from '#lib/state/localDemo.svelte';

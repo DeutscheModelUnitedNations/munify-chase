@@ -48,6 +48,8 @@ function runWorker() {
 	};
 
 	(async () => {
+		// a string under `drizzle.mock()`, which only `vite build` uses
+		if (typeof db.$client === 'string') return;
 		const leadership = await db.$client.connect();
 		cleanups.push(() => {
 			leadership.query('select pg_advisory_unlock($1)', [LEADER_LOCK_KEY]).finally(() => leadership.release());
@@ -86,18 +88,12 @@ function runWorker() {
 			);
 		};
 
-		const conferences = remote.liveQuery.conferences({
-			__args: { where: { state: { ne: 'POST' } } },
-			id: true,
-			title: true,
-			location: true,
-			startConference: true,
-			endConference: true,
-			assignmentReleased: true
-		});
+		// DELEGATOR shows the link the conferences it mirrors; a public one that has ended may
+		// still be readable, so the state decides
+		const conferences = remote.liveQuery.conferences({ id: true, state: true });
 		const unsubscribe = conferences.subscribe((list) => {
 			if (!list || stopped) return;
-			const current = new Set(list.map((c) => c.id));
+			const current = new Set(list.filter((c) => c.state !== 'POST').map((c) => c.id));
 			for (const [conferenceId, unwatch] of watchers) {
 				if (current.has(conferenceId)) continue;
 				unwatch();
@@ -144,33 +140,38 @@ function watchConference({
 	const live = [
 		remote.liveQuery.committees({
 			__args: inConference,
+			id: true,
 			name: true,
 			abbreviation: true,
 			roles: { id: true }
 		}),
 		remote.liveQuery.committeeAgendaItems({
 			__args: { where: { committee: { conferenceId: { eq: conferenceId } } } },
+			id: true,
 			title: true
 		}),
 		remote.liveQuery.conferenceRoles({
 			__args: inConference,
+			id: true,
 			name: true,
 			fontAwesomeIcon: true,
 			chaseAccess: true
 		}),
-		remote.liveQuery.teamMembers({ __args: inConference, role: true, user: PERSON }),
-		remote.liveQuery.delegations({ __args: inConference, assignedRole: { id: true } }),
+		remote.liveQuery.teamMembers({ __args: inConference, id: true, role: true, user: PERSON }),
+		remote.liveQuery.delegations({ __args: inConference, id: true, assignedRole: { id: true } }),
 		remote.liveQuery.delegationMembers({
 			__args: ofConference,
+			id: true,
 			assignedCommittee: { id: true },
 			user: PERSON
 		}),
 		remote.liveQuery.singleParticipants({
 			__args: ofConference,
+			id: true,
 			assignedRole: { id: true },
 			user: PERSON
 		}),
-		remote.liveQuery.conferenceSupervisors({ __args: ofConference, user: PERSON })
+		remote.liveQuery.conferenceSupervisors({ __args: ofConference, id: true, user: PERSON })
 	];
 	const unsubscribes = live.map((result) => result.subscribe(changed));
 	return () => {
@@ -204,6 +205,7 @@ async function syncConference({
 				}),
 				remote.query.committees({
 					__args: inConference,
+					id: true,
 					name: true,
 					abbreviation: true,
 					agendaItems: { id: true, title: true },
@@ -211,36 +213,45 @@ async function syncConference({
 				}),
 				remote.query.conferenceRoles({
 					__args: inConference,
+					id: true,
 					kind: true,
 					name: true,
 					fontAwesomeIcon: true,
 					chaseAccess: true,
 					nation: { alpha2Code: true }
 				}),
-				remote.query.teamMembers({ __args: inConference, role: true, user: PERSON }),
+				remote.query.teamMembers({ __args: inConference, id: true, role: true, user: PERSON }),
 				remote.query.delegationMembers({
 					__args: ofConference,
+					id: true,
 					assignedCommittee: { id: true },
 					delegation: { id: true, assignedRole: { id: true } },
 					user: PERSON
 				}),
 				remote.query.singleParticipants({
 					__args: ofConference,
+					id: true,
 					assignedRole: { id: true },
 					user: PERSON
 				}),
-				remote.query.conferenceSupervisors({ __args: ofConference, user: PERSON })
+				remote.query.conferenceSupervisors({ __args: ofConference, id: true, user: PERSON })
 			]);
 
 		await reconcileConference(
 			mirrorConference({
-				conference: { ...conference, id: conferenceId },
-				committees,
-				roles,
-				teamMembers,
-				delegationMembers,
-				singleParticipants,
-				supervisors
+				conference: {
+					id: conferenceId,
+					title: conference.title,
+					location: conference.location,
+					startConference: conference.startConference,
+					endConference: conference.endConference
+				},
+				committees: Array.from(committees),
+				roles: Array.from(roles),
+				teamMembers: Array.from(teamMembers),
+				delegationMembers: Array.from(delegationMembers),
+				singleParticipants: Array.from(singleParticipants),
+				supervisors: Array.from(supervisors)
 			})
 		);
 		await db

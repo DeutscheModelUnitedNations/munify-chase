@@ -95,7 +95,7 @@ export async function freezeLink({ notifyRemote }: { notifyRemote: boolean }) {
 			url: link.remoteUrl,
 			token: openLinkToken(link.outboundToken)
 		});
-		await Promise.resolve(remote.mutate.unlinkChase({}))
+		await Promise.resolve(remote.mutate.unlinkChase())
 			.catch((error) => console.warn('[link] DELEGATOR did not hear of the unlinking', error))
 			.finally(() => remote.dispose());
 	}

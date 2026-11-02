@@ -10,6 +10,7 @@ import {
 import { isAdminInConference, isParticipantInConference } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 
 abilityBuilder.conferenceMember.allow('read').when((ctx) => {
 	return {
@@ -18,7 +19,8 @@ abilityBuilder.conferenceMember.allow('read').when((ctx) => {
 });
 
 abilityBuilder.conferenceMember.allow('delete').when((ctx) => {
-	return { where: isAdminInConference(ctx) };
+	// a member synced from a linked DELEGATOR is removed there
+	return { where: { ...isAdminInConference(ctx), ...NOT_MANAGED_BY_DELEGATOR } };
 });
 
 export const ConferenceMemberRef = object({ table: 'conferenceMember' });

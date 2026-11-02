@@ -11,6 +11,7 @@ import { isAdminInConference, isParticipantInConference } from '#api/services/au
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 
 abilityBuilder.representation.allow('read').when((ctx) => {
 	return {
@@ -19,7 +20,8 @@ abilityBuilder.representation.allow('read').when((ctx) => {
 });
 
 abilityBuilder.representation.allow(['update', 'delete']).when((ctx) => {
-	return { where: isAdminInConference(ctx) };
+	// a representation synced from a linked DELEGATOR is changed there
+	return { where: { ...isAdminInConference(ctx), ...NOT_MANAGED_BY_DELEGATOR } };
 });
 
 const ref = object({ table: 'representation' });

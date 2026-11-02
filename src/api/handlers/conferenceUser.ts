@@ -18,6 +18,7 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { emailValidation } from '#api/services/emailValidation';
 import { attendanceCode as generateAttendanceCode } from '#lib/helpers/attendanceCode';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	return {
@@ -83,7 +84,7 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	}
 });
 
-abilityBuilder.conferenceUser.allow(['read', 'update', 'delete']).when((ctx) => {
+abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	return {
 		where: isAdminInConference(ctx),
 		// Explicit all-columns include so the merge with the participant rule's
@@ -97,11 +98,18 @@ abilityBuilder.conferenceUser.allow(['read', 'update', 'delete']).when((ctx) => 
 			conferenceMemberId: true,
 			conferenceUserType: true,
 			attendanceCode: true,
+			managedByDelegator: true,
+			delegatorUserId: true,
 			createdAt: true,
 			updatedAt: true
 		}
 	};
 });
+
+// a person synced from a linked DELEGATOR is changed there
+abilityBuilder.conferenceUser.allow(['update', 'delete']).when((ctx) => ({
+	where: { ...isAdminInConference(ctx), ...NOT_MANAGED_BY_DELEGATOR }
+}));
 
 /**
  * Generate a fresh 6-char attendance code unique within the conference.

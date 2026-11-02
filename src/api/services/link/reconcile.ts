@@ -217,8 +217,16 @@ export async function reconcileConference(mirror: Mirror) {
 	});
 
 	pubsubs.conference.updated(conferenceId);
-	announce({ pubsub: pubsubs.committee, rows: mirror.committees, removed: changes.removedCommittees });
-	announce({ pubsub: pubsubs.agendaItem, rows: mirror.agendaItems, removed: changes.removedAgendaItems });
+	announce({
+		pubsub: pubsubs.committee,
+		rows: mirror.committees,
+		removed: changes.removedCommittees
+	});
+	announce({
+		pubsub: pubsubs.agendaItem,
+		rows: mirror.agendaItems,
+		removed: changes.removedAgendaItems
+	});
 	announce({
 		pubsub: pubsubs.representation,
 		rows: mirror.representations,
@@ -234,7 +242,11 @@ export async function reconcileConference(mirror: Mirror) {
 		rows: mirror.conferenceMembers,
 		removed: changes.removedConferenceMembers
 	});
-	announce({ pubsub: pubsubs.conferenceUser, rows: mirror.conferenceUsers, removed: changes.removedUsers });
+	announce({
+		pubsub: pubsubs.conferenceUser,
+		rows: mirror.conferenceUsers,
+		removed: changes.removedUsers
+	});
 }
 
 /**
@@ -269,14 +281,20 @@ export async function releaseConference(conferenceId: string) {
 			.set({ managedByDelegator: false })
 			.where(eq(schema.conference.id, conferenceId));
 		for (const table of [schema.representation, schema.conferenceMember, schema.conferenceUser]) {
-			await tx.update(table).set({ managedByDelegator: false }).where(eq(table.conferenceId, conferenceId));
+			await tx
+				.update(table)
+				.set({ managedByDelegator: false })
+				.where(eq(table.conferenceId, conferenceId));
 		}
 		await tx
 			.update(schema.committee)
 			.set({ managedByDelegator: false })
 			.where(eq(schema.committee.conferenceId, conferenceId));
 		for (const table of [schema.agendaItem, schema.committeeMember]) {
-			await tx.update(table).set({ managedByDelegator: false }).where(inArray(table.committeeId, committees));
+			await tx
+				.update(table)
+				.set({ managedByDelegator: false })
+				.where(inArray(table.committeeId, committees));
 		}
 	});
 	pubsubs.conference.updated(conferenceId);

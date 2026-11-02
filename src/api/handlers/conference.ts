@@ -4,6 +4,7 @@ import { ConferenceMemberRef, ConferenceMemberWhereInput } from './conferenceMem
 import { isAdmin, isGlobalAdmin, isParticipant } from '#api/services/authHelper';
 import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
+import { assertNotManagedByDelegator } from '#api/services/link/managedRows';
 
 abilityBuilder.conference.allow('read').when((ctx) => {
 	return { where: isParticipant(ctx) };
@@ -77,6 +78,17 @@ schemaBuilder.mutationFields((t) => ({
 			logoSvg: t.arg.string()
 		},
 		resolve: async (query, root, args, ctx) => {
+			// title, place and dates of a conference from DELEGATOR are changed there
+			const row = await db.query.conference.findFirst({
+				where: { id: args.id },
+				columns: { managedByDelegator: true }
+			});
+			assertNotManagedByDelegator({
+				managed: row?.managedByDelegator,
+				touchesDelegatorFields: [args.title, args.location, args.startDate, args.endDate].some(
+					(value) => value != null
+				)
+			});
 			const mappedArgs = mapNullFieldsToUndefined(args);
 
 			// Explicitly resolve the logo so it can be cleared: an empty string

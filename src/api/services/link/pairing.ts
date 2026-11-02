@@ -3,7 +3,13 @@ import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { createDelegatorClient } from './delegatorRemote';
 import { instanceLinkPubsub } from './linkPubsub';
-import { hashLinkToken, linkSecret, makeLinkToken, openLinkToken, sealLinkToken } from './linkTokens';
+import {
+	hashLinkToken,
+	linkSecret,
+	makeLinkToken,
+	openLinkToken,
+	sealLinkToken
+} from './linkTokens';
 import { startLinkWorker, stopLinkWorker } from './linkWorker';
 
 /**
@@ -27,7 +33,8 @@ export async function receiveLinkRequest({
 		if (existing && existing.status !== 'FROZEN') {
 			throw new GraphQLError('This instance is already linked, or a link request is pending.');
 		}
-		if (existing) await tx.delete(schema.instanceLink).where(eq(schema.instanceLink.id, existing.id));
+		if (existing)
+			await tx.delete(schema.instanceLink).where(eq(schema.instanceLink.id, existing.id));
 		await tx.insert(schema.instanceLink).values({
 			remoteUrl,
 			outboundToken: sealLinkToken(token),

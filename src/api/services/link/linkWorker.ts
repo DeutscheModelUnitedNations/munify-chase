@@ -52,7 +52,9 @@ function runWorker() {
 		if (typeof db.$client === 'string') return;
 		const leadership = await db.$client.connect();
 		cleanups.push(() => {
-			leadership.query('select pg_advisory_unlock($1)', [LEADER_LOCK_KEY]).finally(() => leadership.release());
+			leadership
+				.query('select pg_advisory_unlock($1)', [LEADER_LOCK_KEY])
+				.finally(() => leadership.release());
 		});
 		// waits for the instance holding the worker to stop or die
 		await leadership.query('select pg_advisory_lock($1)', [LEADER_LOCK_KEY]);
@@ -194,48 +196,55 @@ async function syncConference({
 	try {
 		const inConference = { where: { conferenceId: { eq: conferenceId } } };
 		const ofConference = { where: { conference: { id: { eq: conferenceId } } } };
-		const [conference, committees, roles, teamMembers, delegationMembers, singleParticipants, supervisors] =
-			await Promise.all([
-				remote.query.conference({
-					__args: { id: conferenceId },
-					title: true,
-					location: true,
-					startConference: true,
-					endConference: true
-				}),
-				remote.query.committees({
-					__args: inConference,
-					id: true,
-					name: true,
-					abbreviation: true,
-					agendaItems: { id: true, title: true },
-					roles: { id: true }
-				}),
-				remote.query.conferenceRoles({
-					__args: inConference,
-					id: true,
-					kind: true,
-					name: true,
-					fontAwesomeIcon: true,
-					chaseAccess: true,
-					nation: { alpha2Code: true }
-				}),
-				remote.query.teamMembers({ __args: inConference, id: true, role: true, user: PERSON }),
-				remote.query.delegationMembers({
-					__args: ofConference,
-					id: true,
-					assignedCommittee: { id: true },
-					delegation: { id: true, assignedRole: { id: true } },
-					user: PERSON
-				}),
-				remote.query.singleParticipants({
-					__args: ofConference,
-					id: true,
-					assignedRole: { id: true },
-					user: PERSON
-				}),
-				remote.query.conferenceSupervisors({ __args: ofConference, id: true, user: PERSON })
-			]);
+		const [
+			conference,
+			committees,
+			roles,
+			teamMembers,
+			delegationMembers,
+			singleParticipants,
+			supervisors
+		] = await Promise.all([
+			remote.query.conference({
+				__args: { id: conferenceId },
+				title: true,
+				location: true,
+				startConference: true,
+				endConference: true
+			}),
+			remote.query.committees({
+				__args: inConference,
+				id: true,
+				name: true,
+				abbreviation: true,
+				agendaItems: { id: true, title: true },
+				roles: { id: true }
+			}),
+			remote.query.conferenceRoles({
+				__args: inConference,
+				id: true,
+				kind: true,
+				name: true,
+				fontAwesomeIcon: true,
+				chaseAccess: true,
+				nation: { alpha2Code: true }
+			}),
+			remote.query.teamMembers({ __args: inConference, id: true, role: true, user: PERSON }),
+			remote.query.delegationMembers({
+				__args: ofConference,
+				id: true,
+				assignedCommittee: { id: true },
+				delegation: { id: true, assignedRole: { id: true } },
+				user: PERSON
+			}),
+			remote.query.singleParticipants({
+				__args: ofConference,
+				id: true,
+				assignedRole: { id: true },
+				user: PERSON
+			}),
+			remote.query.conferenceSupervisors({ __args: ofConference, id: true, user: PERSON })
+		]);
 
 		await reconcileConference(
 			mirrorConference({

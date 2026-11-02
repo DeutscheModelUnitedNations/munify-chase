@@ -59,7 +59,13 @@ export interface MirrorSource {
 const ADMIN_TEAM_ROLES = new Set(['PROJECT_MANAGEMENT', 'TEAM_COORDINATOR']);
 
 /** A nation's seat in a committee: one CHASE committee member, shared by its delegates there. */
-export function committeeMemberId({ roleId, committeeId }: { roleId: string; committeeId: string }) {
+export function committeeMemberId({
+	roleId,
+	committeeId
+}: {
+	roleId: string;
+	committeeId: string;
+}) {
 	return `${roleId}_${committeeId}`;
 }
 

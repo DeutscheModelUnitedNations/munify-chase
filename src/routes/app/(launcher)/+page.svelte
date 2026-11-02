@@ -7,6 +7,7 @@
 	import ConferenceHeroCard from '#lib/components/launcher/ConferenceHeroCard.svelte';
 	import AdminConferenceRow from '#lib/components/launcher/AdminConferenceRow.svelte';
 	import EmptyLauncher from '#lib/components/launcher/EmptyLauncher.svelte';
+	import DelegatorLinkCard from '#lib/components/launcher/DelegatorLinkCard.svelte';
 	import { badgeFor, deriveStatus } from '#lib/helpers/launcher';
 	import type { LauncherConference } from '#lib/components/launcher/types';
 	import { client } from '#lib/api/rumbleClient/client';
@@ -61,6 +62,15 @@
 	});
 
 	const isGlobalAdmin = await getIsGlobalAdmin();
+
+	// While linked to a DELEGATOR, conferences come from there (`docs/plans/delegator-link.md`)
+	const activeLinks = await client.liveQuery.instanceLinks({
+		__args: { where: { status: 'ACTIVE' } },
+		id: true,
+		remoteUrl: true,
+		status: true
+	});
+	const delegatorUrl = $derived((activeLinks ?? []).at(0)?.remoteUrl);
 
 	const allConferences = await client.liveQuery.conferences({
 		id: true,
@@ -246,6 +256,10 @@
 		</header>
 
 		{#if isGlobalAdmin}
+			<DelegatorLinkCard />
+		{/if}
+
+		{#if isGlobalAdmin}
 			{#if adminConferences.length === 0}
 				<EmptyLauncher />
 			{:else if filteredAdminConferences.length === 0}
@@ -290,7 +304,15 @@
 			</div>
 		{/if}
 
-		{#if isGlobalAdmin}
+		{#if delegatorUrl}
+			<footer class="mt-8 flex flex-col items-center gap-2 pt-6 text-center">
+				<p class="text-base-content/70 m-0 text-sm">{m.delegatorLinkConferencesFromDelegator()}</p>
+				<a class="btn btn-ghost btn-sm" href={delegatorUrl} target="_blank" rel="noopener">
+					<i class="fa-duotone fa-arrow-up-right-from-square"></i>
+					{m.delegatorLinkOpen()}
+				</a>
+			</footer>
+		{:else if isGlobalAdmin}
 			<footer
 				class="from-base-100 sticky bottom-0 mt-8 flex flex-col gap-2 bg-gradient-to-b from-35% to-transparent py-4 [&>.btn]:w-full"
 				style="background: linear-gradient(180deg, transparent 0%, var(--color-base-100) 35%);"

@@ -18,7 +18,8 @@ export function hashLinkToken(token: string) {
 
 /** `LINK_SECRET`, or why linking is not possible without it. */
 export function linkSecret() {
-	if (!LINK_SECRET) throw new GraphQLError('LINK_SECRET is not set, so this instance cannot be linked.');
+	if (!LINK_SECRET)
+		throw new GraphQLError('LINK_SECRET is not set, so this instance cannot be linked.');
 	return LINK_SECRET;
 }
 

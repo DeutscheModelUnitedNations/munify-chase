@@ -121,7 +121,9 @@ describe('mirrorConference', () => {
 
 	it('makes an NSA delegation one conference member', () => {
 		const mirror = mirrorConference(source());
-		expect(mirror.conferenceMembers).toEqual([{ id: 'del-amnesty', representationId: 'role-amnesty' }]);
+		expect(mirror.conferenceMembers).toEqual([
+			{ id: 'del-amnesty', representationId: 'role-amnesty' }
+		]);
 		expect(mirror.conferenceUsers.find((u) => u.id === 'dm-nsa')).toMatchObject({
 			conferenceUserType: 'NON_STATE_ACTOR',
 			conferenceMemberId: 'del-amnesty'

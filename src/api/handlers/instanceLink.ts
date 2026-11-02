@@ -14,9 +14,11 @@ import {
  * but never its tokens; everyone reads where an active link points, for the "managed by
  * DELEGATOR" links back.
  */
-abilityBuilder.instanceLink.allow('read').when((ctx) =>
-	isGlobalAdmin(ctx) ? { columns: { inboundTokenHash: false, outboundToken: false } } : undefined
-);
+abilityBuilder.instanceLink
+	.allow('read')
+	.when((ctx) =>
+		isGlobalAdmin(ctx) ? { columns: { inboundTokenHash: false, outboundToken: false } } : undefined
+	);
 abilityBuilder.instanceLink.allow('read').when(() => ({
 	where: { status: 'ACTIVE' },
 	columns: { id: true, remoteUrl: true, status: true }

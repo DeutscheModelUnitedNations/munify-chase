@@ -132,6 +132,17 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('You must be a global admin to create conferences!');
 			}
 
+			// a linked DELEGATOR brings its conferences itself (`docs/plans/delegator-link.md`)
+			const link = await db.query.instanceLink.findFirst({
+				where: { status: 'ACTIVE' },
+				columns: { id: true }
+			});
+			if (link) {
+				throw new GraphQLError(
+					'This instance is linked to MUNify DELEGATOR: create the conference there.'
+				);
+			}
+
 			// we want to ensure consistency between frontend and backend
 			// therfore the explicit extra parsing
 			const data = importDataSchema.parse(args.data);

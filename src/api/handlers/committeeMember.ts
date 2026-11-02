@@ -8,6 +8,7 @@ import {
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 
 abilityBuilder.committeeMember.allow('read').when((ctx) => {
 	return {
@@ -26,7 +27,8 @@ abilityBuilder.committeeMember.allow('update').when((ctx) => {
 });
 
 abilityBuilder.committeeMember.allow('delete').when((ctx) => {
-	return { where: { committee: isAdminInConference(ctx) } };
+	// a seat synced from a linked DELEGATOR is removed there
+	return { where: { committee: isAdminInConference(ctx), ...NOT_MANAGED_BY_DELEGATOR } };
 });
 
 const ref = object({ table: 'committeeMember' });

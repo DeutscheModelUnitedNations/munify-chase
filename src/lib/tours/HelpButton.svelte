@@ -6,6 +6,7 @@
 	import { formatHotkey } from '#lib/helpers/hotkey';
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import { commandPalette, PALETTE_SHORTCUT } from '#lib/commands/palette.svelte';
+	import { HelpMenu } from '@deutschemodelunitednations/docs-kit/components';
 	import { routeHelp } from './routeHelp';
 
 	const help = $derived(page.route.id ? routeHelp[page.route.id] : undefined);
@@ -18,11 +19,6 @@
 		// driver.js and its styles load only when a tour actually starts
 		const [{ startTour }, tour] = await Promise.all([import('./runTour'), help.tour()]);
 		startTour(tour);
-	}
-
-	function openCommands() {
-		(document.activeElement as HTMLElement | null)?.blur();
-		commandPalette.open = true;
 	}
 
 	registerCommands(() => [
@@ -44,37 +40,29 @@
 	]);
 </script>
 
-<div class="dropdown dropdown-end">
-	<button
-		type="button"
-		class="btn btn-ghost btn-circle btn-sm tooltip tooltip-left"
-		aria-label={m.help()}
-		data-tip={m.helpButtonTooltip({ shortcut: formatHotkey(PALETTE_SHORTCUT) })}
-	>
-		<i class="fa-duotone fa-circle-question text-lg"></i>
-	</button>
-	<ul class="dropdown-content menu bg-base-100 rounded-box z-50 mt-2 w-64 p-2 shadow-md">
+<HelpMenu
+	{manualHref}
+	labels={{
+		help: m.help(),
+		manual: help ? m.helpManualForPage() : m.helpManual(),
+		tour: m.tourStart()
+	}}
+	onTour={help?.tour ? takeTour : undefined}
+	tooltip={m.helpButtonTooltip({ shortcut: formatHotkey(PALETTE_SHORTCUT) })}
+>
+	{#snippet items({ close })}
 		<li>
-			<button type="button" onclick={openCommands}>
+			<button
+				type="button"
+				onclick={() => {
+					close();
+					commandPalette.open = true;
+				}}
+			>
 				<i class="fa-duotone fa-magnifying-glass w-5 text-center"></i>
 				<span class="flex-1">{m.commandPaletteTitle()}</span>
 				<Kbd hotkey={PALETTE_SHORTCUT} size="sm" />
 			</button>
 		</li>
-		{#if help?.tour}
-			<li>
-				<button type="button" onclick={takeTour}>
-					<i class="fa-duotone fa-route w-5 text-center"></i>
-					{m.tourStart()}
-				</button>
-			</li>
-		{/if}
-		<li>
-			<a href={manualHref} target="_blank" rel="noopener noreferrer">
-				<i class="fa-duotone fa-book w-5 text-center"></i>
-				<span class="flex-1">{help ? m.helpManualForPage() : m.helpManual()}</span>
-				<i class="fa-solid fa-arrow-up-right text-base-content/50 text-xs" aria-hidden="true"></i>
-			</a>
-		</li>
-	</ul>
-</div>
+	{/snippet}
+</HelpMenu>

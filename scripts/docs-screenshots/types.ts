@@ -1,4 +1,4 @@
-import type { Locator, Page } from 'playwright';
+import type { Shot as KitShot } from '@deutschemodelunitednations/docs-kit/capture';
 import type en from '../../messages/en.json';
 
 export type MessageKey = Exclude<keyof typeof en, '$schema'>;
@@ -27,27 +27,4 @@ export type StageIds = {
 	votingPhasePaperId: string;
 };
 
-export type PrepareContext = {
-	page: Page;
-	ids: StageIds;
-	t: Translate;
-	/** Opens a second page logged in as another role, closed after the capture */
-	openAs: (role: Role, path: string) => Promise<Page>;
-};
-
-export type Shot = {
-	/** Referenced from markdown as `shot:<id>` */
-	id: string;
-	role: Role;
-	path: (ids: StageIds) => string;
-	/** Database state on top of the staged conference, before the page loads */
-	setup?: (ids: StageIds) => Promise<void>;
-	/** Clicks and key presses to reach the view after the page loaded */
-	prepare?: (ctx: PrepareContext) => Promise<void>;
-	/** localStorage entries set before the page loads */
-	storage?: Record<string, string>;
-	/** Captures only this element instead of the viewport */
-	clip?: string | ((page: Page, t: Translate) => Locator);
-	viewport?: { width: number; height: number };
-	fullPage?: boolean;
-};
+export type Shot = KitShot<StageIds, Role, MessageKey>;

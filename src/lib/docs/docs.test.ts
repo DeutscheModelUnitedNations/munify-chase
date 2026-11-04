@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { docsSuite, listFiles } from '@deutschemodelunitednations/docs-kit/testing';
@@ -10,10 +10,11 @@ import { renderChaseDoc } from './render';
 // Keeps the in-repo manual consistent: every page exists in every locale, and
 // links, anchors, screenshots, live demos and help buttons point at things that exist.
 
+const LOCALES = ['en', 'de', 'pt'];
 const LIVE_LABELS = { start: '', hint: '', openInTab: '' };
 
 docsSuite({
-	locales: ['en', 'de', 'pt'],
+	locales: LOCALES,
 	nav,
 	render: ({ source, slug, locale }) =>
 		renderChaseDoc({ source, slug, locale, liveLabels: LIVE_LABELS }),
@@ -25,7 +26,7 @@ docsSuite({
 
 describe('live demos', () => {
 	const docsDir = join(process.cwd(), 'docs');
-	const sources = readdirSync(docsDir).flatMap((locale) =>
+	const sources = LOCALES.flatMap((locale) =>
 		listFiles({ dir: join(docsDir, locale), suffix: '.md' }).map((file) =>
 			readFileSync(file, 'utf8')
 		)
@@ -37,5 +38,16 @@ describe('live demos', () => {
 				expect(liveDemoIds, `:::live ${id}`).toContain(id);
 			}
 		}
+	});
+
+	it('renders a live demo as its start button, not as text', () => {
+		const { html } = renderChaseDoc({
+			source: `:::live ${liveDemoIds[0]}\n`,
+			slug: 'user-manual/chair/voting',
+			locale: 'en',
+			liveLabels: LIVE_LABELS
+		});
+		expect(html).toContain('data-docs-live-start');
+		expect(html).not.toContain(':::live');
 	});
 });

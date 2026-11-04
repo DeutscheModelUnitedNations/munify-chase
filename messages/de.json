@@ -809,6 +809,7 @@
 	"phraseLookupTitle": "Operatoren-Nachschlagewerk",
 	"preambleClause": "Präambelabsatz",
 	"presence": "Anwesenheit",
+	"presenceExportLinkedFallback": "Erweitert: DELEGATOR liest die Anwesenheit selbst. Die Datei brauchst du nur ohne Verbindung.",
 	"present": "Anwesend",
 	"presentationMode": "Präsentationsansicht",
 	"presentationMoreRequests": "+{count} weitere",

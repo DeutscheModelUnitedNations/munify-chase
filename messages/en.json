@@ -809,6 +809,7 @@
 	"phraseLookupTitle": "Phrase Reference",
 	"preambleClause": "Preamble Clause",
 	"presence": "Presence",
+	"presenceExportLinkedFallback": "Advanced: DELEGATOR reads the presence itself. You only need the file without the link.",
 	"present": "Present",
 	"presentationMode": "Presentation View",
 	"presentationMoreRequests": "+{count} more",

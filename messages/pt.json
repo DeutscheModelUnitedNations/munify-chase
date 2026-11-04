@@ -809,6 +809,7 @@
 	"phraseLookupTitle": "Referência de Frases",
 	"preambleClause": "Cláusula Preambular",
 	"presence": "Presença",
+	"presenceExportLinkedFallback": "Avançado: o DELEGATOR lê a presença por conta própria. Você só precisa do arquivo sem a conexão.",
 	"present": "Presente",
 	"presentationMode": "Vista de Apresentação",
 	"presentationMoreRequests": "+{count} mais",

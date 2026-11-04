@@ -197,13 +197,13 @@ export const conferenceUser = snakeCase.table(
 			.references(() => conference.id, { onDelete: 'cascade' }),
 		conferenceMemberId: text().references(() => conferenceMember.id, { onDelete: 'cascade' }),
 		committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
-		// short alphanumeric fallback code printed on NSA badges for manual check-in/out
-		// when the QR scanner can't be used. Only set for NON_STATE_ACTOR users.
-		attendanceCode: text()
+		/**
+		 * The number of an NSA's current printed card: DELEGATOR's while linked, raised here by a
+		 * reprint otherwise. The scanner refuses a card with another number.
+		 */
+		cardNumber: integer().notNull().default(1)
 	},
-	// Postgres default NULLS DISTINCT keeps the constraint compatible with the many
-	// non-NSA users that have attendanceCode = NULL.
-	(t) => [unique().on(t.conferenceId, t.attendanceCode), unique().on(t.conferenceId, t.userEmail)]
+	(t) => [unique().on(t.conferenceId, t.userEmail)]
 );
 
 export const agendaItem = snakeCase.table('agenda_item', {
@@ -834,7 +834,9 @@ export const instanceLink = snakeCase.table(
 		lastEventAt: timestamp({ mode: 'date' }),
 		/** The last full reconcile, run on every (re)connect. */
 		lastReconcileAt: timestamp({ mode: 'date' }),
-		lastError: text()
+		lastError: text(),
+		/** DELEGATOR's public key (raw, base64url), which its nametags and NSA cards are signed with. */
+		remoteIdentityKey: text()
 	},
 	() => [uniqueIndex('instance_link_single_row').using('btree', sql`(true)`)]
 );

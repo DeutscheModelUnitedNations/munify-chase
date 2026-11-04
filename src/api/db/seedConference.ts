@@ -7,7 +7,6 @@ import type { SeedData } from './seed-data/schema';
 import * as fs from 'fs';
 import { getCountryData } from './seedUtils';
 import { and, eq, type InferSelectModel } from 'drizzle-orm';
-import { attendanceCode as generateAttendanceCode } from '../../lib/helpers/attendanceCode';
 import { nanoid } from '../../lib/helpers/nanoid';
 import * as Y from 'yjs';
 import { jsonToYDoc } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
@@ -58,9 +57,7 @@ try {
 			await db.insert(schema.conferenceUser).values({
 				userEmail: user.email,
 				conferenceId: conferenceEntry.id,
-				conferenceUserType: user.conferenceUserType,
-				attendanceCode:
-					user.conferenceUserType === 'NON_STATE_ACTOR' ? generateAttendanceCode() : null
+				conferenceUserType: user.conferenceUserType
 			});
 			console.info(`    - ${user.preferredUsername} (${user.conferenceUserType})`);
 		}

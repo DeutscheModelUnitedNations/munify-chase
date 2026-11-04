@@ -4,17 +4,59 @@
 	import Modal from '#lib/components/Modal.svelte';
 	import Tabs from '#lib/components/Tabs.svelte';
 	import QrScanner from '#lib/components/QrScanner.svelte';
+	import { loadIdentityKeys } from '#lib/api/identityKeys';
+	import { identifyNsa, type NsaScanFailure } from '#lib/helpers/nsaScan';
+	import { searchNsas } from '#lib/helpers/nsaSearch';
 
 	interface Props {
 		open: boolean;
+		conferenceId: string;
 		committeeId: string;
 	}
 
-	let { open = $bindable(), committeeId }: Props = $props();
+	let { open = $bindable(), conferenceId, committeeId }: Props = $props();
 
 	type Mode = 'IN' | 'OUT';
 	let mode = $state<Mode>('IN');
-	let manualCode = $state('');
+	let search = $state('');
+
+	// The conference's NSAs: a scanned code is checked and matched here, offline if need be, and
+	// the name search looks through them.
+	const nsaUsers = $derived(
+		await client.liveQuery.conferenceUsers({
+			__args: {
+				where: { conferenceId: { eq: conferenceId }, conferenceUserType: 'NON_STATE_ACTOR' }
+			},
+			id: true,
+			name: true,
+			userEmail: true,
+			delegatorUserId: true,
+			cardNumber: true,
+			conferenceMember: { representation: { name: true } }
+		})
+	);
+	const nsas = $derived(
+		Array.from(nsaUsers ?? []).map((user) => ({
+			id: user.id,
+			name: user.name ?? null,
+			userEmail: user.userEmail,
+			delegatorUserId: user.delegatorUserId ?? null,
+			cardNumber: user.cardNumber,
+			nsaName: user.conferenceMember?.representation?.name ?? null
+		}))
+	);
+	const searchResults = $derived(searchNsas({ nsas, query: search }));
+
+	const scanFailures: Record<NsaScanFailure, () => string> = {
+		unsigned: m.nsaScanUnsigned,
+		malformed: m.nsaScanUnsigned,
+		forged: m.nsaScanForged,
+		expired: m.nsaScanExpired,
+		otherConference: m.nsaScanOtherConference,
+		outdatedCard: m.nsaScanOutdatedCard,
+		notNsa: m.nsaScanNotNsa,
+		noKey: m.nsaScanNoKey
+	};
 
 	type LogEntry = {
 		id: string;
@@ -64,24 +106,49 @@
 	}
 
 	async function handleScan(rawText: string) {
-		const text = rawText.trim();
-		if (!text) return;
-		await runMutation(text);
+		const code = rawText.trim();
+		if (!code || busy) return;
+		let keys;
+		try {
+			keys = await loadIdentityKeys();
+		} catch {
+			pushLog({ ok: false, mode, label: m.nsaAttendanceScannerTitle(), message: m.nsaScanNoKey() });
+			beep(false);
+			return;
+		}
+		const scan = await identifyNsa({ code, keys, conferenceId, nsas });
+		if (!scan.found) {
+			const message = scanFailures[scan.reason]();
+			pushLog({ ok: false, mode, label: m.nsaAttendanceScannerTitle(), message });
+			beep(false);
+			return;
+		}
+		await runMutation({
+			conferenceUserId: scan.nsa.id,
+			code,
+			label: scan.nsa.name ?? scan.nsa.userEmail
+		});
 	}
 
-	async function handleManualSubmit(e: Event) {
-		e.preventDefault();
-		const code = manualCode.trim();
-		if (!code) return;
-		manualCode = '';
-		await runMutation(code);
+	async function pick(nsa: (typeof nsas)[number]) {
+		search = '';
+		await runMutation({ conferenceUserId: nsa.id, label: nsa.name ?? nsa.userEmail });
 	}
 
-	async function runMutation(code: string) {
+	/** Checks the NSA in or out; a scanned code goes along for the server to check again. */
+	async function runMutation({
+		conferenceUserId,
+		code,
+		label
+	}: {
+		conferenceUserId: string;
+		code?: string;
+		label: string;
+	}) {
 		if (busy) return;
 		busy = true;
 
-		const args = { committeeId, code };
+		const args = { committeeId, conferenceUserId, code };
 		try {
 			const event =
 				mode === 'IN'
@@ -121,7 +188,7 @@
 				event.conferenceUser?.name ??
 				event.conferenceUser?.conferenceMember?.representation?.name ??
 				event.conferenceUser?.userEmail ??
-				code;
+				label;
 
 			let message: string;
 			if (mode === 'IN') {
@@ -136,7 +203,7 @@
 			beep(true);
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : String(err);
-			pushLog({ ok: false, mode, label: code, message: msg });
+			pushLog({ ok: false, mode, label, message: msg });
 			beep(false);
 		} finally {
 			busy = false;
@@ -146,7 +213,7 @@
 	function close() {
 		open = false;
 		scanLog = [];
-		manualCode = '';
+		search = '';
 	}
 </script>
 
@@ -172,28 +239,39 @@
 			</div>
 
 			<div class="flex flex-col gap-3">
-				<form class="form-control" onsubmit={handleManualSubmit}>
-					<label class="label" for="nsa-manual-code">
-						<span class="label-text">{m.manualCodeFallback()}</span>
+				<div class="form-control">
+					<label class="label" for="nsa-name-search">
+						<span class="label-text">{m.nsaSearchByName()}</span>
 					</label>
-					<div class="join">
-						<input
-							id="nsa-manual-code"
-							class="input join-item input-lg w-full font-mono uppercase"
-							placeholder="••••••"
-							maxlength="6"
-							bind:value={manualCode}
-							autocomplete="off"
-						/>
-						<button
-							class="btn join-item btn-primary btn-lg"
-							type="submit"
-							disabled={busy || manualCode.trim().length === 0}
-						>
-							{mode === 'IN' ? m.checkIn() : m.checkOut()}
-						</button>
-					</div>
-				</form>
+					<input
+						id="nsa-name-search"
+						class="input input-lg w-full"
+						placeholder={m.nsaSearchPlaceholder()}
+						bind:value={search}
+						autocomplete="off"
+					/>
+					{#if search.trim()}
+						<ul class="menu bg-base-200 rounded-box mt-2 w-full">
+							{#each searchResults as nsa (nsa.id)}
+								<li>
+									<button disabled={busy} onclick={() => pick(nsa)}>
+										<div class="flex flex-1 flex-col items-start">
+											<span class="font-medium">{nsa.name ?? nsa.userEmail}</span>
+											{#if nsa.nsaName}
+												<span class="text-xs opacity-70">{nsa.nsaName}</span>
+											{/if}
+										</div>
+										<span class="badge badge-primary">
+											{mode === 'IN' ? m.checkIn() : m.checkOut()}
+										</span>
+									</button>
+								</li>
+							{:else}
+								<li class="text-base-content/60 p-2 text-sm">{m.nsaSearchNoResults()}</li>
+							{/each}
+						</ul>
+					{/if}
+				</div>
 
 				<div class="divider text-base-content/50 my-1 text-xs">{m.recentScans()}</div>
 

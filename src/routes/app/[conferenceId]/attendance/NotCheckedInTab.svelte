@@ -22,7 +22,6 @@
 		id: true,
 		userEmail: true,
 		name: true,
-		attendanceCode: true,
 		conferenceMember: {
 			representation: { name: true, faIcon: true }
 		}
@@ -146,11 +145,6 @@
 						<span class="flex-1">{user.name ?? user.userEmail}</span>
 						{#if rep?.name}
 							<span class="text-base-content/60 text-sm">{rep.name}</span>
-						{/if}
-						{#if user.attendanceCode}
-							<code class="bg-base-200 rounded px-2 py-1 font-mono text-sm">
-								{user.attendanceCode}
-							</code>
 						{/if}
 					</li>
 				{/each}

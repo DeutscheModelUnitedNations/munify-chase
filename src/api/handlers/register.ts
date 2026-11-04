@@ -11,6 +11,7 @@ import './time';
 import './user';
 import './import';
 import './presenceEvent';
+import './nsaCard';
 import './rollCallSession';
 import './votingSession';
 import './resolutionPaper';

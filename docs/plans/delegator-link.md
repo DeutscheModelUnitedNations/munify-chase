@@ -142,45 +142,54 @@ conference's emblem and the committee's resolution headline. Chase's `/api/pdf` 
 ### Codes
 
 The module is `#lib/helpers/identityCode.ts` in delegator and a copy in chase
-(`src/lib/helpers/identityCode.ts`), with the same tests.
+(`src/lib/helpers/identityCode.ts`); change both together.
 
 - **Digital nametag** (exists): `MUN1…`, signs `userId` and the time it was issued, valid for
   10 minutes.
-- **Card** (new): a second prefix (`MUC1…`) and domain (`munify-identity-card-v1`), signing
-  `userId`, `conferenceId`, `expiresAtSeconds` (the conference end date plus one day) and
-  `cardNumber` (a small integer). `verifyIdentityCard` returns
+- **Card**: `MUC1.<userId>.<conferenceId>.<expires>.<cardNumber>.<signature>` under its own
+  domain (`munify-identity-card-v1`). It counts at its conference until the end of the day after
+  the conference ends (`identityCardExpiry`). `verifyIdentityCard` answers
   `{ valid, userId, conferenceId, cardNumber }` or `malformed` / `forged` / `expired` /
-  `otherConference`.
-- Delegator signs both with its deployment key (`identityKeyPair.ts`). Chase gets
-  `identityCodePublicKey` from delegator over the link and keeps it in IndexedDB, so the scanner
-  checks codes offline. Unlinked, chase signs cards with its own key pair (an env secret, like
-  delegator's).
+  `otherConference`; whether the number is the person's current one is the caller's check.
+- Delegator signs both with its deployment key (`identityKeyPair.ts`, `issueIdentityCard`), and
+  hands the public key to the linked chase too (`identityCodePublicKey`,
+  `assertCanReadIdentityKey`). Chase's link worker stores it on the link row
+  (`remoteIdentityKey`) on every (re)connect and keeps it after unlinking, so delegator's cards
+  keep scanning. Unlinked, chase signs cards with its own key, derived from `LINK_SECRET`
+  (`src/api/services/identityKeyPair.ts`), with the `conferenceUser` id as the user id.
 
 ### Delegator
 
-- `conferenceParticipant.nsaCardNumber` (integer, default 1). "Reprint card" in the user card
-  raises it, so earlier cards stop scanning once the next sync reaches chase.
-- `issueNsaCards(conferenceId, participantIds?)` (team, `manageParticipants`): signs one card per
-  NSA, valid until the conference ends.
-- `#lib/api/nsaCardsPdf.ts` (pdf-lib, next to `nametagSheetsPdf.ts`): an A4 sheet of cut-out
-  cards, each with the person's name, the NSA's name and icon, the conference logo and the QR.
-  It is offered on the downloads page and as a single card in the user card.
+- `conferenceParticipant.nsaCardNumber` (integer, default 1), read by the link.
+- `nsaCard/`: `issueNsaCards(conferenceId, conferenceParticipantIds?)` signs the cards of the
+  members of NSA delegations (participant care, `manageParticipants`; signing writes nothing);
+  `reprintNsaCard(conferenceParticipantId)` raises the number (CONFLICT past 65535) and answers
+  the new card.
+- `#lib/api/nsaCardsPdf.ts`: A6 cards, four to an A4 sheet with cut lines, each with the logo,
+  the person's name, the NSA's icon and name, the QR (medium error correction, no emblem) and
+  "Karte n". `#lib/api/nsaCards.ts` downloads them: all from the downloads page (badge data),
+  one from the user card (`NsaCardSection`: print the current card, or a new one that voids the
+  earlier ones).
 - The NSA badge CSV (`BadgeData.svelte`) stays as it is.
 
 ### Chase
 
 - `conferenceUser.attendanceCode` is dropped (migration), and with it the 6-character fallback,
-  `pickUniqueAttendanceCode` and the code input in `NsaScannerDrawer`.
-- `conferenceUser.delegatorUserId` and `conferenceUser.cardNumber` come from the sync.
-- `resolveNsaTarget` takes a verified identity instead of a raw string: the scanner verifies the
-  QR in the browser (nametag or card, delegator's or chase's key), rejects an outdated card
-  number, and sends `{ userId }` or `{ conferenceUserId }`. The server verifies the signature
-  again and refuses the request otherwise.
-- **Name search** in the NSA scanner drawer, the same flexible search as delegator's attendance
-  page: names, NSA name and email, so a chair can check someone in when the QR will not scan.
-  The printed card carries the name for exactly that case.
-- Unlinked, chase's own print page (`attendance/print`) prints the same card layout, signed with
-  chase's key.
+  `regenerateNsaAttendanceCode` and the code input. `conferenceUser.cardNumber` comes from the
+  sync (or a reprint here); chairs read it and `delegatorUserId`.
+- `identifyNsa` (`#lib/helpers/nsaScan.ts`) decides who a scanned code stands for, the same way
+  in the scanner and on the server: a nametag by DELEGATOR's key and `delegatorUserId`; a card by
+  DELEGATOR's key (`delegatorUserId`) or chase's own (`conferenceUser` id), refused unless its
+  number is the current one.
+- The scanner (`NsaScannerDrawer`) keeps the keys in the browser (`#lib/api/identityKeys.ts`,
+  query `identityKeys`), identifies the person offline from the conference's NSAs, and sends
+  `{ conferenceUserId, code }`; the server verifies the code again (`resolveNsaTarget`,
+  `#api/services/nsaCards.ts`). The **name search** (`searchNsas`: name, e-mail, NSA, ignoring
+  case and diacritics) sends `{ conferenceUserId }` alone. The optimistic update reads the target
+  by that id.
+- Unlinked, chase prints the cards itself (`issueNsaCards` / `reprintNsaCard`, admins; refused
+  for a synced conference): the print page and the card modal show the signed code, the names
+  and the card number. A synced conference's NSA tab and print page point to DELEGATOR.
 
 ## Working papers → chase
 

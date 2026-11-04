@@ -199,6 +199,7 @@ export async function reconcileConference(mirror: Mirror) {
 						userEmail: excluded(t.userEmail),
 						name: excluded(t.name),
 						delegatorUserId: excluded(t.delegatorUserId),
+						cardNumber: excluded(t.cardNumber),
 						conferenceMemberId: excluded(t.conferenceMemberId),
 						committeeMemberId: excluded(t.committeeMemberId),
 						...managed

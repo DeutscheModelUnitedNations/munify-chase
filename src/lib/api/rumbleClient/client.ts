@@ -806,13 +806,13 @@ export type ConferencememberWhereInputArgument = {
 };
 		
 export type Conferenceuser = {
-  attendanceCode: String | null,
   authoredComments: (p?: {
     limit?: Int | null | undefined,
     offset?: Int | null | undefined,
     orderBy?: ResolutioncommentOrderInputArgument | null | undefined,
     where?: ResolutioncommentWhereInputArgument | null | undefined
   }) => Resolutioncomment[],
+  cardNumber: Int,
   committeeMember: (p?: {
     orderBy?: CommitteememberOrderInputArgument | null | undefined,
     where?: CommitteememberWhereInputArgument | null | undefined
@@ -873,7 +873,7 @@ export type Conferenceuser = {
 };
 		
 export type ConferenceuserOrderInputArgument = {
-  attendanceCode?: SortingParameter | null | undefined,
+  cardNumber?: SortingParameter | null | undefined,
   committeeMemberId?: SortingParameter | null | undefined,
   conferenceId?: SortingParameter | null | undefined,
   conferenceMemberId?: SortingParameter | null | undefined,
@@ -891,8 +891,8 @@ export type ConferenceuserWhereInputArgument = {
   AND?: ConferenceuserWhereInputArgument[] | undefined,
   NOT?: ConferenceuserWhereInputArgument | null | undefined,
   OR?: ConferenceuserWhereInputArgument[] | undefined,
-  attendanceCode?: StringWhereInputArgument | null | undefined,
   authoredComments?: ResolutioncommentWhereInputArgument | null | undefined,
+  cardNumber?: IntWhereInputArgument | null | undefined,
   committeeMember?: CommitteememberWhereInputArgument | null | undefined,
   committeeMemberId?: IDWhereInputArgument | null | undefined,
   conference?: ConferenceWhereInputArgument | null | undefined,
@@ -1039,6 +1039,11 @@ export type IDWhereInputArgument = {
   notLike?: String | null | undefined    
 };
 		
+export type IdentityKeys = {
+  delegator: String | null,
+  own: String | null    
+};
+		
 export type ImportData = {
   agendaItems?: ImportDataAgendaItem[] | undefined,
   committeeMembers?: ImportDataCommitteeMember[] | undefined,
@@ -1114,6 +1119,7 @@ export type Instancelink = {
   lastReconcileAt: DateTime | null,
   linkedAt: DateTime | null,
   outboundToken: String,
+  remoteIdentityKey: String | null,
   remoteUrl: String,
   status: InstancelinkstatusEnum,
   updatedAt: DateTime | null    
@@ -1129,6 +1135,7 @@ export type InstancelinkOrderInputArgument = {
   lastReconcileAt?: SortingParameter | null | undefined,
   linkedAt?: SortingParameter | null | undefined,
   outboundToken?: SortingParameter | null | undefined,
+  remoteIdentityKey?: SortingParameter | null | undefined,
   remoteUrl?: SortingParameter | null | undefined,
   status?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined    
@@ -1147,6 +1154,7 @@ export type InstancelinkWhereInputArgument = {
   lastReconcileAt?: DateTimeWhereInputArgument | null | undefined,
   linkedAt?: DateTimeWhereInputArgument | null | undefined,
   outboundToken?: StringWhereInputArgument | null | undefined,
+  remoteIdentityKey?: StringWhereInputArgument | null | undefined,
   remoteUrl?: StringWhereInputArgument | null | undefined,
   status?: InstancelinkstatusEnum | null | undefined,
   updatedAt?: DateTimeWhereInputArgument | null | undefined    
@@ -1431,6 +1439,10 @@ export type Mutation = {
     present: Boolean,
     timestamp?: DateTime | null | undefined
   }) => Presenceevent,
+  issueNsaCards: (p: {
+    conferenceId: ID,
+    conferenceUserIds?: ID[] | null | undefined
+  }) => NsaCard[],
   linkOperativeClauseVote: (p: {
     clauseId: String,
     id?: ID | null | undefined,
@@ -1442,21 +1454,20 @@ export type Mutation = {
     position: Int
   }) => Speakeronlist,
   recordNsaCheckIn: (p: {
-    code: String,
+    code?: String | null | undefined,
     committeeId: ID,
+    conferenceUserId?: ID | null | undefined,
     id?: ID | null | undefined
   }) => Presenceevent,
   recordNsaCheckOut: (p: {
-    code: String,
+    code?: String | null | undefined,
     committeeId: ID,
+    conferenceUserId?: ID | null | undefined,
     id?: ID | null | undefined
   }) => Presenceevent,
   redeemPaperShareCode: (p: {
     code: String
   }) => Boolean,
-  regenerateNsaAttendanceCode: (p: {
-    conferenceUserId: ID
-  }) => Conferenceuser,
   rejectAmendment: (p: {
     id: ID
   }) => Amendment,
@@ -1473,6 +1484,10 @@ export type Mutation = {
   removeSpeakerOnList: (p: {
     speakerOnListId: ID
   }) => Speakerslist,
+  reprintNsaCard: (p: {
+    conferenceId: ID,
+    conferenceUserId: ID
+  }) => NsaCard,
   requestDelegatorLink: (p: {
     confirmationCode: String,
     delegatorUrl: String,
@@ -1641,6 +1656,15 @@ export type Mutation = {
   withdrawRequest: (p: {
     id: ID
   }) => Request    
+};
+		
+export type NsaCard = {
+  cardNumber: Int,
+  code: String,
+  conferenceUserId: ID,
+  name: String,
+  nsaIcon: String | null,
+  nsaName: String | null    
 };
 		
 export type Operativeclausevote = {
@@ -2031,6 +2055,7 @@ export type Query = {
   }) => Conference[],
   currentUserClaims: () => UserClaims,
   hasAiProviders: Boolean,
+  identityKeys: () => IdentityKeys,
   instanceLink: (p: {
     id: ID
   }) => Instancelink,

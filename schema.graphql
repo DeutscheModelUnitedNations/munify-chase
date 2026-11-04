@@ -740,10 +740,9 @@ input ConferencememberWhereInputArgument {
 }
 
 type Conferenceuser {
-  attendanceCode: String
-
   """Get the resolutionComments related to this conferenceUser"""
   authoredComments(limit: Int, offset: Int, orderBy: ResolutioncommentOrderInputArgument, where: ResolutioncommentWhereInputArgument): [Resolutioncomment!]!
+  cardNumber: Int!
 
   """Get the committeeMembers related to this conferenceUser"""
   committeeMember(orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): Committeemember
@@ -786,7 +785,7 @@ type Conferenceuser {
 }
 
 input ConferenceuserOrderInputArgument {
-  attendanceCode: SortingParameter
+  cardNumber: SortingParameter
   committeeMemberId: SortingParameter
   conferenceId: SortingParameter
   conferenceMemberId: SortingParameter
@@ -804,8 +803,8 @@ input ConferenceuserWhereInputArgument {
   AND: [ConferenceuserWhereInputArgument!]
   NOT: ConferenceuserWhereInputArgument
   OR: [ConferenceuserWhereInputArgument!]
-  attendanceCode: StringWhereInputArgument
   authoredComments: ResolutioncommentWhereInputArgument
+  cardNumber: IntWhereInputArgument
   committeeMember: CommitteememberWhereInputArgument
   committeeMemberId: IDWhereInputArgument
   conference: ConferenceWhereInputArgument
@@ -965,6 +964,17 @@ input IDWhereInputArgument {
   notLike: String
 }
 
+"""
+The public keys (raw, base64url) NSA nametags and cards are checked against; the scanner keeps them for offline use.
+"""
+type IdentityKeys {
+  """The linked DELEGATOR's key."""
+  delegator: String
+
+  """This instance's key, for its own cards."""
+  own: String
+}
+
 """Import data. You can find the JSON schema here: /api/schema/import"""
 input ImportData {
   agendaItems: [ImportDataAgendaItem!]!
@@ -1041,6 +1051,7 @@ type Instancelink {
   lastReconcileAt: DateTime
   linkedAt: DateTime
   outboundToken: String!
+  remoteIdentityKey: String
   remoteUrl: String!
   status: InstancelinkstatusEnum!
   updatedAt: DateTime
@@ -1056,6 +1067,7 @@ input InstancelinkOrderInputArgument {
   lastReconcileAt: SortingParameter
   linkedAt: SortingParameter
   outboundToken: SortingParameter
+  remoteIdentityKey: SortingParameter
   remoteUrl: SortingParameter
   status: SortingParameter
   updatedAt: SortingParameter
@@ -1074,6 +1086,7 @@ input InstancelinkWhereInputArgument {
   lastReconcileAt: DateTimeWhereInputArgument
   linkedAt: DateTimeWhereInputArgument
   outboundToken: StringWhereInputArgument
+  remoteIdentityKey: StringWhereInputArgument
   remoteUrl: StringWhereInputArgument
   status: InstancelinkstatusEnum
   updatedAt: DateTimeWhereInputArgument
@@ -1215,12 +1228,32 @@ type Mutation {
   deleteResolutionPaper(id: ID!): Boolean!
   importDelegatorConference(data: ImportData!): Conference!
   insertPresenceEvent(committeeId: ID!, conferenceUserId: ID!, id: ID, markerType: PresenceeventmarkerEnum, note: String, present: Boolean!, timestamp: DateTime): Presenceevent!
+
+  """
+  The printable cards of a conference's NSAs, all or the given ones, signed by this instance (admins). Refused for a conference synced from DELEGATOR, which prints those. A mutation so no cache hands back old codes; it writes nothing.
+  """
+  issueNsaCards(conferenceId: ID!, conferenceUserIds: [ID!]): [NsaCard!]!
   linkOperativeClauseVote(clauseId: String!, id: ID, paperId: ID!, votingSessionId: ID!): Operativeclausevote!
   moveSpeakerToPosition(id: ID!, position: Int!): Speakeronlist!
-  recordNsaCheckIn(code: String!, committeeId: ID!, id: ID): Presenceevent!
-  recordNsaCheckOut(code: String!, committeeId: ID!, id: ID): Presenceevent!
+  recordNsaCheckIn(
+    """A scanned nametag or NSA card; verified here again."""
+    code: String
+    committeeId: ID!
+
+    """The NSA picked by name, when the code does not scan."""
+    conferenceUserId: ID
+    id: ID
+  ): Presenceevent!
+  recordNsaCheckOut(
+    """A scanned nametag or NSA card; verified here again."""
+    code: String
+    committeeId: ID!
+
+    """The NSA picked by name, when the code does not scan."""
+    conferenceUserId: ID
+    id: ID
+  ): Presenceevent!
   redeemPaperShareCode(code: String!): Boolean!
-  regenerateNsaAttendanceCode(conferenceUserId: ID!): Conferenceuser!
   rejectAmendment(id: ID!): Amendment!
 
   """Discards the pending link request."""
@@ -1229,6 +1262,11 @@ type Mutation {
   removePaperEditor(id: ID!): Boolean!
   removePaperSponsor(id: ID!): Boolean!
   removeSpeakerOnList(speakerOnListId: ID!): Speakerslist!
+
+  """
+  A new card for a lost one: raises the NSA's card number, so the earlier cards stop scanning (admins).
+  """
+  reprintNsaCard(conferenceId: ID!, conferenceUserId: ID!): NsaCard!
 
   """
   Called by a MUNify DELEGATOR instance to ask for a link. It stays pending until a global admin approves it here.
@@ -1265,6 +1303,17 @@ type Mutation {
   updateSpeakersList(id: ID!, isClosed: Boolean, phase: SpeakerslistphaseEnum, speakingTime: Int, startTimestamp: DateTime, stopTimer: Boolean = false, timeLeft: Int): Speakerslist!
   updateVotingSession(currentMemberIndex: Int, currentStage: VotingstageEnum, id: ID!, votesAbstain: Int, votesCon: Int, votesPro: Int): Votingsession!
   withdrawRequest(id: ID!): Request!
+}
+
+type NsaCard {
+  cardNumber: Int!
+
+  """The signed card code (`MUC1…`), for the QR code."""
+  code: String!
+  conferenceUserId: ID!
+  name: String!
+  nsaIcon: String
+  nsaName: String
 }
 
 type Operativeclausevote {
@@ -1622,6 +1671,7 @@ type Query {
   conferences(limit: Int, offset: Int, orderBy: ConferenceOrderInputArgument, where: ConferenceWhereInputArgument): [Conference!]!
   currentUserClaims: UserClaims!
   hasAiProviders: Boolean!
+  identityKeys: IdentityKeys!
 
   """Get a single instanceLink by ID"""
   instanceLink(id: ID!): Instancelink!

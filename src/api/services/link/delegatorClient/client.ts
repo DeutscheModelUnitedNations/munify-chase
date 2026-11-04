@@ -670,6 +670,39 @@ export type CertificateJWT = {
 		
 export type ChaseaccessEnum = "NONE" | "SPECTATOR" | "TEAM";
 		
+export type Chasepresence = {
+  conference: (p?: {
+    orderBy?: ConferenceOrderInputArgument | null | undefined,
+    where?: ConferenceWhereInputArgument | null | undefined
+  }) => Conference,
+  conferenceId: ID,
+  createdAt: DateTime,
+  data: JSON,
+  fetchedAt: DateTime,
+  search_distance: Float | null,
+  updatedAt: DateTime    
+};
+		
+export type ChasepresenceOrderInputArgument = {
+  conferenceId?: SortingParameter | null | undefined,
+  createdAt?: SortingParameter | null | undefined,
+  data?: SortingParameter | null | undefined,
+  fetchedAt?: SortingParameter | null | undefined,
+  updatedAt?: SortingParameter | null | undefined    
+};
+		
+export type ChasepresenceWhereInputArgument = {
+  AND?: ChasepresenceWhereInputArgument[] | undefined,
+  NOT?: ChasepresenceWhereInputArgument | null | undefined,
+  OR?: ChasepresenceWhereInputArgument[] | undefined,
+  conference?: ConferenceWhereInputArgument | null | undefined,
+  conferenceId?: IDWhereInputArgument | null | undefined,
+  createdAt?: DateTimeWhereInputArgument | null | undefined,
+  data?: JSONWhereInputArgument | null | undefined,
+  fetchedAt?: DateTimeWhereInputArgument | null | undefined,
+  updatedAt?: DateTimeWhereInputArgument | null | undefined    
+};
+		
 export type Committee = {
   abbreviation: String,
   agendaItems: (p?: {
@@ -1333,6 +1366,7 @@ export type Conferenceparticipant = {
   id: ID,
   mediaConsent: AdministrativestatusEnum,
   mediaConsentStatus: MediaconsentstatusEnum,
+  nsaCardNumber: Int,
   ofAgeAtConference: Boolean,
   paymentStatus: AdministrativestatusEnum,
   school: (p?: {
@@ -1371,6 +1405,7 @@ export type ConferenceparticipantOrderInputArgument = {
   id?: SortingParameter | null | undefined,
   mediaConsent?: SortingParameter | null | undefined,
   mediaConsentStatus?: SortingParameter | null | undefined,
+  nsaCardNumber?: SortingParameter | null | undefined,
   paymentStatus?: SortingParameter | null | undefined,
   schoolId?: SortingParameter | null | undefined,
   termsAndConditions?: SortingParameter | null | undefined,
@@ -1395,6 +1430,7 @@ export type ConferenceparticipantWhereInputArgument = {
   id?: IDWhereInputArgument | null | undefined,
   mediaConsent?: AdministrativestatusEnum | null | undefined,
   mediaConsentStatus?: MediaconsentstatusEnum | null | undefined,
+  nsaCardNumber?: IntWhereInputArgument | null | undefined,
   paymentStatus?: AdministrativestatusEnum | null | undefined,
   school?: SchoolWhereInputArgument | null | undefined,
   schoolId?: IDWhereInputArgument | null | undefined,
@@ -2455,6 +2491,10 @@ export type Mutation = {
     id: ID
   }) => Boolean,
   issueIdentityCode: () => IdentityCode,
+  issueNsaCards: (p: {
+    conferenceId: ID,
+    conferenceParticipantIds?: ID[] | null | undefined
+  }) => NsaCard[],
   mergeSchools: (p: {
     name?: String | null | undefined,
     sourceIds: ID[],
@@ -2480,6 +2520,9 @@ export type Mutation = {
   reopenAttendanceSession: (p: {
     id: ID
   }) => Boolean,
+  reprintNsaCard: (p: {
+    conferenceParticipantId: ID
+  }) => NsaCard,
   requestChaseLink: (p: {
     chaseUrl: String
   }) => ID,
@@ -2706,6 +2749,7 @@ export type Mutation = {
     plansOwnAttendenceAtConference: Boolean
   }) => Conferencesupervisor,
   updateCustomRole: (p: {
+    chaseAccess?: ChaseaccessEnum | null | undefined,
     description?: String | null | undefined,
     fontAwesomeIcon?: String | null | undefined,
     id: ID,
@@ -2947,6 +2991,16 @@ export type NationWhereInputArgument = {
   conferenceRoles?: ConferenceroleWhereInputArgument | null | undefined,
   createdAt?: DateTimeWhereInputArgument | null | undefined,
   updatedAt?: DateTimeWhereInputArgument | null | undefined    
+};
+		
+export type NsaCard = {
+  cardNumber: Int,
+  code: String,
+  conferenceParticipantId: ID,
+  familyName: String,
+  givenName: String,
+  nsaIcon: String | null,
+  nsaName: String | null    
 };
 		
 export type OIDCRolesEnum = "admin" | "member" | "service_user";
@@ -3489,6 +3543,16 @@ export type Query = {
   canImpersonateUser: (p: {
     targetUserId: ID
   }) => Boolean,
+  chasePresence: (p: {
+    id: ID
+  }) => Chasepresence,
+  chasePresences: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: ChasepresenceOrderInputArgument | null | undefined,
+    search?: String | null | undefined,
+    where?: ChasepresenceWhereInputArgument | null | undefined
+  }) => Chasepresence[],
   checkTeamInvitationEmails: (p: {
     conferenceId: ID,
     emails: String[]
@@ -3978,6 +4042,8 @@ export type RegeneratedInvitation = {
 export type RegionalbaselineEnum = "ECOSOC" | "HUMAN_RIGHTS_COUNCIL" | "MANUAL" | "SECURITY_COUNCIL" | "UN_MEMBERS";
 		
 export type Resolution = {
+  chasePaperId: ID | null,
+  chaseSnapshotId: ID | null,
   committee: (p?: {
     orderBy?: CommitteeOrderInputArgument | null | undefined,
     where?: CommitteeWhereInputArgument | null | undefined
@@ -4001,6 +4067,8 @@ export type Resolution = {
 };
 		
 export type ResolutionOrderInputArgument = {
+  chasePaperId?: SortingParameter | null | undefined,
+  chaseSnapshotId?: SortingParameter | null | undefined,
   committeeId?: SortingParameter | null | undefined,
   conferenceId?: SortingParameter | null | undefined,
   createdAt?: SortingParameter | null | undefined,
@@ -4014,6 +4082,8 @@ export type ResolutionWhereInputArgument = {
   AND?: ResolutionWhereInputArgument[] | undefined,
   NOT?: ResolutionWhereInputArgument | null | undefined,
   OR?: ResolutionWhereInputArgument[] | undefined,
+  chasePaperId?: IDWhereInputArgument | null | undefined,
+  chaseSnapshotId?: IDWhereInputArgument | null | undefined,
   committee?: CommitteeWhereInputArgument | null | undefined,
   committeeId?: IDWhereInputArgument | null | undefined,
   conference?: ConferenceWhereInputArgument | null | undefined,
@@ -4998,6 +5068,16 @@ export type Subscription = {
     search?: String | null | undefined,
     where?: CalendartrackWhereInputArgument | null | undefined
   }) => Calendartrack[],
+  chasePresence: (p: {
+    id: ID
+  }) => Chasepresence,
+  chasePresences: (p?: {
+    limit?: Int | null | undefined,
+    offset?: Int | null | undefined,
+    orderBy?: ChasepresenceOrderInputArgument | null | undefined,
+    search?: String | null | undefined,
+    where?: ChasepresenceWhereInputArgument | null | undefined
+  }) => Chasepresence[],
   committee: (p: {
     id: ID
   }) => Committee,
@@ -5992,7 +6072,7 @@ export const client = {
    */
   liveQuery: makeLiveQuery<Query>({
 	  urqlClient,
-	  availableSubscriptions: new Set(["assignmentReview", "assignmentReviews", "assignmentReviewsCount", "assignmentSingleRole", "assignmentSingleRoles", "assignmentUnit", "assignmentUnits", "assignmentWeight", "assignmentWeights", "attendanceEntries", "attendanceEntry", "attendanceSession", "attendanceSessions", "calendarDay", "calendarDays", "calendarEntries", "calendarEntry", "calendarTrack", "calendarTracks", "committee", "committeeAgendaItem", "committeeAgendaItems", "committees", "conference", "conferenceEmailFooter", "conferenceEmailFooters", "conferenceEmailSetting", "conferenceEmailSettings", "conferenceEmailText", "conferenceEmailTexts", "conferenceParticipant", "conferenceParticipants", "conferenceRole", "conferenceRoles", "conferenceSupervisor", "conferenceSupervisors", "conferences", "delegation", "delegationMember", "delegationMembers", "delegations", "delegationsCount", "emailLog", "emailLogs", "instanceLink", "instanceLinks", "nation", "nations", "paper", "papers", "papersCount", "paymentTransaction", "paymentTransactions", "place", "places", "possibleDuplicate", "possibleDuplicates", "resolution", "resolutions", "reviewerSnippet", "reviewerSnippets", "roleApplication", "roleApplications", "school", "schoolSuggestion", "schoolSuggestions", "schools", "searchHistories", "searchHistory", "singleParticipant", "singleParticipants", "surveyAnswer", "surveyAnswers", "surveyOption", "surveyOptions", "surveyQuestion", "surveyQuestions", "teamMember", "teamMemberInvitation", "teamMemberInvitations", "teamMembers", "teamMembersCount", "user", "users", "waitingListEntries", "waitingListEntriesCount", "waitingListEntry"]),
+	  availableSubscriptions: new Set(["assignmentReview", "assignmentReviews", "assignmentReviewsCount", "assignmentSingleRole", "assignmentSingleRoles", "assignmentUnit", "assignmentUnits", "assignmentWeight", "assignmentWeights", "attendanceEntries", "attendanceEntry", "attendanceSession", "attendanceSessions", "calendarDay", "calendarDays", "calendarEntries", "calendarEntry", "calendarTrack", "calendarTracks", "chasePresence", "chasePresences", "committee", "committeeAgendaItem", "committeeAgendaItems", "committees", "conference", "conferenceEmailFooter", "conferenceEmailFooters", "conferenceEmailSetting", "conferenceEmailSettings", "conferenceEmailText", "conferenceEmailTexts", "conferenceParticipant", "conferenceParticipants", "conferenceRole", "conferenceRoles", "conferenceSupervisor", "conferenceSupervisors", "conferences", "delegation", "delegationMember", "delegationMembers", "delegations", "delegationsCount", "emailLog", "emailLogs", "instanceLink", "instanceLinks", "nation", "nations", "paper", "papers", "papersCount", "paymentTransaction", "paymentTransactions", "place", "places", "possibleDuplicate", "possibleDuplicates", "resolution", "resolutions", "reviewerSnippet", "reviewerSnippets", "roleApplication", "roleApplications", "school", "schoolSuggestion", "schoolSuggestions", "schools", "searchHistories", "searchHistory", "singleParticipant", "singleParticipants", "surveyAnswer", "surveyAnswers", "surveyOption", "surveyOptions", "surveyQuestion", "surveyQuestions", "teamMember", "teamMemberInvitation", "teamMemberInvitations", "teamMembers", "teamMembersCount", "user", "users", "waitingListEntries", "waitingListEntriesCount", "waitingListEntry"]),
 		schema,
     autoIncludeIdField: 'id'
   }),

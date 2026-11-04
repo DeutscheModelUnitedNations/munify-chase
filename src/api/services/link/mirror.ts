@@ -46,6 +46,8 @@ export interface MirrorSource {
 		id: string;
 		assignedCommittee?: { id: string } | null;
 		delegation: { id: string; assignedRole?: { id: string } | null };
+		/** The number of the member's current NSA card. */
+		participant?: { nsaCardNumber: number } | null;
 		user: Person;
 	}[];
 	singleParticipants: readonly {
@@ -84,6 +86,7 @@ interface MirroredUser {
 	delegatorUserId: string;
 	conferenceMemberId: string | null;
 	committeeMemberId: string | null;
+	cardNumber: number;
 }
 
 interface MirroredRepresentation {
@@ -160,8 +163,11 @@ export function mirrorConference(source: MirrorSource) {
 
 	const user = (
 		person: Person,
-		row: Omit<MirroredUser, 'userEmail' | 'name' | 'delegatorUserId'>
+		row: Omit<MirroredUser, 'userEmail' | 'name' | 'delegatorUserId' | 'cardNumber'> & {
+			cardNumber?: number;
+		}
 	): MirroredUser => ({
+		cardNumber: 1,
 		...row,
 		userEmail: person.email.toLowerCase(),
 		name: nameOf(person),
@@ -190,7 +196,8 @@ export function mirrorConference(source: MirrorSource) {
 				id: member.id,
 				conferenceUserType: 'NON_STATE_ACTOR',
 				conferenceMemberId: member.delegation.id,
-				committeeMemberId: null
+				committeeMemberId: null,
+				cardNumber: member.participant?.nsaCardNumber ?? 1
 			})
 		),
 		...source.delegationMembers.flatMap((member) => {

@@ -1,5 +1,5 @@
 import { db, schema } from '#api/db/db';
-import { eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { createDelegatorClient, type DelegatorClient } from './delegatorRemote';
 import { instanceLinkPubsub } from './linkPubsub';
 import { openLinkToken } from './linkTokens';
@@ -74,6 +74,7 @@ function runWorker() {
 			url: link.remoteUrl,
 			token: openLinkToken(link.outboundToken),
 			onConnected: () => {
+				void storeIdentityKey({ remote, linkId: link.id });
 				for (const conferenceId of watchers.keys()) schedule(conferenceId);
 			}
 		});
@@ -165,6 +166,7 @@ function watchConference({
 			__args: ofConference,
 			id: true,
 			assignedCommittee: { id: true },
+			participant: { id: true, nsaCardNumber: true },
 			user: PERSON
 		}),
 		remote.liveQuery.singleParticipants({
@@ -235,6 +237,7 @@ async function syncConference({
 				id: true,
 				assignedCommittee: { id: true },
 				delegation: { id: true, assignedRole: { id: true } },
+				participant: { id: true, nsaCardNumber: true },
 				user: PERSON
 			}),
 			remote.query.singleParticipants({
@@ -268,6 +271,29 @@ async function syncConference({
 			.set({ lastEventAt: new Date(), lastReconcileAt: new Date(), lastError: null })
 			.where(eq(schema.instanceLink.id, linkId));
 		instanceLinkPubsub.updated(linkId);
+	} catch (error) {
+		await recordError({ linkId, error });
+	}
+}
+
+/**
+ * Keeps DELEGATOR's public key, which the scanners check nametags and cards against offline.
+ * Read on every (re)connect: it only changes with DELEGATOR's secret.
+ */
+async function storeIdentityKey({ remote, linkId }: { remote: DelegatorClient; linkId: string }) {
+	try {
+		const { publicKey } = await remote.query.identityCodePublicKey({ publicKey: true });
+		const updated = await db
+			.update(schema.instanceLink)
+			.set({ remoteIdentityKey: publicKey })
+			.where(
+				and(
+					eq(schema.instanceLink.id, linkId),
+					sql`${schema.instanceLink.remoteIdentityKey} is distinct from ${publicKey}`
+				)
+			)
+			.returning({ id: schema.instanceLink.id });
+		if (updated.length > 0) instanceLinkPubsub.updated(linkId);
 	} catch (error) {
 		await recordError({ linkId, error });
 	}

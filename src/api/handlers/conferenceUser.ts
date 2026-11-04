@@ -18,27 +18,24 @@ import {
 import { GraphQLError } from 'graphql';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { emailValidation } from '#api/services/emailValidation';
-import { attendanceCode as generateAttendanceCode } from '#lib/helpers/attendanceCode';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 
 // The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
-abilityBuilder.conferenceUser
-	.allow('read')
-	.when(
-		linkedDelegator({
-			where: { conference: SYNCED_CONFERENCE },
-			columns: {
-				id: true,
-				conferenceId: true,
-				conferenceUserType: true,
-				userEmail: true,
-				delegatorUserId: true,
-				committeeMemberId: true,
-				conferenceMemberId: true
-			}
-		})
-	);
+abilityBuilder.conferenceUser.allow('read').when(
+	linkedDelegator({
+		where: { conference: SYNCED_CONFERENCE },
+		columns: {
+			id: true,
+			conferenceId: true,
+			conferenceUserType: true,
+			userEmail: true,
+			delegatorUserId: true,
+			committeeMemberId: true,
+			conferenceMemberId: true
+		}
+	})
+);
 
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	return {
@@ -51,15 +48,14 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 			committeeMemberId: true,
 			conferenceMemberId: true,
 			conferenceUserType: true,
-			attendanceCode: false,
 			createdAt: true,
 			updatedAt: true
 		}
 	};
 });
 
-// Team read — exposes name/email so team members can see who wrote comments.
-// attendanceCode stays hidden (only admins need it).
+// Team read — exposes name/email so team members can see who wrote comments, and what the NSA
+// scanner identifies a nametag or card by.
 abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	return {
 		where: isTeamInConference(ctx),
@@ -71,7 +67,8 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 			committeeMemberId: true,
 			conferenceMemberId: true,
 			conferenceUserType: true,
-			attendanceCode: false,
+			delegatorUserId: true,
+			cardNumber: true,
 			createdAt: true,
 			updatedAt: true
 		}
@@ -96,7 +93,6 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 				committeeMemberId: true,
 				conferenceMemberId: true,
 				conferenceUserType: true,
-				attendanceCode: true,
 				createdAt: true,
 				updatedAt: true
 			}
@@ -108,7 +104,7 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 	return {
 		where: isAdminInConference(ctx),
 		// Explicit all-columns include so the merge with the participant rule's
-		// hide-list doesn't drop userEmail/attendanceCode for non-global admins.
+		// hide-list doesn't drop userEmail for non-global admins.
 		columns: {
 			id: true,
 			conferenceId: true,
@@ -117,9 +113,9 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 			committeeMemberId: true,
 			conferenceMemberId: true,
 			conferenceUserType: true,
-			attendanceCode: true,
 			managedByDelegator: true,
 			delegatorUserId: true,
+			cardNumber: true,
 			createdAt: true,
 			updatedAt: true
 		}
@@ -130,21 +126,6 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 abilityBuilder.conferenceUser.allow(['update', 'delete']).when((ctx) => ({
 	where: { ...isAdminInConference(ctx), ...NOT_MANAGED_BY_DELEGATOR }
 }));
-
-/**
- * Generate a fresh 6-char attendance code unique within the conference.
- * Retries on the rare unique collision; throws after 5 attempts.
- */
-async function pickUniqueAttendanceCode(conferenceId: string) {
-	for (let attempt = 0; attempt < 5; attempt++) {
-		const code = generateAttendanceCode();
-		const existing = await db.query.conferenceUser.findFirst({
-			where: { conferenceId, attendanceCode: code }
-		});
-		if (!existing) return code;
-	}
-	throw new GraphQLError('Could not generate a unique attendance code, please retry');
-}
 
 export const ConferenceUserRef = object({
 	table: 'conferenceUser',
@@ -227,12 +208,6 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError(`User already exists in this conference: ${args.userEmail}`);
 			}
 
-			// NSA users get an auto-generated 6-char fallback code printed on their badge.
-			const initialAttendanceCode =
-				args.conferenceUserType === 'NON_STATE_ACTOR'
-					? await pickUniqueAttendanceCode(args.conferenceId)
-					: null;
-
 			const result = await db
 				.insert(schema.conferenceUser)
 				.values({
@@ -240,8 +215,7 @@ schemaBuilder.mutationFields((t) => ({
 					conferenceId: args.conferenceId,
 					userEmail: args.userEmail,
 					name: args.name?.trim() || null,
-					conferenceUserType: args.conferenceUserType,
-					attendanceCode: initialAttendanceCode
+					conferenceUserType: args.conferenceUserType
 				})
 				.returning()
 				.then(assertFirstEntryExists);
@@ -382,21 +356,10 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			// Auto-clear: when role changes away from NON_STATE_ACTOR, clear conferenceMemberId
-			// and the attendanceCode (no longer meaningful for non-NSAs).
 			if (args.conferenceUserType !== 'NON_STATE_ACTOR') {
 				updateSet.conferenceMemberId = null;
-				if (conferenceUser.attendanceCode) {
-					updateSet.attendanceCode = null;
-				}
-			} else {
-				if (args.conferenceMemberId !== undefined) {
-					updateSet.conferenceMemberId = args.conferenceMemberId;
-				}
-				// Promotion to NSA: ensure the user has an attendance code.
-				// Done outside the transaction since it does its own retried reads.
-				if (!conferenceUser.attendanceCode) {
-					updateSet.attendanceCode = await pickUniqueAttendanceCode(conferenceUser.conferenceId);
-				}
+			} else if (args.conferenceMemberId !== undefined) {
+				updateSet.conferenceMemberId = args.conferenceMemberId;
 			}
 
 			await db.transaction(async (tx) => {

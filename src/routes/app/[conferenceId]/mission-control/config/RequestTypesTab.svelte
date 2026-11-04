@@ -7,6 +7,7 @@
 	import { promiseToastStrings } from '#lib/utils/toast';
 	import { getDefaultRequestTypes } from '#lib/data/defaultRequestTypes';
 	import ConfirmModal from '#lib/components/ConfirmModal.svelte';
+	import IconPicker from '#lib/components/IconPicker.svelte';
 
 	interface RequestType {
 		id: string;
@@ -136,7 +137,6 @@
 			<thead>
 				<tr>
 					<th></th>
-					<th></th>
 					<th>{m.icon()}</th>
 					<th>{m.name()}</th>
 					<th>{m.enabled()}</th>
@@ -148,7 +148,7 @@
 			<tbody>
 				{#if sorted.length === 0}
 					<tr>
-						<td colspan="8" class="text-base-content/60 text-center">{m.noData()}</td>
+						<td colspan="7" class="text-base-content/60 text-center">{m.noData()}</td>
 					</tr>
 				{:else}
 					{#each sorted as rt, i (rt.id)}
@@ -175,16 +175,11 @@
 									</button>
 								</div>
 							</td>
-							<td class="w-8">
-								<i class="ph-fill ph-{rt.icon ?? 'flag'}"></i>
-							</td>
-							<td class="w-32">
-								<input
-									type="text"
-									class="input input-bordered input-sm w-full font-mono text-xs"
-									value={rt.icon ?? ''}
-									placeholder={m.icon()}
-									onchange={(e) => updateIcon(rt.id, e.currentTarget.value)}
+							<td class="w-12">
+								<IconPicker
+									value={rt.icon}
+									triggerClass="btn btn-sm btn-square"
+									onchange={(icon) => updateIcon(rt.id, icon)}
 								/>
 							</td>
 							<td>

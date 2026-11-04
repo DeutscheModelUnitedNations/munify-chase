@@ -7,9 +7,9 @@
 	import duration from 'dayjs/plugin/duration';
 	import '../app.css';
 	import '/node_modules/flag-icons/css/flag-icons.min.css';
-	import '@phosphor-icons/web/src/regular/style.css';
-	import '@phosphor-icons/web/src/fill/style.css';
-	import '@phosphor-icons/web/src/duotone/style.css';
+	import '@phosphor-icons/web/regular/style.css';
+	import '@phosphor-icons/web/fill/style.css';
+	import '@phosphor-icons/web/duotone/style.css';
 
 	import { dev } from '$app/env';
 	import { initialSetTheme } from '#lib/utils/theme.svelte';

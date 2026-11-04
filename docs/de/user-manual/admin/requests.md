@@ -13,7 +13,7 @@ Mit Anträgen können Delegierte und NAs Anträge zur Geschäftsordnung und pers
 Öffne **Konfiguration** und wechsle zum Reiter **Anträge**. Jede Antragsart ist eine Zeile:
 
 - Die Pfeile **Nach oben verschieben** und **Nach unten verschieben** legen die Reihenfolge fest. Der Vorsitz sieht offene Anträge in dieser Reihenfolge, setze die dringendsten Arten also nach oben.
-- **Icon**: ein Font-Awesome-Iconname wie `fa-flag`.
+- **Icon**: ein Klick öffnet die Icon-Auswahl. Suche nach Name oder Stichwort (die Stichwörter sind englisch) und klicke auf ein Icon, um es zu wählen.
 - **Name**: was Delegierte auf dem Button sehen.
 - **Aktiviert**: schalte eine Art aus, um sie auszublenden, ohne sie zu löschen.
 - **Nur Delegierte**: ist das an, können NAs diesen Antrag nicht stellen.

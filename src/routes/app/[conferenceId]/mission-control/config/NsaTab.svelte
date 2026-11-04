@@ -2,6 +2,7 @@
 	import { m } from '#lib/paraglide/messages';
 	import BasicCard from '#lib/components/BasicCard.svelte';
 	import Flag from '#lib/components/Flag.svelte';
+	import IconPicker from '#lib/components/IconPicker.svelte';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { nanoid } from '#lib/helpers/nanoid';
 	import toast from 'svelte-french-toast';
@@ -27,7 +28,7 @@
 
 	let newName = $state('');
 	let newType = $state<'NSA' | 'UN'>('NSA');
-	let newIcon = $state('');
+	let newIcon = $state('megaphone-simple');
 	let isCreating = $state(false);
 
 	async function createActor() {
@@ -48,7 +49,7 @@
 				promiseToastStrings(newType === 'NSA' ? m.nonStateActor() : m.unActor(), 'create')
 			);
 			newName = '';
-			newIcon = '';
+			newIcon = 'megaphone-simple';
 		} finally {
 			isCreating = false;
 		}
@@ -140,11 +141,10 @@
 			</div>
 			<div class="flex flex-col gap-1">
 				<span class="text-sm">{m.icon()}</span>
-				<input
-					type="text"
-					class="input input-bordered w-32"
-					placeholder="building-ngo"
+				<IconPicker
 					bind:value={newIcon}
+					fallback="megaphone-simple"
+					triggerClass="btn btn-square text-lg"
 				/>
 			</div>
 			<button

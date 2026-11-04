@@ -4,6 +4,7 @@
 	import type { importDataSchema } from '#lib/utils/import';
 	import { nanoid } from '#lib/helpers/nanoid';
 	import StepHeader from './StepHeader.svelte';
+	import IconPicker from '#lib/components/IconPicker.svelte';
 
 	type ImportData = z.infer<typeof importDataSchema>;
 
@@ -53,14 +54,10 @@
 		{/if}
 		{#each nsas as rep (rep.id)}
 			<div class="join w-full">
-				<div class="btn join-item bg-error text-error-content w-14 pointer-events-none">
-					<i class="ph-fill ph-{rep.icon ?? 'megaphone-simple'}"></i>
-				</div>
-				<input
-					type="text"
-					class="input input-bordered join-item w-44 font-mono text-sm"
+				<IconPicker
 					bind:value={rep.icon}
-					placeholder={m.icon()}
+					fallback="megaphone-simple"
+					triggerClass="btn join-item bg-error text-error-content w-14"
 				/>
 				<input
 					type="text"

@@ -5,6 +5,7 @@
 	import { nanoid } from '#lib/helpers/nanoid';
 	import { getDefaultRequestTypes } from '#lib/data/defaultRequestTypes';
 	import StepHeader from './StepHeader.svelte';
+	import IconPicker from '#lib/components/IconPicker.svelte';
 
 	type ImportData = z.infer<typeof importDataSchema>;
 
@@ -90,14 +91,9 @@
 						<i class="ph-fill ph-caret-down"></i>
 					</button>
 				</div>
-				<div class="btn join-item bg-primary text-primary-content w-14 pointer-events-none">
-					<i class="ph-fill ph-{rt.icon ?? 'flag'}"></i>
-				</div>
-				<input
-					type="text"
-					class="input input-bordered join-item w-32 font-mono text-sm"
+				<IconPicker
 					bind:value={rt.icon}
-					placeholder={m.icon()}
+					triggerClass="btn join-item bg-primary text-primary-content w-14"
 				/>
 				<input
 					type="text"

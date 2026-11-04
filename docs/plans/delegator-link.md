@@ -243,7 +243,9 @@ The reminders before the conference no longer land on the same days:
 | 10                         | `CHASE_INTRO_REMINDER` |
 | 7                          | `PHONE_READY_REMINDER` |
 
-Survey and paper deadlines can still fall anywhere, so `dueEmails` also keeps a **gap per person**:
+Survey and paper deadlines can still fall anywhere, so the sweep also keeps a **gap per person**
+(`spaceReminders`, `#api/handlers/email/reminderSpacing.ts`; every reminder carries the date it
+reminds of, `remindsOf`):
 a reminder (`isReminder`) is not due while the person got another automatic reminder within the
 last `REMINDER_GAP_DAYS` (2), and it moves to the next sweep after the gap. It stays due as long as
 its own window lasts; a reminder whose window closes during the gap is sent on the window's last
@@ -267,6 +269,19 @@ explains it.
   conferences.
 - **Fallback files:** delegator's CHASE export and presence import, and chase's import wizard and
   presence export, move under "advanced" and are hidden while linked.
+
+## Status (2026-11-04)
+
+Phases 1 to 5 are built on `feat/chase-link` (delegator) and `feat/delegator-link` (chase), with
+unit tests; nothing has run against a database or two live instances yet. Still open:
+
+- The delegator team area's CHASE status card (link state, last event and reconcile, what waits
+  for the release, the working papers left behind with their reason) and "Open in CHASE" deep
+  links from the team pages; chase's "managed by DELEGATOR" badge linking back, and "Show my
+  nametag" for NSAs in chase.
+- The e2e specs listed under Tests, and `dev:linked` for two instances side by side.
+- CLAUDE-UI.md has no new components worth a pattern entry yet; CLAUDE.md has a "CHASE link"
+  section.
 
 ## Phases
 

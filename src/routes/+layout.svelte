@@ -13,6 +13,7 @@
 	import { onMount } from 'svelte';
 	import Alert from '$lib/components/Alert/PromiseAlert.svelte';
 	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
+	import CookieBanner from '$lib/components/CookieBanner.svelte';
 	import Inspect from 'svelte-inspect-value';
 	import { alertDialog } from '$lib/components/Alert/alert';
 	import { checkForUpdate, relaunchApp } from '$lib/platform/updater';
@@ -92,6 +93,7 @@
 />
 <Alert />
 <OfflineBanner />
+<CookieBanner />
 
 {#if dev}
 	<Inspect.Panel />

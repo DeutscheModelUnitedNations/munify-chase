@@ -9,8 +9,8 @@
  * its own dev server against it. Stop your own dev server first, both need the mock
  * OIDC port 8090.
  */
-import { spawn, type ChildProcess } from 'node:child_process';
-import { createConnection } from 'node:net';
+import { spawn } from 'node:child_process';
+import { portInUse, waitForServer } from '@deutschemodelunitednations/docs-kit/capture';
 import pg from 'pg';
 
 const DATABASE_URL =
@@ -23,14 +23,6 @@ process.env.DATABASE_URL = DATABASE_URL;
 const env = { ...process.env };
 const { capture } = await import('./capture');
 
-function portInUse(port: number) {
-	return new Promise<boolean>((resolve) => {
-		const socket = createConnection({ port, host: '127.0.0.1' });
-		socket.once('connect', () => (socket.destroy(), resolve(true)));
-		socket.once('error', () => resolve(false));
-	});
-}
-
 async function ensureDatabase() {
 	const url = new URL(DATABASE_URL);
 	const name = url.pathname.slice(1);
@@ -42,8 +34,6 @@ async function ensureDatabase() {
 	await client.end();
 }
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 function run(cmd: string[]) {
 	return new Promise<void>((resolve, reject) => {
 		const proc = spawn(cmd[0], cmd.slice(1), { env, stdio: 'inherit' });
@@ -51,19 +41,6 @@ function run(cmd: string[]) {
 			code === 0 ? resolve() : reject(new Error(`${cmd.join(' ')} failed`))
 		);
 	});
-}
-
-async function waitForServer(server: ChildProcess) {
-	for (let i = 0; i < 120; i++) {
-		if (server.exitCode !== null) throw new Error('Dev server exited');
-		try {
-			if ((await fetch(BASE_URL)).ok) return;
-		} catch {
-			// not up yet
-		}
-		await sleep(1000);
-	}
-	throw new Error('Dev server did not start');
 }
 
 if ((await portInUse(5173)) || (await portInUse(8090))) {
@@ -79,7 +56,7 @@ await run(['bun', 'run', 'db:seed:dev']);
 const server = spawn('bun', ['run', 'vite-dev'], { env, stdio: 'ignore' });
 let failures: string[];
 try {
-	await waitForServer(server);
+	await waitForServer({ url: BASE_URL, isAlive: () => server.exitCode === null });
 	failures = await capture(BASE_URL, filter);
 } finally {
 	server.kill();

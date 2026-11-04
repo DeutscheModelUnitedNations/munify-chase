@@ -1,3 +1,4 @@
+import { createDocsNav, type DocsNavEntry } from '@deutschemodelunitednations/docs-kit';
 import { m } from '#lib/paraglide/messages';
 
 /**
@@ -5,16 +6,7 @@ import { m } from '#lib/paraglide/messages';
  * file's frontmatter, so only the order and the category labels live here.
  * Slugs are paths below `docs/<locale>/` without the `.md` extension.
  */
-export type DocsNavCategory = {
-	slug: string;
-	label: () => string;
-	description: () => string;
-	items: string[];
-};
-
-export type DocsNavEntry = string | DocsNavCategory;
-
-export const docsNav: DocsNavEntry[] = [
+const docsNav: DocsNavEntry[] = [
 	'user-manual/introduction',
 	'user-manual/roles-overview',
 	{
@@ -74,13 +66,4 @@ export const docsNav: DocsNavEntry[] = [
 	'faq'
 ];
 
-export const DEFAULT_DOCS_SLUG = 'user-manual/introduction';
-
-export function findCategory(slug: string) {
-	return docsNav.find((e): e is DocsNavCategory => typeof e !== 'string' && e.slug === slug);
-}
-
-/** All page slugs in reading order, used for prev/next links. */
-export function flatDocsSlugs() {
-	return docsNav.flatMap((e) => (typeof e === 'string' ? [e] : [e.slug, ...e.items]));
-}
+export const nav = createDocsNav({ entries: docsNav, defaultSlug: 'user-manual/introduction' });

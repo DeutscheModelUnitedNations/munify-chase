@@ -1,14 +1,5 @@
 import type { RouteId } from '$app/types';
-import type { Tour } from './types';
-
-type RouteHelp = {
-	/** Manual page below `/docs`, see `src/lib/docs/nav.ts` */
-	docs: string;
-	/** Lazily loaded so tour copy isn't bundled into every page */
-	tour?: () => Promise<Tour>;
-};
-
-const lazy = (load: () => Promise<{ tour: Tour }>) => async () => (await load()).tour;
+import { lazyTour as lazy, type RouteHelp } from '@deutschemodelunitednations/docs-kit';
 
 /**
  * Help shown by the help button for each app route. Keyed by `RouteId`, so renaming

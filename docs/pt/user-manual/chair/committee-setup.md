@@ -31,6 +31,7 @@ O cartão **Vista de Apresentação** controla o ecrã partilhado:
 - **Esquema**: escolha **Esquema de apresentação Padrão** ou **Esquema de apresentação para Telas Pequenas**, consoante o ecrã da sua sala.
 - Dois controlos deslizantes de tamanho de letra (de 10 a 50, com pré-visualização em tempo real): um para o tamanho base e outro para o texto da resolução. São independentes, para poder dimensionar o texto da resolução de forma diferente do resto do ecrã.
 - **Mostrar Grupos Regionais**: define se a divisão por grupos regionais aparece no ecrã partilhado.
+- **Mostrar pedidos** (**Ligado** por defeito): enquanto houver pedidos pendentes, o ecrã partilhado mostra-os num bloco próprio. Só aparece quando os **Pedidos** estão ativados no seu comité. Os administradores podem ocultar tipos de pedido individuais nas definições da conferência. A paleta de comandos oferece **Mostrar pedidos na apresentação** e **Ocultar pedidos na apresentação**.
 
 Consulte [Modo de apresentação](./presentation-mode) para ver o que é mostrado automaticamente à medida que a sessão avança.
 

@@ -1,16 +1,17 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { resolve } from '$app/paths';
-	import DeleteConferenceModal from '$lib/components/DeleteConferenceModal.svelte';
-	import AvatarMenu from '$lib/components/launcher/AvatarMenu.svelte';
-	import ConferenceHeroCard from '$lib/components/launcher/ConferenceHeroCard.svelte';
-	import AdminConferenceRow from '$lib/components/launcher/AdminConferenceRow.svelte';
-	import EmptyLauncher from '$lib/components/launcher/EmptyLauncher.svelte';
-	import { badgeFor, deriveStatus } from '$lib/helpers/launcher';
-	import type { LauncherConference } from '$lib/components/launcher/types';
-	import { client } from '$lib/api/rumbleClient/client';
-	import type { ConferenceusertypeEnum } from '$lib/api/rumbleClient/client';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import Footer from '#lib/components/Footer.svelte';
+	import DeleteConferenceModal from '#lib/components/DeleteConferenceModal.svelte';
+	import AvatarMenu from '#lib/components/launcher/AvatarMenu.svelte';
+	import ConferenceHeroCard from '#lib/components/launcher/ConferenceHeroCard.svelte';
+	import AdminConferenceRow from '#lib/components/launcher/AdminConferenceRow.svelte';
+	import EmptyLauncher from '#lib/components/launcher/EmptyLauncher.svelte';
+	import { badgeFor, deriveStatus } from '#lib/helpers/launcher';
+	import type { LauncherConference } from '#lib/components/launcher/types';
+	import { client } from '#lib/api/rumbleClient/client';
+	import type { ConferenceusertypeEnum } from '#lib/api/rumbleClient/client';
+	import { getCurrentUser, getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
 
 	const user = await getCurrentUser();
 
@@ -59,7 +60,7 @@
 		}
 	});
 
-	const isGlobalAdmin = await client.query.isGlobalAdmin();
+	const isGlobalAdmin = await getIsGlobalAdmin();
 
 	const allConferences = await client.liveQuery.conferences({
 		id: true,

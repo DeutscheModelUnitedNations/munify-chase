@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
 	import { page } from '$app/state';
 	import NsaCard from '../NsaCard.svelte';
 	import { onMount } from 'svelte';

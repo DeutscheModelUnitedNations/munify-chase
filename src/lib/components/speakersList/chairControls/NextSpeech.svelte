@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { alertDialog } from '$lib/components/Alert/alert';
-	import Kbd from '$lib/components/Kbd.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import type { SpeakerslistcategoryEnum } from '#lib/api/rumbleClient/client';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { alertDialog } from '#lib/components/Alert/alert';
+	import Kbd from '#lib/components/Kbd.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { promiseToastStrings } from '#lib/utils/toast';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 	import toast from 'svelte-french-toast';
-	import { compareSpeakers } from '$lib/helpers/speakerSort';
+	import { compareSpeakers } from '#lib/helpers/speakerSort';
 	import { listCommandScope } from './listCommands';
 
 	type SpeakersList = {

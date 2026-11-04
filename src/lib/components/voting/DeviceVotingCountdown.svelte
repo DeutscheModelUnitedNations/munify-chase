@@ -1,6 +1,6 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { getServerTime } from '$lib/state/serverTime.svelte';
+	import { getServerTime } from '#lib/state/serverTime.svelte';
 
 	interface Props {
 		startTimestamp: Date | string | null;

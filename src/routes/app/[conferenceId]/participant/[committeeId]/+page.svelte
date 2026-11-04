@@ -1,22 +1,22 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
-	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import CurrentSpeaker from '$lib/components/speakersList/CurrentSpeaker.svelte';
-	import PresentationSpeakersQueue from '$lib/components/speakersList/PresentationSpeakersQueue.svelte';
-	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
-	import Majorities from '$lib/components/Majorities.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
+	import { getCurrentUser } from '#lib/state/currentUser.svelte';
+	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
+	import IconInfoBox from '#lib/components/IconInfoBox.svelte';
+	import { getCommitteeStatusIcon, getCommitteeStatusText } from '#lib/utils/committeeStatus';
+	import CurrentSpeaker from '#lib/components/speakersList/CurrentSpeaker.svelte';
+	import PresentationSpeakersQueue from '#lib/components/speakersList/PresentationSpeakersQueue.svelte';
+	import WhiteboardViewer from '#lib/components/whiteboard/WhiteboardViewer.svelte';
+	import Majorities from '#lib/components/Majorities.svelte';
 	import ParticipantIdentityCard from '../ParticipantIdentityCard.svelte';
-	import DeviceVoteModal from '$lib/components/voting/DeviceVoteModal.svelte';
-	import RequestsCard from '$lib/components/requests/RequestsCard.svelte';
-	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import DeviceVoteModal from '#lib/components/voting/DeviceVoteModal.svelte';
+	import RequestsCard from '#lib/components/requests/RequestsCard.svelte';
+	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 
 	const currentUser = await getCurrentUser();
 	const [conferenceUser] =

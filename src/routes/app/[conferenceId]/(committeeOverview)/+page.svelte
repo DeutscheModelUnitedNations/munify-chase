@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { client } from '$lib/api/rumbleClient/client';
-	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
-	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
-	import CurrentTime from '$lib/components/CurrentTime.svelte';
-	import * as m from '$lib/paraglide/messages.js';
+	import { client } from '#lib/api/rumbleClient/client';
+	import CommitteeGrid, { type ConferenceData } from '#lib/components/CommitteeGrid.svelte';
+	import ThemeSwitcher from '#lib/components/ThemeSwitcher.svelte';
+	import CurrentTime from '#lib/components/CurrentTime.svelte';
+	import * as m from '#lib/paraglide/messages';
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },

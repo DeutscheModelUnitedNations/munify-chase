@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { enableViewTransitionApi } from '$lib/helpers/viewTransitionApi.svelte';
+	import { enableViewTransitionApi } from '#lib/helpers/viewTransitionApi.svelte';
 	import { Toaster, useToasterStore } from 'svelte-french-toast';
 	import toast from 'svelte-french-toast';
 	import { page } from '$app/state';
@@ -8,16 +8,16 @@
 	import '../app.css';
 	import '/node_modules/flag-icons/css/flag-icons.min.css';
 
-	import { dev } from '$app/environment';
-	import { initialSetTheme } from '$lib/utils/theme.svelte';
+	import { dev } from '$app/env';
+	import { initialSetTheme } from '#lib/utils/theme.svelte';
 	import { onMount } from 'svelte';
-	import Alert from '$lib/components/Alert/PromiseAlert.svelte';
-	import OfflineBanner from '$lib/components/OfflineBanner.svelte';
-	import CookieBanner from '$lib/components/CookieBanner.svelte';
+	import Alert from '#lib/components/Alert/PromiseAlert.svelte';
+	import OfflineBanner from '#lib/components/OfflineBanner.svelte';
+	import CookieBanner from '#lib/components/CookieBanner.svelte';
 	import Inspect from 'svelte-inspect-value';
-	import { alertDialog } from '$lib/components/Alert/alert';
-	import { checkForUpdate, relaunchApp } from '$lib/platform/updater';
-	import { m } from '$lib/paraglide/messages';
+	import { alertDialog } from '#lib/components/Alert/alert';
+	import { checkForUpdate, relaunchApp } from '#lib/platform/updater';
+	import { m } from '#lib/paraglide/messages';
 
 	dayjs.extend(duration);
 

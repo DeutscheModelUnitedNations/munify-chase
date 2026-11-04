@@ -1,4 +1,13 @@
+<script module lang="ts">
+	// Loaded once and shared by every chart, so a chart recreated after the
+	// first one draws in the same frame instead of waiting on the dynamic import.
+	let chartModule: Promise<typeof import('chart.js/auto')> | undefined;
+	const loadChartJs = () => (chartModule ??= import('chart.js/auto'));
+</script>
+
 <script lang="ts">
+	import { untrack } from 'svelte';
+
 	export interface ChartSlice {
 		key: string;
 		label: string;
@@ -39,29 +48,50 @@
 		return v;
 	}
 
-	// Mission control's rotation destroys and recreates this component every
-	// time its tile cycles out and back in — a fresh Chart instance each time
-	// is intentional here, matching how the statistics page's own charts work.
-	$effect(() => {
-		if (typeof window === 'undefined' || !canvas || slices.length === 0) return;
+	let chart = $state.raw<import('chart.js').Chart>();
+	// Read by the tooltip callback, kept outside the chart config so in-place
+	// data updates don't have to rebuild the options.
+	let currentValueLabels: string[] = [];
 
-		const labels = slices.map((s) => s.label);
-		const data = slices.map((s) => s.value);
-		const colors = slices.map((_, i) => PALETTE[i % PALETTE.length]);
-		const valueLabels = slices.map((s) => s.valueLabel ?? String(s.value));
+	// The grid rebuilds its tiles (and so this component's `slices` array) on
+	// every server clock tick, not only when the numbers change. Comparing by
+	// content keeps the chart untouched until something visible actually differs.
+	const dataKey = $derived(JSON.stringify(slices));
+	const hasData = $derived(slices.length > 0);
+
+	function chartData() {
+		return {
+			labels: slices.map((s) => s.label),
+			data: slices.map((s) => s.value),
+			colors: slices.map((_, i) => PALETTE[i % PALETTE.length]),
+			valueLabels: slices.map((s) => s.valueLabel ?? String(s.value))
+		};
+	}
+
+	// (Re)create the chart only when its type changes or data first appears.
+	// The rotation picks a new chart kind every cycle, which needs a fresh
+	// instance; plain data refreshes are applied in place by the effect below.
+	$effect(() => {
+		if (typeof window === 'undefined' || !canvas || !hasData) return;
+		const currentKind = kind;
+		const target = canvas;
 
 		let localChart: import('chart.js').Chart | undefined;
 		let destroyed = false;
 
-		import('chart.js/auto').then(({ default: Chart }) => {
-			if (destroyed || !canvas) return;
+		loadChartJs().then(({ default: Chart }) => {
+			if (destroyed) return;
+			const { labels, data, colors, valueLabels } = untrack(chartData);
 
 			const baseContent = resolveClass('text-base-content', 'color');
 			const base100 = resolveClass('bg-base-100', 'backgroundColor');
 			const gridColor = resolveClass('border-base-content/10', 'borderColor');
+			currentValueLabels = valueLabels;
+			const tooltipLabel = (item: { dataIndex: number }) =>
+				` ${currentValueLabels[item.dataIndex] ?? ''}`;
 
-			if (kind === 'bar') {
-				localChart = new Chart(canvas, {
+			if (currentKind === 'bar') {
+				localChart = new Chart(target, {
 					type: 'bar',
 					data: {
 						labels,
@@ -80,7 +110,7 @@
 						maintainAspectRatio: false,
 						plugins: {
 							legend: { display: false },
-							tooltip: { callbacks: { label: (item) => ` ${valueLabels[item.dataIndex]}` } }
+							tooltip: { callbacks: { label: tooltipLabel } }
 						},
 						scales: {
 							x: {
@@ -95,57 +125,69 @@
 						}
 					}
 				});
-				return;
-			}
-
-			localChart = new Chart(canvas, {
-				type: kind,
-				data: {
-					labels,
-					datasets: [
-						{
-							data,
-							backgroundColor: colors,
-							borderColor: base100,
-							borderWidth: 3,
-							hoverOffset: 6
-						}
-					]
-				},
-				options: {
-					animation: false,
-					responsive: true,
-					maintainAspectRatio: false,
-					cutout: kind === 'doughnut' ? '60%' : 0,
-					scales:
-						kind === 'polarArea'
-							? {
-									r: {
-										ticks: { display: false },
-										grid: { color: gridColor },
-										angleLines: { color: gridColor }
-									}
-								}
-							: undefined,
-					plugins: {
-						legend: {
-							position: 'bottom',
-							labels: { color: baseContent, boxWidth: 14, padding: 10, font: { size: 15 } }
-						},
-						tooltip: {
-							callbacks: {
-								label: (item) => ` ${valueLabels[item.dataIndex]}`
+			} else {
+				localChart = new Chart(target, {
+					type: currentKind,
+					data: {
+						labels,
+						datasets: [
+							{
+								data,
+								backgroundColor: colors,
+								borderColor: base100,
+								borderWidth: 3,
+								hoverOffset: 6
 							}
+						]
+					},
+					options: {
+						animation: false,
+						responsive: true,
+						maintainAspectRatio: false,
+						cutout: currentKind === 'doughnut' ? '60%' : 0,
+						scales:
+							currentKind === 'polarArea'
+								? {
+										r: {
+											ticks: { display: false },
+											grid: { color: gridColor },
+											angleLines: { color: gridColor }
+										}
+									}
+								: undefined,
+						plugins: {
+							legend: {
+								position: 'bottom',
+								labels: { color: baseContent, boxWidth: 14, padding: 10, font: { size: 15 } }
+							},
+							tooltip: { callbacks: { label: tooltipLabel } }
 						}
 					}
-				}
-			});
+				});
+			}
+			chart = localChart;
 		});
 
 		return () => {
 			destroyed = true;
 			localChart?.destroy();
+			if (chart === localChart) chart = undefined;
 		};
+	});
+
+	// Data-only changes: swap the numbers into the existing chart without
+	// destroying it, so the canvas never goes blank between frames.
+	$effect(() => {
+		void dataKey;
+		const current = chart;
+		if (!current) return;
+		const { labels, data, colors, valueLabels } = untrack(chartData);
+		current.data.labels = labels;
+		const dataset = current.data.datasets[0];
+		dataset.data = data;
+		dataset.backgroundColor = colors;
+		currentValueLabels = valueLabels;
+		current.update('none');
 	});
 </script>
 

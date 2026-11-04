@@ -1,4 +1,4 @@
-import * as m from '$lib/paraglide/messages';
+import * as m from '#lib/paraglide/messages';
 
 /**
  * Default set of request types, based on DMUN's "Antragsübersicht" (request

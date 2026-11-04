@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { VotingMajority } from './votingModal';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import Tabs from '../Tabs.svelte';
 	import Combobox from '../Combobox.svelte';
-	import votingNameTemplates from '$lib/data/votingNameTemplates';
-	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
+	import votingNameTemplates from '#lib/data/votingNameTemplates';
+	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
 
 	interface Props {
 		voteType: 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED';

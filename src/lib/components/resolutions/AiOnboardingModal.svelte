@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Modal from '$lib/components/Modal.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import type { AiPreference } from '$lib/ai/aiPreference.svelte';
-	import { LOCAL_MODEL_TIERS } from '$lib/ai/assess';
+	import Modal from '#lib/components/Modal.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import type { AiPreference } from '#lib/ai/aiPreference.svelte';
+	import { LOCAL_MODEL_TIERS } from '#lib/ai/assess';
 
 	interface Props {
 		open: boolean;

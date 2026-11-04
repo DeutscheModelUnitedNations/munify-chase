@@ -9,7 +9,7 @@
  */
 
 import { UserManager, OidcClient, WebStorageStateStore, User } from 'oidc-client-ts';
-import { configPublic } from '$lib/config/public';
+import { PUBLIC_OIDC_AUTHORITY, PUBLIC_OIDC_CLIENT_ID } from '$app/env/public';
 
 const REDIRECT_URI = 'munify-chase://oidc-callback';
 
@@ -23,11 +23,8 @@ let _currentUser: User | null = null;
 // code runs, so the first getCachedAccessToken() call on page load returns the
 // right value without waiting for the async getUser() promise to resolve.
 if (typeof window !== 'undefined') {
-	const base = configPublic.PUBLIC_OIDC_AUTHORITY.replace(
-		/\/\.well-known\/openid-configuration$/,
-		''
-	);
-	const key = `oidc.user:${base}:${configPublic.PUBLIC_OIDC_CLIENT_ID}`;
+	const base = PUBLIC_OIDC_AUTHORITY.replace(/\/\.well-known\/openid-configuration$/, '');
+	const key = `oidc.user:${base}:${PUBLIC_OIDC_CLIENT_ID}`;
 	const raw = localStorage.getItem(key);
 	if (raw) {
 		try {
@@ -40,13 +37,10 @@ if (typeof window !== 'undefined') {
 
 function getUserManager(): UserManager {
 	if (!_manager) {
-		const base = configPublic.PUBLIC_OIDC_AUTHORITY.replace(
-			/\/\.well-known\/openid-configuration$/,
-			''
-		);
+		const base = PUBLIC_OIDC_AUTHORITY.replace(/\/\.well-known\/openid-configuration$/, '');
 		_manager = new UserManager({
 			authority: base,
-			client_id: configPublic.PUBLIC_OIDC_CLIENT_ID,
+			client_id: PUBLIC_OIDC_CLIENT_ID,
 			redirect_uri: REDIRECT_URI,
 			scope: 'openid email profile offline_access',
 			userStore: new WebStorageStateStore({ store: window.localStorage }),

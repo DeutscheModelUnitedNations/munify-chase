@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import { isTauri } from '$lib/platform';
-	import { getCachedAccessToken } from '$lib/platform/oidc';
-	import CommandPalette from '$lib/commands/CommandPalette.svelte';
+	import { getCurrentUser } from '#lib/state/currentUser.svelte';
+	import { isTauri } from '#lib/platform/index';
+	import { getCachedAccessToken } from '#lib/platform/oidc';
+	import CommandPalette from '#lib/commands/CommandPalette.svelte';
 
 	let { children } = $props();
 

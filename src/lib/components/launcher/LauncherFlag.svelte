@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Flag from '$lib/components/Flag.svelte';
+	import Flag from '#lib/components/Flag.svelte';
 
 	type RepresentationType = 'DELEGATION' | 'NSA' | 'UN';
 

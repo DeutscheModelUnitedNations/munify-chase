@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import Modal from './Modal.svelte';
 	import toast from 'svelte-french-toast';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { promiseToastStrings } from '#lib/utils/toast';
 
 	interface Props {
 		open: boolean;

@@ -1,5 +1,5 @@
 <script module lang="ts">
-	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
+	import type { CommitteestatusEnum } from '#lib/api/rumbleClient/client';
 
 	export interface ConferenceData {
 		id: string;
@@ -18,7 +18,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import IconInfoBox from './IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
+	import { getCommitteeStatusIcon, getCommitteeStatusText } from '#lib/utils/committeeStatus';
 
 	interface Props {
 		conference: ConferenceData;
@@ -39,7 +39,7 @@
 				committeeId
 			});
 		} else {
-			return resolve('/app/[conferenceId]/[committeeId]', {
+			return resolve('/app/[conferenceId]/[committeeId]/(presentation)', {
 				conferenceId: conference.id,
 				committeeId
 			});

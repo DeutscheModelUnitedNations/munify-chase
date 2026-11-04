@@ -1,4 +1,4 @@
-import type { Locale } from '$lib/paraglide/runtime';
+import type { Locale } from '#lib/paraglide/runtime';
 
 /**
  * Text of a command. Pass a Paraglide message without parameters where possible, it is

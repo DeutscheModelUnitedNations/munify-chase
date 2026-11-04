@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import type { z } from 'zod/v4';
-	import type { importDataSchema } from '$lib/utils/import';
-	import CountryBadge from '$lib/components/CountryBadge.svelte';
+	import type { importDataSchema } from '#lib/utils/import';
+	import CountryBadge from '#lib/components/CountryBadge.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import StepHeader from './StepHeader.svelte';
 

@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { page } from '$app/state';
-	import { client } from '$lib/api/rumbleClient/client';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import Majorities from '$lib/components/Majorities.svelte';
-	import UndrawError from '$lib/components/UndrawError.svelte';
-	import emptyStreet from '$assets/undraw/empty_street.svg';
+	import { client } from '#lib/api/rumbleClient/client';
+	import BasicCard from '#lib/components/BasicCard.svelte';
+	import Majorities from '#lib/components/Majorities.svelte';
+	import UndrawError from '#lib/components/UndrawError.svelte';
+	import emptyStreet from '#assets/undraw/empty_street.svg';
 	import StatusWidget from '../StatusWidget.svelte';
-	import VotingSetup from '$lib/components/voting/VotingSetup.svelte';
+	import VotingSetup from '#lib/components/voting/VotingSetup.svelte';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
 	import Hourglass, { type HourglassStatus } from './Hourglass.svelte';
-	import { getServerTime } from '$lib/state/serverTime.svelte';
+	import { getServerTime } from '#lib/state/serverTime.svelte';
 	import type { Duration } from 'dayjs/plugin/duration';
 
 	interface Props {

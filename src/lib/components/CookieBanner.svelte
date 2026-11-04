@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import 'vanilla-cookieconsent/dist/cookieconsent.css';
 	import * as CookieConsent from 'vanilla-cookieconsent';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 
 	onMount(() => {
 		// The native app is no website, and a live demo embedded in the manual already

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { getWsConnected, justReconnected } from '$lib/state/connection.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { getWsConnected, justReconnected } from '#lib/state/connection.svelte';
+	import { m } from '#lib/paraglide/messages';
 	import { page } from '$app/state';
 	import toast from 'svelte-french-toast';
 	import { fly } from 'svelte/transition';

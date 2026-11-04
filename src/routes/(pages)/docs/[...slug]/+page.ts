@@ -1,7 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
-import { loadDoc } from '$lib/docs/content';
-import { DEFAULT_DOCS_SLUG, findCategory } from '$lib/docs/nav';
-import { getLocale } from '$lib/paraglide/runtime';
+import { loadDoc } from '#lib/docs/content';
+import { DEFAULT_DOCS_SLUG, findCategory } from '#lib/docs/nav';
+import { getLocale } from '#lib/paraglide/runtime';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = ({ params }) => {

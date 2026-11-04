@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
-	import { client } from '$lib/api/rumbleClient/client';
-	import Kbd from '$lib/components/Kbd.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { getServerTime } from '$lib/state/serverTime.svelte';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import type { SpeakerslistcategoryEnum } from '#lib/api/rumbleClient/client';
+	import { client } from '#lib/api/rumbleClient/client';
+	import Kbd from '#lib/components/Kbd.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { getServerTime } from '#lib/state/serverTime.svelte';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 	import toast from 'svelte-french-toast';
 	import { listCommandScope } from './listCommands';
 

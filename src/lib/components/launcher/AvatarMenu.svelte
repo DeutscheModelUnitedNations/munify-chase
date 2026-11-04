@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { m } from '$lib/paraglide/messages';
-	import { clearTokens } from '$lib/platform/oidc';
+	import { m } from '#lib/paraglide/messages';
+	import { clearTokens } from '#lib/platform/oidc';
 
 	interface Props {
 		givenName?: string | null;

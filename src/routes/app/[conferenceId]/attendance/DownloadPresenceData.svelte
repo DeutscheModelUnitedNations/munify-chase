@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
-	import { withBackendMessage } from '$lib/utils/toast';
+	import { withBackendMessage } from '#lib/utils/toast';
 
 	interface Props {
 		conferenceTitle?: string;
@@ -63,7 +63,16 @@
 				}
 			});
 
-			const participants = conferenceUsers.flatMap((u) => {
+			type ConferenceUser = (typeof conferenceUsers)[number];
+			type Participant = {
+				email: string;
+				kind: 'DELEGATE' | 'NSA';
+				committeeId: string | null;
+				representation: NonNullable<ConferenceUser['committeeMember']>['representation'] | null;
+				events: ConferenceUser['presenceEvents'];
+			};
+
+			const participants = conferenceUsers.flatMap((u): Participant[] => {
 				if (u.conferenceUserType === 'DELEGATE') {
 					return [
 						{

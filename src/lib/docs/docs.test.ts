@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { liveDemoIds } from './live';
 import { docsNav, findCategory, flatDocsSlugs } from './nav';
 import { renderDoc } from './render';
-import { routeHelp } from '$lib/tours/routeHelp';
+import { routeHelp } from '#lib/tours/routeHelp';
 
 // Keeps the in-repo manual consistent: every page exists in every locale, and
 // links, anchors, screenshots and live demos point at things that exist.

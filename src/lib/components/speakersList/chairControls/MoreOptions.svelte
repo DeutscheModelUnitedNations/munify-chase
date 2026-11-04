@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { client, type SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import Popover from '$lib/components/Popover.svelte';
-	import { m } from '$lib/paraglide/messages';
-	import Tabs from '$lib/components/Tabs.svelte';
+	import { client, type SpeakerslistcategoryEnum } from '#lib/api/rumbleClient/client';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import Popover from '#lib/components/Popover.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import Tabs from '#lib/components/Tabs.svelte';
 	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import { alertDialog } from '$lib/components/Alert/alert';
-	import Modal from '$lib/components/Modal.svelte';
+	import { promiseToastStrings } from '#lib/utils/toast';
+	import { alertDialog } from '#lib/components/Alert/alert';
+	import Modal from '#lib/components/Modal.svelte';
 	import dayjs from 'dayjs';
-	import { compareSpeakers } from '$lib/helpers/speakerSort';
+	import { compareSpeakers } from '#lib/helpers/speakerSort';
 	import { listCommandScope } from './listCommands';
 
 	interface Props {

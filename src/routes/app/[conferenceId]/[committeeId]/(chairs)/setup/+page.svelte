@@ -1,31 +1,31 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
 	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import Kbd from '$lib/components/Kbd.svelte';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import UndrawError from '$lib/components/UndrawError.svelte';
-	import emptyStreet from '$assets/undraw/empty_street.svg';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import Majorities from '$lib/components/Majorities.svelte';
-	import WhiteboardViewer from '$lib/components/whiteboard/WhiteboardViewer.svelte';
-	import WhiteboardEditorModal from '$lib/components/whiteboard/WhiteboardEditorModal.svelte';
+	import { promiseToastStrings } from '#lib/utils/toast';
+	import Kbd from '#lib/components/Kbd.svelte';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import UndrawError from '#lib/components/UndrawError.svelte';
+	import emptyStreet from '#assets/undraw/empty_street.svg';
+	import BasicCard from '#lib/components/BasicCard.svelte';
+	import Majorities from '#lib/components/Majorities.svelte';
+	import WhiteboardViewer from '#lib/components/whiteboard/WhiteboardViewer.svelte';
+	import WhiteboardEditorModal from '#lib/components/whiteboard/WhiteboardEditorModal.svelte';
 	import StatusChanger from '../../../../../../lib/components/committee/StatusChanger.svelte';
-	import StateOfDebate from '$lib/components/committee/StateOfDebateChanger.svelte';
-	import AgendaItemChanger from '$lib/components/committee/AgendaItemChanger.svelte';
+	import StateOfDebate from '#lib/components/committee/StateOfDebateChanger.svelte';
+	import AgendaItemChanger from '#lib/components/committee/AgendaItemChanger.svelte';
 	import PresentationSettings from './PresentationSettings.svelte';
-	import Tabs from '$lib/components/Tabs.svelte';
+	import Tabs from '#lib/components/Tabs.svelte';
 	import StatusWidget from '../StatusWidget.svelte';
 	import {
 		fullscreenDelegationSupported,
 		openPresentationWindow,
 		postToPresentation,
 		presentationOpen
-	} from '$lib/state/presentationWindow.svelte';
+	} from '#lib/state/presentationWindow.svelte';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },

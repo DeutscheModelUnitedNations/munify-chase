@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
-	import { m } from '$lib/paraglide/messages';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { urqlClient } from '$lib/api/client';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import { getCachedAccessToken } from '$lib/platform/oidc';
+	import { m } from '#lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { urqlClient } from '#lib/api/client';
+	import { getCurrentUser } from '#lib/state/currentUser.svelte';
+	import { getCachedAccessToken } from '#lib/platform/oidc';
 	import { onDestroy, tick, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import toast from 'svelte-french-toast';
@@ -20,13 +20,13 @@
 		englishPreamblePhrases,
 		englishOperativePhrases
 	} from '@deutschemodelunitednations/munify-resolution-editor/phrases';
-	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { svgToDataUrl } from '#lib/utils/svgToDataUrl';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import {
 		createPaperYjsClient,
 		type PaperYjsClient,
 		type PresenceUserMeta
-	} from '$lib/api/yjs/createPaperYjs.svelte';
+	} from '#lib/api/yjs/createPaperYjs.svelte';
 	import PresenceIndicator from './PresenceIndicator.svelte';
 	import ClausePresenceBadges from './ClausePresenceBadges.svelte';
 
@@ -46,12 +46,12 @@
 		type PaperStatus,
 		type ResolutionViewer
 	} from './paperContext';
-	import { nanoid } from '$lib/helpers/nanoid';
-	import { workingPaperName } from '$lib/helpers/paperName';
-	import { openVotingModal } from '$lib/components/voting/votingModal';
-	import { downloadResolutionTypst, downloadResolutionPdf } from '$lib/utils/resolutionExport';
-	import { getEngine, unloadEngine } from '$lib/ai/model';
-	import { assessAiCapability } from '$lib/ai/assess';
+	import { nanoid } from '#lib/helpers/nanoid';
+	import { workingPaperName } from '#lib/helpers/paperName';
+	import { openVotingModal } from '#lib/components/voting/votingModal';
+	import { downloadResolutionTypst, downloadResolutionPdf } from '#lib/utils/resolutionExport';
+	import { getEngine, unloadEngine } from '#lib/ai/model';
+	import { assessAiCapability } from '#lib/ai/assess';
 	import {
 		initAiPreference,
 		getAiOnboarded,
@@ -59,9 +59,9 @@
 		getLocalModelTier,
 		setAiPreference,
 		type AiPreference
-	} from '$lib/ai/aiPreference.svelte';
+	} from '#lib/ai/aiPreference.svelte';
 	import AiOnboardingModal from './AiOnboardingModal.svelte';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 
 	interface Props {
 		paperId: string;

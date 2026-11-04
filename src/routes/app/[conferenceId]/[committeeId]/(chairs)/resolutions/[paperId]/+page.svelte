@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import PaperPage from '$lib/components/resolutions/PaperPage.svelte';
+	import PaperPage from '#lib/components/resolutions/PaperPage.svelte';
 
 	const conferenceId = $derived(page.params.conferenceId!);
 	const committeeId = $derived(page.params.committeeId!);

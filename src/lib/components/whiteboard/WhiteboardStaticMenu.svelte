@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import type { Editor } from 'svelte-tiptap';
 	import UploadImage from './UploadImage.svelte';
 	import GenQRCode from './GenQRCode.svelte';

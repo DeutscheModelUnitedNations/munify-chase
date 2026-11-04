@@ -17,6 +17,7 @@ Open **Configuration** and switch to the **Requests** tab. Every request type is
 - **Name**: what delegates see on the button.
 - **Enabled**: switch a type off to hide it without deleting it.
 - **Delegates only**: when on, NSAs can't file this request.
+- **On presentation**: when on (the default), pending requests of this type are listed on the presentation view. Turn it off for types that should stay between the delegate and the chairs, such as personal needs. Chairs can also hide the whole list per committee (see [Presentation Mode](../chair/presentation-mode)).
 - The trash icon removes the type after a confirmation.
 
 Changes are saved as soon as you edit a field.
@@ -37,5 +38,6 @@ Requests are off in every committee by default. The chairs switch them on in the
 ## Good to know
 
 - Each person can have only one pending request per type in a committee. Once it's resolved or withdrawn, they can send it again.
+- Chairs can also add requests themselves for any seat in their committee, for example when a placard is raised. They can't add a type that seat already has pending.
 - Delegates can only send requests to the committee they sit in. NSAs can send them to any committee.
 - Only Admins can change request types.

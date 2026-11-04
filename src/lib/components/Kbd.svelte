@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatHotkey } from '$lib/helpers/hotkey';
+	import { formatHotkey } from '#lib/helpers/hotkey';
 
 	interface Props {
 		hotkey: string;

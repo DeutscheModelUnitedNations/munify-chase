@@ -28,9 +28,9 @@ import type {
 	PresenceAdapter,
 	PresenceUser
 } from '@deutschemodelunitednations/munify-resolution-editor';
-import { configPublic } from '$config/public';
+import { PUBLIC_API_URL } from '$app/env/public';
 import toast from 'svelte-french-toast';
-import { m } from '$lib/paraglide/messages';
+import { m } from '#lib/paraglide/messages';
 import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from './statelessMessages';
 
 export type YjsConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error';
@@ -95,7 +95,7 @@ export function createPaperYjsClient(opts: CreateOptions): PaperYjsClient {
 	// 2. Hocuspocus provider. The paper id is sent in-band as the document
 	// name, so the URL is just the endpoint. Derive from PUBLIC_API_URL (same
 	// origin as the GraphQL endpoint) so the URL matches the CSP connect-src.
-	const wsUrl = configPublic.PUBLIC_API_URL.replace(/^https/, 'wss')
+	const wsUrl = PUBLIC_API_URL.replace(/^https/, 'wss')
 		.replace(/^http/, 'ws')
 		.replace(/\/api\/graphql$/, '/api/docs');
 

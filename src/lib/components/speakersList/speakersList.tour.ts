@@ -1,5 +1,5 @@
-import { m } from '$lib/paraglide/messages';
-import type { Tour } from '$lib/tours/types';
+import { m } from '#lib/paraglide/messages';
+import type { Tour } from '#lib/tours/types';
 
 /** Chair speakers list page. Anchors live in the page and in ChairControls. */
 export const chairSpeakersListTour: Tour = {

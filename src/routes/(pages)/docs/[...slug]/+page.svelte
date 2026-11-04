@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { liveEmbeds } from '$lib/docs/liveEmbed';
-	import { findCategory, flatDocsSlugs } from '$lib/docs/nav';
-	import { m } from '$lib/paraglide/messages';
-	import { getLocale } from '$lib/paraglide/runtime';
+	import { liveEmbeds } from '#lib/docs/liveEmbed';
+	import { findCategory, flatDocsSlugs } from '#lib/docs/nav';
+	import { m } from '#lib/paraglide/messages';
+	import { getLocale } from '#lib/paraglide/runtime';
 
 	let { data } = $props();
 

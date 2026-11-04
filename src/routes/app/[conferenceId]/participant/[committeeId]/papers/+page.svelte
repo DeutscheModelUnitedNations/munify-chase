@@ -2,20 +2,20 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
-	import { workingPaperName } from '$lib/helpers/paperName';
-	import { m } from '$lib/paraglide/messages';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
+	import { workingPaperName } from '#lib/helpers/paperName';
+	import { m } from '#lib/paraglide/messages';
+	import { getCurrentUser } from '#lib/state/currentUser.svelte';
 	import {
 		statusLabel,
 		statusBadgeClass,
 		type PaperStatus
-	} from '$lib/components/resolutions/paperContext';
-	import Flag from '$lib/components/Flag.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	} from '#lib/components/resolutions/paperContext';
+	import Flag from '#lib/components/Flag.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import toast from 'svelte-french-toast';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 
 	const conferenceId = $derived(page.params.conferenceId!);
 	const committeeId = $derived(page.params.committeeId!);

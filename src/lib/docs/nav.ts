@@ -1,4 +1,4 @@
-import { m } from '$lib/paraglide/messages';
+import { m } from '#lib/paraglide/messages';
 
 /**
  * Sidebar structure of the user manual. Page titles come from each markdown

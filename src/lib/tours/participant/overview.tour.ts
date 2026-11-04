@@ -1,5 +1,5 @@
-import { m } from '$lib/paraglide/messages';
-import type { Tour } from '$lib/tours/types';
+import { m } from '#lib/paraglide/messages';
+import type { Tour } from '#lib/tours/types';
 
 /** Participant conference overview for NSAs and visitors. Anchors live in the page. */
 export const tour: Tour = {

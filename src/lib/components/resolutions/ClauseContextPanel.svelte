@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { client } from '$lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
 	import CommentThread from './CommentThread.svelte';
 	import AmendmentList from './AmendmentList.svelte';
 	import AmendmentComposer from './AmendmentComposer.svelte';
 	import ClauseVotePanel from './ClauseVotePanel.svelte';
 	import { isTeam, type ResolutionViewer } from './paperContext';
 	import type { OperativeClause } from '@deutschemodelunitednations/munify-resolution-editor';
-	import { browser } from '$app/environment';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { browser } from '$app/env';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 
 	interface Props {
 		paperId: string;

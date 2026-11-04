@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { openExternal } from '$lib/platform';
+	import { openExternal } from '#lib/platform/index';
 
 	interface Props {
 		href: string;

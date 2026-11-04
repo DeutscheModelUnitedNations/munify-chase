@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { getCachedAccessToken, tauriLogin } from '$lib/platform/oidc';
-	import chaseLogo from '$assets/logo/svg/chase_logo_blue_text.svg';
+	import { getCachedAccessToken, tauriLogin } from '#lib/platform/oidc';
+	import chaseLogo from '#assets/logo/svg/chase_logo_blue_text.svg';
 
 	type LoginState = 'idle' | 'loading' | 'error';
 	let loginState = $state<LoginState>('idle');

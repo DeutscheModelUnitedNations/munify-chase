@@ -31,6 +31,7 @@ Die Karte **Präsentationsansicht** steuert den geteilten Bildschirm:
 - **Layout**: wähle **Standard Layout** oder **Layout für kleine Bildschirme**, je nach Display in deinem Raum.
 - Zwei Schieberegler für die Schriftgröße (10 bis 50, mit Live-Vorschau): einer für die Basis-Schriftgröße und einer für den Resolutionstext. Sie sind getrennt, damit du den Resolutionstext anders skalieren kannst als alles andere auf dem Bildschirm.
 - **Regionalgruppenanzeige**: legt fest, ob Aufschlüsselungen nach Regionalgruppen auf dem geteilten Bildschirm erscheinen.
+- **Anträge anzeigen** (standardmäßig **An**): solange Anträge ausstehen, listet der geteilte Bildschirm sie in einer eigenen Kachel. Erscheint nur, wenn **Anträge** für dein Gremium aktiviert sind. Admins können einzelne Antragsarten in den Konferenzeinstellungen ausblenden. In der Befehlspalette gibt es **Anträge in der Präsentation anzeigen** und **Anträge in der Präsentation ausblenden**.
 
 Unter [Präsentationsmodus](./presentation-mode) erfährst du, was im Laufe deiner Sitzung automatisch angezeigt wird.
 

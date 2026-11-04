@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
 	import Combobox from '../Combobox.svelte';
-	import { client } from '$lib/api/rumbleClient/client';
-	import stateOfDebateTemplates from '$lib/data/stateOfDebateTemplates';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import { client } from '#lib/api/rumbleClient/client';
+	import stateOfDebateTemplates from '#lib/data/stateOfDebateTemplates';
+	import { promiseToastStrings } from '#lib/utils/toast';
 
 	interface Props {
 		committeeId: string;

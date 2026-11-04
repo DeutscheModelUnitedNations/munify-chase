@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
-	import AiIcon from '$lib/components/AiIcon.svelte';
+	import AiIcon from '#lib/components/AiIcon.svelte';
 
 	interface Props {
 		label: string;

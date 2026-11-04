@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
-	import { m } from '$lib/paraglide/messages';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
+	import { m } from '#lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { promiseToastStrings } from '#lib/utils/toast';
 	import toast from 'svelte-french-toast';
 
 	interface Props {

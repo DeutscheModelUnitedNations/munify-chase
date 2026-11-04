@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { m } from '$lib/paraglide/messages';
-	import Kbd from '$lib/components/Kbd.svelte';
-	import { formatHotkey } from '$lib/helpers/hotkey';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import { commandPalette, PALETTE_SHORTCUT } from '$lib/commands/palette.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import Kbd from '#lib/components/Kbd.svelte';
+	import { formatHotkey } from '#lib/helpers/hotkey';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { commandPalette, PALETTE_SHORTCUT } from '#lib/commands/palette.svelte';
 	import { routeHelp } from './routeHelp';
 
 	const help = $derived(page.route.id ? routeHelp[page.route.id] : undefined);

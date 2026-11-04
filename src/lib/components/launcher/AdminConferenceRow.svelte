@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { m } from '$lib/paraglide/messages';
-	import { getLocale } from '$lib/paraglide/runtime';
-	import { deriveStatus, formatDateRange } from '$lib/helpers/launcher';
+	import { m } from '#lib/paraglide/messages';
+	import { getLocale } from '#lib/paraglide/runtime';
+	import { deriveStatus, formatDateRange } from '#lib/helpers/launcher';
 	import LauncherFlag from './LauncherFlag.svelte';
 	import StatusDot from './StatusDot.svelte';
 	import CommitteeStack from './CommitteeStack.svelte';

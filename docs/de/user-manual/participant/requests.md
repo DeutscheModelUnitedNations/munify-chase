@@ -40,3 +40,7 @@ Doch anders überlegt? Tippe auf das **×** (**Antrag zurückziehen**) neben ein
 ## Wie es weitergeht
 
 Der Vorsitz bekommt eine Benachrichtigung **Neuer Antrag** und bearbeitet Anträge nach Art und dann nach Zeitpunkt. Sobald der Vorsitz deinen Antrag als erledigt markiert, verschwindet er aus deiner Karte. Eine eigene Benachrichtigung bekommst du nicht. Danach kannst du dieselbe Antragsart erneut stellen.
+
+Ausstehende Anträge stehen meist auch auf dem Präsentationsbildschirm, mit deiner Flagge, dem Namen deiner Delegation und der Antragsart. Vorsitz und Admins können sie dort ausblenden.
+
+Hebst du stattdessen dein Länderschild, kann der Vorsitz den Antrag für dich hinzufügen. Er reiht sich wie jeder andere in die Warteschlange ein, erscheint aber nicht in deiner Karte **Anträge**.

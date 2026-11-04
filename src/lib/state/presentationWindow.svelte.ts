@@ -1,4 +1,4 @@
-import { isTauri } from '$lib/platform';
+import { isTauri } from '#lib/platform/index';
 
 const TAURI_LABEL = 'presentation';
 

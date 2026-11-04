@@ -1,5 +1,5 @@
-import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
-import * as m from '$lib/paraglide/messages.js';
+import type { CommitteestatusEnum } from '#lib/api/rumbleClient/client';
+import * as m from '#lib/paraglide/messages';
 
 export function getCommitteeStatusText(
 	category: CommitteestatusEnum,

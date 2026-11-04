@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
-	import { getCommitteeStatusBackground } from '$lib/utils/committeeStatus';
+	import type { CommitteestatusEnum } from '#lib/api/rumbleClient/client';
+	import { getCommitteeStatusBackground } from '#lib/utils/committeeStatus';
 	import Marquee from 'svelte-fast-marquee';
 	import { onMount } from 'svelte';
-	import * as m from '$lib/paraglide/messages.js';
-	import { getLocale } from '$lib/paraglide/runtime';
+	import * as m from '#lib/paraglide/messages';
+	import { getLocale } from '#lib/paraglide/runtime';
 	import dayjs from 'dayjs';
 	import duration from 'dayjs/plugin/duration';
-	import { getServerTime } from '$lib/state/serverTime.svelte';
+	import { getServerTime } from '#lib/state/serverTime.svelte';
 
 	interface Props {
 		text: string;

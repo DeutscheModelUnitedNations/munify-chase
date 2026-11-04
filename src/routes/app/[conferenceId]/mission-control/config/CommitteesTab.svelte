@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
+	import { m } from '#lib/paraglide/messages';
+	import BasicCard from '#lib/components/BasicCard.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
 	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import { promiseToastStrings } from '#lib/utils/toast';
 
 	interface Committee {
 		id: string;

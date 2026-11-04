@@ -19,7 +19,7 @@ presence export and delegator's presence import) with a live link between the tw
 | Custom roles                 | Each custom role (press, judges, …) gets a "CHASE access" setting: spectator (the default), team or none.                                                                                                                                                                                                                                                                                                                                                          |
 | Supervisors                  | `SPECTATOR`, as today.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | Presence → delegator         | A live view of chase's records on the attendance import page, scored as today (`scoreDelegates` / `scoreNsas`). **The team applies it**; nothing is written automatically.                                                                                                                                                                                                                                                                                         |
-| Adopted resolutions          | Automatic: chase records a resolution as ADOPTED, delegator fetches the compiled PDF and stores it as a `resolution` in that committee. Adopting it again replaces it.                                                                                                                                                                                                                                                                                             |
+| Adopted resolutions          | Automatic: chase records a resolution as ADOPTED, delegator renders the adopted text in its own header and stores it as a `resolution` in that committee. Adopting it again replaces it.                                                                                                                                                                                                                                                                           |
 | Working papers               | ACCEPTED working papers appear in chase as drafts and **stay in sync** with delegator's newer versions until chase starts editing them.                                                                                                                                                                                                                                                                                                                            |
 | NSA check-in                 | NSAs only. Chase's NSA scanner accepts delegator's digital nametag (the rotating `MUN1…` code) and a new printed card, both verified offline, plus a search by name. The 6-character `attendanceCode` goes.                                                                                                                                                                                                                                                        |
 | NSA cards                    | A new PDF in delegator: name, NSA, icon and a signed QR. The card is valid until the conference ends and can be revoked by its card number. Unlinked, chase prints the same card with its own key.                                                                                                                                                                                                                                                                 |
@@ -111,17 +111,26 @@ tested (`mirror.ts` in chase).
 
 The same pattern the other way: chase gets read rules for the link on its presence events,
 conference users and adopted resolution papers, and delegator's worker watches them with live
-queries through the generated chase client. The adopted resolution's PDF comes from chase's
-existing server-side compile, fetched with the link token.
+queries through the generated chase client. Delegator renders the adopted resolution's PDF itself
+(typst and the resolution editor are in both apps), so it prints in delegator's header: the
+conference's emblem and the committee's resolution headline. Chase's `/api/pdf` is not involved.
 
 - **Presence:** delegator keeps the latest `linkPresence` per conference in memory and in a
   `chasePresenceSnapshot` row (JSON, `fetchedAt`), and publishes it. The attendance import page
   shows it live, scored by the existing `scoreDelegates` / `scoreNsas`, and the team applies it
   with the existing buttons. The file upload stays below, under "advanced".
-- **Resolutions:** for each adopted paper, the worker downloads the PDF into the bucket
-  (`stored_file`, through the storedFile handler) and upserts `resolution` by a new
-  `chasePaperId` (unique, nullable). The file rules from CLAUDE.md apply: a `FILE_SOURCES` entry
-  for the link as uploader, and the existing `resolutionOf` read rule.
+- **Resolutions:** chase lets the link read FINAL papers, their `VOTE_CONCLUDED` snapshots and
+  the votes' outcomes, of synced conferences only, and its conclude and delete mutations now
+  publish the snapshot table too. Delegator's worker watches the concluding snapshots per
+  conference (nested `paper { vote { outcome } }`, so a later outcome reaches it as well), on its
+  own debounce, so presence never triggers a compile; syncs run one at a time. A paper counts when
+  its vote is ADOPTED; its text is the latest concluding snapshot (`adoptedResolutions.ts`). The
+  worker renders the new ones and those with a newer snapshot (`#api/services/typst`, shared with
+  `/api/pdf`), stores the PDF without an uploader (`storeGeneratedFile`) and upserts `resolution`
+  by `chasePaperId` (unique) with `chaseSnapshotId`. A re-render replaces only the file, so a
+  title or committee the team changed stays. A resolution whose paper is no longer adopted is
+  deleted; its old PDFs are left to the file cleanup, which the existing `resolutionOf` read rule
+  and `fileRef()` column already cover.
 
 ## NSA nametags and cards
 

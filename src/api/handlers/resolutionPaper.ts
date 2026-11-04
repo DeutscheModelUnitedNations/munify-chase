@@ -10,7 +10,9 @@ import {
 import {
 	isParticipantInConference,
 	isTeamInConference,
-	isPaperAuthor
+	isPaperAuthor,
+	linkedDelegator,
+	SYNCED_CONFERENCE
 } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { nanoid, nanoidValidation } from '#lib/helpers/nanoid';
@@ -30,6 +32,23 @@ function createInitialYjsState(): Buffer {
 	jsonToYDoc(doc, { preamble: [], operative: [], committeeName: '' });
 	return Buffer.from(Y.encodeStateAsUpdate(doc));
 }
+
+// The linked DELEGATOR takes the adopted resolutions of its conferences back
+// (`docs/plans/delegator-link.md`).
+abilityBuilder.resolutionPaper.allow('read').when(
+	linkedDelegator({
+		where: { status: 'FINAL' as const, committee: { conference: SYNCED_CONFERENCE } },
+		columns: {
+			id: true,
+			committeeId: true,
+			agendaItemId: true,
+			status: true,
+			title: true,
+			documentNumber: true,
+			voteVotingSessionId: true
+		}
+	})
+);
 
 abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
 	return { where: { committee: isTeamInConference(ctx) } };
@@ -87,6 +106,7 @@ export const ResolutionPaperRef = ref;
 const statusEnum = enum_({ tsName: 'paperStatus' });
 
 const pubsub = rumblePubsub({ table: 'resolutionPaper' });
+const snapshotPubsub = rumblePubsub({ table: 'paperContentSnapshot' });
 
 query({ table: 'resolutionPaper' });
 
@@ -381,6 +401,8 @@ schemaBuilder.mutationFields((t) => ({
 						.sql.where
 				);
 			pubsub.removed();
+			// the paper's snapshots went with it
+			snapshotPubsub.removed();
 			return true;
 		}
 	}),
@@ -429,6 +451,7 @@ schemaBuilder.mutationFields((t) => ({
 			});
 
 			pubsub.updated(args.paperId);
+			snapshotPubsub.created();
 
 			return db.query.resolutionPaper
 				.findFirst(

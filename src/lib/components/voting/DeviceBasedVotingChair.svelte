@@ -28,7 +28,7 @@
 					name?: string | null;
 					alpha2Code?: string | null;
 					alpha3Code?: string | null;
-					faIcon?: string | null;
+					icon?: string | null;
 					type?: string | null;
 				} | null;
 			}>;
@@ -257,7 +257,7 @@
 	{#if nonVoters.length > 0}
 		<div class="alert alert-warning mt-4 flex-col items-start gap-2 p-3">
 			<span class="font-semibold">
-				<i class="fas fa-triangle-exclamation mr-1"></i>
+				<i class="ph-fill ph-warning mr-1"></i>
 				{m.didNotVoteYet({ count: String(nonVoters.length) })}
 			</span>
 			<div class="max-h-48 w-full overflow-y-auto">
@@ -276,7 +276,7 @@
 	{#if evaluationStage}
 		<div class="modal-action justify-around">
 			<button class="btn btn-lg flex gap-2" onclick={() => exit(true)}>
-				<i class="fas fa-xmark"></i>
+				<i class="ph-fill ph-x"></i>
 				{m.close()}
 				<Kbd hotkey="esc" />
 			</button>
@@ -289,7 +289,7 @@
 			class="btn btn-ghost btn-circle btn-sm"
 			onclick={() => exit(evaluationStage)}
 		>
-			<i class="fa-duotone fa-xmark"></i>
+			<i class="ph-duotone ph-x"></i>
 		</button>
 	</div>
 </Modal>

@@ -27,7 +27,7 @@
 							name?: string | null;
 							alpha2Code?: string | null;
 							alpha3Code?: string | null;
-							faIcon?: string | null;
+							icon?: string | null;
 							type?: string | null;
 						} | null;
 					} | null;
@@ -37,7 +37,7 @@
 							name?: string | null;
 							alpha2Code?: string | null;
 							alpha3Code?: string | null;
-							faIcon?: string | null;
+							icon?: string | null;
 							type?: string | null;
 						} | null;
 					} | null;
@@ -119,12 +119,12 @@
 			case 'speech_running':
 			case 'question_running':
 			case 'answer_running':
-				return 'fa-pause';
+				return 'pause';
 			case 'speech_stopped':
 			case 'answer_stopped':
-				return 'fa-diagram-next';
+				return 'steps';
 			default:
-				return 'fa-play';
+				return 'play';
 		}
 	});
 
@@ -390,7 +390,7 @@
 			title: buttonMessage,
 			context: m.speakersList,
 			group: 'page',
-			icon: buttonIcon.replace('fa-', ''),
+			icon: buttonIcon,
 			shortcut: 'shift+space',
 			// The widget only shows while someone is speaking
 			visible: () => hasSpeaker,
@@ -417,7 +417,7 @@
 		<div class="flex shrink-0 flex-col items-center gap-1">
 			<span class="font-mono text-sm {overtime ? 'text-error' : ''}">{timeFormatted}</span>
 			<button class="btn btn-xs {buttonClass} gap-1" onclick={handleButton}>
-				<i class="fas {buttonIcon} text-xs"></i>
+				<i class="ph-fill ph-{buttonIcon} text-xs"></i>
 				{buttonLabel}
 				<Kbd hotkey="shift+space" size="xs" class=" opacity-60" />
 			</button>

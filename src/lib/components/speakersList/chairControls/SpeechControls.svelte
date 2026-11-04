@@ -220,7 +220,7 @@
 				context,
 				keywords,
 				group: 'page',
-				icon: 'rotate-left',
+				icon: 'arrow-counter-clockwise',
 				shortcut: resetShortcut,
 				enabled: hasSpeakers,
 				run: resetTimer
@@ -236,9 +236,9 @@
 		onclick={toggleTimer}
 	>
 		{#if timerRunning}
-			<i class="fas fa-pause"></i>
+			<i class="ph-fill ph-pause"></i>
 		{:else}
-			<i class="fas fa-play"></i>
+			<i class="ph-fill ph-play"></i>
 		{/if}
 		{m.timer()}
 		<Kbd hotkey={timerShortcut} class="text-base-content" />
@@ -250,14 +250,14 @@
 			aria-label="remove time"
 			onclick={removeTime}
 		>
-			<i class="fas fa-minus"></i>
+			<i class="ph-fill ph-minus"></i>
 		</button>
 		<button
 			class="btn btn-lg join-item flex gap-2
 				{!speakersList?.speakers?.length ? 'btn-disabled' : ''}"
 			onclick={resetTimer}
 		>
-			<i class="fas fa-rotate-left"></i>
+			<i class="ph-fill ph-arrow-counter-clockwise"></i>
 			<Kbd hotkey={resetShortcut} class="text-base-content" />
 		</button>
 		<button
@@ -266,7 +266,7 @@
 			aria-label="add time"
 			onclick={addTime}
 		>
-			<i class="fas fa-plus"></i>
+			<i class="ph-fill ph-plus"></i>
 		</button>
 	</div>
 </div>

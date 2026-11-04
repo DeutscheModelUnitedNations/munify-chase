@@ -13,7 +13,7 @@
 		alpha2Code: string | null;
 		alpha3Code: string | null;
 		type: string;
-		faIcon: string | null;
+		icon: string | null;
 	}
 
 	interface Props {
@@ -27,7 +27,7 @@
 
 	let newName = $state('');
 	let newType = $state<'NSA' | 'UN'>('NSA');
-	let newFaIcon = $state('');
+	let newIcon = $state('');
 	let isCreating = $state(false);
 
 	async function createActor() {
@@ -41,14 +41,14 @@
 						conferenceId,
 						type: newType,
 						name: newName.trim(),
-						faIcon: newFaIcon.trim() || null
+						icon: newIcon.trim() || null
 					},
 					id: true
 				}),
 				promiseToastStrings(newType === 'NSA' ? m.nonStateActor() : m.unActor(), 'create')
 			);
 			newName = '';
-			newFaIcon = '';
+			newIcon = '';
 		} finally {
 			isCreating = false;
 		}
@@ -106,7 +106,7 @@
 									onclick={() => deleteActor(actor.id)}
 									aria-label={m.deleteRepresentation()}
 								>
-									<i class="fas fa-trash text-sm"></i>
+									<i class="ph-fill ph-trash text-sm"></i>
 								</button>
 							</td>
 						</tr>
@@ -144,7 +144,7 @@
 					type="text"
 					class="input input-bordered w-32"
 					placeholder="building-ngo"
-					bind:value={newFaIcon}
+					bind:value={newIcon}
 				/>
 			</div>
 			<button
@@ -156,7 +156,7 @@
 				{#if isCreating}
 					<span class="loading loading-spinner loading-sm"></span>
 				{:else}
-					<i class="fas fa-plus"></i>
+					<i class="ph-fill ph-plus"></i>
 				{/if}
 				{m.addNonStateActor()}
 			</button>

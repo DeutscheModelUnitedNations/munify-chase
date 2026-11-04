@@ -50,13 +50,13 @@
 	let editWhiteboardModalOpen = $state(false);
 
 	const selfAddTabs = [
-		{ id: true, label: m.on(), faIcon: 'fa-check' },
-		{ id: false, label: m.off(), faIcon: 'fa-xmark' }
+		{ id: true, label: m.on(), icon: 'check' },
+		{ id: false, label: m.off(), icon: 'x' }
 	];
 
 	const requestsTabs = [
-		{ id: true, label: m.on(), faIcon: 'fa-check' },
-		{ id: false, label: m.off(), faIcon: 'fa-xmark' }
+		{ id: true, label: m.on(), icon: 'check' },
+		{ id: false, label: m.off(), icon: 'x' }
 	];
 
 	const presentationUrl = $derived(
@@ -116,7 +116,7 @@
 			id: 'setup.whiteboard',
 			title: m.commandEditWhiteboard,
 			group: 'page',
-			icon: 'pencil',
+			icon: 'pencil-simple',
 			visible: () => !!committee,
 			run: openWhiteboardEditor
 		},
@@ -125,7 +125,7 @@
 			title: m.enterFullscreen,
 			context: m.presentationMode,
 			group: 'page',
-			icon: 'expand',
+			icon: 'arrows-out',
 			visible: () => !!committee && canToggleFullscreen,
 			enabled: presentationOpen,
 			run: toggleFullscreen
@@ -168,7 +168,7 @@
 				</BasicCard>
 				<BasicCard className="relative group" data-tour="setup.whiteboard">
 					<button class="btn mb-4" onclick={openWhiteboardEditor}>
-						<i class="fas fa-pencil"></i>
+						<i class="ph-fill ph-pencil-simple"></i>
 						{m.edit()}
 					</button>
 					<WhiteboardViewer data={committee.whiteboardContent} />
@@ -201,7 +201,7 @@
 							class="btn btn-primary btn-lg flex items-center gap-3"
 							onclick={openPresentation}
 						>
-							<i class="fas fa-projector"></i>
+							<i class="ph-fill ph-projector-screen"></i>
 							{m.openPresentation()}
 							<Kbd hotkey="alt+P" class="text-base-content" />
 						</button>
@@ -214,7 +214,7 @@
 								title={presentationOpen() ? m.enterFullscreen() : m.openPresentation()}
 								aria-label={m.enterFullscreen()}
 							>
-								<i class="fas fa-expand"></i>
+								<i class="ph-fill ph-arrows-out"></i>
 								{m.enterFullscreen()}
 							</button>
 						{/if}

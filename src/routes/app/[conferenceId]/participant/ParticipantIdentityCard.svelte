@@ -8,7 +8,7 @@
 			alpha2Code?: string | null;
 			alpha3Code?: string | null;
 			type?: 'DELEGATION' | 'NSA' | 'UN';
-			faIcon?: string | null;
+			icon?: string | null;
 		} | null;
 	}
 

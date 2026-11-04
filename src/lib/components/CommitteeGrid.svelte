@@ -65,13 +65,13 @@
 						{committee.name}
 					</div>
 				</div>
-				<IconInfoBox text={committee.activeAgendaItem?.title ?? '—'} faIcon="podium" />
+				<IconInfoBox text={committee.activeAgendaItem?.title ?? '—'} icon="lectern" />
 				{#if environment === 'TEAM'}
-					<IconInfoBox text={committee.stateOfDebate ?? '—'} faIcon="diagram-next" />
+					<IconInfoBox text={committee.stateOfDebate ?? '—'} icon="steps" />
 				{/if}
 				<IconInfoBox
 					text={getCommitteeStatusText(committee.status)}
-					faIcon={getCommitteeStatusIcon(committee.status)}
+					icon={getCommitteeStatusIcon(committee.status)}
 					committeeStatus={committee.status}
 					until={new Date(committee.statusUntil)}
 				/>

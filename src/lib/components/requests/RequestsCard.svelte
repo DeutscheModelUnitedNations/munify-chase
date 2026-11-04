@@ -26,7 +26,7 @@
 		id: true,
 		status: true,
 		createdAt: true,
-		requestType: { id: true, name: true, faIcon: true, priority: true }
+		requestType: { id: true, name: true, icon: true, priority: true }
 	});
 
 	// Same order as the chairs' pending-requests list: requestType.priority, then createdAt.
@@ -38,7 +38,7 @@
 		},
 		id: true,
 		name: true,
-		faIcon: true,
+		icon: true,
 		priority: true,
 		delegatesOnly: true
 	});
@@ -103,7 +103,7 @@
 			title: m.withdrawRequestAction,
 			context: () => req.requestType?.name ?? '',
 			group: 'page' as const,
-			icon: 'xmark',
+			icon: 'x',
 			run: () => withdraw(req.id)
 		}))
 	]);
@@ -117,7 +117,7 @@
 			<ul class="flex flex-col gap-2">
 				{#each sortedMyRequests as req (req.id)}
 					<li class="bg-base-200 flex items-center gap-2 rounded-lg px-3 py-2">
-						<i class="fas fa-{(req.requestType?.faIcon ?? 'fa-flag').replace('fa-', '')}"></i>
+						<i class="ph-fill ph-{req.requestType?.icon ?? 'flag'}"></i>
 						<span class="flex-1 text-sm">{req.requestType?.name}</span>
 						<span class="badge badge-warning badge-sm">{m.pending()}</span>
 						<button
@@ -126,7 +126,7 @@
 							onclick={() => withdraw(req.id)}
 							aria-label={m.withdrawRequestAction()}
 						>
-							<i class="fas fa-xmark"></i>
+							<i class="ph-fill ph-x"></i>
 						</button>
 					</li>
 				{/each}
@@ -142,7 +142,7 @@
 			aria-describedby={pickableTypes.length === 0 ? 'no-request-types-hint' : undefined}
 			onclick={openPicker}
 		>
-			<i class="fas fa-hand"></i>
+			<i class="ph-fill ph-hand"></i>
 			{m.makeARequest()}
 		</button>
 		{#if sortedTypes.length === 0}
@@ -173,7 +173,7 @@
 					class="btn btn-ghost w-full justify-start gap-2"
 					onclick={() => submitRequest(rt.id)}
 				>
-					<i class="fas fa-{(rt.faIcon ?? 'fa-flag').replace('fa-', '')}"></i>
+					<i class="ph-fill ph-{rt.icon ?? 'flag'}"></i>
 					{rt.name}
 				</button>
 			</li>

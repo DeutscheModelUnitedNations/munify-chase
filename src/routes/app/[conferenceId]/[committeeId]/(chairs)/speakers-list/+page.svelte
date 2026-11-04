@@ -54,7 +54,7 @@
 							name: true,
 							alpha2Code: true,
 							alpha3Code: true,
-							faIcon: true,
+							icon: true,
 							type: true
 						}
 					},
@@ -65,7 +65,7 @@
 							name: true,
 							alpha2Code: true,
 							alpha3Code: true,
-							faIcon: true,
+							icon: true,
 							type: true
 						}
 					}
@@ -79,7 +79,7 @@
 				name: true,
 				alpha2Code: true,
 				alpha3Code: true,
-				faIcon: true,
+				icon: true,
 				type: true
 			}
 		},
@@ -92,7 +92,7 @@
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true,
-					faIcon: true,
+					icon: true,
 					type: true
 				}
 			}

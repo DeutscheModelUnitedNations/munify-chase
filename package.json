@@ -36,6 +36,7 @@
 		"@m1212e/sveltekit-oidc": "^0.0.46",
 		"@m1212e/urql-crosstab-sync": "^0.1.0",
 		"@mlc-ai/web-llm": "^0.2.86",
+		"@phosphor-icons/core": "^2.1.1",
 		"@pothos/plugin-validation": "^4.3.4",
 		"@sveltejs/adapter-node": "^6.0.0",
 		"@sveltejs/kit": "^3.1.0",
@@ -158,6 +159,7 @@
 		"wonka": "6.3.6"
 	},
 	"dependencies": {
+		"@phosphor-icons/web": "^2.1.2",
 		"@urql/core": "^6.0.3",
 		"drizzle-kit": "^1.0.0-rc.5-ab785fc",
 		"drizzle-orm": "^1.0.0-rc.5-ab785fc",

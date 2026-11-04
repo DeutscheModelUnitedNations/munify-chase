@@ -1068,7 +1068,7 @@ export type ImportDataConferenceUser = {
 export type ImportDataRepresentation = {
   alpha2Code?: String | null | undefined,
   alpha3Code?: String | null | undefined,
-  faIcon?: String | null | undefined,
+  icon?: String | null | undefined,
   id: ID,
   name?: String | null | undefined,
   regionalGroup?: RegionalgroupEnum | null | undefined,
@@ -1078,7 +1078,7 @@ export type ImportDataRepresentation = {
 export type ImportDataRequestType = {
   delegatesOnly?: Boolean | null | undefined,
   enabled?: Boolean | null | undefined,
-  faIcon?: String | null | undefined,
+  icon?: String | null | undefined,
   id?: ID | null | undefined,
   name: String    
 };
@@ -1275,7 +1275,7 @@ export type Mutation = {
     alpha2Code?: String | null | undefined,
     alpha3Code?: String | null | undefined,
     conferenceId: ID,
-    faIcon?: String | null | undefined,
+    icon?: String | null | undefined,
     id?: ID | null | undefined,
     name?: String | null | undefined,
     type: RepresentationtypeEnum
@@ -1288,7 +1288,7 @@ export type Mutation = {
   createRequestType: (p: {
     conferenceId: ID,
     delegatesOnly?: Boolean | null | undefined,
-    faIcon?: String | null | undefined,
+    icon?: String | null | undefined,
     id?: ID | null | undefined,
     name: String,
     showOnPresentation?: Boolean | null | undefined
@@ -1519,7 +1519,7 @@ export type Mutation = {
   updateRequestType: (p: {
     delegatesOnly?: Boolean | null | undefined,
     enabled?: Boolean | null | undefined,
-    faIcon?: String | null | undefined,
+    icon?: String | null | undefined,
     id: ID,
     name?: String | null | undefined,
     priority?: Int | null | undefined,
@@ -2153,7 +2153,7 @@ export type Representation = {
     where?: ConferencememberWhereInputArgument | null | undefined
   }) => Conferencemember[],
   createdAt: DateTime,
-  faIcon: String | null,
+  icon: String | null,
   id: ID,
   name: String | null,
   regionalGroup: RegionalgroupEnum | null,
@@ -2166,7 +2166,7 @@ export type RepresentationOrderInputArgument = {
   alpha3Code?: SortingParameter | null | undefined,
   conferenceId?: SortingParameter | null | undefined,
   createdAt?: SortingParameter | null | undefined,
-  faIcon?: SortingParameter | null | undefined,
+  icon?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
   name?: SortingParameter | null | undefined,
   regionalGroup?: SortingParameter | null | undefined,
@@ -2191,7 +2191,7 @@ export type RepresentationWhereInputArgument = {
   conferenceId?: IDWhereInputArgument | null | undefined,
   conferenceMembers?: ConferencememberWhereInputArgument | null | undefined,
   createdAt?: DateTimeWhereInputArgument | null | undefined,
-  faIcon?: StringWhereInputArgument | null | undefined,
+  icon?: StringWhereInputArgument | null | undefined,
   id?: IDWhereInputArgument | null | undefined,
   name?: StringWhereInputArgument | null | undefined,
   regionalGroup?: RegionalgroupEnum | null | undefined,
@@ -2287,7 +2287,7 @@ export type Requesttype = {
   createdAt: DateTime,
   delegatesOnly: Boolean,
   enabled: Boolean,
-  faIcon: String | null,
+  icon: String | null,
   id: ID,
   name: String,
   priority: Int,
@@ -2306,7 +2306,7 @@ export type RequesttypeOrderInputArgument = {
   createdAt?: SortingParameter | null | undefined,
   delegatesOnly?: SortingParameter | null | undefined,
   enabled?: SortingParameter | null | undefined,
-  faIcon?: SortingParameter | null | undefined,
+  icon?: SortingParameter | null | undefined,
   id?: SortingParameter | null | undefined,
   name?: SortingParameter | null | undefined,
   priority?: SortingParameter | null | undefined,
@@ -2323,7 +2323,7 @@ export type RequesttypeWhereInputArgument = {
   createdAt?: DateTimeWhereInputArgument | null | undefined,
   delegatesOnly?: BooleanWhereInputArgument | null | undefined,
   enabled?: BooleanWhereInputArgument | null | undefined,
-  faIcon?: StringWhereInputArgument | null | undefined,
+  icon?: StringWhereInputArgument | null | undefined,
   id?: IDWhereInputArgument | null | undefined,
   name?: StringWhereInputArgument | null | undefined,
   priority?: IntWhereInputArgument | null | undefined,

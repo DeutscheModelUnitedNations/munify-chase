@@ -48,7 +48,7 @@
 	>
 		{#snippet ListItem(option)}
 			<div class="flex items-center gap-2">
-				<i class="fas fa-file-alt"></i>
+				<i class="ph-fill ph-file-text"></i>
 				<span>{option.label}</span>
 			</div>
 		{/snippet}
@@ -59,7 +59,7 @@
 				aria-label="Clear selection"
 				onclick={() => (value = '')}
 			>
-				<i class="fas fa-trash"></i>
+				<i class="ph-fill ph-trash"></i>
 			</button>
 		{/snippet}
 	</Combobox>
@@ -71,7 +71,7 @@
 					abort();
 				}}
 			>
-				<i class="fas fa-xmark mr-2"></i>
+				<i class="ph-fill ph-x mr-2"></i>
 				{m.abort()}
 			</button>
 		{/if}
@@ -84,7 +84,7 @@
 				}
 			}}
 		>
-			<i class="fas fa-save mr-2"></i>
+			<i class="ph-fill ph-floppy-disk mr-2"></i>
 			{m.submitStateOfDebate()}
 		</button>
 	</div>

@@ -10,7 +10,7 @@
 			name: string | null;
 			alpha2Code: string | null;
 			alpha3Code: string | null;
-			faIcon: string | null;
+			icon: string | null;
 		};
 	}
 
@@ -28,7 +28,7 @@
 			name: string | null;
 			alpha3Code: string | null;
 			type: string;
-			faIcon: string | null;
+			icon: string | null;
 		};
 	}
 

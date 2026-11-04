@@ -30,7 +30,7 @@
 		"@hocuspocus/provider": "^4.8.0",
 		"@hocuspocus/server": "^4.8.0",
 		"@inlang/cli": "^3.6.0",
-		"@inlang/paraglide-js": "^2.29.3",
+		"@inlang/paraglide-js": "^3.1.0",
 		"@lingual/i18n-check": "^0.9.5",
 		"@m1212e/oidc": "^0.3.1",
 		"@m1212e/rumble": "^0.27.7",

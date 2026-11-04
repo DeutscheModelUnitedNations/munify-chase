@@ -131,6 +131,11 @@ conference's emblem and the committee's resolution headline. Chase's `/api/pdf` 
   title or committee the team changed stays. A resolution whose paper is no longer adopted is
   deleted; its old PDFs are left to the file cleanup, which the existing `resolutionOf` read rule
   and `fileRef()` column already cover.
+  While the link is active nobody deletes such a resolution in delegator (the delete rule and the
+  disabled button in the resolution manager, with a note why), since the next sync would bring it
+  back; unlinking clears `chasePaperId`, which makes them ordinary resolutions. Typst comes with
+  the `typst` dependency's platform package, which every `bun install` (the image's included)
+  puts into `node_modules`; the compile runs that binary directly.
 
 ## NSA nametags and cards
 

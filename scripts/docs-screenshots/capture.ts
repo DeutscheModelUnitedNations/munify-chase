@@ -22,6 +22,9 @@ const FREEZE_CSS = `*, *::before, *::after {
 	transition-duration: 0s !important;
 	transition-delay: 0s !important;
 	caret-color: transparent !important;
+}
+#cc-main {
+	display: none !important;
 }`;
 
 const MESSAGES_DIR = join(ROOT, 'messages');

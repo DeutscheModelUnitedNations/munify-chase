@@ -5,6 +5,7 @@ import { instanceLinkPubsub } from './linkPubsub';
 import { openLinkToken } from './linkTokens';
 import { mirrorConference } from './mirror';
 import { reconcileConference, releaseConference } from './reconcile';
+import { syncWorkingPapers } from './workingPaperSync';
 
 /**
  * The link worker (`docs/plans/delegator-link.md`): mirrors every DELEGATOR conference that has not
@@ -175,7 +176,15 @@ function watchConference({
 			assignedRole: { id: true },
 			user: PERSON
 		}),
-		remote.liveQuery.conferenceSupervisors({ __args: ofConference, id: true, user: PERSON })
+		remote.liveQuery.conferenceSupervisors({ __args: ofConference, id: true, user: PERSON }),
+		// the accepted working papers; a new accepted version arrives in `versions`
+		remote.liveQuery.papers({
+			__args: {
+				where: { type: 'WORKING_PAPER', delegation: { conferenceId: { eq: conferenceId } } }
+			},
+			id: true,
+			versions: { id: true }
+		})
 	];
 	const unsubscribes = live.map((result) => result.subscribe(changed));
 	return () => {
@@ -266,6 +275,8 @@ async function syncConference({
 				supervisors: Array.from(supervisors)
 			})
 		);
+		// after the reconcile: a draft needs its committee, agenda item and seat in place
+		await syncWorkingPapers({ remote, conferenceId });
 		await db
 			.update(schema.instanceLink)
 			.set({ lastEventAt: new Date(), lastReconcileAt: new Date(), lastError: null })

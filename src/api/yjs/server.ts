@@ -22,6 +22,7 @@ import {
 import { nativeToRequestEvent } from '#api/services/auth';
 import { OIDC } from '#api/services/OIDC';
 import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from '#lib/api/yjs/statelessMessages';
+import { detachFromDelegator } from '#api/services/link/detach';
 
 const PERSIST_DEBOUNCE_MS = 1500;
 
@@ -206,6 +207,12 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 		// onConnect ran before us and skipped authorization because ctx was null.
 		// Now that ctx is set, authorize the paper access.
 		await authorizeConnection(paperId, connContext.ctx, connectionConfig);
+	},
+
+	// A draft taken over from DELEGATOR becomes CHASE's own on the first edit somebody makes; the
+	// link's own text updates come through a direct connection, which carries no session.
+	onChange: async ({ documentName: paperId, context }) => {
+		if (context?.ctx) await detachFromDelegator(paperId);
 	},
 
 	// In Hocuspocus v4.x onConnect runs BEFORE onAuthenticate. For web clients

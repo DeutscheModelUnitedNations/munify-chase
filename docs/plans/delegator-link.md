@@ -193,16 +193,28 @@ The module is `#lib/helpers/identityCode.ts` in delegator and a copy in chase
 
 ## Working papers → chase
 
-- `linkWorkingPapers(conferenceId)` lists the working papers whose latest version is `ACCEPTED`,
-  with committee, agenda item, delegation and version number. It is part of the snapshot.
-- Chase creates or updates a `resolutionPaper` draft: `delegatorPaperId` (unique),
-  `delegatorVersion`, content seeded into the Yjs document, and `creatorCommitteeMemberId` set to
-  the delegation's committee member in the paper's committee.
-- **Kept in sync until chase edits it:** the first local edit (a Yjs update not from the sync,
-  or any status change) sets `detachedAt`. From then on delegator's newer versions are ignored,
-  and the paper shows "taken over from DELEGATOR, version n".
-- A paper without an agenda item, or whose delegation has no seat in that committee, is listed on
-  delegator's CHASE status card as "not transferred", with the reason.
+- Delegator lets the link read working papers of released mirrored conferences that have an
+  accepted version, and only their accepted versions (`paperPermissions.ts`,
+  `paperVersionPermissions.ts`). The content is the resolution editor's JSON, the same chase
+  stores.
+- Chase's link worker watches them per conference and, after each reconcile, runs
+  `syncWorkingPapers` (`src/api/services/link/workingPaperSync.ts`). `workingPaperChanges`
+  (`workingPapers.ts`, unit tested) decides: a paper goes across with its latest accepted version
+  as a `WORKING_PAPER` draft, written by its delegation's seat in its agenda item's committee
+  (`committeeMemberId(roleId, committeeId)`); `resolutionPaper.delegatorPaperId` (unique),
+  `delegatorVersion` and `detachedAt` record where it came from. The Yjs document is written with
+  the draft, before anybody can open it.
+- **Kept in sync until chase changes it:** a newer accepted version replaces the text through the
+  live document (`applyServerMutation` + `replaceResolution`), so open editors see it. The first
+  edit through a user's connection (Hocuspocus `onChange` with a session; the link's own updates
+  come through a direct connection without one) or any `updateResolutionPaper` by someone who may
+  update the paper sets `detachedAt` (`detach.ts`); from then on newer versions are ignored. The
+  paper page shows "From DELEGATOR, version n" (`DelegatorOriginBadge`), with a hint saying
+  which of the two it is.
+- A draft whose paper is gone from delegator is deleted unless chase changed it.
+- A paper without an agenda item, without its delegation's seat in that committee, or with a text
+  the editor cannot read stays behind (`leftBehind`, with the reason). Showing that list on
+  delegator's CHASE card is still open.
 
 ## Familiarize-with-CHASE mail
 

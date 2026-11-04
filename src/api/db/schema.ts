@@ -445,7 +445,13 @@ export const resolutionPaper = snakeCase.table('resolution_paper', {
 	// votingSession row.
 	voteVotingSessionId: text().references((): AnyPgColumn => votingSession.id, {
 		onDelete: 'set null'
-	})
+	}),
+	/** The DELEGATOR working paper this draft was taken over from (`docs/plans/delegator-link.md`). */
+	delegatorPaperId: text().unique(),
+	/** The DELEGATOR version the draft's text is. */
+	delegatorVersion: integer(),
+	/** When CHASE first changed the draft; from then on DELEGATOR's newer versions are ignored. */
+	detachedAt: timestamp({ mode: 'date' })
 });
 
 export const paperYjsDoc = snakeCase.table('paper_yjs_doc', {

@@ -2081,6 +2081,9 @@ type Resolutionpaper {
   """Get the committeeMembers related to this resolutionPaper"""
   creatorCommitteeMember(orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): Committeemember!
   creatorCommitteeMemberId: ID!
+  delegatorPaperId: ID
+  delegatorVersion: Int
+  detachedAt: DateTime
   documentNumber: String
 
   """Get the paperEditors related to this resolutionPaper"""
@@ -2112,6 +2115,9 @@ input ResolutionpaperOrderInputArgument {
   committeeId: SortingParameter
   createdAt: SortingParameter
   creatorCommitteeMemberId: SortingParameter
+  delegatorPaperId: SortingParameter
+  delegatorVersion: SortingParameter
+  detachedAt: SortingParameter
   documentNumber: SortingParameter
   id: SortingParameter
   status: SortingParameter
@@ -2133,6 +2139,9 @@ input ResolutionpaperWhereInputArgument {
   createdAt: DateTimeWhereInputArgument
   creatorCommitteeMember: CommitteememberWhereInputArgument
   creatorCommitteeMemberId: IDWhereInputArgument
+  delegatorPaperId: IDWhereInputArgument
+  delegatorVersion: IntWhereInputArgument
+  detachedAt: DateTimeWhereInputArgument
   documentNumber: StringWhereInputArgument
   editors: PapereditorWhereInputArgument
   id: IDWhereInputArgument

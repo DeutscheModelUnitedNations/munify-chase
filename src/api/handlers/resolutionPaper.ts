@@ -18,6 +18,7 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { nanoid, nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 import { readPaperJson } from '#api/yjs/server';
+import { detachFromDelegator } from '#api/services/link/detach';
 import { and, count, eq, inArray } from 'drizzle-orm';
 import {
 	toRoman,
@@ -245,6 +246,12 @@ schemaBuilder.mutationFields((t) => ({
 			if (Object.keys(metaUpdate).length > 0) {
 				await db.update(schema.resolutionPaper).set(metaUpdate).where(updateFilter.sql.where);
 			}
+			// any change here makes a draft taken over from DELEGATOR CHASE's own
+			const mayUpdate = await db.query.resolutionPaper.findFirst({
+				...updateFilter.query.single,
+				columns: { id: true }
+			});
+			if (mayUpdate) await detachFromDelegator(args.id);
 
 			if (args.status === 'SUBMITTED') {
 				const paper = await db.query.resolutionPaper

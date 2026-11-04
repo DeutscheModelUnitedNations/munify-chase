@@ -22,7 +22,7 @@
 		isDownloading = true;
 		try {
 			const result = await client.query.committeeMembers({
-				__args: { where: { representation: { conferenceId } } },
+				__args: { where: { representation: { conferenceId: { eq: conferenceId } } } },
 				id: true,
 				committeeId: true,
 				users: {

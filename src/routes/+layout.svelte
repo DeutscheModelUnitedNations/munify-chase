@@ -16,6 +16,7 @@
 	import { onMount } from 'svelte';
 	import Alert from '#lib/components/Alert/PromiseAlert.svelte';
 	import OfflineBanner from '#lib/components/OfflineBanner.svelte';
+	import CookieBanner from '#lib/components/CookieBanner.svelte';
 	import Inspect from 'svelte-inspect-value';
 
 	dayjs.extend(duration);
@@ -58,6 +59,7 @@
 />
 <Alert />
 <OfflineBanner />
+<CookieBanner />
 
 {#if dev}
 	<Inspect.Panel />

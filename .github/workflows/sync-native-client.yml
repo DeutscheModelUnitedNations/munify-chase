@@ -34,7 +34,7 @@ jobs:
     env:
       SYNC_BRANCH: sync/main-into-native-client
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: native-client
           fetch-depth: 0

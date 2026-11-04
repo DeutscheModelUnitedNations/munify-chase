@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 		sameSite: 'lax'
 	});
 	// The provider's end-session endpoint lives on its own origin
-	redirect(308, await OIDC.getLogoutUrl(url), {
+	redirect(308, await OIDC.getLogoutUrl({ url, cookies }), {
 		external: [new URL(PUBLIC_OIDC_AUTHORITY).origin]
 	});
 };

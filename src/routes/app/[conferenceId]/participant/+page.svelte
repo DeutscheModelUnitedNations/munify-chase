@@ -10,6 +10,7 @@
 	import HelpButton from '#lib/tours/HelpButton.svelte';
 	import ParticipantIdentityCard from './ParticipantIdentityCard.svelte';
 	import MyAttendanceTab from './MyAttendanceTab.svelte';
+	import NametagLink from '#lib/components/delegatorLink/NametagLink.svelte';
 	import { registerCommands } from '#lib/commands/registry.svelte';
 
 	const currentUser = await getCurrentUser();
@@ -147,6 +148,7 @@
 
 	{#if role === 'NON_STATE_ACTOR' && conferenceUser}
 		<div class="p-4" data-tour="overview.attendance">
+			<div class="mb-3"><NametagLink conferenceId={page.params.conferenceId!} /></div>
 			<MyAttendanceTab conferenceUserId={conferenceUser.id} />
 		</div>
 	{/if}

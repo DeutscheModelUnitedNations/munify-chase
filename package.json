@@ -32,8 +32,9 @@
 		"@inlang/cli": "^3.6.0",
 		"@inlang/paraglide-js": "^2.29.3",
 		"@lingual/i18n-check": "^0.9.5",
+		"@m1212e/oidc": "^0.3.1",
 		"@m1212e/rumble": "^0.27.7",
-		"@m1212e/sveltekit-oidc": "^0.0.46",
+		"@m1212e/sveltekit-oidc": "^0.3.2",
 		"@m1212e/urql-crosstab-sync": "^0.1.0",
 		"@mlc-ai/web-llm": "^0.2.87",
 		"@pothos/plugin-validation": "^4.3.5",
@@ -179,8 +180,5 @@
 			"./src/api/*.ts",
 			"./src/api/*.js"
 		]
-	},
-	"patchedDependencies": {
-		"@m1212e/sveltekit-oidc@0.0.46": "patches/@m1212e%2Fsveltekit-oidc@0.0.46.patch"
 	}
 }

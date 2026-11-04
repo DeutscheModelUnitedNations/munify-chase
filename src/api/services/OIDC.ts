@@ -67,17 +67,22 @@ function normalizeOIDCClaims(claims: Record<string, unknown>): NormalizedOIDCCla
 export const OIDC = !building
 	? await makeOIDC({
 			development: dev,
-			oidcAuthority: PUBLIC_OIDC_AUTHORITY,
-			oidcClientId: PUBLIC_OIDC_CLIENT_ID,
-			oidcClientSecret: OIDC_CLIENT_SECRET,
-			oidcScope: OIDC_SCOPES,
+			issuer: PUBLIC_OIDC_AUTHORITY,
+			clientId: PUBLIC_OIDC_CLIENT_ID,
+			clientSecret: OIDC_CLIENT_SECRET,
+			scope: OIDC_SCOPES,
 			loginCallbackRoute: PUBLIC_OIDC_LOGIN_CALLBACK_ROUTE,
 			logoutCallbackRoute: PUBLIC_OIDC_LOGOUT_CALLBACK_ROUTE,
 			authenticatedRoutes: ['/app'],
 			logoutPath: '',
 			allowBearerToken: true,
-			async userLoggedInSuccessfully({ user }) {
-				const normalized = normalizeOIDCClaims(user);
+			async userLoggedInSuccessfully({ user, accessTokenClaims, idTokenClaims }) {
+				// `user` only carries the standard claims, Logto's `username` lives in the raw ones
+				const normalized = normalizeOIDCClaims({
+					...accessTokenClaims,
+					...idTokenClaims,
+					...user
+				});
 				if (!normalized.email) {
 					throw new Error('OIDC claim "email" is missing');
 				}

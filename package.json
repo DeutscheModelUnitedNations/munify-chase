@@ -17,7 +17,7 @@
 		"@ai-sdk/togetherai": "^3.0.76",
 		"@ai-sdk/xai": "^5.0.27",
 		"@deutschemodelunitednations/corporate-identity": "^2.1.0",
-		"@deutschemodelunitednations/docs-kit": "github:DeutscheModelUnitedNations/munify-docs-kit#8eaa3324163d4b4173c55eff411f08c736f35400",
+		"@deutschemodelunitednations/docs-kit": "github:DeutscheModelUnitedNations/munify-docs-kit#cd47c32c0bbf59a6e47cb827d4b70f05fdea207f",
 		"@deutschemodelunitednations/munify-resolution-editor": "^0.6.0",
 		"@eslint/compat": "^2.1.1",
 		"@eslint/js": "^10.0.1",

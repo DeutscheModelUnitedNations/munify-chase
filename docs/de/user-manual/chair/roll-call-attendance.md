@@ -38,7 +38,7 @@ Jemanden als anwesend zu markieren ist mehr als Buchführung. Es entscheidet dir
 Die Karte **NA-Anwesenheit** listet alle, die gerade in deinem Gremium eingecheckt sind, jeweils mit "Eingecheckt seit HH:MM". Klicke auf **NA-Person scannen**, um die Scanner-Schublade zu öffnen:
 
 1. Wähle **Einchecken** oder **Auschecken**.
-2. Scanne das gedruckte QR-Badge mit deiner Kamera, oder nutze **Code manuell eingeben** mit dem 6-stelligen Code, falls das Scannen fehlschlägt.
+2. Scanne die gedruckte NA-Karte oder das digitale Namensschild mit deiner Kamera. Beides wird auf deinem Gerät geprüft, das klappt also auch offline. Lässt sich der Code nicht scannen, gib unter **Nach Namen suchen** Name, E-Mail oder Organisation ein und wähle die Person aus der Liste.
 3. Ein laufendes Protokoll zeigt die letzten 10 Scans (grün mit Namen bei Erfolg, rot bei einem Fehler), dazu ein Tonsignal (hoher Ton bei Erfolg, tiefer Ton bei einem Fehler).
 
 Wer eingecheckt wird, wird automatisch aus jedem anderen Gremium ausgecheckt. Auschecken funktioniert auch, wenn die Person gerade woanders eingecheckt ist. Das Protokoll sagt dann, dass sie aus einem anderen Gremium ausgecheckt wurde. Die NA-Karte ist in der Offline-Demo nicht verfügbar.

@@ -48,3 +48,14 @@ A committee without delegations only shows a warning.
 ## Finishing
 
 On the final **Edit** step, Global Admins click **Create Conference**. You're taken straight to the launcher, where your new conference now appears. Everyone can click **Download as JSON** to save the file, for example to hand it to a Global Admin who can apply it.
+
+## Linking to DELEGATOR
+
+Instead of moving files, CHASE can be linked to one MUNify DELEGATOR instance. A system admin in DELEGATOR requests the link with this instance's address; a Global Admin here approves it on the launcher with the confirmation code both sides show. From then on:
+
+- Every DELEGATOR conference appears here by itself, with its committees, agenda items, roles, team and, once the assignment is released, its participants. The launcher no longer creates or imports conferences.
+- What comes from DELEGATOR is changed there: names, abbreviations, dates and people can't be edited or deleted here. Session state, presentation settings and anything you add locally stay yours.
+- DELEGATOR reads back the presence and the resolutions a committee adopts, and accepted working papers arrive here as drafts (marked **From DELEGATOR, version n**) until someone changes them here.
+- Unlinking, on either side, stops all of this. The rows stay as ordinary local ones.
+
+The file import and the presence export stay available under "advanced" for when there is no link.

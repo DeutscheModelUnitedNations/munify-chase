@@ -38,7 +38,7 @@ Marcar alguém como presente não é só uma formalidade. Determina diretamente 
 O cartão **Presença de ANE** lista toda a gente com entrada registada no seu comité, cada pessoa com a indicação "Registado desde HH:MM". Clique em **Ler pessoa ANE** para abrir o painel de leitura:
 
 1. Escolha **Registar entrada** ou **Registar saída**.
-2. Leia o crachá QR impresso com a câmara ou, se a leitura falhar, use **Introduzir código manualmente** com o código de 6 caracteres.
+2. Leia o cartão de ANE impresso ou o crachá digital com a câmara. Ambos são verificados no seu dispositivo, por isso funciona também offline. Se o código não for lido, escreva o nome, o e-mail ou a organização em **Procurar por nome** e escolha a pessoa na lista.
 3. Um registo mostra as últimas 10 leituras (a verde com o nome em caso de sucesso, a vermelho em caso de erro), com um sinal sonoro (um bip agudo para sucesso, um grave para erro).
 
 Registar a entrada de alguém regista automaticamente a saída dessa pessoa de qualquer outro comité. Registar a saída funciona mesmo que a pessoa tenha entrada registada noutro sítio, e o registo indica então que saiu de outro comité. O cartão dos ANE não está disponível na demonstração offline.

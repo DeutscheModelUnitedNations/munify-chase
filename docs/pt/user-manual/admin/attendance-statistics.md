@@ -14,7 +14,7 @@ Duas páginas no menu da conferência dão aos administradores e membros da equi
 
 - **Em falta**: ANE sem registo de entrada em lado nenhum e delegados ausentes, agrupados por comité. Este separador abre primeiro.
 - **Por comité**: presença por comité e registos de entrada de ANE em tempo real, com destaque para quem tem entrada registada há muito tempo sem saída (provavelmente esqueceu-se de ler o crachá à saída).
-- **Por ANE**: cada pessoa ANE com o seu código de presença e comité atual, além de **Cartão QR**, **Imprimir todos os cartões** e **Exportar CSV**. Consulte [Gestão de ANE](./nsa-management#people-and-attendance-codes).
+- **Por ANE**: cada pessoa ANE com o seu comité atual, além de **Cartão QR**, **Imprimir todos os cartões** e **Exportar CSV**. Consulte [Gestão de ANE](./nsa-management#people-and-attendance-codes).
 - **Histórico e correções de ANEs**: o registo completo de entradas de ANE, com **Adicionar registo** e um botão de edição por linha para correções.
 
 ![O separador de presença Por ANE com os códigos de presença, os botões de Cartão QR e Imprimir todos os cartões](shot:admin/attendance-by-nsa)

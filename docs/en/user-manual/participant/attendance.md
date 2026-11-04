@@ -22,8 +22,9 @@ If you believe you're marked absent by mistake, tell the chair. They can correct
 
 If you're attending as an NSA rather than a delegation, attendance works a bit differently:
 
-- Conference organizers issue you a printed badge with a personal QR code.
-- Chairs scan your badge at the door of each committee session you attend, which records a check-in or check-out event for you.
+- Chairs check you in and out at the door of each committee session you attend. They scan your **digital nametag** (in MUNify DELEGATOR, on your phone) or your **printed NSA card**. Both carry a signed code that the chair's device checks even without internet.
+- If the code won't scan, the chair finds you by name. Your printed card shows your name for exactly that reason.
+- If you lose your card, ask the organizers for a new one. The old card stops working once the new one is printed.
 - You still log in to CHASE to use speakers lists and requests. When you open the conference, your page shows **My Attendance**: every check-in and check-out, which committee it was for, and when it happened.
 
 ## Checking your own history

@@ -10,7 +10,7 @@
 
 	const events = await client.liveQuery.presenceEvents({
 		__args: {
-			where: { conferenceUserId },
+			where: { conferenceUserId: { eq: conferenceUserId } },
 			orderBy: { timestamp: 'desc' }
 		},
 		id: true,

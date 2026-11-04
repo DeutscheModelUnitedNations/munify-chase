@@ -1,0 +1,6 @@
+# Next to a MUNify DELEGATOR dev setup, which holds 5432: `bun run dev:linked`
+# (docs/plans/delegator-link.md, "Running both").
+services:
+  postgres:
+    ports: !override
+      - 15433:5432

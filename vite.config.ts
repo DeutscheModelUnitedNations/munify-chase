@@ -94,7 +94,8 @@ export default defineConfig({
 		// mkcert(),
 		devAutoRestart(),
 		// Local OIDC provider for development, users are configured in oidc-mock.yaml
-		oidcMock(),
+		// another port next to a DELEGATOR dev server, whose provider holds 8090 (`dev:linked`)
+		oidcMock({ port: process.env.OIDC_MOCK_PORT ? Number(process.env.OIDC_MOCK_PORT) : undefined }),
 		tailwindcss(),
 		paraglideVitePlugin({
 			project: './project.inlang',

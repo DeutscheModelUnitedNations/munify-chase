@@ -273,15 +273,11 @@ explains it.
 ## Status (2026-11-04)
 
 Phases 1 to 5 are built on `feat/chase-link` (delegator) and `feat/delegator-link` (chase), with
-unit tests; nothing has run against a database or two live instances yet. Still open:
-
-- The delegator team area's CHASE status card (link state, last event and reconcile, what waits
-  for the release, the working papers left behind with their reason) and "Open in CHASE" deep
-  links from the team pages; chase's "managed by DELEGATOR" badge linking back, and "Show my
-  nametag" for NSAs in chase.
-- The e2e specs listed under Tests, and `dev:linked` for two instances side by side.
-- CLAUDE-UI.md has no new components worth a pattern entry yet; CLAUDE.md has a "CHASE link"
-  section.
+unit tests, the team's CHASE status card (`ChaseStatusCard`, with the accepted working papers that
+stay behind, `chaseTransferIssue`), chase's links back (`ManagedByDelegatorBadge`, `NametagLink`),
+the link's authorization spec (`e2e/authorization/chase-link.spec.ts`, not run yet) and
+`dev:linked` (see "Running both"). Nothing has run against a database or two live instances yet.
+Still open: the remaining e2e specs listed under Tests, and pairing done by the dev seeds.
 
 ## Phases
 
@@ -321,3 +317,13 @@ unit tests; nothing has run against a database or two live instances yet. Still 
 - Chase needs `delegatorUserId` to resolve a scanned user id while the NSA has never logged into
   chase. With the same identity provider it equals the OIDC sub; with different ones it is still
   delegator's id, which is what the codes sign.
+
+## Running both
+
+Chase runs next to delegator's dev setup on its own ports: `bun run dev:linked` in chase starts
+its Postgres on 15433 (`linked.docker-compose.yml`), its oidc-mock on 8091 and the app on
+http://localhost:5174; `bun run db:migrate:linked` migrates that database. Chase needs
+`LINK_SECRET` (32 characters or more) in its `.env`. Delegator runs as usual (`bun run dev`, port
+5173, oidc-mock 8090). Then pair them: in delegator, a system admin opens the CHASE link page from
+the conference list and requests `http://localhost:5174` (plain http is accepted on loopback);
+in chase, a global admin approves it on the launcher with the code delegator shows.

@@ -39,7 +39,7 @@ const Input = schemaBuilder.inputType('ImportData', {
 							type: enum_({ tsName: 'representationType' }),
 							required: true
 						}),
-						faIcon: t.string(),
+						icon: t.string(),
 						regionalGroup: t.field({
 							type: enum_({ tsName: 'regionalGroup' })
 						})
@@ -107,7 +107,7 @@ const Input = schemaBuilder.inputType('ImportData', {
 					fields: (t) => ({
 						id: t.id(),
 						name: t.string({ required: true }),
-						faIcon: t.string(),
+						icon: t.string(),
 						enabled: t.boolean(),
 						delegatesOnly: t.boolean()
 					})
@@ -165,7 +165,7 @@ schemaBuilder.mutationFields((t) => ({
 							alpha2Code: representation.alpha2Code,
 							alpha3Code: representation.alpha3Code,
 							type: representation.representationType,
-							faIcon: representation.faIcon,
+							icon: representation.icon,
 							regionalGroup: representation.regionalGroup,
 							conferenceId: data.id
 						}))
@@ -259,7 +259,7 @@ schemaBuilder.mutationFields((t) => ({
 							id: requestType.id ?? undefined,
 							conferenceId: data.id,
 							name: requestType.name,
-							faIcon: requestType.faIcon,
+							icon: requestType.icon,
 							// array order is the natural hierarchy of the request types
 							priority: index,
 							enabled: requestType.enabled ?? true,

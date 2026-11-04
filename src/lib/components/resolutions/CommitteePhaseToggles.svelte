@@ -44,7 +44,7 @@
 				? m.commandCloseAmendmentSubmission
 				: m.commandOpenAmendmentSubmission,
 			group: 'page',
-			icon: 'file-circle-plus',
+			icon: 'file-plus',
 			run: () => set({ amendmentSubmissionOpen: !amendmentSubmissionOpen })
 		},
 		{
@@ -62,7 +62,7 @@
 				? m.commandCloseSupportReevaluation
 				: m.commandOpenSupportReevaluation,
 			group: 'page',
-			icon: 'scale-balanced',
+			icon: 'scales',
 			run: () => set({ supportReevaluationOpen: !supportReevaluationOpen })
 		}
 	]);

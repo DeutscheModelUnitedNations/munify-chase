@@ -30,7 +30,7 @@
 	{#each items as item (item.key)}
 		<div class="flex items-center gap-3">
 			{#if item.icon}
-				<i class="fas fa-{item.icon} text-primary w-7 flex-none text-center"></i>
+				<i class="ph-fill ph-{item.icon} text-primary w-7 flex-none text-center"></i>
 			{/if}
 			<span class="min-w-0 flex-1 truncate font-bold">{item.label}</span>
 			<div class="bg-base-200 h-2.5 w-16 flex-none overflow-hidden rounded-full sm:w-24">

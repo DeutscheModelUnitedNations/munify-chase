@@ -26,7 +26,7 @@ schemaBuilder.mutationFields((t) => ({
 			id: t.arg.id().validate(nanoidValidation),
 			conferenceId: t.arg.id({ required: true }),
 			name: t.arg.string({ required: true }),
-			faIcon: t.arg.string(),
+			icon: t.arg.string(),
 			delegatesOnly: t.arg.boolean(),
 			showOnPresentation: t.arg.boolean()
 		},
@@ -54,7 +54,7 @@ schemaBuilder.mutationFields((t) => ({
 						id: args.id,
 						conferenceId: args.conferenceId,
 						name: args.name,
-						faIcon: args.faIcon ?? undefined,
+						icon: args.icon ?? undefined,
 						priority,
 						delegatesOnly: args.delegatesOnly ?? undefined,
 						showOnPresentation: args.showOnPresentation ?? undefined
@@ -81,7 +81,7 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			id: t.arg.id({ required: true }),
 			name: t.arg.string(),
-			faIcon: t.arg.string(),
+			icon: t.arg.string(),
 			priority: t.arg.int(),
 			enabled: t.arg.boolean(),
 			delegatesOnly: t.arg.boolean(),
@@ -97,7 +97,7 @@ schemaBuilder.mutationFields((t) => ({
 
 			const updateSet: Record<string, unknown> = {};
 			if (args.name !== undefined && args.name !== null) updateSet.name = args.name;
-			if (args.faIcon !== undefined) updateSet.faIcon = args.faIcon;
+			if (args.icon !== undefined) updateSet.icon = args.icon;
 			if (args.priority !== undefined && args.priority !== null) updateSet.priority = args.priority;
 			if (args.enabled !== undefined && args.enabled !== null) updateSet.enabled = args.enabled;
 			if (args.delegatesOnly !== undefined && args.delegatesOnly !== null)

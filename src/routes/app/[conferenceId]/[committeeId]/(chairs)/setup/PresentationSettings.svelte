@@ -85,12 +85,12 @@
 		{
 			id: true,
 			label: m.on(),
-			faIcon: 'fa-check'
+			icon: 'check'
 		},
 		{
 			id: false,
 			label: m.off(),
-			faIcon: 'fa-xmark'
+			icon: 'x'
 		}
 	];
 
@@ -100,7 +100,7 @@
 			id: 'setup.regional-groups',
 			title: shown ? m.commandHideRegionalGroups : m.commandShowRegionalGroups,
 			group: 'page',
-			icon: 'earth-europe',
+			icon: 'globe-hemisphere-east',
 			run: () => toggleRegionalGroups(!shown)
 		};
 	};
@@ -124,7 +124,7 @@
 			title: m.commandSetPresentationLayout,
 			context: layoutPresetLabels[preset] ?? (() => preset),
 			group: 'page' as const,
-			icon: 'table-layout',
+			icon: 'layout',
 			visible: () => committeeData?.presentationLayout !== preset,
 			run: () => changeLayout(preset)
 		})),
@@ -147,7 +147,7 @@
 	<div class="divider"></div>
 	<div class="flex flex-col gap-4">
 		<div class="flex items-center gap-4">
-			<i class="fa-duotone fa-text-size text-2xl"></i>
+			<i class="ph-duotone ph-text-aa text-2xl"></i>
 			<input
 				type="range"
 				min="10"
@@ -170,7 +170,7 @@
 	<div class="divider"></div>
 	<div class="flex flex-col gap-4">
 		<div class="flex items-center gap-4">
-			<i class="fa-duotone fa-file-lines text-2xl"></i>
+			<i class="ph-duotone ph-file-text text-2xl"></i>
 			<input
 				type="range"
 				min="10"

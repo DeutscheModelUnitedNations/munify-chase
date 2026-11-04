@@ -19,7 +19,7 @@
 			id: 'chair.state-of-debate',
 			title: m.commandChangeStateOfDebate,
 			group: 'page',
-			icon: 'comments',
+			icon: 'chats',
 			shortcut: 'alt+d',
 			run: () => (open = !open)
 		}

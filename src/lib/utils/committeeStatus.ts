@@ -25,15 +25,15 @@ export function getCommitteeStatusText(
 export function getCommitteeStatusIcon(category: CommitteestatusEnum) {
 	switch (category) {
 		case 'FORMAL':
-			return 'podium';
+			return 'lectern';
 		case 'INFORMAL':
-			return 'messages';
+			return 'chats';
 		case 'MODERATED_INFORMAL':
-			return 'comments-question-check';
+			return 'chats-circle';
 		case 'PAUSE':
-			return 'mug-hot';
+			return 'coffee';
 		case 'SUSPENSION':
-			return 'forward-step';
+			return 'skip-forward';
 		default:
 			return 'question';
 	}

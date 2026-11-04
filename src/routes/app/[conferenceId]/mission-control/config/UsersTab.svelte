@@ -59,7 +59,7 @@
 						name: string | null;
 						alpha2Code: string | null;
 						alpha3Code: string | null;
-						faIcon: string | null;
+						icon: string | null;
 					};
 				}[];
 			}[];
@@ -70,7 +70,7 @@
 					name: string | null;
 					alpha3Code: string | null;
 					type: string;
-					faIcon: string | null;
+					icon: string | null;
 				};
 			}[];
 		};
@@ -90,7 +90,7 @@
 				name: string | null;
 				alpha2Code: string | null;
 				alpha3Code: string | null;
-				faIcon: string | null;
+				icon: string | null;
 			};
 			committee: { id: string; name: string; abbreviation: string };
 		} | null;
@@ -101,7 +101,7 @@
 				name: string | null;
 				alpha3Code: string | null;
 				type: string;
-				faIcon: string | null;
+				icon: string | null;
 			};
 		} | null;
 	}
@@ -377,11 +377,11 @@
 											{m.assignment()}
 										{/if}
 										{#if header.column.getIsSorted() === 'asc'}
-											<i class="fas fa-sort-up text-xs"></i>
+											<i class="ph-fill ph-sort-ascending text-xs"></i>
 										{:else if header.column.getIsSorted() === 'desc'}
-											<i class="fas fa-sort-down text-xs"></i>
+											<i class="ph-fill ph-sort-descending text-xs"></i>
 										{:else if header.column.getCanSort()}
-											<i class="fas fa-sort text-base-content/30 text-xs"></i>
+											<i class="ph-fill ph-arrows-down-up text-base-content/30 text-xs"></i>
 										{/if}
 									</div>
 								{/if}
@@ -450,7 +450,7 @@
 										disabled={isSelf}
 										title={isSelf ? m.youCannotEditYourself() : m.edit()}
 									>
-										<i class="fas fa-pen text-sm"></i>
+										<i class="ph-fill ph-pen text-sm"></i>
 									</button>
 									<button
 										class="btn btn-ghost btn-sm text-error"
@@ -459,7 +459,7 @@
 										disabled={isSelf}
 										title={isSelf ? m.youCannotEditYourself() : m.removeMember()}
 									>
-										<i class="fas fa-trash text-sm"></i>
+										<i class="ph-fill ph-trash text-sm"></i>
 									</button>
 								</div>
 							</td>
@@ -486,7 +486,7 @@
 					disabled={!table.getCanPreviousPage()}
 					aria-label={m.back()}
 				>
-					<i class="fas fa-chevron-left"></i>
+					<i class="ph-fill ph-caret-left"></i>
 				</button>
 				{#each getVisiblePages(pagination.pageIndex, table.getPageCount()) as item, i (item === 'ellipsis' ? `ellipsis-${i}` : item)}
 					{#if item === 'ellipsis'}
@@ -507,7 +507,7 @@
 					disabled={!table.getCanNextPage()}
 					aria-label={m.forward()}
 				>
-					<i class="fas fa-chevron-right"></i>
+					<i class="ph-fill ph-caret-right"></i>
 				</button>
 			</div>
 		</div>
@@ -543,7 +543,7 @@
 					{#if isBulkSubmitting}
 						<span class="loading loading-spinner loading-sm"></span>
 					{:else}
-						<i class="fas fa-plus"></i>
+						<i class="ph-fill ph-plus"></i>
 					{/if}
 					{m.addMember()}
 				</button>

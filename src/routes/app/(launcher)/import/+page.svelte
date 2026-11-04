@@ -226,7 +226,7 @@
 					}
 				}}
 			>
-				<i class="fa-solid fa-arrow-left"></i>
+				<i class="ph-fill ph-arrow-left"></i>
 				{step === 0 ? m.launcher() : m.back()}
 			</a>
 		</div>
@@ -237,11 +237,11 @@
 					class="btn btn-ghost btn-sm"
 					onclick={() => (showJsonPanel = !showJsonPanel)}
 				>
-					<i class="fa-solid fa-code"></i>
+					<i class="ph-fill ph-code"></i>
 					{showJsonPanel ? m.hideJson() : m.viewJson()}
 				</button>
 				<button type="button" class="btn btn-ghost btn-sm" onclick={downloadFile}>
-					<i class="fa-solid fa-download"></i>
+					<i class="ph-fill ph-download-simple"></i>
 					{m.save()}
 				</button>
 			{/if}
@@ -311,7 +311,7 @@
 			class="bg-base-100/90 border-base-content/10 sticky bottom-0 flex items-center justify-between gap-4 border-t px-6 py-3 backdrop-blur"
 		>
 			<button class="btn" onclick={() => (step = step - 1)}>
-				<i class="fa-solid fa-arrow-left"></i>
+				<i class="ph-fill ph-arrow-left"></i>
 				{m.back()}
 			</button>
 			<div class="text-base-content/55 text-sm">
@@ -319,7 +319,7 @@
 			</div>
 			<button class="btn btn-primary" onclick={() => (step = step + 1)}>
 				{step === 5 ? m.goToReview() : m.forward()}
-				<i class="fa-solid fa-arrow-right"></i>
+				<i class="ph-fill ph-arrow-right"></i>
 			</button>
 		</footer>
 	{/if}
@@ -336,7 +336,7 @@
 					onclick={() => (showJsonPanel = false)}
 					aria-label="Close"
 				>
-					<i class="fa-solid fa-xmark"></i>
+					<i class="ph-fill ph-x"></i>
 				</button>
 			</div>
 			<pre

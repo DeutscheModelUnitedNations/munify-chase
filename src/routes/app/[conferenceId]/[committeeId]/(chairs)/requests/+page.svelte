@@ -25,7 +25,7 @@
 		name: true,
 		alpha2Code: true,
 		alpha3Code: true,
-		faIcon: true
+		icon: true
 	} as const;
 
 	// Seats a chair can add a request for, same sources as the speakers list
@@ -43,7 +43,7 @@
 		__args: { where: { conferenceId: { eq: conferenceId }, enabled: { eq: true } } },
 		id: true,
 		name: true,
-		faIcon: true,
+		icon: true,
 		priority: true,
 		delegatesOnly: true
 	});
@@ -55,7 +55,7 @@
 		},
 		id: true,
 		createdAt: true,
-		requestType: { id: true, name: true, faIcon: true, priority: true },
+		requestType: { id: true, name: true, icon: true, priority: true },
 		conferenceUser: {
 			id: true,
 			name: true,
@@ -79,7 +79,7 @@
 		id: true,
 		status: true,
 		updatedAt: true,
-		requestType: { id: true, name: true, faIcon: true },
+		requestType: { id: true, name: true, icon: true },
 		conferenceUser: {
 			id: true,
 			name: true,
@@ -152,7 +152,7 @@
 			title: m.commandWithdrawNextRequest,
 			context: nextRequestContext,
 			group: 'page',
-			icon: 'xmark',
+			icon: 'x',
 			enabled: () => !!nextRequest,
 			run: () => nextRequest && withdraw(nextRequest.id)
 		}
@@ -188,9 +188,7 @@
 								class="bg-base-200 flex flex-wrap items-center gap-3 rounded-lg px-4 py-3 sm:flex-nowrap"
 								data-tour="requests.request"
 							>
-								<i
-									class="fas fa-{(req.requestType?.faIcon ?? 'fa-flag').replace('fa-', '')} text-xl"
-								></i>
+								<i class="ph-fill ph-{req.requestType?.icon ?? 'flag'} text-xl"></i>
 								<div class="flex min-w-0 flex-1 items-center gap-2">
 									<Flag representation={requestRepresentation(req)} size="xs" />
 									<div class="flex min-w-0 flex-col">
@@ -198,7 +196,7 @@
 											{req.requestType?.name}
 											{#if !req.conferenceUser}
 												<i
-													class="fas fa-user-pen text-base-content/40 ml-1 text-xs"
+													class="ph-fill ph-pencil-simple-line text-base-content/40 ml-1 text-xs"
 													title={m.requestAddedByChairs()}
 													aria-label={m.requestAddedByChairs()}
 												></i>
@@ -219,7 +217,7 @@
 									data-tour="requests.withdraw"
 									onclick={() => withdraw(req.id)}
 								>
-									<i class="fas fa-xmark"></i>
+									<i class="ph-fill ph-x"></i>
 									{m.withdrawRequestAction()}
 								</button>
 								<button
@@ -228,7 +226,7 @@
 									data-tour="requests.resolve"
 									onclick={() => resolve(req.id)}
 								>
-									<i class="fas fa-check"></i>
+									<i class="ph-fill ph-check"></i>
 									{m.resolveRequestAction()}
 								</button>
 							</li>
@@ -244,14 +242,14 @@
 					<summary
 						class="text-base-content/60 hover:text-base-content flex cursor-pointer select-none list-none items-center gap-1 text-sm transition-colors"
 					>
-						<i class="fas fa-chevron-right text-xs transition-transform group-open:rotate-90"></i>
+						<i class="ph-fill ph-caret-right text-xs transition-transform group-open:rotate-90"></i>
 						{m.recentRequestHistory({ count: history.length })}
 					</summary>
 					<ul class="mt-2 flex flex-col gap-1">
 						{#each history as req (req.id)}
 							{@const label = requesterLabel(req)}
 							<li class="bg-base-200 flex items-center gap-3 rounded-lg px-4 py-2 text-sm">
-								<i class="fas fa-{(req.requestType?.faIcon ?? 'fa-flag').replace('fa-', '')}"></i>
+								<i class="ph-fill ph-{req.requestType?.icon ?? 'flag'}"></i>
 								<span class="flex-1">{req.requestType?.name}</span>
 								<Flag representation={requestRepresentation(req)} size="xs" />
 								<span class="text-base-content/60">

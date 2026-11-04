@@ -34,7 +34,7 @@
 											name: string | null | undefined;
 											alpha2Code: string | null | undefined;
 											alpha3Code: string | null | undefined;
-											faIcon: string | null | undefined;
+											icon: string | null | undefined;
 											type: string | null | undefined;
 									  }
 									| null
@@ -126,7 +126,7 @@
 <div class="flex flex-col gap-4">
 	{#if items.length === 0}
 		<div class="text-base-content/50 py-4 text-center text-sm">
-			<i class="fas fa-circle-check text-success mr-1"></i>
+			<i class="ph-fill ph-check-circle text-success mr-1"></i>
 			All text adjustments reviewed
 		</div>
 	{:else}
@@ -173,8 +173,8 @@
 							{/if}
 							{#if (item.subjectAmendment?.sponsors?.length ?? 0) > 0}
 								<span class="text-base-content/40">
-									<i class="fas fa-users mr-0.5 text-[0.6rem]"></i>{item.subjectAmendment?.sponsors
-										?.length}
+									<i class="ph-fill ph-users mr-0.5 text-[0.6rem]"></i>{item.subjectAmendment
+										?.sponsors?.length}
 								</span>
 							{/if}
 						</div>
@@ -206,7 +206,7 @@
 								>
 									{#if aiEvaluated}
 										<AiIcon />
-										<i class="fas fa-wand-magic-sparkles text-primary"></i>
+										<i class="ph-fill ph-magic-wand text-primary"></i>
 										AI revision
 									{:else}
 										Manual edit
@@ -221,7 +221,7 @@
 										}}
 										title="Edit manually"
 									>
-										<i class="fas fa-pen text-xs"></i>
+										<i class="ph-fill ph-pen text-xs"></i>
 									</button>
 								{/if}
 							</div>
@@ -260,7 +260,7 @@
 										editMode[item.id] = true;
 									}}
 								>
-									<i class="fas fa-pen text-xs"></i>
+									<i class="ph-fill ph-pen text-xs"></i>
 									Edit manually
 								</button>
 							{/if}
@@ -295,7 +295,7 @@
 								onclick={() => acceptAiForItem(item)}
 							>
 								{#if busy}<AiSpinner size="xs" />{/if}
-								<i class="fas fa-wand-magic-sparkles"></i>
+								<i class="ph-fill ph-magic-wand"></i>
 								Accept AI
 							</button>
 						{:else}
@@ -305,7 +305,7 @@
 								onclick={() => keepOriginalForItem(item)}
 							>
 								{#if busy}<AiSpinner size="xs" />{/if}
-								<i class="fas fa-check"></i>
+								<i class="ph-fill ph-check"></i>
 								Confirm
 							</button>
 						{/if}

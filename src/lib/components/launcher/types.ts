@@ -4,7 +4,7 @@ export type LauncherRepresentation = {
 	type?: 'DELEGATION' | 'NSA' | 'UN' | null;
 	alpha2Code?: string | null;
 	alpha3Code?: string | null;
-	faIcon?: string | null;
+	icon?: string | null;
 	name?: string | null;
 };
 

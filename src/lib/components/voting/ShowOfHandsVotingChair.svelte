@@ -292,13 +292,13 @@
 				</span>
 				{#if votesOvershot}
 					<span class="text-error font-semibold">
-						<i class="fas fa-triangle-exclamation"></i>
+						<i class="ph-fill ph-warning"></i>
 						+{votesCast - presentDelegations}
 						{m.over()}
 					</span>
 				{:else if votesTotal === presentDelegations}
 					<span class="text-success font-semibold">
-						<i class="fas fa-circle-check"></i>
+						<i class="ph-fill ph-check-circle"></i>
 						{m.matching()}
 					</span>
 				{/if}
@@ -337,7 +337,7 @@
 
 	<div class="modal-action justify-around">
 		<button class="btn btn-lg flex gap-2" onclick={previousState} disabled={currentState === 'PRO'}>
-			<i class="fas fa-arrow-left"></i>
+			<i class="ph-fill ph-arrow-left"></i>
 			{m.back()}
 			<Kbd hotkey="backspace" />
 		</button>
@@ -348,13 +348,13 @@
 			}}
 		>
 			{#if currentState === 'EVALUATION'}
-				<i class="fas fa-xmark"></i>
+				<i class="ph-fill ph-x"></i>
 				{m.close()}
 			{:else if currentState === 'ABSTAIN' || (!withAbstentions && currentState === 'CON')}
-				<i class="fas fa-paper-plane"></i>
+				<i class="ph-fill ph-paper-plane-tilt"></i>
 				{m.publish()}
 			{:else}
-				<i class="fas fa-arrow-right"></i>
+				<i class="ph-fill ph-arrow-right"></i>
 				{m.forward()}
 			{/if}
 			<Kbd hotkey="enter" />
@@ -366,7 +366,7 @@
 				class="btn btn-ghost btn-circle btn-sm"
 				onclick={() => exit()}
 			>
-				<i class="fa-duotone fa-xmark"></i>
+				<i class="ph-duotone ph-x"></i>
 			</button>
 		</div>
 	</div>

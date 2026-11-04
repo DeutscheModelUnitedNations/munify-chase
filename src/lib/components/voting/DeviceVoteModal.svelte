@@ -70,7 +70,7 @@
 			title: m.commandVoteInFavor,
 			context: voteContext,
 			group: 'page',
-			icon: 'circle-plus',
+			icon: 'plus-circle',
 			visible: () => open,
 			enabled: () => !expired,
 			run: () => cast('PRO')
@@ -80,7 +80,7 @@
 			title: m.commandVoteAgainst,
 			context: voteContext,
 			group: 'page',
-			icon: 'circle-minus',
+			icon: 'minus-circle',
 			visible: () => open,
 			enabled: () => !expired,
 			run: () => cast('CON')
@@ -117,7 +117,7 @@
 				{expired ? 'pointer-events-none' : ''}"
 			onclick={() => cast('PRO')}
 		>
-			<i class="fas fa-circle-plus text-4xl"></i>
+			<i class="ph-fill ph-plus-circle text-4xl"></i>
 			{m.pro()}
 		</button>
 		<button
@@ -125,7 +125,7 @@
 				{expired ? 'pointer-events-none' : ''}"
 			onclick={() => cast('CON')}
 		>
-			<i class="fas fa-circle-minus text-4xl"></i>
+			<i class="ph-fill ph-minus-circle text-4xl"></i>
 			{m.con()}
 		</button>
 		{#if withAbstentions}
@@ -134,7 +134,7 @@
 					{expired ? 'pointer-events-none' : ''}"
 				onclick={() => cast('ABSTAIN')}
 			>
-				<i class="fas fa-circle text-4xl"></i>
+				<i class="ph-fill ph-circle text-4xl"></i>
 				{m.abstain()}
 			</button>
 		{/if}
@@ -142,7 +142,7 @@
 
 	{#if expired}
 		<div class="alert alert-info mt-4">
-			<i class="fas fa-lock"></i>
+			<i class="ph-fill ph-lock"></i>
 			<span>{selected ? m.deviceVoteLockedIn() : m.deviceVoteLockedNone()}</span>
 		</div>
 	{/if}

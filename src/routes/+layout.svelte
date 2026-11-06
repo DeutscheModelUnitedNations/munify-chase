@@ -15,6 +15,7 @@
 	import OfflineBanner from '#lib/components/OfflineBanner.svelte';
 	import CookieBanner from '#lib/components/CookieBanner.svelte';
 	import Inspect from 'svelte-inspect-value';
+	import { SPLASH_SCREENS } from '#lib/pwa/splashScreens';
 
 	dayjs.extend(duration);
 
@@ -45,6 +46,9 @@
 
 <svelte:head>
 	<title>MUNify CHASE</title>
+	{#each SPLASH_SCREENS as screen (screen.file)}
+		<link rel="apple-touch-startup-image" href="/{screen.file}" media={screen.media} />
+	{/each}
 </svelte:head>
 
 {@render children()}

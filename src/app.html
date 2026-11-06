@@ -7,6 +7,12 @@
 		<link rel="shortcut icon" href="/favicon.ico" />
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 		<meta name="apple-mobile-web-app-title" content="CHASE" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<!-- The installed app's title bar takes the navbar's colour (base-100 of the DMUN themes);
+		     the script below and setThemeInHTML keep it on the chosen theme -->
+		<meta name="theme-color" content="#FFFFFF" />
 		<link rel="manifest" href="/site.webmanifest" />
 		<link
 			rel="stylesheet"
@@ -35,6 +41,9 @@
 								: 'light'
 							: stored;
 					document.documentElement.setAttribute('data-theme', theme);
+					document
+						.querySelector('meta[name="theme-color"]')
+						.setAttribute('content', theme === 'dark' ? '#1B1837' : '#FFFFFF');
 				} catch (e) {
 					document.documentElement.setAttribute('data-theme', 'light');
 				}

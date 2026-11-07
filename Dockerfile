@@ -20,19 +20,19 @@ ENV PUBLIC_SHA=$SHA
 
 COPY --from=dependencies /build/dependencies .
 COPY . .
-# the build command generates a few things, such as i18n outputs
-# therefore we need to run the build command BEFORE we check for correctness
 RUN bun run build
 
 FROM node:lts-slim AS release
 WORKDIR /app/release
 
-# Patch OS packages in the base image to pick up security fixes
-# (e.g. glibc, libcap2, systemd CVEs flagged by Trivy)
+# Security fixes Debian released after the base image was built, and no npm: the server runs on
+# plain `node`, and Trivy flags what npm bundles (undici, tar, ...), which no override reaches.
 RUN apt-get update \
 	&& apt-get upgrade -y --no-install-recommends \
 	&& apt-get clean \
-	&& rm -rf /var/lib/apt/lists/*
+	&& rm -rf /var/lib/apt/lists/* \
+		/usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+		/usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 
 ARG VERSION
 ENV PUBLIC_VERSION=$VERSION

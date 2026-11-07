@@ -109,6 +109,10 @@ export default defineConfig({
 				warningFilter: (warning) => warning.code !== 'state_referenced_locally'
 			},
 			experimental: { remoteFunctions: true },
+			// OpenTelemetry: `src/instrumentation.server.ts` (picked up on its own) sets up the exporter
+			// before the app loads, and SvelteKit emits spans for handle, loads and remote functions
+			// into it. Both are inert unless OTEL_ENDPOINT_URL is set.
+			tracing: { server: true },
 			adapter: adapter({ precompress: true })
 		}),
 		wsPlugin()

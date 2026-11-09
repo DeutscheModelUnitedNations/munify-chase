@@ -1,24 +1,25 @@
 import {
-	looksLikeIdentityCard,
-	looksLikeIdentityCode,
-	verifyIdentityCard,
-	verifyIdentityCode
-} from './identityCode';
+	looksLikeSignedCode,
+	verifySignedCode,
+	type SignedCodeClaims,
+	type SignedCodeKeys
+} from '#lib/signedCode/signedCode';
 
 /**
  * Who a scanned NSA code stands for, decided the same way by the scanner (offline, from the NSAs
- * it has loaded) and by the server (which never trusts the scanner's answer).
+ * it has loaded) and by the server (which never trusts the scanner's answer). The codes are signed
+ * codes (`#lib/signedCode/signedCode`):
  *
- * - a digital nametag (`MUN1`) is signed by the linked DELEGATOR and names the person's DELEGATOR
- *   user id;
- * - a card (`MUC1`) is signed by the linked DELEGATOR (a DELEGATOR user id) or, printed here while
- *   unlinked, by this instance (the `conferenceUser` id). Only the person's current card counts.
+ * - a digital nametag (`live`), signed by the linked DELEGATOR, names the person's DELEGATOR user;
+ * - an NSA card (`nsaCard`) signed by the linked DELEGATOR names the DELEGATOR user too; one this
+ *   instance printed while unlinked names the `conferenceUser`. Only the person's current card
+ *   counts.
  */
 
-/** The public keys codes are checked against (raw, base64url); null where there is none. */
+/** The public keys codes are checked against, by key id: DELEGATOR's and this instance's own. */
 export interface IdentityKeys {
-	delegator: string | null;
-	own: string | null;
+	delegator: SignedCodeKeys;
+	own: SignedCodeKeys;
 }
 
 export interface NsaCandidate {
@@ -29,9 +30,9 @@ export interface NsaCandidate {
 
 export type NsaScanFailure =
 	| 'unsigned'
-	| 'malformed'
 	| 'forged'
 	| 'expired'
+	| 'wrongKind'
 	| 'otherConference'
 	| 'outdatedCard'
 	| 'notNsa'
@@ -40,32 +41,10 @@ export type NsaScanFailure =
 export type NsaScan<T extends NsaCandidate> =
 	{ found: true; nsa: T } | { found: false; reason: NsaScanFailure };
 
-type Signed = { signedBy: 'delegator' | 'own'; userId: string; cardNumber?: number };
+type PersonClaims = Extract<SignedCodeClaims, { kind: 'live' | 'nsaCard' }>;
+type Signed = { signedBy: 'delegator' | 'own'; claims: PersonClaims };
 
-async function verifyCard({
-	code,
-	keys,
-	conferenceId,
-	now
-}: {
-	code: string;
-	keys: IdentityKeys;
-	conferenceId: string;
-	now: number;
-}): Promise<Signed | NsaScanFailure> {
-	let failure: NsaScanFailure = 'noKey';
-	for (const signedBy of ['delegator', 'own'] as const) {
-		const publicKey = keys[signedBy];
-		if (!publicKey) continue;
-		const check = await verifyIdentityCard({ code, publicKey, conferenceId, now });
-		if (check.valid) return { signedBy, userId: check.userId, cardNumber: check.cardNumber };
-		failure = check.reason;
-		// only a signature by the other key may still make it genuine
-		if (check.reason !== 'forged') return failure;
-	}
-	return failure;
-}
-
+/** The code checked against DELEGATOR's keys, then this instance's: who signed it, and what it says. */
 async function verifyScan({
 	code,
 	keys,
@@ -77,11 +56,26 @@ async function verifyScan({
 	conferenceId: string;
 	now: number;
 }): Promise<Signed | NsaScanFailure> {
-	if (looksLikeIdentityCard(code)) return verifyCard({ code, keys, conferenceId, now });
-	if (!looksLikeIdentityCode(code)) return 'unsigned';
-	if (!keys.delegator) return 'noKey';
-	const check = await verifyIdentityCode({ code, publicKey: keys.delegator, now });
-	return check.valid ? { signedBy: 'delegator', userId: check.userId } : check.reason;
+	if (!looksLikeSignedCode(code)) return 'unsigned';
+	let failure: NsaScanFailure = 'noKey';
+	for (const signedBy of ['delegator', 'own'] as const) {
+		if (keys[signedBy].size === 0) continue;
+		const check = await verifySignedCode({ text: code, keys: keys[signedBy], now });
+		if (!check.valid) {
+			// only the other side's keys may still make it genuine
+			if (check.reason === 'expired') return 'expired';
+			failure = 'forged';
+			continue;
+		}
+		const { claims } = check;
+		// this instance only ever signs cards; DELEGATOR's nametags and cards both count
+		if (claims.kind === 'nsaCard' || (claims.kind === 'live' && signedBy === 'delegator')) {
+			if (claims.conferenceId !== conferenceId) return 'otherConference';
+			return { signedBy, claims };
+		}
+		return 'wrongKind';
+	}
+	return failure;
 }
 
 export async function identifyNsa<T extends NsaCandidate>({
@@ -99,13 +93,14 @@ export async function identifyNsa<T extends NsaCandidate>({
 }): Promise<NsaScan<T>> {
 	const signed = await verifyScan({ code: code.trim(), keys, conferenceId, now });
 	if (typeof signed === 'string') return { found: false, reason: signed };
+	const { claims } = signed;
 	const nsa = nsas.find((candidate) =>
 		signed.signedBy === 'delegator'
-			? candidate.delegatorUserId === signed.userId
-			: candidate.id === signed.userId
+			? candidate.delegatorUserId === claims.userId
+			: candidate.id === claims.userId
 	);
 	if (!nsa) return { found: false, reason: 'notNsa' };
-	if (signed.cardNumber !== undefined && signed.cardNumber !== nsa.cardNumber) {
+	if (claims.kind === 'nsaCard' && claims.cardNumber !== nsa.cardNumber) {
 		return { found: false, reason: 'outdatedCard' };
 	}
 	return { found: true, nsa };

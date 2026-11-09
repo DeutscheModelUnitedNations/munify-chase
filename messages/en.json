@@ -762,6 +762,7 @@
 	"nsaScanOtherConference": "This card is for another conference.",
 	"nsaScanOutdatedCard": "This card was replaced by a newer one.",
 	"nsaScanUnsigned": "This is no MUNify nametag or NSA card.",
+	"nsaScanWrongKind": "This code is no nametag or NSA card, such as the code on the application documents.",
 	"nsaSearchByName": "Find by name",
 	"nsaSearchNoResults": "Nobody found",
 	"nsaSearchPlaceholder": "Name, e-mail or organisation",

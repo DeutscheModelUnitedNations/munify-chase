@@ -49,7 +49,7 @@
 
 	const scanFailures: Record<NsaScanFailure, () => string> = {
 		unsigned: m.nsaScanUnsigned,
-		malformed: m.nsaScanUnsigned,
+		wrongKind: m.nsaScanWrongKind,
 		forged: m.nsaScanForged,
 		expired: m.nsaScanExpired,
 		otherConference: m.nsaScanOtherConference,

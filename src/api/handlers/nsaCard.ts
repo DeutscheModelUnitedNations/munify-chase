@@ -3,28 +3,44 @@ import { schemaBuilder } from '#api/rumble';
 import { isAdmin } from '#api/services/authHelper';
 import { identityKeys, ownNsaCards, reprintOwnNsaCard } from '#api/services/nsaCards';
 import { assertFindFirstExists } from '@m1212e/rumble';
-import type { IdentityKeys as IdentityKeysShape } from '#lib/helpers/nsaScan';
 
 /**
  * NSA cards and the keys their codes are checked with (`docs/plans/delegator-link.md`). The cards
  * here are the ones this instance prints while no DELEGATOR is linked.
  */
 
-const IdentityKeys = schemaBuilder.objectRef<IdentityKeysShape>('IdentityKeys');
+type SigningKeyShape = { kid: number; publicKey: string };
+
+const SigningKey = schemaBuilder.objectRef<SigningKeyShape>('SigningKey');
+schemaBuilder.objectType(SigningKey, {
+	description: 'A public key signed codes are checked against.',
+	fields: (t) => ({
+		kid: t.exposeInt('kid', { description: 'The key id codes name in their `kid` header.' }),
+		publicKey: t.exposeString('publicKey', { description: 'Ed25519, raw and base64url.' })
+	})
+});
+
+const IdentityKeys = schemaBuilder.objectRef<{
+	delegator: SigningKeyShape[];
+	own: SigningKeyShape[];
+}>('IdentityKeys');
 schemaBuilder.objectType(IdentityKeys, {
 	description:
-		'The public keys (raw, base64url) NSA nametags and cards are checked against; the scanner keeps them for offline use.',
+		'The public keys NSA nametags and cards are checked against; the scanner keeps them for offline use.',
 	fields: (t) => ({
-		delegator: t.exposeString('delegator', {
-			nullable: true,
-			description: "The linked DELEGATOR's key."
+		delegator: t.expose('delegator', {
+			type: [SigningKey],
+			description: "The linked DELEGATOR's keys (its `signedCodeKeys`)."
 		}),
-		own: t.exposeString('own', {
-			nullable: true,
-			description: "This instance's key, for its own cards."
+		own: t.expose('own', {
+			type: [SigningKey],
+			description: "This instance's keys, for its own cards."
 		})
 	})
 });
+
+const asList = (keys: ReadonlyMap<number, string>) =>
+	[...keys].map(([kid, publicKey]) => ({ kid, publicKey }));
 
 const NsaCard = schemaBuilder.objectRef<Awaited<ReturnType<typeof ownNsaCards>>[number]>('NsaCard');
 schemaBuilder.objectType(NsaCard, {
@@ -35,7 +51,7 @@ schemaBuilder.objectType(NsaCard, {
 		nsaIcon: t.exposeString('nsaIcon', { nullable: true }),
 		cardNumber: t.exposeInt('cardNumber'),
 		code: t.exposeString('code', {
-			description: 'The signed card code (`MUC1…`), for the QR code.'
+			description: 'The signed card code (kind `nsaCard`), for the QR code.'
 		})
 	})
 });
@@ -58,7 +74,8 @@ schemaBuilder.queryFields((t) => ({
 		type: IdentityKeys,
 		resolve: async (_root, _args, ctx) => {
 			ctx.mustBeLoggedIn();
-			return identityKeys();
+			const keys = await identityKeys();
+			return { delegator: asList(keys.delegator), own: asList(keys.own) };
 		}
 	})
 }));

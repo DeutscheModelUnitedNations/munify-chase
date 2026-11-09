@@ -965,14 +965,14 @@ input IDWhereInputArgument {
 }
 
 """
-The public keys (raw, base64url) NSA nametags and cards are checked against; the scanner keeps them for offline use.
+The public keys NSA nametags and cards are checked against; the scanner keeps them for offline use.
 """
 type IdentityKeys {
-  """The linked DELEGATOR's key."""
-  delegator: String
+  """The linked DELEGATOR's keys (its `signedCodeKeys`)."""
+  delegator: [SigningKey!]!
 
-  """This instance's key, for its own cards."""
-  own: String
+  """This instance's keys, for its own cards."""
+  own: [SigningKey!]!
 }
 
 """Import data. You can find the JSON schema here: /api/schema/import"""
@@ -1051,7 +1051,7 @@ type Instancelink {
   lastReconcileAt: DateTime
   linkedAt: DateTime
   outboundToken: String!
-  remoteIdentityKey: String
+  remoteSigningKeys: JSON
   remoteUrl: String!
   status: InstancelinkstatusEnum!
   updatedAt: DateTime
@@ -1067,7 +1067,7 @@ input InstancelinkOrderInputArgument {
   lastReconcileAt: SortingParameter
   linkedAt: SortingParameter
   outboundToken: SortingParameter
-  remoteIdentityKey: SortingParameter
+  remoteSigningKeys: SortingParameter
   remoteUrl: SortingParameter
   status: SortingParameter
   updatedAt: SortingParameter
@@ -1086,7 +1086,7 @@ input InstancelinkWhereInputArgument {
   lastReconcileAt: DateTimeWhereInputArgument
   linkedAt: DateTimeWhereInputArgument
   outboundToken: StringWhereInputArgument
-  remoteIdentityKey: StringWhereInputArgument
+  remoteSigningKeys: JSONWhereInputArgument
   remoteUrl: StringWhereInputArgument
   status: InstancelinkstatusEnum
   updatedAt: DateTimeWhereInputArgument
@@ -1308,7 +1308,7 @@ type Mutation {
 type NsaCard {
   cardNumber: Int!
 
-  """The signed card code (`MUC1…`), for the QR code."""
+  """The signed card code (kind `nsaCard`), for the QR code."""
   code: String!
   conferenceUserId: ID!
   name: String!
@@ -2203,6 +2203,15 @@ input RollcallsessionWhereInputArgument {
 enum SharecodepermissionEnum {
   EDIT
   SPONSOR
+}
+
+"""A public key signed codes are checked against."""
+type SigningKey {
+  """The key id codes name in their `kid` header."""
+  kid: Int!
+
+  """Ed25519, raw and base64url."""
+  publicKey: String!
 }
 
 enum SnapshottriggerEnum {

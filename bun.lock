@@ -16,6 +16,7 @@
         "@opentelemetry/resources": "^3.1.0",
         "@opentelemetry/sdk-trace": "^3.1.0",
         "@urql/core": "^6.0.3",
+        "cbor2": "2.3.0",
         "drizzle-kit": "1.0.0-rc.5",
         "drizzle-orm": "1.0.0-rc.5",
         "import-in-the-middle": "^3.6.0",
@@ -59,7 +60,7 @@
         "@inlang/paraglide-js": "^3.1.0",
         "@lingual/i18n-check": "^0.9.5",
         "@m1212e/oidc": "^0.3.1",
-        "@m1212e/rumble": "^0.28.0",
+        "@m1212e/rumble": "^0.29.0",
         "@m1212e/sveltekit-oidc": "^0.3.2",
         "@m1212e/urql-crosstab-sync": "^0.1.0",
         "@mlc-ai/web-llm": "^0.2.87",
@@ -236,6 +237,8 @@
     "@cacheable/memory": ["@cacheable/memory@2.2.0", "", { "dependencies": { "@cacheable/utils": "^2.5.0", "@keyv/bigmap": "^1.3.1", "hookified": "^1.15.1", "keyv": "^5.6.0" } }, "sha512-CTLKqLItRCEixEAewD3/j9DB3/o96gpTPD4eJ1v+DGOlxZRZncRQkGYqqnAGCscYd6RNeXfGeiuCphsPtqyIfQ=="],
 
     "@cacheable/utils": ["@cacheable/utils@2.5.0", "", { "dependencies": { "hashery": "^1.5.1", "keyv": "^5.6.0" } }, "sha512-buipgOVDkkPXNR5+xBpDw7Zk2n1EvU7qBJCNUcL7rhQ//kfpOXPAvQ511Os0vpLYJ1pZnvudNytkQt2hst3wqA=="],
+
+    "@cto.af/wtf8": ["@cto.af/wtf8@0.0.5", "", {}, "sha512-LfUFi+Vv4eDzj+XAtR89e3wwjXA/NZjUSwU5NhwbBrLecxPaBYFy3exCuc1j+D4UZeOVdqlsl8G7LmOt18V0tg=="],
 
     "@deutschemodelunitednations/corporate-identity": ["@deutschemodelunitednations/corporate-identity@2.1.0", "", { "dependencies": { "@fontsource/outfit": "^5.2.8", "@fontsource/roboto-mono": "^5.2.8", "@fontsource/vollkorn": "^5.2.10", "esbuild": "^0.25.10", "js-yaml": "^4.1.0", "tailwind-shades": "^1.1.2" } }, "sha512-i9Oxl5d267lVMCHwx0lqKK1lQoZQEwsEPQSvqqGb3jKNDBPQaH2sSItyck4GmT3Vbl8w54Be0OOsEv5YHNPT1A=="],
 
@@ -479,7 +482,7 @@
 
     "@m1212e/oidc": ["@m1212e/oidc@0.3.1", "", { "dependencies": { "jose": "^6.2.13", "oauth4webapi": "^3.8.8", "openid-client": "^6.8.8", "typebox": "^1.4.3" } }, "sha512-P5AAMivzjWiAVw6xdPiWuVoUOiqZe4tO05iXQIAMDhY2HW/kg213dodg47ERXFhcGAX8XjPJHyWcRRUD24yMkQ=="],
 
-    "@m1212e/rumble": ["@m1212e/rumble@0.28.0", "", { "dependencies": { "@escape.tech/graphql-armor": "^3.2.0", "@graphql-yoga/plugin-disable-introspection": "^2.25.6", "@opentelemetry/api": "^1.10.0", "@opentelemetry/semantic-conventions": "^1.44.0", "@pothos/core": "^4.16.0", "@pothos/plugin-drizzle": "^0.20.2", "@pothos/plugin-smart-subscriptions": "^4.1.7", "@pothos/plugin-tracing": "^1.1.4", "@pothos/plugin-validation": "^4.3.5", "@pothos/tracing-opentelemetry": "^1.2.1", "@urql/core": "^6.0.3", "@urql/exchange-graphcache": "^9.0.2", "@urql/introspection": "^1.2.1", "dataloader": "^2.2.3", "devalue": "^6.0.3", "es-toolkit": "^1.53.1", "graphql-scalars": "^2.0.1", "graphql-yoga": "^5.24.6", "libphonenumber-js": "^1.13.15", "pluralize": "^8.0.0", "wonka": "^6.3.6", "zod": "^4.6.7" }, "peerDependencies": { "@m1212e/sofa-api": "^0.18", "drizzle-orm": "^1", "graphql": "^16 || ^17", "graphql-ws": "^6", "svelte": "^5", "typescript": "^4 || ^5 || ^6 || ^7" }, "optionalPeers": ["@m1212e/sofa-api", "graphql-ws", "svelte"] }, "sha512-Uj6sYaZTavbzfY0iin0ARazpzc7YEDDGGDjgoq2sQl/7Yg8w39EyQehe3ITcxrtXZqm0xhNYaLVPZMtFh4Zxig=="],
+    "@m1212e/rumble": ["@m1212e/rumble@0.29.0", "", { "dependencies": { "@escape.tech/graphql-armor": "^3.2.0", "@graphql-yoga/plugin-disable-introspection": "^2.25.6", "@opentelemetry/api": "^1.10.0", "@opentelemetry/semantic-conventions": "^1.44.0", "@pothos/core": "^4.16.0", "@pothos/plugin-drizzle": "^0.20.2", "@pothos/plugin-smart-subscriptions": "^4.1.7", "@pothos/plugin-tracing": "^1.1.4", "@pothos/plugin-validation": "^4.3.5", "@pothos/tracing-opentelemetry": "^1.2.1", "@urql/core": "^6.0.3", "@urql/exchange-graphcache": "^9.0.2", "@urql/introspection": "^1.2.1", "dataloader": "^2.2.3", "devalue": "^6.0.3", "es-toolkit": "^1.53.1", "graphql-scalars": "^2.0.1", "graphql-yoga": "^5.24.6", "libphonenumber-js": "^1.13.15", "pluralize": "^8.0.0", "wonka": "^6.3.6", "zod": "^4.6.7" }, "peerDependencies": { "@m1212e/sofa-api": "^0.18", "drizzle-orm": "^1", "graphql": "^16 || ^17", "graphql-ws": "^6", "svelte": "^5", "typescript": "^4 || ^5 || ^6 || ^7" }, "optionalPeers": ["@m1212e/sofa-api", "graphql-ws", "svelte"] }, "sha512-KeysLaNRzM/YpssOWNnAOzLcb7adlhF3dLwWtK27/a7EgSIjXpAqYdYgyIdnxF2exsXqD6hlmmS4s1ajly/+pg=="],
 
     "@m1212e/sveltekit-oidc": ["@m1212e/sveltekit-oidc@0.3.2", "", { "dependencies": { "@m1212e/oidc": "^0.3.1" }, "peerDependencies": { "@sveltejs/kit": "^3.0.0" } }, "sha512-fikkisWVez8cMz8A6PUoY+mqg8VDulGrobDpsJBIqfinPJ157SabgUfMF9er0RzOAtZXm8y0tnRcd7C9LRHMtg=="],
 
@@ -962,6 +965,8 @@
     "camelcase": ["camelcase@5.3.1", "", {}, ""],
 
     "canvas-confetti": ["canvas-confetti@1.9.4", "", {}, "sha512-yxQbJkAVrFXWNbTUjPqjF7G+g6pDotOUHGbkZq2NELZUMDpiJ85rIEazVb8GTaAptNW2miJAXbs1BtioA251Pw=="],
+
+    "cbor2": ["cbor2@2.3.0", "", { "dependencies": { "@cto.af/wtf8": "0.0.5" } }, "sha512-76WB3hq8BoaGkMkBVJ27fW5LJU+qqDLEpgRNCG/SYKhODWXpVPOTD4UcUto3IEzYLA52nsvbhb0wabhHDn3qXg=="],
 
     "chai": ["chai@6.3.0", "", {}, "sha512-XWAtwJ6OHO+tj0EKCs0Y2UamnyOxseZWltU4x2U2wh8g4AigdjwvtUjvLP2tqkA/avxHEtzxNaqGq/YGNwckKg=="],
 

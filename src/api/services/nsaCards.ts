@@ -1,9 +1,18 @@
 import { db, schema } from '#api/db/db';
 import { and, eq, lt, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { identityCardExpiry, MAX_CARD_NUMBER } from '#lib/helpers/identityCode';
 import { identifyNsa, type IdentityKeys, type NsaScanFailure } from '#lib/helpers/nsaScan';
-import { issueOwnIdentityCard, ownIdentityPublicKey } from './identityKeyPair';
+import { ownSigningKeys, signOwnCode } from './identityKeyPair';
+
+/** The largest card number a card carries; a reprint past it is refused. */
+const MAX_CARD_NUMBER = 0xffff;
+
+/** When a card for a conference ending on `endDate` stops counting: the end of the day after (Unix seconds). */
+function cardExpiry(endDate: Date) {
+	const end = new Date(endDate);
+	end.setUTCHours(0, 0, 0, 0);
+	return Math.floor(end.getTime() / 1000) + 2 * 24 * 60 * 60;
+}
 
 /**
  * NSA attendance by signed codes (`docs/plans/delegator-link.md`): DELEGATOR's digital nametags,
@@ -15,13 +24,16 @@ import { issueOwnIdentityCard, ownIdentityPublicKey } from './identityKeyPair';
  * keep scanning at the conference they were printed for.
  */
 export async function identityKeys(): Promise<IdentityKeys> {
-	const link = await db.query.instanceLink.findFirst({ columns: { remoteIdentityKey: true } });
-	return { delegator: link?.remoteIdentityKey ?? null, own: await ownIdentityPublicKey() };
+	const link = await db.query.instanceLink.findFirst({ columns: { remoteSigningKeys: true } });
+	const delegator = new Map(
+		(link?.remoteSigningKeys ?? []).map(({ kid, publicKey }) => [kid, publicKey])
+	);
+	return { delegator, own: await ownSigningKeys() };
 }
 
 const SCAN_FAILURES: Record<NsaScanFailure, string> = {
 	unsigned: 'This is no MUNify nametag or NSA card',
-	malformed: 'This is no MUNify nametag or NSA card',
+	wrongKind: 'This code is no nametag or NSA card',
 	forged: 'This code was not issued for this conference',
 	expired: 'This code has expired',
 	otherConference: 'This card is for another conference',
@@ -94,13 +106,15 @@ export async function ownNsaCards({
 			conferenceMember: { with: { representation: { columns: { name: true, faIcon: true } } } }
 		}
 	});
-	const expiresAtSeconds = identityCardExpiry(conference.endDate);
+	const expiresAt = cardExpiry(conference.endDate);
 	return Promise.all(
 		users.map(async (user) => {
-			const code = await issueOwnIdentityCard({
+			const code = await signOwnCode({
+				kind: 'nsaCard',
 				userId: user.id,
 				conferenceId,
-				expiresAtSeconds,
+				issuedAt: Math.floor(Date.now() / 1000),
+				expiresAt,
 				cardNumber: user.cardNumber
 			});
 			if (!code)

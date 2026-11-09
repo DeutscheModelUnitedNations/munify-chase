@@ -762,6 +762,7 @@
 	"nsaScanOtherConference": "Diese Karte gilt für eine andere Konferenz.",
 	"nsaScanOutdatedCard": "Diese Karte wurde durch eine neuere ersetzt.",
 	"nsaScanUnsigned": "Das ist kein MUNify-Namensschild und keine NSA-Karte.",
+	"nsaScanWrongKind": "Dieser Code ist kein Namensschild und keine NA-Karte, etwa der Code auf den Anmeldeunterlagen.",
 	"nsaSearchByName": "Nach Namen suchen",
 	"nsaSearchNoResults": "Niemand gefunden",
 	"nsaSearchPlaceholder": "Name, E-Mail oder Organisation",

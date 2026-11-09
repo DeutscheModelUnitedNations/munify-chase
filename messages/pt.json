@@ -762,6 +762,7 @@
 	"nsaScanOtherConference": "Este cartão é de outra conferência.",
 	"nsaScanOutdatedCard": "Este cartão foi substituído por um mais recente.",
 	"nsaScanUnsigned": "Isto não é um crachá MUNify nem um cartão de ANE.",
+	"nsaScanWrongKind": "Este código não é um crachá nem um cartão de ANE, como o código dos documentos de inscrição.",
 	"nsaSearchByName": "Procurar por nome",
 	"nsaSearchNoResults": "Ninguém encontrado",
 	"nsaSearchPlaceholder": "Nome, e-mail ou organização",

@@ -1,8 +1,8 @@
 import { LINK_SECRET } from '$app/env/private';
-import { encodeIdentityCard, identityCardMessage } from '#lib/helpers/identityCode';
+import { signClaims, type SignedCodeClaims, type SignedCodeKeys } from '#lib/signedCode/signedCode';
 
 /**
- * The key pair this instance signs NSA cards with while no DELEGATOR is linked
+ * The key this instance signs NSA cards with while no DELEGATOR is linked
  * (`docs/plans/delegator-link.md`), derived from `LINK_SECRET` under a label of its own, so it
  * survives redeploys and every instance agrees on it. Without the secret there is none, and cards
  * cannot be printed here.
@@ -13,6 +13,9 @@ const PKCS8_ED25519_PREFIX = Uint8Array.from([
 	0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 0x04, 0x20
 ]);
 
+/** The key id this instance's codes name; its own keys are a set apart from DELEGATOR's. */
+const OWN_KID = 1;
+
 async function deriveKeys(secret: string) {
 	const hmac = await crypto.subtle.importKey(
 		'raw',
@@ -22,12 +25,16 @@ async function deriveKeys(secret: string) {
 		['sign']
 	);
 	const seed = new Uint8Array(
-		await crypto.subtle.sign('HMAC', hmac, new TextEncoder().encode('munify-chase-identity-key-v1'))
+		await crypto.subtle.sign(
+			'HMAC',
+			hmac,
+			new TextEncoder().encode(`munify-chase-signed-code-${OWN_KID}`)
+		)
 	);
 	const pkcs8 = new Uint8Array([...PKCS8_ED25519_PREFIX, ...seed]);
 	const privateKey = await crypto.subtle.importKey('pkcs8', pkcs8, 'Ed25519', true, ['sign']);
 	const { x } = await crypto.subtle.exportKey('jwk', privateKey);
-	if (!x) throw new Error('Could not derive the identity public key');
+	if (!x) throw new Error('Could not derive the signed code public key');
 	return { privateKey, publicKey: x };
 }
 
@@ -40,22 +47,20 @@ function keys() {
 	return derived;
 }
 
-/** The key this instance's cards are checked against (raw, base64url), or null without one. */
-export async function ownIdentityPublicKey() {
-	return (await keys())?.publicKey ?? null;
+/** The keys this instance's cards are checked against, by key id; none without a secret. */
+export async function ownSigningKeys(): Promise<SignedCodeKeys> {
+	const pair = await keys();
+	return new Map(pair ? [[OWN_KID, pair.publicKey]] : []);
 }
 
-/** A signed card, or undefined while this instance has no key. */
-export async function issueOwnIdentityCard(card: {
-	userId: string;
-	conferenceId: string;
-	expiresAtSeconds: number;
-	cardNumber: number;
-}) {
+/** Signs `claims` with this instance's key, or answers undefined while it has none. */
+export async function signOwnCode(claims: SignedCodeClaims) {
 	const pair = await keys();
 	if (!pair) return undefined;
-	const signature = new Uint8Array(
-		await crypto.subtle.sign('Ed25519', pair.privateKey, identityCardMessage(card))
-	);
-	return encodeIdentityCard({ ...card, signature });
+	return signClaims({
+		claims,
+		kid: OWN_KID,
+		sign: async (bytes) =>
+			new Uint8Array(await crypto.subtle.sign('Ed25519', pair.privateKey, bytes))
+	});
 }

@@ -1040,8 +1040,8 @@ export type IDWhereInputArgument = {
 };
 		
 export type IdentityKeys = {
-  delegator: String | null,
-  own: String | null    
+  delegator: () => SigningKey[],
+  own: () => SigningKey[]    
 };
 		
 export type ImportData = {
@@ -1119,7 +1119,7 @@ export type Instancelink = {
   lastReconcileAt: DateTime | null,
   linkedAt: DateTime | null,
   outboundToken: String,
-  remoteIdentityKey: String | null,
+  remoteSigningKeys: JSON | null,
   remoteUrl: String,
   status: InstancelinkstatusEnum,
   updatedAt: DateTime | null    
@@ -1135,7 +1135,7 @@ export type InstancelinkOrderInputArgument = {
   lastReconcileAt?: SortingParameter | null | undefined,
   linkedAt?: SortingParameter | null | undefined,
   outboundToken?: SortingParameter | null | undefined,
-  remoteIdentityKey?: SortingParameter | null | undefined,
+  remoteSigningKeys?: SortingParameter | null | undefined,
   remoteUrl?: SortingParameter | null | undefined,
   status?: SortingParameter | null | undefined,
   updatedAt?: SortingParameter | null | undefined    
@@ -1154,7 +1154,7 @@ export type InstancelinkWhereInputArgument = {
   lastReconcileAt?: DateTimeWhereInputArgument | null | undefined,
   linkedAt?: DateTimeWhereInputArgument | null | undefined,
   outboundToken?: StringWhereInputArgument | null | undefined,
-  remoteIdentityKey?: StringWhereInputArgument | null | undefined,
+  remoteSigningKeys?: JSONWhereInputArgument | null | undefined,
   remoteUrl?: StringWhereInputArgument | null | undefined,
   status?: InstancelinkstatusEnum | null | undefined,
   updatedAt?: DateTimeWhereInputArgument | null | undefined    
@@ -2687,6 +2687,11 @@ export type RollcallsessionWhereInputArgument = {
 };
 		
 export type SharecodepermissionEnum = "EDIT" | "SPONSOR";
+		
+export type SigningKey = {
+  kid: Int,
+  publicKey: String    
+};
 		
 export type SnapshottriggerEnum = "AMENDMENT_APPLIED" | "MANUAL" | "SUBMITTED" | "VOTE_CONCLUDED";
 		

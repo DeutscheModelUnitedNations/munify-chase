@@ -288,19 +288,20 @@ async function syncConference({
 }
 
 /**
- * Keeps DELEGATOR's public key, which the scanners check nametags and cards against offline.
- * Read on every (re)connect: it only changes with DELEGATOR's secret.
+ * Keeps DELEGATOR's public keys, which the scanners check nametags and cards against offline.
+ * Read on every (re)connect: they only change when DELEGATOR rotates them.
  */
 async function storeIdentityKey({ remote, linkId }: { remote: DelegatorClient; linkId: string }) {
 	try {
-		const { publicKey } = await remote.query.identityCodePublicKey({ publicKey: true });
+		const published = await remote.query.signedCodeKeys({ kid: true, publicKey: true });
+		const keys = published.map(({ kid, publicKey }) => ({ kid, publicKey }));
 		const updated = await db
 			.update(schema.instanceLink)
-			.set({ remoteIdentityKey: publicKey })
+			.set({ remoteSigningKeys: keys })
 			.where(
 				and(
 					eq(schema.instanceLink.id, linkId),
-					sql`${schema.instanceLink.remoteIdentityKey} is distinct from ${publicKey}`
+					sql`${schema.instanceLink.remoteSigningKeys} is distinct from ${JSON.stringify(keys)}::jsonb`
 				)
 			)
 			.returning({ id: schema.instanceLink.id });

@@ -12,6 +12,7 @@ import {
 	boolean,
 	smallint,
 	integer,
+	jsonb,
 	bytea,
 	doublePrecision,
 	type AnyPgColumn
@@ -841,8 +842,8 @@ export const instanceLink = snakeCase.table(
 		/** The last full reconcile, run on every (re)connect. */
 		lastReconcileAt: timestamp({ mode: 'date' }),
 		lastError: text(),
-		/** DELEGATOR's public key (raw, base64url), which its nametags and NSA cards are signed with. */
-		remoteIdentityKey: text()
+		/** DELEGATOR's public keys, which its nametags and NSA cards are signed with (`signedCodeKeys`). */
+		remoteSigningKeys: jsonb().$type<{ kid: number; publicKey: string }[]>()
 	},
 	() => [uniqueIndex('instance_link_single_row').using('btree', sql`(true)`)]
 );

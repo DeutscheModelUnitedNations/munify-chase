@@ -106,7 +106,7 @@ function runWorker() {
 		const watchConferences = () => {
 			unwatchConferences?.();
 			const conferences = handled(remote.liveQuery.conferences({ id: true, state: true }), failed);
-			unwatchConferences = conferences.subscribe((list) => {
+			unwatchConferences = listen(conferences, (list) => {
 				if (!list || stopped) return;
 				const current = new Set(list.filter((c) => c.state !== 'POST').map((c) => c.id));
 				for (const [conferenceId, unwatch] of watchers) {
@@ -138,6 +138,28 @@ function runWorker() {
 	});
 
 	return { stop };
+}
+
+/**
+ * Subscribes to a live query and answers how to stop. rumble types `subscribe` as answering an
+ * unsubscribe function, but its observable answers `{ unsubscribe }`: calling that threw and
+ * stopped the worker hearing of changes. Both shapes are handled.
+ */
+function listen<T>(
+	result: { subscribe: (next: (value: T) => void) => unknown },
+	next: (value: T) => void
+) {
+	const subscription: unknown = result.subscribe(next);
+	return () => {
+		if (typeof subscription === 'function') subscription();
+		else if (
+			typeof subscription === 'object' &&
+			subscription !== null &&
+			'unsubscribe' in subscription &&
+			typeof subscription.unsubscribe === 'function'
+		)
+			subscription.unsubscribe();
+	};
 }
 
 /** Lets a live query's first answer fail without an unhandled rejection; it still subscribes. */
@@ -211,7 +233,7 @@ function watchConference({
 			versions: { id: true }
 		})
 	];
-	const unsubscribes = live.map((result) => handled(result, onError).subscribe(changed));
+	const unsubscribes = live.map((result) => listen<unknown>(handled(result, onError), changed));
 	return () => {
 		for (const unsubscribe of unsubscribes) unsubscribe();
 	};

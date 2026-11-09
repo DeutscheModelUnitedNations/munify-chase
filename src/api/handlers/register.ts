@@ -11,6 +11,7 @@ import './time';
 import './user';
 import './import';
 import './presenceEvent';
+import './nsaCard';
 import './rollCallSession';
 import './votingSession';
 import './resolutionPaper';
@@ -28,8 +29,10 @@ import './request';
 import './ai';
 import './statistics';
 import './missionControlPulse';
+import './instanceLink';
 import { building, dev } from '$app/env';
-import { clientCreator } from '#api/rumble';
+import { buildSchema, clientCreator } from '#api/rumble';
+import { writeSchemaFile } from '#api/services/schemaFile';
 
 if (dev || building) {
 	await clientCreator({
@@ -39,4 +42,6 @@ if (dev || building) {
 		removeExisting: false,
 		autoIncludeIdField: false
 	});
+	// The linked DELEGATOR generates its client of this API from it (`bun run link:client` there).
+	await writeSchemaFile({ schema: buildSchema(), path: 'schema.graphql' });
 }

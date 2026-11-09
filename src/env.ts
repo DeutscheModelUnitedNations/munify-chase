@@ -88,6 +88,11 @@ export const variables = defineEnvVars({
 		description: 'Comma-separated email domains whose users are global admins',
 		schema: z.string().default('')
 	},
+	LINK_SECRET: {
+		description:
+			'Secret for linking this instance to a MUNify DELEGATOR: encrypts the stored link token and derives the key NSA cards are signed with. Linking is refused while it is unset.',
+		schema: z.string().min(32).optional()
+	},
 	REDIS_URL: {
 		description:
 			'Redis connection string. When set, GraphQL subscriptions are shared across instances via Redis pub/sub',

@@ -14,10 +14,10 @@ Zwei Seiten im Konferenzmenü geben Admins und Teammitgliedern eine konferenzwei
 
 - **Nicht anwesend**: NAs, die nirgends eingecheckt sind, und abwesende Delegierte, gruppiert nach Gremium. Dieser Reiter öffnet sich zuerst.
 - **Nach Gremium**: Anwesenheit pro Gremium und Live-Check-ins der NAs. Wer schon lange eingecheckt ist, ohne auszuchecken (wahrscheinlich ein vergessener Badge-Scan), wird markiert.
-- **Nach NA**: jede NA-Person mit ihrem Anwesenheitscode und aktuellen Gremium, dazu **QR-Karte**, **Alle Karten drucken** und **CSV exportieren**. Siehe [NA-Verwaltung](./nsa-management#people-and-attendance-codes).
+- **Nach NA**: jede NA-Person mit ihrem aktuellen Gremium, dazu **QR-Karte**, **Alle Karten drucken** und **CSV exportieren**. Siehe [NA-Verwaltung](./nsa-management#people-and-attendance-codes).
 - **NA-Historie & Korrekturen**: das vollständige NA-Check-in-Protokoll mit **Eintrag hinzufügen** und einem Bearbeiten-Button pro Zeile für Korrekturen.
 
-![Der Anwesenheitsreiter Nach NA mit Anwesenheitscodes, QR-Karten-Buttons und Alle Karten drucken](shot:admin/attendance-by-nsa)
+![Der Anwesenheitsreiter Nach NA mit QR-Karten-Buttons und Alle Karten drucken](shot:admin/attendance-by-nsa)
 
 Mehr dazu unter [Anwesenheitsfeststellung & Anwesenheit](../chair/roll-call-attendance).
 

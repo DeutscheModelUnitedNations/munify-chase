@@ -12,6 +12,11 @@ pre-commit:
       # introduces — the existing backlog is reported but never blocks.
       run: bunx fallow audit --base HEAD
       fail_text: 'fallow found issues introduced by this commit. Inspect with `bun run fallow:audit`, or bypass with `git commit --no-verify`.'
+      # A merge or rebase brings in commits that were each audited already; judging
+      # the whole branch as new would block it on what it was allowed to carry.
+      skip:
+        - merge
+        - rebase
 pre-push:
   commands:
     lint:

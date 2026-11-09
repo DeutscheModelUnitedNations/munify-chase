@@ -119,4 +119,4 @@
 	</div>
 </BasicCard>
 
-<NsaScannerDrawer bind:open={drawerOpen} {committeeId} />
+<NsaScannerDrawer bind:open={drawerOpen} {conferenceId} {committeeId} />

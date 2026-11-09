@@ -38,7 +38,7 @@ Marking someone present isn't just bookkeeping. It directly gates whether they c
 The **NSA attendance** card lists everyone currently checked into your committee, each with "checked in since HH:MM". Click **Scan NSA person** to open the scanner drawer:
 
 1. Choose **Check in** or **Check out**.
-2. Scan their printed QR badge with your camera, or use **Enter code manually** with their 6-character code if scanning fails.
+2. Scan their printed NSA card or their digital nametag with your camera. Both are checked on your device, so this works offline too. If the code won't scan, type their name, e-mail or organisation under **Find by name** and pick them from the list.
 3. A running log shows the last 10 scans (green with a name for success, red for an error), plus an audio cue (a high beep for success, a low one for an error).
 
 Checking someone in automatically checks them out of any other committee. Checking out works even if they are currently checked in elsewhere, and the log then says they were checked out of another committee. The NSA card is not available in the offline demo.

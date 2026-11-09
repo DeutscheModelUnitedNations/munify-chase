@@ -1,13 +1,24 @@
 import { db, schema } from '#api/db/db';
 import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '#api/rumble';
 import {
-	isTeamInConference,
 	isAdminInConference,
-	isParticipantInConference
+	isParticipantInConference,
+	isTeamInConference,
+	linkedDelegator,
+	SYNCED_CONFERENCE
 } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
+
+// The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
+abilityBuilder.committeeMember.allow('read').when(
+	linkedDelegator({
+		where: { committee: { conference: SYNCED_CONFERENCE } },
+		columns: { id: true, committeeId: true, representationId: true }
+	})
+);
 
 abilityBuilder.committeeMember.allow('read').when((ctx) => {
 	return {
@@ -26,7 +37,8 @@ abilityBuilder.committeeMember.allow('update').when((ctx) => {
 });
 
 abilityBuilder.committeeMember.allow('delete').when((ctx) => {
-	return { where: { committee: isAdminInConference(ctx) } };
+	// a seat synced from a linked DELEGATOR is removed there
+	return { where: { committee: isAdminInConference(ctx), ...NOT_MANAGED_BY_DELEGATOR } };
 });
 
 const ref = object({ table: 'committeeMember' });

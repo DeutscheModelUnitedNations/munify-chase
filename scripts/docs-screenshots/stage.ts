@@ -38,9 +38,9 @@ export const STAGE = {
 		['DE', 1]
 	],
 	nsaPeople: [
-		{ name: 'Lena Fischer', email: 'l.fischer@icrc.dev', code: 'K7M2QX', checkedIn: true },
-		{ name: 'Tomás Ribeiro', email: 't.ribeiro@icrc.dev', code: 'P4W9HN', checkedIn: false },
-		{ name: 'Amara Okafor', email: 'a.okafor@icrc.dev', code: 'R3T8ZD', checkedIn: false }
+		{ name: 'Lena Fischer', email: 'l.fischer@icrc.dev', checkedIn: true },
+		{ name: 'Tomás Ribeiro', email: 't.ribeiro@icrc.dev', checkedIn: false },
+		{ name: 'Amara Okafor', email: 'a.okafor@icrc.dev', checkedIn: false }
 	],
 	// country, minutes ago it ended, seconds spoken
 	speeches: [
@@ -295,8 +295,7 @@ export async function stage(t?: Translate): Promise<StageIds> {
 				conferenceUserType: 'NON_STATE_ACTOR',
 				userEmail: person.email,
 				name: person.name,
-				conferenceMemberId: icrc.id,
-				attendanceCode: person.code
+				conferenceMemberId: icrc.id
 			})
 			.returning();
 		if (person.checkedIn) {

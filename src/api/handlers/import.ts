@@ -5,7 +5,6 @@ import { ConferenceRef } from './conference';
 import { GraphQLError } from 'graphql';
 import { isGlobalAdmin } from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
-import { attendanceCode as generateAttendanceCode } from '#lib/helpers/attendanceCode';
 
 const Input = schemaBuilder.inputType('ImportData', {
 	description: 'Import data. You can find the JSON schema here: /api/schema/import',
@@ -132,6 +131,17 @@ schemaBuilder.mutationFields((t) => ({
 				throw new GraphQLError('You must be a global admin to create conferences!');
 			}
 
+			// a linked DELEGATOR brings its conferences itself (`docs/plans/delegator-link.md`)
+			const link = await db.query.instanceLink.findFirst({
+				where: { status: 'ACTIVE' },
+				columns: { id: true }
+			});
+			if (link) {
+				throw new GraphQLError(
+					'This instance is linked to MUNify DELEGATOR: create the conference there.'
+				);
+			}
+
 			// we want to ensure consistency between frontend and backend
 			// therfore the explicit extra parsing
 			const data = importDataSchema.parse(args.data);
@@ -193,16 +203,8 @@ schemaBuilder.mutationFields((t) => ({
 				}
 
 				if ((data.conferenceUsers?.length ?? 0) > 0) {
-					const usedCodes = new Set<string>();
 					await tx.insert(schema.conferenceUser).values(
 						data.conferenceUsers!.map((user) => {
-							let code: string | null = null;
-							if (user.conferenceUserType === 'NON_STATE_ACTOR') {
-								do {
-									code = generateAttendanceCode();
-								} while (usedCodes.has(code));
-								usedCodes.add(code);
-							}
 							return {
 								id: user.id ?? undefined,
 								conferenceUserType: user.conferenceUserType,
@@ -210,8 +212,7 @@ schemaBuilder.mutationFields((t) => ({
 								name: user.name?.trim() || null,
 								conferenceMemberId: user.conferenceMemberId,
 								committeeMemberId: user.committeeMemberId,
-								conferenceId: data.id,
-								attendanceCode: code
+								conferenceId: data.id
 							};
 						})
 					);

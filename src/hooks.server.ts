@@ -4,10 +4,20 @@ import { redirect } from '@sveltejs/kit';
 import '#api/websocket';
 
 import { paraglideMiddleware } from '#lib/paraglide/server';
-import { sequence, type Handle } from '@sveltejs/kit/hooks';
+import { sequence, type Handle, type ServerInit } from '@sveltejs/kit/hooks';
 import { OIDC } from '#api/services/OIDC';
 import { locales, baseLocale, cookieName, cookieMaxAge } from '#lib/paraglide/runtime';
 import { isLocalConferencePath } from '#lib/state/localDemo.svelte';
+import { building } from '$app/env';
+import { resumeLinkWorker } from '#api/services/link/linkWorker';
+
+/** Picks the DELEGATOR link up again (`docs/plans/delegator-link.md`). */
+export const init: ServerInit = async () => {
+	if (building) return;
+	await resumeLinkWorker().catch((error) =>
+		console.error('[link] could not resume the link worker', error)
+	);
+};
 
 const TAURI_ORIGIN = 'tauri://localhost';
 

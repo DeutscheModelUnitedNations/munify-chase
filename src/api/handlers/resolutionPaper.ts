@@ -10,12 +10,16 @@ import {
 import {
 	isParticipantInConference,
 	isTeamInConference,
-	isPaperAuthor
+	isPaperAuthor,
+	sessionUserId,
+	linkedDelegator,
+	SYNCED_CONFERENCE
 } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { nanoid, nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 import { readPaperJson } from '#api/yjs/server';
+import { detachFromDelegator } from '#api/services/link/detach';
 import { and, count, eq, inArray } from 'drizzle-orm';
 import {
 	toRoman,
@@ -31,6 +35,23 @@ function createInitialYjsState(): Buffer {
 	return Buffer.from(Y.encodeStateAsUpdate(doc));
 }
 
+// The linked DELEGATOR takes the adopted resolutions of its conferences back
+// (`docs/plans/delegator-link.md`).
+abilityBuilder.resolutionPaper.allow('read').when(
+	linkedDelegator({
+		where: { status: 'FINAL' as const, committee: { conference: SYNCED_CONFERENCE } },
+		columns: {
+			id: true,
+			committeeId: true,
+			agendaItemId: true,
+			status: true,
+			title: true,
+			documentNumber: true,
+			voteVotingSessionId: true
+		}
+	})
+);
+
 abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
 	return { where: { committee: isTeamInConference(ctx) } };
 });
@@ -40,10 +61,11 @@ abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
 });
 
 abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
-	const user = ctx.mustBeLoggedIn();
+	const userId = sessionUserId(ctx);
+	if (!userId) return undefined;
 	return {
 		where: {
-			sponsors: { committeeMember: { users: { user: { id: user.sub } } } }
+			sponsors: { committeeMember: { users: { user: { id: userId } } } }
 		}
 	};
 });
@@ -87,6 +109,7 @@ export const ResolutionPaperRef = ref;
 const statusEnum = enum_({ tsName: 'paperStatus' });
 
 const pubsub = rumblePubsub({ table: 'resolutionPaper' });
+const snapshotPubsub = rumblePubsub({ table: 'paperContentSnapshot' });
 
 query({ table: 'resolutionPaper' });
 
@@ -225,6 +248,12 @@ schemaBuilder.mutationFields((t) => ({
 			if (Object.keys(metaUpdate).length > 0) {
 				await db.update(schema.resolutionPaper).set(metaUpdate).where(updateFilter.sql.where);
 			}
+			// any change here makes a draft taken over from DELEGATOR CHASE's own
+			const mayUpdate = await db.query.resolutionPaper.findFirst({
+				...updateFilter.query.single,
+				columns: { id: true }
+			});
+			if (mayUpdate) await detachFromDelegator(args.id);
 
 			if (args.status === 'SUBMITTED') {
 				const paper = await db.query.resolutionPaper
@@ -381,6 +410,8 @@ schemaBuilder.mutationFields((t) => ({
 						.sql.where
 				);
 			pubsub.removed();
+			// the paper's snapshots went with it
+			snapshotPubsub.removed();
 			return true;
 		}
 	}),
@@ -429,6 +460,7 @@ schemaBuilder.mutationFields((t) => ({
 			});
 
 			pubsub.updated(args.paperId);
+			snapshotPubsub.created();
 
 			return db.query.resolutionPaper
 				.findFirst(

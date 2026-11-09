@@ -22,8 +22,9 @@ Glaubst du, dass du fälschlich als abwesend markiert bist, sag dem Vorsitz Besc
 
 Nimmst du als NA statt als Delegation teil, funktioniert die Anwesenheit etwas anders:
 
-- Die Konferenzorganisation gibt dir einen gedruckten Ausweis mit persönlichem QR-Code.
-- Der Vorsitz scannt deinen Ausweis an der Tür jeder Gremiensitzung, die du besuchst. Dabei wird für dich ein Check-in oder Check-out erfasst.
+- Der Vorsitz checkt dich an der Tür jeder Gremiensitzung, die du besuchst, ein und aus. Dazu scannt er dein **digitales Namensschild** (in MUNify DELEGATOR auf deinem Handy) oder deine **gedruckte NA-Karte**. Beide tragen einen signierten Code, den das Gerät des Vorsitzes auch ohne Internet prüft.
+- Lässt sich der Code nicht scannen, sucht dich der Vorsitz über deinen Namen. Genau dafür steht dein Name auf der Karte.
+- Hast du deine Karte verloren, bitte die Organisation um eine neue. Sobald die neue gedruckt ist, gilt die alte nicht mehr.
 - Du meldest dich trotzdem bei CHASE an, um Redelisten und Anträge zu nutzen. Öffnest du die Konferenz, zeigt deine Seite **Meine Anwesenheit**: jeden Check-in und Check-out, für welches Gremium er war und wann er stattfand.
 
 ## Deine eigene Historie prüfen

@@ -30,6 +30,7 @@
 	import ClausePresenceBadges from './ClausePresenceBadges.svelte';
 
 	import SyncBadge from './SyncBadge.svelte';
+	import DelegatorOriginBadge from './DelegatorOriginBadge.svelte';
 	import ChairControlBar from './ChairControlBar.svelte';
 	import ClauseContextPanel from './ClauseContextPanel.svelte';
 	import CommitteePhaseToggles from './CommitteePhaseToggles.svelte';
@@ -111,6 +112,8 @@
 		status: true,
 		documentNumber: true,
 		updatedAt: true,
+		delegatorVersion: true,
+		detachedAt: true,
 		committee: { id: true },
 		agendaItem: { id: true, title: true },
 		creatorCommitteeMember: {
@@ -992,6 +995,10 @@
 						{yClient.remotePresences.length}
 					</button>
 				{/if}
+				<DelegatorOriginBadge
+					delegatorVersion={paper?.delegatorVersion}
+					detached={paper?.detachedAt != null}
+				/>
 				{#if yClient}
 					<SyncBadge
 						connectionState={yClient.connectionState}

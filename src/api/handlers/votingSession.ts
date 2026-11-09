@@ -7,7 +7,12 @@ import {
 	pubsub as rumblePubsub,
 	query
 } from '#api/rumble';
-import { isTeamInConference, isParticipantInConference } from '#api/services/authHelper';
+import {
+	isTeamInConference,
+	isParticipantInConference,
+	linkedDelegator,
+	SYNCED_CONFERENCE
+} from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
@@ -16,6 +21,14 @@ import { nanoidValidation } from '#lib/helpers/nanoid';
 abilityBuilder.votingSession.allow('read').when((ctx) => ({
 	where: { committee: isParticipantInConference(ctx) }
 }));
+
+// The outcome of the vote that concluded a paper, for the linked DELEGATOR (`docs/plans/delegator-link.md`).
+abilityBuilder.votingSession.allow('read').when(
+	linkedDelegator({
+		where: { committee: { conference: SYNCED_CONFERENCE } },
+		columns: { id: true, committeeId: true, outcome: true, completedAt: true }
+	})
+);
 
 abilityBuilder.votingSession.allow('update').when((ctx) => ({
 	where: { committee: isTeamInConference(ctx) }

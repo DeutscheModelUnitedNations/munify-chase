@@ -8,12 +8,32 @@ import {
 	pubsub as rumblePubsub,
 	query
 } from '#api/rumble';
-import { isAdminInConference, isTeamInConference } from '#api/services/authHelper';
-import { attendanceCode as generateAttendanceCode } from '#lib/helpers/attendanceCode';
+import {
+	isAdminInConference,
+	isTeamInConference,
+	linkedDelegator,
+	SYNCED_CONFERENCE
+} from '#api/services/authHelper';
+import { resolveNsaTarget } from '#api/services/nsaCards';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+
+// The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
+abilityBuilder.presenceEvent.allow('read').when(
+	linkedDelegator({
+		where: { committee: { conference: SYNCED_CONFERENCE } },
+		columns: {
+			id: true,
+			conferenceUserId: true,
+			committeeId: true,
+			present: true,
+			type: true,
+			timestamp: true
+		}
+	})
+);
 
 abilityBuilder.presenceEvent.allow('read').when((ctx) => ({
 	where: { committee: isTeamInConference(ctx) }
@@ -28,51 +48,6 @@ export const PresenceEventRef = object({ table: 'presenceEvent' });
 const pubsub = rumblePubsub({ table: 'presenceEvent' });
 query({ table: 'presenceEvent' });
 
-/**
- * Resolves the target NSA `conferenceUser` for a scan given a code
- * that may be a conferenceUser.id (30-char nanoid), an attendanceCode (6-char),
- * or a global user.id (OIDC subject). Scoped to the conference owning the target committee.
- */
-async function resolveNsaTarget(args: {
-	committee: typeof schema.committee.$inferSelect;
-	code: string;
-}) {
-	const code = args.code.trim();
-	if (!code) throw new GraphQLError('Missing code');
-	const normalizedCode = code.toUpperCase();
-
-	const matches = await db.query.conferenceUser.findMany({
-		where: {
-			conferenceId: args.committee.conferenceId,
-			conferenceUserType: 'NON_STATE_ACTOR',
-			OR: [{ id: code }, { attendanceCode: normalizedCode }, { user: { id: code } }]
-		}
-	});
-	if (matches.length === 0) throw new GraphQLError('NSA user not found for this conference');
-	if (matches.length > 1) throw new GraphQLError('Ambiguous code: matches multiple NSA users');
-	return matches[0];
-}
-
-/**
- * Inserts a fresh attendance code for an NSA user, retrying on the rare unique
- * collision (~1 in 2.2B per attempt at 6 chars over a 36-char alphabet).
- */
-async function assignAttendanceCode(conferenceUserId: string, conferenceId: string) {
-	for (let attempt = 0; attempt < 5; attempt++) {
-		const code = generateAttendanceCode();
-		const existing = await db.query.conferenceUser.findFirst({
-			where: { conferenceId, attendanceCode: code }
-		});
-		if (existing) continue;
-		await db
-			.update(schema.conferenceUser)
-			.set({ attendanceCode: code })
-			.where(eq(schema.conferenceUser.id, conferenceUserId));
-		return code;
-	}
-	throw new GraphQLError('Could not generate a unique attendance code, please retry');
-}
-
 schemaBuilder.mutationFields((t) => ({
 	/**
 	 * Chair-facing: scan or manual-code → check the NSA into the given committee.
@@ -85,7 +60,12 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			id: t.arg.id().validate(nanoidValidation),
 			committeeId: t.arg.id({ required: true }),
-			code: t.arg.string({ required: true })
+			code: t.arg.string({
+				description: 'A scanned nametag or NSA card; verified here again.'
+			}),
+			conferenceUserId: t.arg.id({
+				description: 'The NSA picked by name, when the code does not scan.'
+			})
 		},
 		resolve: async (query, _root, args, ctx) => {
 			const committee = await db.query.committee
@@ -96,7 +76,11 @@ schemaBuilder.mutationFields((t) => ({
 				)
 				.then(assertFindFirstExists);
 
-			const target = await resolveNsaTarget({ committee, code: args.code });
+			const target = await resolveNsaTarget({
+				conferenceId: committee.conferenceId,
+				code: args.code,
+				conferenceUserId: args.conferenceUserId ? String(args.conferenceUserId) : null
+			});
 
 			const triggeredBy = await db.query.conferenceUser.findFirst({
 				where: {
@@ -172,7 +156,12 @@ schemaBuilder.mutationFields((t) => ({
 		args: {
 			id: t.arg.id().validate(nanoidValidation),
 			committeeId: t.arg.id({ required: true }),
-			code: t.arg.string({ required: true })
+			code: t.arg.string({
+				description: 'A scanned nametag or NSA card; verified here again.'
+			}),
+			conferenceUserId: t.arg.id({
+				description: 'The NSA picked by name, when the code does not scan.'
+			})
 		},
 		resolve: async (query, _root, args, ctx) => {
 			const committee = await db.query.committee
@@ -183,7 +172,11 @@ schemaBuilder.mutationFields((t) => ({
 				)
 				.then(assertFindFirstExists);
 
-			const target = await resolveNsaTarget({ committee, code: args.code });
+			const target = await resolveNsaTarget({
+				conferenceId: committee.conferenceId,
+				code: args.code,
+				conferenceUserId: args.conferenceUserId ? String(args.conferenceUserId) : null
+			});
 
 			const triggeredBy = await db.query.conferenceUser.findFirst({
 				where: {
@@ -381,40 +374,6 @@ schemaBuilder.mutationFields((t) => ({
 
 			pubsub.removed();
 			return event;
-		}
-	}),
-
-	/**
-	 * Admin-only: regenerate the manual fallback code for an NSA user.
-	 */
-	regenerateNsaAttendanceCode: t.drizzleField({
-		type: ConferenceUserRef,
-		args: {
-			conferenceUserId: t.arg.id({ required: true })
-		},
-		resolve: async (query, _root, args, ctx) => {
-			const target = await db.query.conferenceUser
-				.findFirst(
-					(await ctx.abilities.conferenceUser.filter('update')).merge({
-						where: { id: args.conferenceUserId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
-
-			if (target.conferenceUserType !== 'NON_STATE_ACTOR') {
-				throw new GraphQLError('Attendance code is only meaningful for NSA users');
-			}
-
-			await assignAttendanceCode(target.id, target.conferenceId);
-
-			return db.query.conferenceUser
-				.findFirst(
-					query(
-						(await ctx.abilities.conferenceUser.filter('read')).merge({ where: { id: target.id } })
-							.query.single
-					)
-				)
-				.then(assertFindFirstExists);
 		}
 	})
 }));

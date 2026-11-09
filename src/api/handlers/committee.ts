@@ -8,15 +8,27 @@ import {
 	schemaBuilder
 } from '#api/rumble';
 import {
-	isTeamInConference,
 	isAdminInConference,
-	isParticipantInConference
+	isParticipantInConference,
+	isTeamInConference,
+	linkedDelegator,
+	SYNCED_CONFERENCE
 } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { and, count, eq, isNull, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '#lib/utils/majorities';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
+import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
+import { assertNotManagedByDelegator } from '#api/services/link/managedRows';
+
+// The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
+abilityBuilder.committee.allow('read').when(
+	linkedDelegator({
+		where: { conference: SYNCED_CONFERENCE },
+		columns: { id: true, conferenceId: true }
+	})
+);
 
 abilityBuilder.committee.allow('read').when((ctx) => {
 	return {
@@ -31,7 +43,8 @@ abilityBuilder.committee.allow('update').when((ctx) => {
 });
 
 abilityBuilder.committee.allow('delete').when((ctx) => {
-	return { where: isAdminInConference(ctx) };
+	// a committee synced from a linked DELEGATOR is removed there
+	return { where: { ...isAdminInConference(ctx), ...NOT_MANAGED_BY_DELEGATOR } };
 });
 
 type CommitteeParentWithOptionalMembers = InferSelectModel<typeof schema.committee> & {
@@ -197,6 +210,15 @@ schemaBuilder.mutationFields((t) => {
 				presentationShowRequests: t.arg.boolean()
 			},
 			resolve: async (query, _root, args, ctx) => {
+				// the name and abbreviation of a committee from DELEGATOR are changed there
+				const row = await db.query.committee.findFirst({
+					where: { id: args.id },
+					columns: { managedByDelegator: true }
+				});
+				assertNotManagedByDelegator({
+					managed: row?.managedByDelegator,
+					touchesDelegatorFields: args.name != null || args.abbreviation != null
+				});
 				await db.transaction(async (tx) => {
 					await tx
 						.update(schema.committee)

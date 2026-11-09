@@ -1,6 +1,6 @@
 import { db, schema } from '#api/db/db';
 import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '#api/rumble';
-import { isTeamInConference } from '#api/services/authHelper';
+import { isTeamInConference, linkedDelegator, SYNCED_CONFERENCE } from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { nanoid, nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
@@ -17,6 +17,17 @@ abilityBuilder.paperContentSnapshot.allow('read').when((ctx) => {
 		}
 	};
 });
+
+// The linked DELEGATOR reads the text a vote adopted (`docs/plans/delegator-link.md`).
+abilityBuilder.paperContentSnapshot.allow('read').when(
+	linkedDelegator({
+		where: {
+			trigger: 'VOTE_CONCLUDED' as const,
+			paper: { status: 'FINAL' as const, committee: { conference: SYNCED_CONFERENCE } }
+		},
+		columns: { id: true, paperId: true, content: true, trigger: true, createdAt: true }
+	})
+);
 
 const ref = object({ table: 'paperContentSnapshot' });
 query({ table: 'paperContentSnapshot' });

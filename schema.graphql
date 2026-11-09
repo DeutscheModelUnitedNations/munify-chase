@@ -1,0 +1,2744 @@
+"""
+A postal address, modeled after the OIDC `address` claim and schema.org's PostalAddress.
+"""
+type Address {
+  countryCode: String
+  locality: String
+  postalCode: String
+  region: String
+  streetAddress: String
+}
+
+"""
+Input counterpart of Address. countryCode and streetAddress are required — countryCode because there is nothing to validate the other fields against without it, and streetAddress because it's the one field required in every country. The remaining fields are optional since their requiredness genuinely varies by country; validated as a whole using Google's libaddressinput metadata (offline).
+"""
+input AddressInput {
+  countryCode: String!
+  locality: String
+  postalCode: String
+  region: String
+  streetAddress: String!
+}
+
+type Agendaitem {
+  """Get the committees related to this agendaItem"""
+  committee(orderBy: CommitteeOrderInputArgument, where: CommitteeWhereInputArgument): Committee
+  committeeId: ID!
+  createdAt: DateTime!
+  id: ID!
+  isActive: Boolean!
+  managedByDelegator: Boolean!
+
+  """Get the resolutionPapers related to this agendaItem"""
+  resolutionPapers(limit: Int, offset: Int, orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): [Resolutionpaper!]!
+
+  """Get the speakersLists related to this agendaItem"""
+  speakersList(limit: Int, offset: Int, orderBy: SpeakerslistOrderInputArgument, where: SpeakerslistWhereInputArgument): [Speakerslist!]!
+  title: String!
+  updatedAt: DateTime
+}
+
+input AgendaitemOrderInputArgument {
+  committeeId: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  managedByDelegator: SortingParameter
+  title: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input AgendaitemWhereInputArgument {
+  AND: [AgendaitemWhereInputArgument!]
+  NOT: AgendaitemWhereInputArgument
+  OR: [AgendaitemWhereInputArgument!]
+  committee: CommitteeWhereInputArgument
+  committeeId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  managedByDelegator: BooleanWhereInputArgument
+  resolutionPapers: ResolutionpaperWhereInputArgument
+  speakersList: SpeakerslistWhereInputArgument
+  title: StringWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+}
+
+input AiMessageInput {
+  content: String!
+  role: AiMessageRole!
+}
+
+enum AiMessageRole {
+  assistant
+  system
+  user
+}
+
+enum AiResponseType {
+  json
+  text
+}
+
+type Amendment {
+  createdAt: DateTime!
+  documentNumber: String
+  id: ID!
+  newContent: String
+  obsoletedByAmendmentId: ID
+  oldContent: String
+
+  """Get the resolutionPapers related to this amendment"""
+  paper(orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): Resolutionpaper!
+  paperId: ID!
+  presentedAt: DateTime
+
+  """Get the committeeMembers related to this amendment"""
+  proposer(orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): Committeemember!
+  proposerCommitteeMemberId: ID!
+
+  """Get the amendmentReviewItems related to this amendment"""
+  reviewItemsAsSubject(limit: Int, offset: Int, orderBy: AmendmentreviewitemOrderInputArgument, where: AmendmentreviewitemWhereInputArgument): [Amendmentreviewitem!]!
+
+  """Get the amendmentSponsors related to this amendment"""
+  sponsors(limit: Int, offset: Int, orderBy: AmendmentsponsorOrderInputArgument, where: AmendmentsponsorWhereInputArgument): [Amendmentsponsor!]!
+  status: AmendmentstatusEnum!
+  targetClauseId: ID
+  targetOperativeIndex: Int
+  targetPosition: Int
+  type: AmendmenttypeEnum!
+  updatedAt: DateTime
+}
+
+type AmendmentActivityEntry {
+  count: Int!
+  status: String!
+}
+
+type AmendmentCountStats {
+  accepted: Int!
+  alpha2Code: String
+  representationId: String!
+  representationName: String
+  total: Int!
+}
+
+input AmendmentOrderInputArgument {
+  createdAt: SortingParameter
+  documentNumber: SortingParameter
+  id: SortingParameter
+  newContent: SortingParameter
+  obsoletedByAmendmentId: SortingParameter
+  oldContent: SortingParameter
+  paperId: SortingParameter
+  presentedAt: SortingParameter
+  proposerCommitteeMemberId: SortingParameter
+  status: SortingParameter
+  targetClauseId: SortingParameter
+  targetOperativeIndex: SortingParameter
+  targetPosition: SortingParameter
+  type: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input AmendmentWhereInputArgument {
+  AND: [AmendmentWhereInputArgument!]
+  NOT: AmendmentWhereInputArgument
+  OR: [AmendmentWhereInputArgument!]
+  createdAt: DateTimeWhereInputArgument
+  documentNumber: StringWhereInputArgument
+  id: IDWhereInputArgument
+  newContent: StringWhereInputArgument
+  obsoletedByAmendmentId: IDWhereInputArgument
+  oldContent: StringWhereInputArgument
+  paper: ResolutionpaperWhereInputArgument
+  paperId: IDWhereInputArgument
+  presentedAt: DateTimeWhereInputArgument
+  proposer: CommitteememberWhereInputArgument
+  proposerCommitteeMemberId: IDWhereInputArgument
+  reviewItemsAsSubject: AmendmentreviewitemWhereInputArgument
+  sponsors: AmendmentsponsorWhereInputArgument
+  status: AmendmentstatusEnum
+  targetClauseId: IDWhereInputArgument
+  targetOperativeIndex: IntWhereInputArgument
+  targetPosition: IntWhereInputArgument
+  type: AmendmenttypeEnum
+  updatedAt: DateTimeWhereInputArgument
+}
+
+type Amendmentreviewitem {
+  aiObsolete: Boolean
+  aiObsoleteReason: String
+  aiRewriteReason: String
+  aiRewriteSuggestion: String
+  createdAt: DateTime!
+  id: ID!
+
+  """Get the resolutionPapers related to this amendmentReviewItem"""
+  paper(orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): Resolutionpaper!
+  paperId: ID!
+  phase: AmendmentreviewphaseEnum!
+
+  """Get the amendments related to this amendmentReviewItem"""
+  subjectAmendment(orderBy: AmendmentOrderInputArgument, where: AmendmentWhereInputArgument): Amendment!
+  subjectAmendmentId: ID!
+
+  """Get the amendments related to this amendmentReviewItem"""
+  triggerAmendment(orderBy: AmendmentOrderInputArgument, where: AmendmentWhereInputArgument): Amendment!
+  triggerAmendmentId: ID!
+  updatedAt: DateTime
+  verdictObsolete: Boolean
+  verdictRewrite: String
+}
+
+input AmendmentreviewitemOrderInputArgument {
+  aiObsolete: SortingParameter
+  aiObsoleteReason: SortingParameter
+  aiRewriteReason: SortingParameter
+  aiRewriteSuggestion: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  paperId: SortingParameter
+  phase: SortingParameter
+  subjectAmendmentId: SortingParameter
+  triggerAmendmentId: SortingParameter
+  updatedAt: SortingParameter
+  verdictObsolete: SortingParameter
+  verdictRewrite: SortingParameter
+}
+
+input AmendmentreviewitemWhereInputArgument {
+  AND: [AmendmentreviewitemWhereInputArgument!]
+  NOT: AmendmentreviewitemWhereInputArgument
+  OR: [AmendmentreviewitemWhereInputArgument!]
+  aiObsolete: BooleanWhereInputArgument
+  aiObsoleteReason: StringWhereInputArgument
+  aiRewriteReason: StringWhereInputArgument
+  aiRewriteSuggestion: StringWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  paper: ResolutionpaperWhereInputArgument
+  paperId: IDWhereInputArgument
+  phase: AmendmentreviewphaseEnum
+  subjectAmendment: AmendmentWhereInputArgument
+  subjectAmendmentId: IDWhereInputArgument
+  triggerAmendment: AmendmentWhereInputArgument
+  triggerAmendmentId: IDWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+  verdictObsolete: BooleanWhereInputArgument
+  verdictRewrite: StringWhereInputArgument
+}
+
+enum AmendmentreviewphaseEnum {
+  OBSOLESCENCE
+  RESOLVED
+  REWRITE
+}
+
+type Amendmentsponsor {
+  """Get the amendments related to this amendmentSponsor"""
+  amendment(orderBy: AmendmentOrderInputArgument, where: AmendmentWhereInputArgument): Amendment!
+  amendmentId: ID!
+
+  """Get the committeeMembers related to this amendmentSponsor"""
+  committeeMember(orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): Committeemember!
+  committeeMemberId: ID!
+  createdAt: DateTime!
+  id: ID!
+  updatedAt: DateTime
+}
+
+input AmendmentsponsorOrderInputArgument {
+  amendmentId: SortingParameter
+  committeeMemberId: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input AmendmentsponsorWhereInputArgument {
+  AND: [AmendmentsponsorWhereInputArgument!]
+  NOT: AmendmentsponsorWhereInputArgument
+  OR: [AmendmentsponsorWhereInputArgument!]
+  amendment: AmendmentWhereInputArgument
+  amendmentId: IDWhereInputArgument
+  committeeMember: CommitteememberWhereInputArgument
+  committeeMemberId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+}
+
+enum AmendmentstatusEnum {
+  ACCEPTED
+  CONSENSUS_ADOPTED
+  PENDING
+  REJECTED
+  SUBMITTED
+  WITHDRAWN
+}
+
+enum AmendmenttypeEnum {
+  ADD
+  ALTER_POSITION
+  ALTER_TEXT
+  DELETE
+}
+
+type AttendanceTrendPoint {
+  date: String!
+  uniqueUsersPresent: Int!
+}
+
+"""
+The `BigInt` scalar type represents non-fractional signed whole numeric values.
+"""
+scalar BigInt
+
+input BigIntWhereInputArgument {
+  AND: [BigIntWhereInputArgument!]
+  NOT: BigIntWhereInputArgument
+  OR: [BigIntWhereInputArgument!]
+  eq: BigInt
+  gt: BigInt
+  gte: BigInt
+  in: [BigInt!]
+  isNotNull: Boolean
+  isNull: Boolean
+  lt: BigInt
+  lte: BigInt
+  ne: BigInt
+  notIn: [BigInt!]
+}
+
+input BooleanWhereInputArgument {
+  AND: [BooleanWhereInputArgument!]
+  NOT: BooleanWhereInputArgument
+  OR: [BooleanWhereInputArgument!]
+  arrayContained: [Boolean!]
+  arrayContains: [Boolean!]
+  arrayOverlaps: [Boolean!]
+  eq: Boolean
+  in: [Boolean!]
+  isNotNull: Boolean
+  isNull: Boolean
+  ne: Boolean
+  notIn: [Boolean!]
+}
+
+type BusiestCommittee {
+  committeeAbbreviation: String!
+  committeeId: ID!
+  committeeName: String!
+  interventionCount: Int!
+}
+
+"""The `Byte` scalar type represents byte value as a Buffer"""
+scalar Bytes
+
+type ClosestVote {
+  committeeAbbreviation: String!
+  committeeId: ID!
+  committeeName: String!
+  margin: Int!
+  voteName: String
+  votesCon: Int!
+  votesPro: Int!
+}
+
+enum CommentvisibilityEnum {
+  PUBLIC
+  TEAM_ONLY
+}
+
+type Committee {
+  abbreviation: String!
+
+  """Get the agendaItems related to this committee"""
+  activeAgendaItem(orderBy: AgendaitemOrderInputArgument, where: AgendaitemWhereInputArgument): Agendaitem
+  activeAgendaItemId: ID
+
+  """Get the amendments related to this committee"""
+  activeAmendment(orderBy: AmendmentOrderInputArgument, where: AmendmentWhereInputArgument): Amendment
+  activeAmendmentId: ID
+
+  """Get the resolutionPapers related to this committee"""
+  activeDraftResolution(orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): Resolutionpaper
+  activeDraftResolutionId: ID
+
+  """Get the rollCallSessions related to this committee"""
+  activeRollCallSession(orderBy: RollcallsessionOrderInputArgument, where: RollcallsessionWhereInputArgument): Rollcallsession
+  activeRollCallSessionId: ID
+
+  """Get the votingSessions related to this committee"""
+  activeVotingSession(orderBy: VotingsessionOrderInputArgument, where: VotingsessionWhereInputArgument): Votingsession
+  activeVotingSessionId: ID
+
+  """Get the agendaItems related to this committee"""
+  agendaItems(limit: Int, offset: Int, orderBy: AgendaitemOrderInputArgument, where: AgendaitemWhereInputArgument): [Agendaitem!]!
+  allowDelegationsToAddThemselvesToSpeakersList: Boolean!
+  allowRequests: Boolean!
+  amendmentSponsoringOpen: Boolean!
+  amendmentSubmissionOpen: Boolean!
+
+  """Get the conferences related to this committee"""
+  conference(orderBy: ConferenceOrderInputArgument, where: ConferenceWhereInputArgument): Conference
+  conferenceId: ID!
+  createdAt: DateTime!
+  currentOperativeIndex: Int!
+  customSimpleMajority: Int
+  customTwoThirdsMajority: Int
+  displayRegionalGroups: Boolean!
+  id: ID!
+  lastResolutionAdoptionDate: DateTime
+  managedByDelegator: Boolean!
+
+  """Get the committeeMembers related to this committee"""
+  members(limit: Int, offset: Int, orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): [Committeemember!]!
+  name: String!
+  paperSupportThreshold: Int!
+
+  """Get the presenceEvents related to this committee"""
+  presenceEvents(limit: Int, offset: Int, orderBy: PresenceeventOrderInputArgument, where: PresenceeventWhereInputArgument): [Presenceevent!]!
+  presentationLayout: String!
+  presentationResolutionFontSize: Int!
+  presentationRootFontSize: Int!
+  presentationShowRequests: Boolean!
+
+  """Get the requests related to this committee"""
+  requests(limit: Int, offset: Int, orderBy: RequestOrderInputArgument, where: RequestWhereInputArgument): [Request!]!
+
+  """Get the resolutionPapers related to this committee"""
+  resolutionPapers(limit: Int, offset: Int, orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): [Resolutionpaper!]!
+
+  """Get the rollCallSessions related to this committee"""
+  rollCallSessions(limit: Int, offset: Int, orderBy: RollcallsessionOrderInputArgument, where: RollcallsessionWhereInputArgument): [Rollcallsession!]!
+  showWhiteboard: Boolean!
+  simpleMajority: Int!
+  stateOfDebate: String
+  status: CommitteestatusEnum!
+  statusHeadline: String!
+  statusUntil: DateTime!
+  supportReevaluationOpen: Boolean!
+  totalPresent: Int!
+  twoThirdsMajority: Int!
+  updatedAt: DateTime
+
+  """Get the votingSessions related to this committee"""
+  votingSessions(limit: Int, offset: Int, orderBy: VotingsessionOrderInputArgument, where: VotingsessionWhereInputArgument): [Votingsession!]!
+  whiteboardContent: String
+}
+
+type CommitteeActivityStats {
+  committeeAbbreviation: String!
+  committeeId: String!
+  committeeName: String!
+  speechCount: Int!
+  totalSpeakingSeconds: Int!
+  voteCount: Int!
+}
+
+input CommitteeOrderInputArgument {
+  abbreviation: SortingParameter
+  activeAgendaItemId: SortingParameter
+  activeAmendmentId: SortingParameter
+  activeDraftResolutionId: SortingParameter
+  activeRollCallSessionId: SortingParameter
+  activeVotingSessionId: SortingParameter
+  allowDelegationsToAddThemselvesToSpeakersList: SortingParameter
+  allowRequests: SortingParameter
+  amendmentSponsoringOpen: SortingParameter
+  amendmentSubmissionOpen: SortingParameter
+  conferenceId: SortingParameter
+  createdAt: SortingParameter
+  currentOperativeIndex: SortingParameter
+  customSimpleMajority: SortingParameter
+  customTwoThirdsMajority: SortingParameter
+  displayRegionalGroups: SortingParameter
+  id: SortingParameter
+  lastResolutionAdoptionDate: SortingParameter
+  managedByDelegator: SortingParameter
+  name: SortingParameter
+  paperSupportThreshold: SortingParameter
+  presentationLayout: SortingParameter
+  presentationResolutionFontSize: SortingParameter
+  presentationRootFontSize: SortingParameter
+  presentationShowRequests: SortingParameter
+  showWhiteboard: SortingParameter
+  stateOfDebate: SortingParameter
+  status: SortingParameter
+  statusHeadline: SortingParameter
+  statusUntil: SortingParameter
+  supportReevaluationOpen: SortingParameter
+  updatedAt: SortingParameter
+  whiteboardContent: SortingParameter
+}
+
+type CommitteePaperCountEntry {
+  committeeAbbreviation: String!
+  committeeId: ID!
+  committeeName: String!
+  paperCount: Int!
+}
+
+input CommitteeWhereInputArgument {
+  AND: [CommitteeWhereInputArgument!]
+  NOT: CommitteeWhereInputArgument
+  OR: [CommitteeWhereInputArgument!]
+  abbreviation: StringWhereInputArgument
+  activeAgendaItem: AgendaitemWhereInputArgument
+  activeAgendaItemId: IDWhereInputArgument
+  activeAmendment: AmendmentWhereInputArgument
+  activeAmendmentId: IDWhereInputArgument
+  activeDraftResolution: ResolutionpaperWhereInputArgument
+  activeDraftResolutionId: IDWhereInputArgument
+  activeRollCallSession: RollcallsessionWhereInputArgument
+  activeRollCallSessionId: IDWhereInputArgument
+  activeVotingSession: VotingsessionWhereInputArgument
+  activeVotingSessionId: IDWhereInputArgument
+  agendaItems: AgendaitemWhereInputArgument
+  allowDelegationsToAddThemselvesToSpeakersList: BooleanWhereInputArgument
+  allowRequests: BooleanWhereInputArgument
+  amendmentSponsoringOpen: BooleanWhereInputArgument
+  amendmentSubmissionOpen: BooleanWhereInputArgument
+  conference: ConferenceWhereInputArgument
+  conferenceId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  currentOperativeIndex: IntWhereInputArgument
+  customSimpleMajority: IntWhereInputArgument
+  customTwoThirdsMajority: IntWhereInputArgument
+  displayRegionalGroups: BooleanWhereInputArgument
+  id: IDWhereInputArgument
+  lastResolutionAdoptionDate: DateTimeWhereInputArgument
+  managedByDelegator: BooleanWhereInputArgument
+  members: CommitteememberWhereInputArgument
+  name: StringWhereInputArgument
+  paperSupportThreshold: IntWhereInputArgument
+  presenceEvents: PresenceeventWhereInputArgument
+  presentationLayout: StringWhereInputArgument
+  presentationResolutionFontSize: IntWhereInputArgument
+  presentationRootFontSize: IntWhereInputArgument
+  presentationShowRequests: BooleanWhereInputArgument
+  requests: RequestWhereInputArgument
+  resolutionPapers: ResolutionpaperWhereInputArgument
+  rollCallSessions: RollcallsessionWhereInputArgument
+  showWhiteboard: BooleanWhereInputArgument
+  stateOfDebate: StringWhereInputArgument
+  status: CommitteestatusEnum
+  statusHeadline: StringWhereInputArgument
+  statusUntil: DateTimeWhereInputArgument
+  supportReevaluationOpen: BooleanWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+  votingSessions: VotingsessionWhereInputArgument
+  whiteboardContent: StringWhereInputArgument
+}
+
+type Committeemember {
+  """Get the amendmentSponsors related to this committeeMember"""
+  amendmentSponsorships(limit: Int, offset: Int, orderBy: AmendmentsponsorOrderInputArgument, where: AmendmentsponsorWhereInputArgument): [Amendmentsponsor!]!
+
+  """Get the committees related to this committeeMember"""
+  committee(orderBy: CommitteeOrderInputArgument, where: CommitteeWhereInputArgument): Committee!
+  committeeId: ID!
+  createdAt: DateTime!
+
+  """Get the resolutionPapers related to this committeeMember"""
+  createdPapers(limit: Int, offset: Int, orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): [Resolutionpaper!]!
+  id: ID!
+  managedByDelegator: Boolean!
+
+  """Get the paperSponsors related to this committeeMember"""
+  paperSponsorships(limit: Int, offset: Int, orderBy: PapersponsorOrderInputArgument, where: PapersponsorWhereInputArgument): [Papersponsor!]!
+  present: Boolean!
+
+  """Get the amendments related to this committeeMember"""
+  proposedAmendments(limit: Int, offset: Int, orderBy: AmendmentOrderInputArgument, where: AmendmentWhereInputArgument): [Amendment!]!
+
+  """Get the representations related to this committeeMember"""
+  representation(orderBy: RepresentationOrderInputArgument, where: RepresentationWhereInputArgument): Representation!
+  representationId: ID!
+  updatedAt: DateTime
+
+  """Get the conferenceUsers related to this committeeMember"""
+  users(limit: Int, offset: Int, orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): [Conferenceuser!]!
+
+  """Get the votingVotes related to this committeeMember"""
+  votingVotes(limit: Int, offset: Int, orderBy: VotingvoteOrderInputArgument, where: VotingvoteWhereInputArgument): [Votingvote!]!
+}
+
+input CommitteememberOrderInputArgument {
+  committeeId: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  managedByDelegator: SortingParameter
+  present: SortingParameter
+  representationId: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input CommitteememberWhereInputArgument {
+  AND: [CommitteememberWhereInputArgument!]
+  NOT: CommitteememberWhereInputArgument
+  OR: [CommitteememberWhereInputArgument!]
+  amendmentSponsorships: AmendmentsponsorWhereInputArgument
+  committee: CommitteeWhereInputArgument
+  committeeId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  createdPapers: ResolutionpaperWhereInputArgument
+  id: IDWhereInputArgument
+  managedByDelegator: BooleanWhereInputArgument
+  paperSponsorships: PapersponsorWhereInputArgument
+  present: BooleanWhereInputArgument
+  proposedAmendments: AmendmentWhereInputArgument
+  representation: RepresentationWhereInputArgument
+  representationId: IDWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+  users: ConferenceuserWhereInputArgument
+  votingVotes: VotingvoteWhereInputArgument
+}
+
+enum CommitteestatusEnum {
+  FORMAL
+  INFORMAL
+  MODERATED_INFORMAL
+  PAUSE
+  SUSPENSION
+}
+
+type Conference {
+  """Get the committees related to this conference"""
+  committees(limit: Int, offset: Int, orderBy: CommitteeOrderInputArgument, where: CommitteeWhereInputArgument): [Committee!]!
+  createdAt: DateTime!
+  endDate: Date
+  hasModeratedCaucus: Boolean!
+  id: ID!
+  location: String
+  logoSvg: String
+  managedByDelegator: Boolean!
+
+  """Get the conferenceMembers related to this conference"""
+  members(limit: Int, offset: Int, orderBy: ConferencememberOrderInputArgument, where: ConferencememberWhereInputArgument): [Conferencemember!]!
+  pressWebsite: String
+
+  """Get the representations related to this conference"""
+  representations(limit: Int, offset: Int, orderBy: RepresentationOrderInputArgument, where: RepresentationWhereInputArgument): [Representation!]!
+
+  """Get the requestTypes related to this conference"""
+  requestTypes(limit: Int, offset: Int, orderBy: RequesttypeOrderInputArgument, where: RequesttypeWhereInputArgument): [Requesttype!]!
+  startDate: Date
+  title: String!
+
+  """
+  Returns a conference member for each existent representation. Useful to display a non duplicated list of non state actors.
+  """
+  uniqueConferenceMembers(where: ConferencememberWhereInputArgument): [Conferencemember!]!
+  updatedAt: DateTime
+
+  """Get the conferenceUsers related to this conference"""
+  users(limit: Int, offset: Int, orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): [Conferenceuser!]!
+}
+
+input ConferenceOrderInputArgument {
+  createdAt: SortingParameter
+  endDate: SortingParameter
+  hasModeratedCaucus: SortingParameter
+  id: SortingParameter
+  location: SortingParameter
+  logoSvg: SortingParameter
+  managedByDelegator: SortingParameter
+  pressWebsite: SortingParameter
+  startDate: SortingParameter
+  title: SortingParameter
+  updatedAt: SortingParameter
+}
+
+type ConferenceOverview {
+  totalCommittees: Int!
+  totalDelegates: Int!
+  totalResolutionsAdoptedAllTime: Int!
+  totalSpeechesAllTime: Int!
+}
+
+type ConferenceStats {
+  amendmentSuccessRate: [AmendmentCountStats!]!
+  attendanceTrend: [AttendanceTrendPoint!]!
+  commentLeaderboard: [DelegationSpeakingStats!]!
+  committeeActivity: [CommitteeActivityStats!]!
+  mostContrarian: [ContraryStats!]!
+  nsaLeaderboard: [DelegationSpeakingStats!]!
+  paperSponsorLeaderboard: [PaperSponsorStats!]!
+  speakingByRegion: [RegionalStats!]!
+  speakingFairness: SpeakingFairness!
+  speakingLeaderboard: [DelegationSpeakingStats!]!
+  speakingTimeline: [SpeakingTimelineBucket!]!
+  votingAlignment: [VotingAlignmentStats!]!
+}
+
+input ConferenceWhereInputArgument {
+  AND: [ConferenceWhereInputArgument!]
+  NOT: ConferenceWhereInputArgument
+  OR: [ConferenceWhereInputArgument!]
+  committees: CommitteeWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  endDate: DateWhereInputArgument
+  hasModeratedCaucus: BooleanWhereInputArgument
+  id: IDWhereInputArgument
+  location: StringWhereInputArgument
+  logoSvg: StringWhereInputArgument
+  managedByDelegator: BooleanWhereInputArgument
+  members: ConferencememberWhereInputArgument
+  pressWebsite: StringWhereInputArgument
+  representations: RepresentationWhereInputArgument
+  requestTypes: RequesttypeWhereInputArgument
+  startDate: DateWhereInputArgument
+  title: StringWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+  users: ConferenceuserWhereInputArgument
+}
+
+type Conferencemember {
+  """Get the conferences related to this conferenceMember"""
+  conference(orderBy: ConferenceOrderInputArgument, where: ConferenceWhereInputArgument): Conference
+  conferenceId: ID!
+  createdAt: DateTime!
+  id: ID!
+  managedByDelegator: Boolean!
+
+  """Get the representations related to this conferenceMember"""
+  representation(orderBy: RepresentationOrderInputArgument, where: RepresentationWhereInputArgument): Representation!
+  representationId: ID!
+
+  """Get the speakerOnLists related to this conferenceMember"""
+  speakerOnList(limit: Int, offset: Int, orderBy: SpeakeronlistOrderInputArgument, where: SpeakeronlistWhereInputArgument): [Speakeronlist!]!
+  updatedAt: DateTime
+
+  """Get the conferenceUsers related to this conferenceMember"""
+  users(limit: Int, offset: Int, orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): [Conferenceuser!]!
+}
+
+input ConferencememberOrderInputArgument {
+  conferenceId: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  managedByDelegator: SortingParameter
+  representationId: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input ConferencememberWhereInputArgument {
+  AND: [ConferencememberWhereInputArgument!]
+  NOT: ConferencememberWhereInputArgument
+  OR: [ConferencememberWhereInputArgument!]
+  conference: ConferenceWhereInputArgument
+  conferenceId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  managedByDelegator: BooleanWhereInputArgument
+  representation: RepresentationWhereInputArgument
+  representationId: IDWhereInputArgument
+  speakerOnList: SpeakeronlistWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+  users: ConferenceuserWhereInputArgument
+}
+
+type Conferenceuser {
+  """Get the resolutionComments related to this conferenceUser"""
+  authoredComments(limit: Int, offset: Int, orderBy: ResolutioncommentOrderInputArgument, where: ResolutioncommentWhereInputArgument): [Resolutioncomment!]!
+  cardNumber: Int!
+
+  """Get the committeeMembers related to this conferenceUser"""
+  committeeMember(orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): Committeemember
+  committeeMemberId: ID
+
+  """Get the conferences related to this conferenceUser"""
+  conference(orderBy: ConferenceOrderInputArgument, where: ConferenceWhereInputArgument): Conference!
+  conferenceId: ID!
+
+  """Get the conferenceMembers related to this conferenceUser"""
+  conferenceMember(orderBy: ConferencememberOrderInputArgument, where: ConferencememberWhereInputArgument): Conferencemember
+  conferenceMemberId: ID
+  conferenceUserType: ConferenceusertypeEnum!
+  createdAt: DateTime!
+  currentCheckedInSince: DateTime
+  currentCommitteeId: String
+  delegatorUserId: ID
+  id: ID!
+  isCheckedIn: Boolean!
+  managedByDelegator: Boolean!
+  name: String
+
+  """Get the paperEditors related to this conferenceUser"""
+  paperEditorships(limit: Int, offset: Int, orderBy: PapereditorOrderInputArgument, where: PapereditorWhereInputArgument): [Papereditor!]!
+
+  """Get the presenceEvents related to this conferenceUser"""
+  presenceEvents(limit: Int, offset: Int, orderBy: PresenceeventOrderInputArgument, where: PresenceeventWhereInputArgument): [Presenceevent!]!
+
+  """Get the requests related to this conferenceUser"""
+  requests(limit: Int, offset: Int, orderBy: RequestOrderInputArgument, where: RequestWhereInputArgument): [Request!]!
+
+  """Get the requests related to this conferenceUser"""
+  resolvedRequests(limit: Int, offset: Int, orderBy: RequestOrderInputArgument, where: RequestWhereInputArgument): [Request!]!
+
+  """Get the presenceEvents related to this conferenceUser"""
+  triggeredPresenceEvents(limit: Int, offset: Int, orderBy: PresenceeventOrderInputArgument, where: PresenceeventWhereInputArgument): [Presenceevent!]!
+  updatedAt: DateTime
+  user: User
+  userEmail: String!
+}
+
+input ConferenceuserOrderInputArgument {
+  cardNumber: SortingParameter
+  committeeMemberId: SortingParameter
+  conferenceId: SortingParameter
+  conferenceMemberId: SortingParameter
+  conferenceUserType: SortingParameter
+  createdAt: SortingParameter
+  delegatorUserId: SortingParameter
+  id: SortingParameter
+  managedByDelegator: SortingParameter
+  name: SortingParameter
+  updatedAt: SortingParameter
+  userEmail: SortingParameter
+}
+
+input ConferenceuserWhereInputArgument {
+  AND: [ConferenceuserWhereInputArgument!]
+  NOT: ConferenceuserWhereInputArgument
+  OR: [ConferenceuserWhereInputArgument!]
+  authoredComments: ResolutioncommentWhereInputArgument
+  cardNumber: IntWhereInputArgument
+  committeeMember: CommitteememberWhereInputArgument
+  committeeMemberId: IDWhereInputArgument
+  conference: ConferenceWhereInputArgument
+  conferenceId: IDWhereInputArgument
+  conferenceMember: ConferencememberWhereInputArgument
+  conferenceMemberId: IDWhereInputArgument
+  conferenceUserType: ConferenceusertypeEnum
+  createdAt: DateTimeWhereInputArgument
+  delegatorUserId: IDWhereInputArgument
+  id: IDWhereInputArgument
+  managedByDelegator: BooleanWhereInputArgument
+  name: StringWhereInputArgument
+  paperEditorships: PapereditorWhereInputArgument
+  presenceEvents: PresenceeventWhereInputArgument
+  requests: RequestWhereInputArgument
+  resolvedRequests: RequestWhereInputArgument
+  triggeredPresenceEvents: PresenceeventWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+  user: UserWhereInputArgument
+  userEmail: StringWhereInputArgument
+}
+
+enum ConferenceusertypeEnum {
+  ADMIN
+  DELEGATE
+  NON_STATE_ACTOR
+  SPECTATOR
+  TEAM
+}
+
+type ContraryStats {
+  alpha2Code: String
+  contraryVotes: Int!
+  representationId: String!
+  representationName: String
+  totalVotes: Int!
+}
+
+"""
+A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar Date
+
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.This scalar is serialized to a string in ISO 8601 format and parsed from a string in ISO 8601 format.
+"""
+scalar DateTime
+
+input DateTimeWhereInputArgument {
+  AND: [DateTimeWhereInputArgument!]
+  NOT: DateTimeWhereInputArgument
+  OR: [DateTimeWhereInputArgument!]
+  arrayContained: [DateTime!]
+  arrayContains: [DateTime!]
+  arrayOverlaps: [DateTime!]
+  eq: DateTime
+  gt: DateTime
+  gte: DateTime
+  in: [DateTime!]
+  isNotNull: Boolean
+  isNull: Boolean
+  lt: DateTime
+  lte: DateTime
+  ne: DateTime
+  notIn: [DateTime!]
+}
+
+input DateWhereInputArgument {
+  AND: [DateWhereInputArgument!]
+  NOT: DateWhereInputArgument
+  OR: [DateWhereInputArgument!]
+  arrayContained: [Date!]
+  arrayContains: [Date!]
+  arrayOverlaps: [Date!]
+  eq: Date
+  gt: Date
+  gte: Date
+  ilike: String
+  in: [Date!]
+  isNotNull: Boolean
+  isNull: Boolean
+  like: String
+  lt: Date
+  lte: Date
+  ne: Date
+  notIlike: String
+  notIn: [Date!]
+  notLike: String
+}
+
+type DelegationSpeakingStats {
+  alpha2Code: String
+  commentCount: Int!
+  regionalGroup: String
+  representationId: String!
+  representationName: String
+  representationType: String
+  speechCount: Int!
+  totalSeconds: Int!
+}
+
+"""
+A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address. Lowercased.
+"""
+scalar EmailAddress @specifiedBy(url: "https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address")
+
+input FloatWhereInputArgument {
+  AND: [FloatWhereInputArgument!]
+  NOT: FloatWhereInputArgument
+  OR: [FloatWhereInputArgument!]
+  arrayContained: [Float!]
+  arrayContains: [Float!]
+  arrayOverlaps: [Float!]
+  eq: Float
+  gt: Float
+  gte: Float
+  ilike: String
+  in: [Float!]
+  isNotNull: Boolean
+  isNull: Boolean
+  like: String
+  lt: Float
+  lte: Float
+  ne: Float
+  notIlike: String
+  notIn: [Float!]
+  notLike: String
+}
+
+type HeartbeatStats {
+  debateSecondsToday: Int!
+  resolutionsAdoptedToday: Int!
+  speechesToday: Int!
+  votesHeldToday: Int!
+}
+
+input IDWhereInputArgument {
+  AND: [IDWhereInputArgument!]
+  NOT: IDWhereInputArgument
+  OR: [IDWhereInputArgument!]
+  arrayContained: [ID!]
+  arrayContains: [ID!]
+  arrayOverlaps: [ID!]
+  eq: ID
+  gt: ID
+  gte: ID
+  ilike: String
+  in: [ID!]
+  isNotNull: Boolean
+  isNull: Boolean
+  like: String
+  lt: ID
+  lte: ID
+  ne: ID
+  notIlike: String
+  notIn: [ID!]
+  notLike: String
+}
+
+"""
+The public keys NSA nametags and cards are checked against; the scanner keeps them for offline use.
+"""
+type IdentityKeys {
+  """The linked DELEGATOR's keys (its `signedCodeKeys`)."""
+  delegator: [SigningKey!]!
+
+  """This instance's keys, for its own cards."""
+  own: [SigningKey!]!
+}
+
+"""Import data. You can find the JSON schema here: /api/schema/import"""
+input ImportData {
+  agendaItems: [ImportDataAgendaItem!]!
+  committeeMembers: [ImportDataCommitteeMember!]!
+  committees: [ImportDataCommittee!]!
+  conferenceMembers: [ImportDataConferenceMember!]!
+  conferenceUsers: [ImportDataConferenceUser!]
+  endDate: Date
+  id: ID!
+  location: String
+  representations: [ImportDataRepresentation!]!
+  requestTypes: [ImportDataRequestType!]
+  startDate: Date
+  title: String!
+}
+
+input ImportDataAgendaItem {
+  committeeId: ID!
+  id: ID
+  title: String!
+}
+
+input ImportDataCommittee {
+  abbreviation: String!
+  id: ID!
+  name: String!
+}
+
+input ImportDataCommitteeMember {
+  committeeId: ID!
+  id: ID!
+  representationId: ID!
+}
+
+input ImportDataConferenceMember {
+  id: ID!
+  representationId: ID!
+}
+
+input ImportDataConferenceUser {
+  committeeMemberId: ID
+  conferenceMemberId: ID
+  conferenceUserType: ConferenceusertypeEnum!
+  id: ID
+  name: String
+  userEmail: String!
+}
+
+input ImportDataRepresentation {
+  alpha2Code: String
+  alpha3Code: String
+  icon: String
+  id: ID!
+  name: String
+  regionalGroup: RegionalgroupEnum
+  representationType: RepresentationtypeEnum!
+}
+
+input ImportDataRequestType {
+  delegatesOnly: Boolean
+  enabled: Boolean
+  icon: String
+  id: ID
+  name: String!
+}
+
+type Instancelink {
+  confirmationCode: String!
+  createdAt: DateTime!
+  id: ID!
+  inboundTokenHash: String
+  lastError: String
+  lastEventAt: DateTime
+  lastReconcileAt: DateTime
+  linkedAt: DateTime
+  outboundToken: String!
+  remoteSigningKeys: JSON
+  remoteUrl: String!
+  status: InstancelinkstatusEnum!
+  updatedAt: DateTime
+}
+
+input InstancelinkOrderInputArgument {
+  confirmationCode: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  inboundTokenHash: SortingParameter
+  lastError: SortingParameter
+  lastEventAt: SortingParameter
+  lastReconcileAt: SortingParameter
+  linkedAt: SortingParameter
+  outboundToken: SortingParameter
+  remoteSigningKeys: SortingParameter
+  remoteUrl: SortingParameter
+  status: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input InstancelinkWhereInputArgument {
+  AND: [InstancelinkWhereInputArgument!]
+  NOT: InstancelinkWhereInputArgument
+  OR: [InstancelinkWhereInputArgument!]
+  confirmationCode: StringWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  inboundTokenHash: StringWhereInputArgument
+  lastError: StringWhereInputArgument
+  lastEventAt: DateTimeWhereInputArgument
+  lastReconcileAt: DateTimeWhereInputArgument
+  linkedAt: DateTimeWhereInputArgument
+  outboundToken: StringWhereInputArgument
+  remoteSigningKeys: JSONWhereInputArgument
+  remoteUrl: StringWhereInputArgument
+  status: InstancelinkstatusEnum
+  updatedAt: DateTimeWhereInputArgument
+}
+
+enum InstancelinkstatusEnum {
+  ACTIVE
+  FROZEN
+  PENDING
+}
+
+input IntWhereInputArgument {
+  AND: [IntWhereInputArgument!]
+  NOT: IntWhereInputArgument
+  OR: [IntWhereInputArgument!]
+  arrayContained: [Int!]
+  arrayContains: [Int!]
+  arrayOverlaps: [Int!]
+  eq: Int
+  gt: Int
+  gte: Int
+  ilike: String
+  in: [Int!]
+  isNotNull: Boolean
+  isNull: Boolean
+  like: String
+  lt: Int
+  lte: Int
+  ne: Int
+  notIlike: String
+  notIn: [Int!]
+  notLike: String
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
+
+input JSONWhereInputArgument {
+  AND: [JSONWhereInputArgument!]
+  NOT: JSONWhereInputArgument
+  OR: [JSONWhereInputArgument!]
+  arrayContained: [JSON!]
+  arrayContains: [JSON!]
+  arrayOverlaps: [JSON!]
+  eq: JSON
+  in: [JSON!]
+  isNotNull: Boolean
+  isNull: Boolean
+  ne: JSON
+  notIn: [JSON!]
+}
+
+"""The locale in the format of a BCP 47 (RFC 5646) standard string"""
+scalar Locale
+
+type LongestSpeechToday {
+  committeeAbbreviation: String!
+  committeeId: ID!
+  committeeName: String!
+  durationSeconds: Int!
+}
+
+type MissionControlCommitteeActivityEntry {
+  committeeAbbreviation: String!
+  committeeId: ID!
+  committeeName: String!
+  speechCount: Int!
+  totalSpeakingSeconds: Int!
+  voteCount: Int!
+}
+
+type MissionControlPulse {
+  amendmentActivity: [AmendmentActivityEntry!]!
+  busiestCommittee: BusiestCommittee
+  closestVote: ClosestVote
+  committeeActivityLeaderboard: [MissionControlCommitteeActivityEntry!]!
+  conferenceOverview: ConferenceOverview!
+  heartbeat: HeartbeatStats!
+  longestSpeechToday: LongestSpeechToday
+  papersAwaitingVote: Int!
+  papersPerCommittee: [CommitteePaperCountEntry!]!
+  recentAdoptions: [RecentAdoption!]!
+  resolutionFunnel: [ResolutionFunnelEntry!]!
+  speakingByRegion: [MissionControlRegionSpeakingEntry!]!
+  speakingByRepresentationType: [RepresentationTypeSpeakingEntry!]!
+  voteOutcomesToday: [VoteOutcomeEntry!]!
+}
+
+type MissionControlRegionSpeakingEntry {
+  delegationCount: Int!
+  group: String!
+  speechCount: Int!
+  totalSeconds: Int!
+}
+
+type Mutation {
+  acceptAmendment(consensus: Boolean, id: ID!): Amendment!
+  addAmendmentSponsor(amendmentId: ID!, committeeMemberId: ID, id: ID): Amendmentsponsor!
+  addPaperEditor(conferenceUserId: ID!, id: ID, paperId: ID!): Papereditor!
+  addPaperSponsor(committeeMemberId: ID, id: ID, paperId: ID!): Papersponsor!
+  addSpeakerOnList(committeeMemberId: ID, conferenceMemberId: ID, id: ID, position: Int, speakersListId: ID!): Speakeronlist!
+
+  """
+  Approves the pending link request once the code matches the one DELEGATOR shows. Every DELEGATOR conference that has not ended then appears here.
+  """
+  approveDelegatorLink(confirmationCode: String!): Boolean!
+  castDeviceVote(committeeMemberId: ID, id: ID, sessionId: ID!, vote: VotechoiceEnum!): Votingvote!
+  clearSpeakersList(id: ID!): Speakerslist!
+  completeRollCallSession(id: ID!): Boolean!
+  completeVotingSession(id: ID!, outcome: VotingoutcomeEnum): Boolean!
+  concludeResolutionPaperVote(paperId: ID!, votingSessionId: ID!): Resolutionpaper!
+  createAgendaItem(commentListId: ID, committeeId: ID!, id: ID, speakersListId: ID, title: String!): Agendaitem!
+  createAmendment(id: ID, newContent: String, paperId: ID!, proposerCommitteeMemberId: ID, status: AmendmentstatusEnum, targetClauseId: String, targetOperativeIndex: Int, targetPosition: Int, type: AmendmenttypeEnum!): Amendment!
+  createCommittee(abbreviation: String!, conferenceId: ID!, id: ID, name: String!): Committee!
+  createCommitteeMember(committeeId: ID!, id: ID, representationId: ID!): Committeemember!
+  createConferenceMember(conferenceId: ID!, id: ID, representationId: ID!): Conferencemember!
+  createConferenceUser(conferenceId: ID!, conferenceUserType: ConferenceusertypeEnum!, id: ID, name: String, userEmail: String!): Conferenceuser!
+  createManualRequest(committeeId: ID!, committeeMemberId: ID, conferenceMemberId: ID, id: ID, requestTypeId: ID!): Request!
+  createManualSnapshot(id: ID, paperId: ID!): Papercontentsnapshot!
+  createPaperShareCode(id: ID, paperId: ID!, permission: SharecodepermissionEnum!): Papersharecode!
+  createRepresentation(alpha2Code: String, alpha3Code: String, conferenceId: ID!, icon: String, id: ID, name: String, type: RepresentationtypeEnum!): Representation!
+  createRequest(committeeId: ID!, id: ID, requestTypeId: ID!): Request!
+  createRequestType(conferenceId: ID!, delegatesOnly: Boolean, icon: String, id: ID, name: String!, showOnPresentation: Boolean): Requesttype!
+  createResolutionComment(clauseId: String, content: String!, id: ID, paperId: ID!, parentCommentId: ID, visibility: CommentvisibilityEnum): Resolutioncomment!
+  createResolutionPaper(agendaItemId: ID!, committeeId: ID!, creatorCommitteeMemberId: ID, id: ID, status: PaperstatusEnum, title: String): Resolutionpaper!
+  deleteAmendment(id: ID!): Boolean!
+  deleteCommittee(id: ID!): Boolean!
+  deleteCommitteeMember(id: ID!): Boolean!
+  deleteConference(id: ID!): Boolean!
+  deleteConferenceMember(id: ID!): Boolean!
+  deleteConferenceUser(id: ID!): Boolean!
+  deletePaperShareCode(id: ID!): Boolean!
+  deletePresenceEvent(id: ID!): Presenceevent!
+  deleteRepresentation(id: ID!): Boolean!
+  deleteRequestType(id: ID!): Boolean!
+  deleteResolutionComment(id: ID!): Boolean!
+  deleteResolutionPaper(id: ID!): Boolean!
+  importDelegatorConference(data: ImportData!): Conference!
+  insertPresenceEvent(committeeId: ID!, conferenceUserId: ID!, id: ID, markerType: PresenceeventmarkerEnum, note: String, present: Boolean!, timestamp: DateTime): Presenceevent!
+
+  """
+  The printable cards of a conference's NSAs, all or the given ones, signed by this instance (admins). Refused for a conference synced from DELEGATOR, which prints those. A mutation so no cache hands back old codes; it writes nothing.
+  """
+  issueNsaCards(conferenceId: ID!, conferenceUserIds: [ID!]): [NsaCard!]!
+  linkOperativeClauseVote(clauseId: String!, id: ID, paperId: ID!, votingSessionId: ID!): Operativeclausevote!
+  moveSpeakerToPosition(id: ID!, position: Int!): Speakeronlist!
+  recordNsaCheckIn(
+    """A scanned nametag or NSA card; verified here again."""
+    code: String
+    committeeId: ID!
+
+    """The NSA picked by name, when the code does not scan."""
+    conferenceUserId: ID
+    id: ID
+  ): Presenceevent!
+  recordNsaCheckOut(
+    """A scanned nametag or NSA card; verified here again."""
+    code: String
+    committeeId: ID!
+
+    """The NSA picked by name, when the code does not scan."""
+    conferenceUserId: ID
+    id: ID
+  ): Presenceevent!
+  redeemPaperShareCode(code: String!): Boolean!
+  rejectAmendment(id: ID!): Amendment!
+
+  """Discards the pending link request."""
+  rejectDelegatorLink: Boolean!
+  removeAmendmentSponsor(id: ID!): Boolean!
+  removePaperEditor(id: ID!): Boolean!
+  removePaperSponsor(id: ID!): Boolean!
+  removeSpeakerOnList(speakerOnListId: ID!): Speakerslist!
+
+  """
+  A new card for a lost one: raises the NSA's card number, so the earlier cards stop scanning (admins).
+  """
+  reprintNsaCard(conferenceId: ID!, conferenceUserId: ID!): NsaCard!
+
+  """
+  Called by a MUNify DELEGATOR instance to ask for a link. It stays pending until a global admin approves it here.
+  """
+  requestDelegatorLink(confirmationCode: String!, delegatorUrl: String!, token: String!): Boolean!
+  resolveRequest(id: ID!): Request!
+  restorePaperFromSnapshot(snapshotId: ID!): Papercontentsnapshot!
+  selfAddToSpeakersList(id: ID, speakersListId: ID!): Speakeronlist!
+  selfRemoveFromSpeakersList(speakersListId: ID!): Speakerslist!
+  setActiveAmendment(amendmentId: ID, committeeId: ID!): Committee!
+  setActiveDraftResolution(committeeId: ID!, paperId: ID): Committee!
+  setCommitteeResolutionToggles(amendmentSponsoringOpen: Boolean, amendmentSubmissionOpen: Boolean, committeeId: ID!, currentOperativeIndex: Int, supportReevaluationOpen: Boolean): Committee!
+  setPresenceForCommitteeMembers(ids: [ID!]!, present: Boolean!, rollCallSessionId: ID): [Committeemember!]!
+  setRollCallSessionIndex(currentMemberIndex: Int!, id: ID!): Rollcallsession!
+  setVoteForMember(committeeMemberId: ID!, id: ID, sessionId: ID!, vote: VotechoiceEnum!): Votingvote!
+  startRollCallSession(committeeId: ID!, id: ID): Rollcallsession!
+  startVotingSession(committeeId: ID!, currentStage: VotingstageEnum, deviceVotingWindowSeconds: Int, id: ID, majority: VotingmajoritytypeEnum!, majorityAmount: Int!, mode: VotingmodeEnum!, voteName: String, withAbstentions: Boolean!): Votingsession!
+  submitAmendment(id: ID!): Amendment!
+
+  """
+  Ends the link and freezes both sides: what was synced stays, as rows of this instance. Called by a global admin here, or by DELEGATOR when it unlinks.
+  """
+  unlinkDelegator: Boolean!
+  unlinkOperativeClauseVote(clauseId: String!, paperId: ID!): Boolean!
+  updateAmendmentReviewItem(aiObsolete: Boolean, aiObsoleteReason: String, aiRewriteReason: String, aiRewriteSuggestion: String, phase: AmendmentreviewphaseEnum, reviewItemId: ID!, verdictObsolete: Boolean, verdictRewrite: String): Boolean!
+  updateCommittee(abbreviation: String, activeAgendaItemId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, allowRequests: Boolean, displayRegionalGroups: Boolean, id: ID!, name: String, presentationLayout: String, presentationResolutionFontSize: Int, presentationRootFontSize: Int, presentationShowRequests: Boolean, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteestatusEnum, statusHeadline: String, statusUntil: DateTime, whiteboardContent: String): Committee!
+  updateConference(endDate: Date, hasModeratedCaucus: Boolean, id: ID!, location: String, logoSvg: String, pressWebsite: String, startDate: Date, title: String): Conference!
+  updateConferenceUser(committeeMemberId: ID, conferenceMemberId: ID, conferenceUserType: ConferenceusertypeEnum!, id: ID!, name: String): Conferenceuser!
+  updatePresenceEvent(committeeId: ID, id: ID!, note: String, present: Boolean, timestamp: DateTime): Presenceevent!
+  updateRequestType(delegatesOnly: Boolean, enabled: Boolean, icon: String, id: ID!, name: String, priority: Int, showOnPresentation: Boolean): Requesttype!
+  updateResolutionComment(content: String!, id: ID!): Resolutioncomment!
+  updateResolutionPaper(deployConfetti: Boolean, documentNumber: String, id: ID!, status: PaperstatusEnum, title: String): Resolutionpaper!
+  updateSpeakerOnList(id: ID!, overwriteName: String): Speakeronlist!
+  updateSpeakersList(id: ID!, isClosed: Boolean, phase: SpeakerslistphaseEnum, speakingTime: Int, startTimestamp: DateTime, stopTimer: Boolean = false, timeLeft: Int): Speakerslist!
+  updateVotingSession(currentMemberIndex: Int, currentStage: VotingstageEnum, id: ID!, votesAbstain: Int, votesCon: Int, votesPro: Int): Votingsession!
+  withdrawRequest(id: ID!): Request!
+}
+
+type NsaCard {
+  cardNumber: Int!
+
+  """The signed card code (kind `nsaCard`), for the QR code."""
+  code: String!
+  conferenceUserId: ID!
+  name: String!
+  nsaIcon: String
+  nsaName: String
+}
+
+type Operativeclausevote {
+  clauseId: ID!
+  createdAt: DateTime!
+  id: ID!
+
+  """Get the resolutionPapers related to this operativeClauseVote"""
+  paper(orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): Resolutionpaper!
+  paperId: ID!
+  updatedAt: DateTime
+
+  """Get the votingSessions related to this operativeClauseVote"""
+  vote(orderBy: VotingsessionOrderInputArgument, where: VotingsessionWhereInputArgument): Votingsession!
+  votingSessionId: ID!
+}
+
+input OperativeclausevoteOrderInputArgument {
+  clauseId: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  paperId: SortingParameter
+  updatedAt: SortingParameter
+  votingSessionId: SortingParameter
+}
+
+input OperativeclausevoteWhereInputArgument {
+  AND: [OperativeclausevoteWhereInputArgument!]
+  NOT: OperativeclausevoteWhereInputArgument
+  OR: [OperativeclausevoteWhereInputArgument!]
+  clauseId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  paper: ResolutionpaperWhereInputArgument
+  paperId: IDWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+  vote: VotingsessionWhereInputArgument
+  votingSessionId: IDWhereInputArgument
+}
+
+type PaperSponsorStats {
+  alpha2Code: String
+  representationId: String!
+  representationName: String
+  sponsorships: Int!
+}
+
+type Papercontentsnapshot {
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+
+  """Get the resolutionPapers related to this paperContentSnapshot"""
+  paper(orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): Resolutionpaper!
+  paperId: ID!
+  trigger: SnapshottriggerEnum!
+  updatedAt: DateTime
+}
+
+input PapercontentsnapshotOrderInputArgument {
+  content: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  paperId: SortingParameter
+  trigger: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input PapercontentsnapshotWhereInputArgument {
+  AND: [PapercontentsnapshotWhereInputArgument!]
+  NOT: PapercontentsnapshotWhereInputArgument
+  OR: [PapercontentsnapshotWhereInputArgument!]
+  content: StringWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  paper: ResolutionpaperWhereInputArgument
+  paperId: IDWhereInputArgument
+  trigger: SnapshottriggerEnum
+  updatedAt: DateTimeWhereInputArgument
+}
+
+type Papereditor {
+  """Get the conferenceUsers related to this paperEditor"""
+  conferenceUser(orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): Conferenceuser!
+  conferenceUserId: ID!
+  createdAt: DateTime!
+  id: ID!
+
+  """Get the resolutionPapers related to this paperEditor"""
+  paper(orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): Resolutionpaper!
+  paperId: ID!
+  updatedAt: DateTime
+}
+
+input PapereditorOrderInputArgument {
+  conferenceUserId: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  paperId: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input PapereditorWhereInputArgument {
+  AND: [PapereditorWhereInputArgument!]
+  NOT: PapereditorWhereInputArgument
+  OR: [PapereditorWhereInputArgument!]
+  conferenceUser: ConferenceuserWhereInputArgument
+  conferenceUserId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  paper: ResolutionpaperWhereInputArgument
+  paperId: IDWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+}
+
+type Papersharecode {
+  code: String!
+  createdAt: DateTime!
+  id: ID!
+
+  """Get the resolutionPapers related to this paperShareCode"""
+  paper(orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): Resolutionpaper!
+  paperId: ID!
+  permission: SharecodepermissionEnum!
+  updatedAt: DateTime
+}
+
+input PapersharecodeOrderInputArgument {
+  code: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  paperId: SortingParameter
+  permission: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input PapersharecodeWhereInputArgument {
+  AND: [PapersharecodeWhereInputArgument!]
+  NOT: PapersharecodeWhereInputArgument
+  OR: [PapersharecodeWhereInputArgument!]
+  code: StringWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  paper: ResolutionpaperWhereInputArgument
+  paperId: IDWhereInputArgument
+  permission: SharecodepermissionEnum
+  updatedAt: DateTimeWhereInputArgument
+}
+
+type Papersponsor {
+  """Get the committeeMembers related to this paperSponsor"""
+  committeeMember(orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): Committeemember!
+  committeeMemberId: ID!
+  createdAt: DateTime!
+  id: ID!
+
+  """Get the resolutionPapers related to this paperSponsor"""
+  paper(orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): Resolutionpaper!
+  paperId: ID!
+  updatedAt: DateTime
+}
+
+input PapersponsorOrderInputArgument {
+  committeeMemberId: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  paperId: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input PapersponsorWhereInputArgument {
+  AND: [PapersponsorWhereInputArgument!]
+  NOT: PapersponsorWhereInputArgument
+  OR: [PapersponsorWhereInputArgument!]
+  committeeMember: CommitteememberWhereInputArgument
+  committeeMemberId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  paper: ResolutionpaperWhereInputArgument
+  paperId: IDWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+}
+
+enum PaperstatusEnum {
+  AMENDMENT_PHASE
+  DRAFT_RESOLUTION
+  FINAL
+  SUBMITTED
+  VOTING_PHASE
+  WORKING_PAPER
+}
+
+"""
+A person's name. Unicode letters from any script are allowed, along with space, apostrophe, hyphen and period as separators between name parts. The value is Unicode NFC normalized, has invisible/control characters stripped, has its whitespace collapsed, and has unambiguous typos (typographic apostrophe or dash variants, spaces around a hyphen, a doubled or stray leading/trailing hyphen/apostrophe) silently corrected rather than rejected.
+"""
+scalar PersonName
+
+type PersonalActivityStats {
+  amendmentsAccepted: Int!
+  amendmentsProposed: Int!
+  papersSponsored: Int!
+}
+
+type PersonalAttendanceStats {
+  committeesCount: Int!
+  totalSeconds: Int!
+}
+
+type PersonalSpeakingStats {
+  avgSpeechSeconds: Float!
+  avgWaitSeconds: Float!
+  commentCount: Int!
+  longestSpeechSeconds: Int!
+  speakingPercentile: Float!
+  speakingToAttendanceRatio: Float!
+  speechCount: Int!
+  totalSeconds: Int!
+}
+
+type PersonalStats {
+  activity: PersonalActivityStats!
+  attendance: PersonalAttendanceStats!
+  speaking: PersonalSpeakingStats!
+  voting: PersonalVotingStats!
+}
+
+type PersonalVotingStats {
+  abstain: Int!
+  con: Int!
+  pro: Int!
+  total: Int!
+}
+
+"""
+A phone number, validated using real per-country validity rules and represented as a parsed libphonenumber-js PhoneNumber. On the wire it is transported as the E.164 format (https://en.wikipedia.org/wiki/E.164), e.g. +4915123456789. The country calling code is required.
+"""
+scalar PhoneNumber
+
+type Presenceevent {
+  """Get the committees related to this presenceEvent"""
+  committee(orderBy: CommitteeOrderInputArgument, where: CommitteeWhereInputArgument): Committee!
+  committeeId: ID!
+
+  """Get the conferenceUsers related to this presenceEvent"""
+  conferenceUser(orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): Conferenceuser!
+  conferenceUserId: ID!
+  id: ID!
+  note: String
+  present: Boolean!
+
+  """Get the rollCallSessions related to this presenceEvent"""
+  rollCallSession(orderBy: RollcallsessionOrderInputArgument, where: RollcallsessionWhereInputArgument): Rollcallsession
+  rollCallSessionId: ID
+  timestamp: DateTime!
+
+  """Get the conferenceUsers related to this presenceEvent"""
+  triggeredBy(orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): Conferenceuser
+  triggeredByConferenceUserId: ID
+  type: PresenceeventmarkerEnum!
+}
+
+input PresenceeventOrderInputArgument {
+  committeeId: SortingParameter
+  conferenceUserId: SortingParameter
+  id: SortingParameter
+  note: SortingParameter
+  present: SortingParameter
+  rollCallSessionId: SortingParameter
+  timestamp: SortingParameter
+  triggeredByConferenceUserId: SortingParameter
+  type: SortingParameter
+}
+
+input PresenceeventWhereInputArgument {
+  AND: [PresenceeventWhereInputArgument!]
+  NOT: PresenceeventWhereInputArgument
+  OR: [PresenceeventWhereInputArgument!]
+  committee: CommitteeWhereInputArgument
+  committeeId: IDWhereInputArgument
+  conferenceUser: ConferenceuserWhereInputArgument
+  conferenceUserId: IDWhereInputArgument
+  id: IDWhereInputArgument
+  note: StringWhereInputArgument
+  present: BooleanWhereInputArgument
+  rollCallSession: RollcallsessionWhereInputArgument
+  rollCallSessionId: IDWhereInputArgument
+  timestamp: DateTimeWhereInputArgument
+  triggeredBy: ConferenceuserWhereInputArgument
+  triggeredByConferenceUserId: IDWhereInputArgument
+  type: PresenceeventmarkerEnum
+}
+
+enum PresenceeventmarkerEnum {
+  AUTO_SWITCH
+  MANUAL
+  NSA_SCAN
+  ROLL_CALL
+}
+
+type Query {
+  """Get a single agendaItem by ID"""
+  agendaItem(id: ID!): Agendaitem!
+
+  """List all agendaItems"""
+  agendaItems(limit: Int, offset: Int, orderBy: AgendaitemOrderInputArgument, where: AgendaitemWhereInputArgument): [Agendaitem!]!
+  aiCall(maxTokens: Int, messages: [AiMessageInput!]!, responseJSONSchema: String, responseType: AiResponseType, temperature: Float): String
+
+  """Get a single amendment by ID"""
+  amendment(id: ID!): Amendment!
+
+  """Get a single amendmentReviewItem by ID"""
+  amendmentReviewItem(id: ID!): Amendmentreviewitem!
+
+  """List all amendmentReviewItems"""
+  amendmentReviewItems(limit: Int, offset: Int, orderBy: AmendmentreviewitemOrderInputArgument, where: AmendmentreviewitemWhereInputArgument): [Amendmentreviewitem!]!
+
+  """Get a single amendmentSponsor by ID"""
+  amendmentSponsor(id: ID!): Amendmentsponsor!
+
+  """List all amendmentSponsors"""
+  amendmentSponsors(limit: Int, offset: Int, orderBy: AmendmentsponsorOrderInputArgument, where: AmendmentsponsorWhereInputArgument): [Amendmentsponsor!]!
+
+  """List all amendments"""
+  amendments(limit: Int, offset: Int, orderBy: AmendmentOrderInputArgument, where: AmendmentWhereInputArgument): [Amendment!]!
+
+  """Get a single committee by ID"""
+  committee(id: ID!): Committee!
+
+  """Get a single committeeMember by ID"""
+  committeeMember(id: ID!): Committeemember!
+
+  """List all committeeMembers"""
+  committeeMembers(limit: Int, offset: Int, orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): [Committeemember!]!
+
+  """List all committees"""
+  committees(limit: Int, offset: Int, orderBy: CommitteeOrderInputArgument, where: CommitteeWhereInputArgument): [Committee!]!
+
+  """Get a single conference by ID"""
+  conference(id: ID!): Conference!
+
+  """Get a single conferenceMember by ID"""
+  conferenceMember(id: ID!): Conferencemember!
+
+  """List all conferenceMembers"""
+  conferenceMembers(limit: Int, offset: Int, orderBy: ConferencememberOrderInputArgument, where: ConferencememberWhereInputArgument): [Conferencemember!]!
+  conferenceStats(conferenceId: ID!): ConferenceStats
+
+  """Get a single conferenceUser by ID"""
+  conferenceUser(id: ID!): Conferenceuser!
+
+  """List all conferenceUsers"""
+  conferenceUsers(limit: Int, offset: Int, orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): [Conferenceuser!]!
+
+  """List all conferences"""
+  conferences(limit: Int, offset: Int, orderBy: ConferenceOrderInputArgument, where: ConferenceWhereInputArgument): [Conference!]!
+  currentUserClaims: UserClaims!
+  hasAiProviders: Boolean!
+  identityKeys: IdentityKeys!
+
+  """Get a single instanceLink by ID"""
+  instanceLink(id: ID!): Instancelink!
+
+  """List all instanceLinks"""
+  instanceLinks(limit: Int, offset: Int, orderBy: InstancelinkOrderInputArgument, where: InstancelinkWhereInputArgument): [Instancelink!]!
+  isGlobalAdmin: Boolean!
+  missionControlPulse(conferenceId: ID!): MissionControlPulse
+  myStats(conferenceId: ID!): PersonalStats
+
+  """Get a single operativeClauseVote by ID"""
+  operativeClauseVote(id: ID!): Operativeclausevote!
+
+  """List all operativeClauseVotes"""
+  operativeClauseVotes(limit: Int, offset: Int, orderBy: OperativeclausevoteOrderInputArgument, where: OperativeclausevoteWhereInputArgument): [Operativeclausevote!]!
+
+  """Get a single paperContentSnapshot by ID"""
+  paperContentSnapshot(id: ID!): Papercontentsnapshot!
+
+  """List all paperContentSnapshots"""
+  paperContentSnapshots(limit: Int, offset: Int, orderBy: PapercontentsnapshotOrderInputArgument, where: PapercontentsnapshotWhereInputArgument): [Papercontentsnapshot!]!
+
+  """Get a single paperEditor by ID"""
+  paperEditor(id: ID!): Papereditor!
+
+  """List all paperEditors"""
+  paperEditors(limit: Int, offset: Int, orderBy: PapereditorOrderInputArgument, where: PapereditorWhereInputArgument): [Papereditor!]!
+
+  """Get a single paperShareCode by ID"""
+  paperShareCode(id: ID!): Papersharecode!
+
+  """List all paperShareCodes"""
+  paperShareCodes(limit: Int, offset: Int, orderBy: PapersharecodeOrderInputArgument, where: PapersharecodeWhereInputArgument): [Papersharecode!]!
+
+  """Get a single paperSponsor by ID"""
+  paperSponsor(id: ID!): Papersponsor!
+
+  """List all paperSponsors"""
+  paperSponsors(limit: Int, offset: Int, orderBy: PapersponsorOrderInputArgument, where: PapersponsorWhereInputArgument): [Papersponsor!]!
+
+  """Get a single presenceEvent by ID"""
+  presenceEvent(id: ID!): Presenceevent!
+
+  """List all presenceEvents"""
+  presenceEvents(limit: Int, offset: Int, orderBy: PresenceeventOrderInputArgument, where: PresenceeventWhereInputArgument): [Presenceevent!]!
+
+  """Get a single representation by ID"""
+  representation(id: ID!): Representation!
+
+  """List all representations"""
+  representations(limit: Int, offset: Int, orderBy: RepresentationOrderInputArgument, where: RepresentationWhereInputArgument): [Representation!]!
+
+  """Get a single request by ID"""
+  request(id: ID!): Request!
+
+  """Get a single requestType by ID"""
+  requestType(id: ID!): Requesttype!
+
+  """List all requestTypes"""
+  requestTypes(limit: Int, offset: Int, orderBy: RequesttypeOrderInputArgument, where: RequesttypeWhereInputArgument): [Requesttype!]!
+
+  """List all requests"""
+  requests(limit: Int, offset: Int, orderBy: RequestOrderInputArgument, where: RequestWhereInputArgument): [Request!]!
+
+  """Get a single resolutionComment by ID"""
+  resolutionComment(id: ID!): Resolutioncomment!
+
+  """List all resolutionComments"""
+  resolutionComments(limit: Int, offset: Int, orderBy: ResolutioncommentOrderInputArgument, where: ResolutioncommentWhereInputArgument): [Resolutioncomment!]!
+
+  """Get a single resolutionPaper by ID"""
+  resolutionPaper(id: ID!): Resolutionpaper!
+
+  """List all resolutionPapers"""
+  resolutionPapers(limit: Int, offset: Int, orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): [Resolutionpaper!]!
+
+  """Get a single rollCallSession by ID"""
+  rollCallSession(id: ID!): Rollcallsession!
+
+  """List all rollCallSessions"""
+  rollCallSessions(limit: Int, offset: Int, orderBy: RollcallsessionOrderInputArgument, where: RollcallsessionWhereInputArgument): [Rollcallsession!]!
+  serverTime: DateTime!
+
+  """Get a single speakerOnList by ID"""
+  speakerOnList(id: ID!): Speakeronlist!
+
+  """List all speakerOnLists"""
+  speakerOnLists(limit: Int, offset: Int, orderBy: SpeakeronlistOrderInputArgument, where: SpeakeronlistWhereInputArgument): [Speakeronlist!]!
+
+  """Get a single speakersList by ID"""
+  speakersList(id: ID!): Speakerslist!
+
+  """List all speakersLists"""
+  speakersLists(limit: Int, offset: Int, orderBy: SpeakerslistOrderInputArgument, where: SpeakerslistWhereInputArgument): [Speakerslist!]!
+
+  """Get a single user by ID"""
+  user(id: ID!): User!
+
+  """List all users"""
+  users(limit: Int, offset: Int, orderBy: UserOrderInputArgument, where: UserWhereInputArgument): [User!]!
+
+  """Get a single votingSession by ID"""
+  votingSession(id: ID!): Votingsession!
+
+  """List all votingSessions"""
+  votingSessions(limit: Int, offset: Int, orderBy: VotingsessionOrderInputArgument, where: VotingsessionWhereInputArgument): [Votingsession!]!
+
+  """Get a single votingVote by ID"""
+  votingVote(id: ID!): Votingvote!
+
+  """List all votingVotes"""
+  votingVotes(limit: Int, offset: Int, orderBy: VotingvoteOrderInputArgument, where: VotingvoteWhereInputArgument): [Votingvote!]!
+}
+
+type RecentAdoption {
+  adoptedAt: DateTime!
+  agendaItemTitle: String!
+  committeeAbbreviation: String!
+  committeeId: ID!
+  committeeName: String!
+  documentNumber: String
+  paperTitle: String
+}
+
+type RegionalStats {
+  delegationCount: Int!
+  group: String!
+  speechCount: Int!
+  totalSeconds: Int!
+}
+
+enum RegionalgroupEnum {
+  AFRICA
+  ASIA_PACIFIC
+  EASTERN_EUROPE
+  LATIN_AMERICA_CARIBBEAN
+  WESTERN_EUROPE_OTHERS
+}
+
+type Representation {
+  alpha2Code: String
+  alpha3Code: String
+
+  """Get the committeeMembers related to this representation"""
+  committeeMembers(limit: Int, offset: Int, orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): [Committeemember!]!
+
+  """Get the conferences related to this representation"""
+  conference(orderBy: ConferenceOrderInputArgument, where: ConferenceWhereInputArgument): Conference
+  conferenceId: ID!
+
+  """Get the conferenceMembers related to this representation"""
+  conferenceMembers(limit: Int, offset: Int, orderBy: ConferencememberOrderInputArgument, where: ConferencememberWhereInputArgument): [Conferencemember!]!
+  createdAt: DateTime!
+  icon: String
+  id: ID!
+  managedByDelegator: Boolean!
+  name: String
+  regionalGroup: RegionalgroupEnum
+  type: RepresentationtypeEnum!
+  updatedAt: DateTime
+}
+
+input RepresentationOrderInputArgument {
+  alpha2Code: SortingParameter
+  alpha3Code: SortingParameter
+  conferenceId: SortingParameter
+  createdAt: SortingParameter
+  icon: SortingParameter
+  id: SortingParameter
+  managedByDelegator: SortingParameter
+  name: SortingParameter
+  regionalGroup: SortingParameter
+  type: SortingParameter
+  updatedAt: SortingParameter
+}
+
+type RepresentationTypeSpeakingEntry {
+  delegationCount: Int!
+  representationType: String!
+  totalSeconds: Int!
+}
+
+input RepresentationWhereInputArgument {
+  AND: [RepresentationWhereInputArgument!]
+  NOT: RepresentationWhereInputArgument
+  OR: [RepresentationWhereInputArgument!]
+  alpha2Code: StringWhereInputArgument
+  alpha3Code: StringWhereInputArgument
+  committeeMembers: CommitteememberWhereInputArgument
+  conference: ConferenceWhereInputArgument
+  conferenceId: IDWhereInputArgument
+  conferenceMembers: ConferencememberWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  icon: StringWhereInputArgument
+  id: IDWhereInputArgument
+  managedByDelegator: BooleanWhereInputArgument
+  name: StringWhereInputArgument
+  regionalGroup: RegionalgroupEnum
+  type: RepresentationtypeEnum
+  updatedAt: DateTimeWhereInputArgument
+}
+
+enum RepresentationtypeEnum {
+  DELEGATION
+  NSA
+  UN
+}
+
+type Request {
+  """Get the committees related to this request"""
+  committee(orderBy: CommitteeOrderInputArgument, where: CommitteeWhereInputArgument): Committee!
+  committeeId: ID!
+
+  """Get the committeeMembers related to this request"""
+  committeeMember(orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): Committeemember
+  committeeMemberId: ID
+
+  """Get the conferenceMembers related to this request"""
+  conferenceMember(orderBy: ConferencememberOrderInputArgument, where: ConferencememberWhereInputArgument): Conferencemember
+  conferenceMemberId: ID
+
+  """Get the conferenceUsers related to this request"""
+  conferenceUser(orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): Conferenceuser
+  conferenceUserId: ID
+  createdAt: DateTime!
+  id: ID!
+
+  """Get the requestTypes related to this request"""
+  requestType(orderBy: RequesttypeOrderInputArgument, where: RequesttypeWhereInputArgument): Requesttype!
+  requestTypeId: ID!
+  resolvedAt: DateTime
+
+  """Get the conferenceUsers related to this request"""
+  resolvedBy(orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): Conferenceuser
+  resolvedByConferenceUserId: ID
+  status: RequeststatusEnum!
+  updatedAt: DateTime
+}
+
+input RequestOrderInputArgument {
+  committeeId: SortingParameter
+  committeeMemberId: SortingParameter
+  conferenceMemberId: SortingParameter
+  conferenceUserId: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  requestTypeId: SortingParameter
+  resolvedAt: SortingParameter
+  resolvedByConferenceUserId: SortingParameter
+  status: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input RequestWhereInputArgument {
+  AND: [RequestWhereInputArgument!]
+  NOT: RequestWhereInputArgument
+  OR: [RequestWhereInputArgument!]
+  committee: CommitteeWhereInputArgument
+  committeeId: IDWhereInputArgument
+  committeeMember: CommitteememberWhereInputArgument
+  committeeMemberId: IDWhereInputArgument
+  conferenceMember: ConferencememberWhereInputArgument
+  conferenceMemberId: IDWhereInputArgument
+  conferenceUser: ConferenceuserWhereInputArgument
+  conferenceUserId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  requestType: RequesttypeWhereInputArgument
+  requestTypeId: IDWhereInputArgument
+  resolvedAt: DateTimeWhereInputArgument
+  resolvedBy: ConferenceuserWhereInputArgument
+  resolvedByConferenceUserId: IDWhereInputArgument
+  status: RequeststatusEnum
+  updatedAt: DateTimeWhereInputArgument
+}
+
+enum RequeststatusEnum {
+  PENDING
+  RESOLVED
+  WITHDRAWN
+}
+
+type Requesttype {
+  """Get the conferences related to this requestType"""
+  conference(orderBy: ConferenceOrderInputArgument, where: ConferenceWhereInputArgument): Conference!
+  conferenceId: ID!
+  createdAt: DateTime!
+  delegatesOnly: Boolean!
+  enabled: Boolean!
+  icon: String
+  id: ID!
+  name: String!
+  priority: Int!
+
+  """Get the requests related to this requestType"""
+  requests(limit: Int, offset: Int, orderBy: RequestOrderInputArgument, where: RequestWhereInputArgument): [Request!]!
+  showOnPresentation: Boolean!
+  updatedAt: DateTime
+}
+
+input RequesttypeOrderInputArgument {
+  conferenceId: SortingParameter
+  createdAt: SortingParameter
+  delegatesOnly: SortingParameter
+  enabled: SortingParameter
+  icon: SortingParameter
+  id: SortingParameter
+  name: SortingParameter
+  priority: SortingParameter
+  showOnPresentation: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input RequesttypeWhereInputArgument {
+  AND: [RequesttypeWhereInputArgument!]
+  NOT: RequesttypeWhereInputArgument
+  OR: [RequesttypeWhereInputArgument!]
+  conference: ConferenceWhereInputArgument
+  conferenceId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  delegatesOnly: BooleanWhereInputArgument
+  enabled: BooleanWhereInputArgument
+  icon: StringWhereInputArgument
+  id: IDWhereInputArgument
+  name: StringWhereInputArgument
+  priority: IntWhereInputArgument
+  requests: RequestWhereInputArgument
+  showOnPresentation: BooleanWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+}
+
+type ResolutionFunnelEntry {
+  count: Int!
+  status: String!
+}
+
+type Resolutioncomment {
+  """Get the conferenceUsers related to this resolutionComment"""
+  author(orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): Conferenceuser!
+  authorConferenceUserId: ID!
+  clauseId: ID
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+
+  """Get the resolutionPapers related to this resolutionComment"""
+  paper(orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): Resolutionpaper!
+  paperId: ID!
+
+  """Get the resolutionComments related to this resolutionComment"""
+  parent(orderBy: ResolutioncommentOrderInputArgument, where: ResolutioncommentWhereInputArgument): Resolutioncomment
+  parentCommentId: ID
+
+  """Get the resolutionComments related to this resolutionComment"""
+  replies(limit: Int, offset: Int, orderBy: ResolutioncommentOrderInputArgument, where: ResolutioncommentWhereInputArgument): [Resolutioncomment!]!
+  updatedAt: DateTime
+  visibility: CommentvisibilityEnum!
+}
+
+input ResolutioncommentOrderInputArgument {
+  authorConferenceUserId: SortingParameter
+  clauseId: SortingParameter
+  content: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  paperId: SortingParameter
+  parentCommentId: SortingParameter
+  updatedAt: SortingParameter
+  visibility: SortingParameter
+}
+
+input ResolutioncommentWhereInputArgument {
+  AND: [ResolutioncommentWhereInputArgument!]
+  NOT: ResolutioncommentWhereInputArgument
+  OR: [ResolutioncommentWhereInputArgument!]
+  author: ConferenceuserWhereInputArgument
+  authorConferenceUserId: IDWhereInputArgument
+  clauseId: IDWhereInputArgument
+  content: StringWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  paper: ResolutionpaperWhereInputArgument
+  paperId: IDWhereInputArgument
+  parent: ResolutioncommentWhereInputArgument
+  parentCommentId: IDWhereInputArgument
+  replies: ResolutioncommentWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+  visibility: CommentvisibilityEnum
+}
+
+type Resolutionpaper {
+  """Get the agendaItems related to this resolutionPaper"""
+  agendaItem(orderBy: AgendaitemOrderInputArgument, where: AgendaitemWhereInputArgument): Agendaitem!
+  agendaItemId: ID!
+
+  """Get the amendments related to this resolutionPaper"""
+  amendments(limit: Int, offset: Int, orderBy: AmendmentOrderInputArgument, where: AmendmentWhereInputArgument): [Amendment!]!
+
+  """Get the resolutionComments related to this resolutionPaper"""
+  comments(limit: Int, offset: Int, orderBy: ResolutioncommentOrderInputArgument, where: ResolutioncommentWhereInputArgument): [Resolutioncomment!]!
+
+  """Get the committees related to this resolutionPaper"""
+  committee(orderBy: CommitteeOrderInputArgument, where: CommitteeWhereInputArgument): Committee!
+  committeeId: ID!
+  createdAt: DateTime!
+
+  """Get the committeeMembers related to this resolutionPaper"""
+  creatorCommitteeMember(orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): Committeemember!
+  creatorCommitteeMemberId: ID!
+  delegatorPaperId: ID
+  delegatorVersion: Int
+  detachedAt: DateTime
+  documentNumber: String
+
+  """Get the paperEditors related to this resolutionPaper"""
+  editors(limit: Int, offset: Int, orderBy: PapereditorOrderInputArgument, where: PapereditorWhereInputArgument): [Papereditor!]!
+  id: ID!
+
+  """Get the operativeClauseVotes related to this resolutionPaper"""
+  operativeClauseVotes(limit: Int, offset: Int, orderBy: OperativeclausevoteOrderInputArgument, where: OperativeclausevoteWhereInputArgument): [Operativeclausevote!]!
+
+  """Get the paperShareCodes related to this resolutionPaper"""
+  shareCodes(limit: Int, offset: Int, orderBy: PapersharecodeOrderInputArgument, where: PapersharecodeWhereInputArgument): [Papersharecode!]!
+
+  """Get the paperContentSnapshots related to this resolutionPaper"""
+  snapshots(limit: Int, offset: Int, orderBy: PapercontentsnapshotOrderInputArgument, where: PapercontentsnapshotWhereInputArgument): [Papercontentsnapshot!]!
+
+  """Get the paperSponsors related to this resolutionPaper"""
+  sponsors(limit: Int, offset: Int, orderBy: PapersponsorOrderInputArgument, where: PapersponsorWhereInputArgument): [Papersponsor!]!
+  status: PaperstatusEnum!
+  title: String
+  updatedAt: DateTime
+
+  """Get the votingSessions related to this resolutionPaper"""
+  vote(orderBy: VotingsessionOrderInputArgument, where: VotingsessionWhereInputArgument): Votingsession
+  voteVotingSessionId: ID
+}
+
+input ResolutionpaperOrderInputArgument {
+  agendaItemId: SortingParameter
+  committeeId: SortingParameter
+  createdAt: SortingParameter
+  creatorCommitteeMemberId: SortingParameter
+  delegatorPaperId: SortingParameter
+  delegatorVersion: SortingParameter
+  detachedAt: SortingParameter
+  documentNumber: SortingParameter
+  id: SortingParameter
+  status: SortingParameter
+  title: SortingParameter
+  updatedAt: SortingParameter
+  voteVotingSessionId: SortingParameter
+}
+
+input ResolutionpaperWhereInputArgument {
+  AND: [ResolutionpaperWhereInputArgument!]
+  NOT: ResolutionpaperWhereInputArgument
+  OR: [ResolutionpaperWhereInputArgument!]
+  agendaItem: AgendaitemWhereInputArgument
+  agendaItemId: IDWhereInputArgument
+  amendments: AmendmentWhereInputArgument
+  comments: ResolutioncommentWhereInputArgument
+  committee: CommitteeWhereInputArgument
+  committeeId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  creatorCommitteeMember: CommitteememberWhereInputArgument
+  creatorCommitteeMemberId: IDWhereInputArgument
+  delegatorPaperId: IDWhereInputArgument
+  delegatorVersion: IntWhereInputArgument
+  detachedAt: DateTimeWhereInputArgument
+  documentNumber: StringWhereInputArgument
+  editors: PapereditorWhereInputArgument
+  id: IDWhereInputArgument
+  operativeClauseVotes: OperativeclausevoteWhereInputArgument
+  shareCodes: PapersharecodeWhereInputArgument
+  snapshots: PapercontentsnapshotWhereInputArgument
+  sponsors: PapersponsorWhereInputArgument
+  status: PaperstatusEnum
+  title: StringWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+  vote: VotingsessionWhereInputArgument
+  voteVotingSessionId: IDWhereInputArgument
+}
+
+type Rollcallsession {
+  """Get the committees related to this rollCallSession"""
+  committee(orderBy: CommitteeOrderInputArgument, where: CommitteeWhereInputArgument): Committee!
+  committeeId: ID!
+  completedAt: DateTime
+  createdAt: DateTime!
+  currentMemberIndex: Int!
+  id: ID!
+
+  """Get the presenceEvents related to this rollCallSession"""
+  presenceEvents(limit: Int, offset: Int, orderBy: PresenceeventOrderInputArgument, where: PresenceeventWhereInputArgument): [Presenceevent!]!
+
+  """Get the conferenceUsers related to this rollCallSession"""
+  startedBy(orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): Conferenceuser
+  startedByConferenceUserId: ID
+  updatedAt: DateTime
+}
+
+input RollcallsessionOrderInputArgument {
+  committeeId: SortingParameter
+  completedAt: SortingParameter
+  createdAt: SortingParameter
+  currentMemberIndex: SortingParameter
+  id: SortingParameter
+  startedByConferenceUserId: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input RollcallsessionWhereInputArgument {
+  AND: [RollcallsessionWhereInputArgument!]
+  NOT: RollcallsessionWhereInputArgument
+  OR: [RollcallsessionWhereInputArgument!]
+  committee: CommitteeWhereInputArgument
+  committeeId: IDWhereInputArgument
+  completedAt: DateTimeWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  currentMemberIndex: IntWhereInputArgument
+  id: IDWhereInputArgument
+  presenceEvents: PresenceeventWhereInputArgument
+  startedBy: ConferenceuserWhereInputArgument
+  startedByConferenceUserId: IDWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+}
+
+enum SharecodepermissionEnum {
+  EDIT
+  SPONSOR
+}
+
+"""A public key signed codes are checked against."""
+type SigningKey {
+  """The key id codes name in their `kid` header."""
+  kid: Int!
+
+  """Ed25519, raw and base64url."""
+  publicKey: String!
+}
+
+enum SnapshottriggerEnum {
+  AMENDMENT_APPLIED
+  MANUAL
+  SUBMITTED
+  VOTE_CONCLUDED
+}
+
+enum SortingParameter {
+  asc
+  desc
+}
+
+type Speakeronlist {
+  """Get the committeeMembers related to this speakerOnList"""
+  committeeMember(orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): Committeemember
+  committeeMemberId: ID
+
+  """Get the conferenceMembers related to this speakerOnList"""
+  conferenceMember(orderBy: ConferencememberOrderInputArgument, where: ConferencememberWhereInputArgument): Conferencemember
+  conferenceMemberId: ID
+  createdAt: DateTime!
+  id: ID!
+  overwriteName: String
+  position: Int!
+
+  """Get the speakersLists related to this speakerOnList"""
+  speakersList(orderBy: SpeakerslistOrderInputArgument, where: SpeakerslistWhereInputArgument): Speakerslist
+  speakersListId: ID!
+  updatedAt: DateTime
+}
+
+input SpeakeronlistOrderInputArgument {
+  committeeMemberId: SortingParameter
+  conferenceMemberId: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  overwriteName: SortingParameter
+  position: SortingParameter
+  speakersListId: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input SpeakeronlistWhereInputArgument {
+  AND: [SpeakeronlistWhereInputArgument!]
+  NOT: SpeakeronlistWhereInputArgument
+  OR: [SpeakeronlistWhereInputArgument!]
+  committeeMember: CommitteememberWhereInputArgument
+  committeeMemberId: IDWhereInputArgument
+  conferenceMember: ConferencememberWhereInputArgument
+  conferenceMemberId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  overwriteName: StringWhereInputArgument
+  position: IntWhereInputArgument
+  speakersList: SpeakerslistWhereInputArgument
+  speakersListId: IDWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+}
+
+type Speakerslist {
+  """Get the agendaItems related to this speakersList"""
+  agendaItem(orderBy: AgendaitemOrderInputArgument, where: AgendaitemWhereInputArgument): Agendaitem
+  agendaItemId: ID!
+  createdAt: DateTime!
+  id: ID!
+  isClosed: Boolean!
+  phase: SpeakerslistphaseEnum!
+
+  """Get the speakerOnLists related to this speakersList"""
+  speakers(limit: Int, offset: Int, orderBy: SpeakeronlistOrderInputArgument, where: SpeakeronlistWhereInputArgument): [Speakeronlist!]!
+  speakingTime: Int!
+  startTimestamp: DateTime
+  timeLeft: Int!
+  type: SpeakerslistcategoryEnum!
+  updatedAt: DateTime
+}
+
+input SpeakerslistOrderInputArgument {
+  agendaItemId: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  isClosed: SortingParameter
+  phase: SortingParameter
+  speakingTime: SortingParameter
+  startTimestamp: SortingParameter
+  timeLeft: SortingParameter
+  type: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input SpeakerslistWhereInputArgument {
+  AND: [SpeakerslistWhereInputArgument!]
+  NOT: SpeakerslistWhereInputArgument
+  OR: [SpeakerslistWhereInputArgument!]
+  agendaItem: AgendaitemWhereInputArgument
+  agendaItemId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  isClosed: BooleanWhereInputArgument
+  phase: SpeakerslistphaseEnum
+  speakers: SpeakeronlistWhereInputArgument
+  speakingTime: IntWhereInputArgument
+  startTimestamp: DateTimeWhereInputArgument
+  timeLeft: IntWhereInputArgument
+  type: SpeakerslistcategoryEnum
+  updatedAt: DateTimeWhereInputArgument
+}
+
+enum SpeakerslistcategoryEnum {
+  COMMENT_LIST
+  SPEAKERS_LIST
+}
+
+enum SpeakerslistphaseEnum {
+  ANSWER
+  ANSWER_DONE
+  QUESTION
+  SPEECH
+  SPEECH_DONE
+}
+
+type SpeakingFairness {
+  gini: Float!
+  stdDevSeconds: Float!
+}
+
+type SpeakingTimelineBucket {
+  bucket: String!
+  totalSeconds: Int!
+}
+
+input StringWhereInputArgument {
+  AND: [StringWhereInputArgument!]
+  NOT: StringWhereInputArgument
+  OR: [StringWhereInputArgument!]
+  arrayContained: [String!]
+  arrayContains: [String!]
+  arrayOverlaps: [String!]
+  eq: String
+  gt: String
+  gte: String
+  ilike: String
+  in: [String!]
+  isNotNull: Boolean
+  isNull: Boolean
+  like: String
+  lt: String
+  lte: String
+  ne: String
+  notIlike: String
+  notIn: [String!]
+  notLike: String
+}
+
+type Subscription {
+  """Get a single agendaItem by ID"""
+  agendaItem(id: ID!): Agendaitem!
+
+  """List all agendaItems"""
+  agendaItems(limit: Int, offset: Int, orderBy: AgendaitemOrderInputArgument, where: AgendaitemWhereInputArgument): [Agendaitem!]!
+
+  """Get a single amendment by ID"""
+  amendment(id: ID!): Amendment!
+
+  """Get a single amendmentReviewItem by ID"""
+  amendmentReviewItem(id: ID!): Amendmentreviewitem!
+
+  """List all amendmentReviewItems"""
+  amendmentReviewItems(limit: Int, offset: Int, orderBy: AmendmentreviewitemOrderInputArgument, where: AmendmentreviewitemWhereInputArgument): [Amendmentreviewitem!]!
+
+  """Get a single amendmentSponsor by ID"""
+  amendmentSponsor(id: ID!): Amendmentsponsor!
+
+  """List all amendmentSponsors"""
+  amendmentSponsors(limit: Int, offset: Int, orderBy: AmendmentsponsorOrderInputArgument, where: AmendmentsponsorWhereInputArgument): [Amendmentsponsor!]!
+
+  """List all amendments"""
+  amendments(limit: Int, offset: Int, orderBy: AmendmentOrderInputArgument, where: AmendmentWhereInputArgument): [Amendment!]!
+
+  """Get a single committee by ID"""
+  committee(id: ID!): Committee!
+
+  """Get a single committeeMember by ID"""
+  committeeMember(id: ID!): Committeemember!
+
+  """List all committeeMembers"""
+  committeeMembers(limit: Int, offset: Int, orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): [Committeemember!]!
+
+  """List all committees"""
+  committees(limit: Int, offset: Int, orderBy: CommitteeOrderInputArgument, where: CommitteeWhereInputArgument): [Committee!]!
+
+  """Get a single conference by ID"""
+  conference(id: ID!): Conference!
+
+  """Get a single conferenceMember by ID"""
+  conferenceMember(id: ID!): Conferencemember!
+
+  """List all conferenceMembers"""
+  conferenceMembers(limit: Int, offset: Int, orderBy: ConferencememberOrderInputArgument, where: ConferencememberWhereInputArgument): [Conferencemember!]!
+
+  """Get a single conferenceUser by ID"""
+  conferenceUser(id: ID!): Conferenceuser!
+
+  """List all conferenceUsers"""
+  conferenceUsers(limit: Int, offset: Int, orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): [Conferenceuser!]!
+
+  """List all conferences"""
+  conferences(limit: Int, offset: Int, orderBy: ConferenceOrderInputArgument, where: ConferenceWhereInputArgument): [Conference!]!
+
+  """Get a single instanceLink by ID"""
+  instanceLink(id: ID!): Instancelink!
+
+  """List all instanceLinks"""
+  instanceLinks(limit: Int, offset: Int, orderBy: InstancelinkOrderInputArgument, where: InstancelinkWhereInputArgument): [Instancelink!]!
+
+  """Get a single operativeClauseVote by ID"""
+  operativeClauseVote(id: ID!): Operativeclausevote!
+
+  """List all operativeClauseVotes"""
+  operativeClauseVotes(limit: Int, offset: Int, orderBy: OperativeclausevoteOrderInputArgument, where: OperativeclausevoteWhereInputArgument): [Operativeclausevote!]!
+
+  """Get a single paperContentSnapshot by ID"""
+  paperContentSnapshot(id: ID!): Papercontentsnapshot!
+
+  """List all paperContentSnapshots"""
+  paperContentSnapshots(limit: Int, offset: Int, orderBy: PapercontentsnapshotOrderInputArgument, where: PapercontentsnapshotWhereInputArgument): [Papercontentsnapshot!]!
+
+  """Get a single paperEditor by ID"""
+  paperEditor(id: ID!): Papereditor!
+
+  """List all paperEditors"""
+  paperEditors(limit: Int, offset: Int, orderBy: PapereditorOrderInputArgument, where: PapereditorWhereInputArgument): [Papereditor!]!
+
+  """Get a single paperShareCode by ID"""
+  paperShareCode(id: ID!): Papersharecode!
+
+  """List all paperShareCodes"""
+  paperShareCodes(limit: Int, offset: Int, orderBy: PapersharecodeOrderInputArgument, where: PapersharecodeWhereInputArgument): [Papersharecode!]!
+
+  """Get a single paperSponsor by ID"""
+  paperSponsor(id: ID!): Papersponsor!
+
+  """List all paperSponsors"""
+  paperSponsors(limit: Int, offset: Int, orderBy: PapersponsorOrderInputArgument, where: PapersponsorWhereInputArgument): [Papersponsor!]!
+
+  """Get a single presenceEvent by ID"""
+  presenceEvent(id: ID!): Presenceevent!
+
+  """List all presenceEvents"""
+  presenceEvents(limit: Int, offset: Int, orderBy: PresenceeventOrderInputArgument, where: PresenceeventWhereInputArgument): [Presenceevent!]!
+
+  """Get a single representation by ID"""
+  representation(id: ID!): Representation!
+
+  """List all representations"""
+  representations(limit: Int, offset: Int, orderBy: RepresentationOrderInputArgument, where: RepresentationWhereInputArgument): [Representation!]!
+
+  """Get a single request by ID"""
+  request(id: ID!): Request!
+
+  """Get a single requestType by ID"""
+  requestType(id: ID!): Requesttype!
+
+  """List all requestTypes"""
+  requestTypes(limit: Int, offset: Int, orderBy: RequesttypeOrderInputArgument, where: RequesttypeWhereInputArgument): [Requesttype!]!
+
+  """List all requests"""
+  requests(limit: Int, offset: Int, orderBy: RequestOrderInputArgument, where: RequestWhereInputArgument): [Request!]!
+
+  """Get a single resolutionComment by ID"""
+  resolutionComment(id: ID!): Resolutioncomment!
+
+  """List all resolutionComments"""
+  resolutionComments(limit: Int, offset: Int, orderBy: ResolutioncommentOrderInputArgument, where: ResolutioncommentWhereInputArgument): [Resolutioncomment!]!
+
+  """Get a single resolutionPaper by ID"""
+  resolutionPaper(id: ID!): Resolutionpaper!
+
+  """List all resolutionPapers"""
+  resolutionPapers(limit: Int, offset: Int, orderBy: ResolutionpaperOrderInputArgument, where: ResolutionpaperWhereInputArgument): [Resolutionpaper!]!
+
+  """Get a single rollCallSession by ID"""
+  rollCallSession(id: ID!): Rollcallsession!
+
+  """List all rollCallSessions"""
+  rollCallSessions(limit: Int, offset: Int, orderBy: RollcallsessionOrderInputArgument, where: RollcallsessionWhereInputArgument): [Rollcallsession!]!
+
+  """Get a single speakerOnList by ID"""
+  speakerOnList(id: ID!): Speakeronlist!
+
+  """List all speakerOnLists"""
+  speakerOnLists(limit: Int, offset: Int, orderBy: SpeakeronlistOrderInputArgument, where: SpeakeronlistWhereInputArgument): [Speakeronlist!]!
+
+  """Get a single speakersList by ID"""
+  speakersList(id: ID!): Speakerslist!
+
+  """List all speakersLists"""
+  speakersLists(limit: Int, offset: Int, orderBy: SpeakerslistOrderInputArgument, where: SpeakerslistWhereInputArgument): [Speakerslist!]!
+
+  """Get a single user by ID"""
+  user(id: ID!): User!
+
+  """List all users"""
+  users(limit: Int, offset: Int, orderBy: UserOrderInputArgument, where: UserWhereInputArgument): [User!]!
+
+  """Get a single votingSession by ID"""
+  votingSession(id: ID!): Votingsession!
+
+  """List all votingSessions"""
+  votingSessions(limit: Int, offset: Int, orderBy: VotingsessionOrderInputArgument, where: VotingsessionWhereInputArgument): [Votingsession!]!
+
+  """Get a single votingVote by ID"""
+  votingVote(id: ID!): Votingvote!
+
+  """List all votingVotes"""
+  votingVotes(limit: Int, offset: Int, orderBy: VotingvoteOrderInputArgument, where: VotingvoteWhereInputArgument): [Votingvote!]!
+}
+
+type User {
+  """Get the conferenceUsers related to this user"""
+  conferenceMemberships(limit: Int, offset: Int, orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): [Conferenceuser!]!
+  createdAt: DateTime!
+  email: String!
+  familyName: String!
+  givenName: String!
+  id: ID!
+  locale: String
+  preferredUsername: String!
+  updatedAt: DateTime
+}
+
+type UserClaims {
+  email: String
+  familyName: String
+  givenName: String
+  id: String!
+  locale: String
+  preferredUsername: String
+}
+
+input UserOrderInputArgument {
+  createdAt: SortingParameter
+  email: SortingParameter
+  familyName: SortingParameter
+  givenName: SortingParameter
+  id: SortingParameter
+  locale: SortingParameter
+  preferredUsername: SortingParameter
+  updatedAt: SortingParameter
+}
+
+input UserWhereInputArgument {
+  AND: [UserWhereInputArgument!]
+  NOT: UserWhereInputArgument
+  OR: [UserWhereInputArgument!]
+  conferenceMemberships: ConferenceuserWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  email: StringWhereInputArgument
+  familyName: StringWhereInputArgument
+  givenName: StringWhereInputArgument
+  id: IDWhereInputArgument
+  locale: StringWhereInputArgument
+  preferredUsername: StringWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+}
+
+type VoteOutcomeEntry {
+  count: Int!
+  outcome: String!
+}
+
+enum VotechoiceEnum {
+  ABSTAIN
+  CON
+  PRO
+}
+
+type VotingAlignmentStats {
+  agreementRate: Float!
+  representation1Alpha2Code: String
+  representation1Id: String!
+  representation1Name: String
+  representation2Alpha2Code: String
+  representation2Id: String!
+  representation2Name: String
+  votesCompared: Int!
+}
+
+enum VotingmajoritytypeEnum {
+  ABSOLUTE
+  SIMPLE
+  TWO_THIRDS
+}
+
+enum VotingmodeEnum {
+  DEVICE_BASED
+  ROLL_CALL
+  SHOW_OF_HANDS
+}
+
+enum VotingoutcomeEnum {
+  ADOPTED
+  REJECTED
+}
+
+type Votingsession {
+  """Get the committees related to this votingSession"""
+  committee(orderBy: CommitteeOrderInputArgument, where: CommitteeWhereInputArgument): Committee!
+  committeeId: ID!
+  completedAt: DateTime
+  createdAt: DateTime!
+  currentMemberIndex: Int!
+  currentStage: VotingstageEnum
+  deviceVotingStartedAt: DateTime
+  deviceVotingWindowSeconds: Int
+  id: ID!
+  majority: VotingmajoritytypeEnum!
+  majorityAmount: Int!
+  mode: VotingmodeEnum!
+  outcome: VotingoutcomeEnum
+
+  """Get the conferenceUsers related to this votingSession"""
+  startedBy(orderBy: ConferenceuserOrderInputArgument, where: ConferenceuserWhereInputArgument): Conferenceuser
+  startedByConferenceUserId: ID
+  updatedAt: DateTime
+  voteName: String
+
+  """Get the votingVotes related to this votingSession"""
+  votes(limit: Int, offset: Int, orderBy: VotingvoteOrderInputArgument, where: VotingvoteWhereInputArgument): [Votingvote!]!
+  votesAbstain: Int!
+  votesCon: Int!
+  votesPro: Int!
+  withAbstentions: Boolean!
+}
+
+input VotingsessionOrderInputArgument {
+  committeeId: SortingParameter
+  completedAt: SortingParameter
+  createdAt: SortingParameter
+  currentMemberIndex: SortingParameter
+  currentStage: SortingParameter
+  deviceVotingStartedAt: SortingParameter
+  deviceVotingWindowSeconds: SortingParameter
+  id: SortingParameter
+  majority: SortingParameter
+  majorityAmount: SortingParameter
+  mode: SortingParameter
+  outcome: SortingParameter
+  startedByConferenceUserId: SortingParameter
+  updatedAt: SortingParameter
+  voteName: SortingParameter
+  votesAbstain: SortingParameter
+  votesCon: SortingParameter
+  votesPro: SortingParameter
+  withAbstentions: SortingParameter
+}
+
+input VotingsessionWhereInputArgument {
+  AND: [VotingsessionWhereInputArgument!]
+  NOT: VotingsessionWhereInputArgument
+  OR: [VotingsessionWhereInputArgument!]
+  committee: CommitteeWhereInputArgument
+  committeeId: IDWhereInputArgument
+  completedAt: DateTimeWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  currentMemberIndex: IntWhereInputArgument
+  currentStage: VotingstageEnum
+  deviceVotingStartedAt: DateTimeWhereInputArgument
+  deviceVotingWindowSeconds: IntWhereInputArgument
+  id: IDWhereInputArgument
+  majority: VotingmajoritytypeEnum
+  majorityAmount: IntWhereInputArgument
+  mode: VotingmodeEnum
+  outcome: VotingoutcomeEnum
+  startedBy: ConferenceuserWhereInputArgument
+  startedByConferenceUserId: IDWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+  voteName: StringWhereInputArgument
+  votes: VotingvoteWhereInputArgument
+  votesAbstain: IntWhereInputArgument
+  votesCon: IntWhereInputArgument
+  votesPro: IntWhereInputArgument
+  withAbstentions: BooleanWhereInputArgument
+}
+
+enum VotingstageEnum {
+  ABSTAIN
+  CON
+  EVALUATION
+  PRO
+}
+
+type Votingvote {
+  """Get the committeeMembers related to this votingVote"""
+  committeeMember(orderBy: CommitteememberOrderInputArgument, where: CommitteememberWhereInputArgument): Committeemember!
+  committeeMemberId: ID!
+  createdAt: DateTime!
+  id: ID!
+  updatedAt: DateTime
+  vote: VotechoiceEnum!
+
+  """Get the votingSessions related to this votingVote"""
+  votingSession(orderBy: VotingsessionOrderInputArgument, where: VotingsessionWhereInputArgument): Votingsession!
+  votingSessionId: ID!
+}
+
+input VotingvoteOrderInputArgument {
+  committeeMemberId: SortingParameter
+  createdAt: SortingParameter
+  id: SortingParameter
+  updatedAt: SortingParameter
+  vote: SortingParameter
+  votingSessionId: SortingParameter
+}
+
+input VotingvoteWhereInputArgument {
+  AND: [VotingvoteWhereInputArgument!]
+  NOT: VotingvoteWhereInputArgument
+  OR: [VotingvoteWhereInputArgument!]
+  committeeMember: CommitteememberWhereInputArgument
+  committeeMemberId: IDWhereInputArgument
+  createdAt: DateTimeWhereInputArgument
+  id: IDWhereInputArgument
+  updatedAt: DateTimeWhereInputArgument
+  vote: VotechoiceEnum
+  votingSession: VotingsessionWhereInputArgument
+  votingSessionId: IDWhereInputArgument
+}

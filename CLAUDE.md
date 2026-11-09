@@ -145,6 +145,14 @@ the high contrast variant, plus the keyboard paths. It needs no database rows or
   has to pass 4.5:1.
 - `app.css` gives Font Awesome 6 glyphs empty alternative text, so plain `<i>` icons are silent.
 
+## Logging and tracing
+
+- **Server code logs through `logger` (`#lib/logger`), not `console`.** It is pino: JSON lines in production (Loki takes them apart by field), pretty ones in development. Call it as `logger.error('Refreshing the views failed', err)`, a fixed message, then one value (an error, or an object of fields); put ids into the fields, not the message. `logger.child({ name: 'yjs' })` binds fields to every line (`yjsLogger`, `wsLogger`, rumble's `graphqlLogger`). `LOG_LEVEL` sets the level: debug in development, warn otherwise. Standalone scripts (seed, reset) keep `console`.
+- **Every line carries `trace_id` and `span_id`** of the active span, so Grafana links it from Loki to its trace in Tempo, and is added to that span as an event; an `error` marks the span failed. rumble's own trace id injection is off (`injectTraceId: false`), as pino would write both.
+- **Tracing is off unless `OTEL_ENDPOINT_URL` is set** (the full `…/v1/traces` URL). `src/instrumentation.server.ts`, which SvelteKit loads before the app, starts the tracer provider (`#lib/tracing`) and the pg, ioredis and http instrumentations. SvelteKit emits spans for handle, loads and remote functions (`tracing.server` in `vite.config.ts`), rumble one per GraphQL operation over HTTP and WebSocket. Variables stay out of spans and log lines (`includeVariables: false`). `OTEL_TRACES_SAMPLER_ARG` is the share of traces kept.
+- **The instrumentations need the import hook** (`import-in-the-middle`, Node 22.22.3+/24.11.1+/26) and the module they wrap loaded at runtime, not bundled: keep `pg`, `drizzle-orm`, `ioredis` and the `@opentelemetry/*` packages the server loads in `dependencies`. The release image only installs `dependencies`, so anything else the server imports at runtime would be missing there.
+- Hocuspocus (Yjs) traffic has no spans of its own; its Redis commands run outside a request and are left out.
+
 ## Codebase Intelligence (fallow)
 
 [fallow](https://fallow.tools) reports dead code, circular dependencies, duplication, and complexity hotspots. It is configured in `.fallowrc.jsonc` (generated output is ignored there; the two dependency-placement rules that misfire on a bundled SvelteKit app are turned off).

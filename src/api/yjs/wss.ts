@@ -1,7 +1,7 @@
 import type { IncomingMessage } from 'node:http';
 import type { WebSocket } from 'ws';
 import type { Context } from '#api/context';
-import { hocuspocus } from './server';
+import { hocuspocus, yjsLogger } from './server';
 
 /** Build the WHATWG Request Hocuspocus reads the URL and headers from. */
 function buildRequest(req: IncomingMessage): Request {
@@ -40,7 +40,7 @@ export function openYjsRoom(
 		try {
 			ctx = await ctxPromise;
 		} catch (err) {
-			console.error('[yjs] context creation failed', err);
+			yjsLogger.error('Creating the context failed', err);
 		}
 		// Do NOT close here when ctx is undefined: native/Tauri clients that
 		// cannot send session cookies will authenticate in-band via the

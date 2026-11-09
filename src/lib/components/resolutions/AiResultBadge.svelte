@@ -21,7 +21,8 @@
 	<span class="relative flex items-center" style="width: 0.75rem; height: 0.75rem;">
 		{#if hovered}
 			<i
-				class="fas fa-rotate-right absolute inset-0 flex items-center justify-center text-[0.6rem]"
+				aria-hidden="true"
+				class="ph-fill ph-arrow-clockwise absolute inset-0 flex items-center justify-center text-[0.6rem]"
 				in:scale={{ duration: 150, start: 0.4 }}
 				out:fade={{ duration: 100 }}
 			></i>

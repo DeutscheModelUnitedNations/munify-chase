@@ -7,6 +7,7 @@
 	import ConferenceHeroCard from '#lib/components/launcher/ConferenceHeroCard.svelte';
 	import AdminConferenceRow from '#lib/components/launcher/AdminConferenceRow.svelte';
 	import EmptyLauncher from '#lib/components/launcher/EmptyLauncher.svelte';
+	import DelegatorLinkCard from '#lib/components/launcher/DelegatorLinkCard.svelte';
 	import { badgeFor, deriveStatus } from '#lib/helpers/launcher';
 	import type { LauncherConference } from '#lib/components/launcher/types';
 	import { client } from '#lib/api/rumbleClient/client';
@@ -33,7 +34,7 @@
 				name: true,
 				alpha2Code: true,
 				alpha3Code: true,
-				faIcon: true
+				icon: true
 			}
 		},
 		conferenceMember: {
@@ -44,7 +45,7 @@
 				name: true,
 				alpha2Code: true,
 				alpha3Code: true,
-				faIcon: true
+				icon: true
 			}
 		},
 		conference: {
@@ -61,6 +62,15 @@
 	});
 
 	const isGlobalAdmin = await getIsGlobalAdmin();
+
+	// While linked to a DELEGATOR, conferences come from there (`docs/plans/delegator-link.md`)
+	const activeLinks = await client.liveQuery.instanceLinks({
+		__args: { where: { status: 'ACTIVE' } },
+		id: true,
+		remoteUrl: true,
+		status: true
+	});
+	const delegatorUrl = $derived((activeLinks ?? []).at(0)?.remoteUrl);
 
 	const allConferences = await client.liveQuery.conferences({
 		id: true,
@@ -219,7 +229,11 @@
 		<AvatarMenu givenName={user.givenName} familyName={user.familyName} email={user.email} />
 	</header>
 
-	<div class="mx-auto flex w-full max-w-[1200px] flex-1 flex-col px-4 pb-6 md:px-12">
+	<main
+		id="main-content"
+		tabindex="-1"
+		class="mx-auto flex w-full max-w-[1200px] flex-1 flex-col px-4 pb-6 md:px-12"
+	>
 		<header class="mb-6 flex flex-col gap-4">
 			<div>
 				<p class="text-base-content/60 m-0 text-sm">
@@ -234,7 +248,7 @@
 
 			{#if isGlobalAdmin}
 				<label class="input w-full">
-					<i class="fa-duotone fa-magnifying-glass opacity-60"></i>
+					<i aria-hidden="true" class="ph-duotone ph-magnifying-glass opacity-60"></i>
 					<input
 						type="search"
 						aria-label={m.launcherSearchPlaceholder()}
@@ -244,6 +258,10 @@
 				</label>
 			{/if}
 		</header>
+
+		{#if isGlobalAdmin}
+			<DelegatorLinkCard />
+		{/if}
 
 		{#if isGlobalAdmin}
 			{#if adminConferences.length === 0}
@@ -290,29 +308,37 @@
 			</div>
 		{/if}
 
-		{#if isGlobalAdmin}
+		{#if delegatorUrl}
+			<footer class="mt-8 flex flex-col items-center gap-2 pt-6 text-center">
+				<p class="text-base-content/70 m-0 text-sm">{m.delegatorLinkConferencesFromDelegator()}</p>
+				<a class="btn btn-ghost btn-sm" href={delegatorUrl} target="_blank" rel="noopener">
+					<i aria-hidden="true" class="ph-duotone ph-arrow-square-out"></i>
+					{m.delegatorLinkOpen()}
+				</a>
+			</footer>
+		{:else if isGlobalAdmin}
 			<footer
 				class="from-base-100 sticky bottom-0 mt-8 flex flex-col gap-2 bg-gradient-to-b from-35% to-transparent py-4 [&>.btn]:w-full"
 				style="background: linear-gradient(180deg, transparent 0%, var(--color-base-100) 35%);"
 			>
 				<a class="btn btn-primary btn-lg" href={resolve('/app/(launcher)/import')}>
-					<i class="fa-solid fa-plus"></i>
+					<i aria-hidden="true" class="ph-fill ph-plus"></i>
 					{m.createConference()}
 				</a>
 				<a class="btn btn-ghost btn-sm" href={resolve('/app/(launcher)/import')}>
-					<i class="fa-duotone fa-file-arrow-up"></i>
+					<i aria-hidden="true" class="ph-duotone ph-file-arrow-up"></i>
 					{m.launcherImportDelegator()}
 				</a>
 			</footer>
 		{:else}
 			<footer class="mt-8 flex justify-center pt-6">
 				<a class="btn btn-ghost btn-sm" href={resolve('/app/(launcher)/import')}>
-					<i class="fa-solid fa-plus"></i>
+					<i aria-hidden="true" class="ph-fill ph-plus"></i>
 					{m.createConference()}
 				</a>
 			</footer>
 		{/if}
-	</div>
+	</main>
 </div>
 
 {#if deleteTarget}

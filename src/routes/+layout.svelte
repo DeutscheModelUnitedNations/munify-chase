@@ -7,6 +7,9 @@
 	import duration from 'dayjs/plugin/duration';
 	import '../app.css';
 	import '/node_modules/flag-icons/css/flag-icons.min.css';
+	import '@phosphor-icons/web/regular/style.css';
+	import '@phosphor-icons/web/fill/style.css';
+	import '@phosphor-icons/web/duotone/style.css';
 
 	import { dev } from '$app/env';
 	import { initialSetTheme } from '#lib/utils/theme.svelte';
@@ -17,6 +20,7 @@
 	import Inspect from 'svelte-inspect-value';
 	import { alertDialog } from '#lib/components/Alert/alert';
 	import { checkForUpdate, relaunchApp } from '#lib/platform/updater';
+	import { SPLASH_SCREENS } from '#lib/pwa/splashScreens';
 	import { m } from '#lib/paraglide/messages';
 
 	dayjs.extend(duration);
@@ -82,7 +86,18 @@
 
 <svelte:head>
 	<title>MUNify CHASE</title>
+	{#each SPLASH_SCREENS as screen (screen.file)}
+		<link rel="apple-touch-startup-image" href="/{screen.file}" media={screen.media} />
+	{/each}
 </svelte:head>
+
+<!-- The first thing Tab reaches: past the navigation, to the layout's <main> -->
+<a
+	href="#main-content"
+	class="btn btn-primary sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100]"
+>
+	{m.a11ySkipToContent()}
+</a>
 
 {@render children()}
 

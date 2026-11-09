@@ -8,15 +8,21 @@ export function initialSetTheme() {
 	setThemeInHTML(getTheme());
 }
 
+/** base-100 of the DMUN themes, which the navbars use; mirrored in `app.html` */
+const THEME_COLORS = { light: '#FFFFFF', dark: '#1B1837' } as const;
+
 export function setThemeInHTML(newTheme: Theme) {
-	const html = document.querySelector('html');
-	if (html) {
-		if (newTheme === 'system') {
-			const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-			newTheme = isDarkMode ? 'dark' : 'light';
-		}
-		html.setAttribute('data-theme', newTheme);
-	}
+	const resolved =
+		newTheme === 'system'
+			? window.matchMedia('(prefers-color-scheme: dark)').matches
+				? 'dark'
+				: 'light'
+			: newTheme;
+	document.documentElement.setAttribute('data-theme', resolved);
+	// The installed app's title bar matches the navbar below it
+	document
+		.querySelector('meta[name="theme-color"]')
+		?.setAttribute('content', THEME_COLORS[resolved]);
 }
 
 export function setTheme(newTheme: Theme) {

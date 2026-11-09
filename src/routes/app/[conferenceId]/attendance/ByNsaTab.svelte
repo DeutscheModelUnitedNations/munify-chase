@@ -21,10 +21,9 @@
 		id: true,
 		userEmail: true,
 		name: true,
-		attendanceCode: true,
 		conferenceMember: {
 			id: true,
-			representation: { id: true, name: true, faIcon: true }
+			representation: { id: true, name: true, icon: true }
 		}
 	});
 
@@ -43,6 +42,7 @@
 	const conference = await client.liveQuery.conference({
 		__args: { id: conferenceId },
 		title: true,
+		managedByDelegator: true,
 		committees: { id: true, name: true, abbreviation: true }
 	});
 
@@ -63,7 +63,7 @@
 	let groupedByOrg = $derived.by(() => {
 		const map = new SvelteMap<
 			string,
-			{ orgId: string; name: string; faIcon: string | null; users: NsaUser[] }
+			{ orgId: string; name: string; icon: string | null; users: NsaUser[] }
 		>();
 		for (const u of nsaUsers ?? []) {
 			const rep = u.conferenceMember?.representation;
@@ -71,7 +71,7 @@
 			const entry = map.get(orgId) ?? {
 				orgId,
 				name: rep?.name ?? m.unknown(),
-				faIcon: rep?.faIcon ?? null,
+				icon: rep?.icon ?? null,
 				users: []
 			};
 			entry.users.push(u);
@@ -81,35 +81,32 @@
 	});
 
 	let qrModalOpen = $state(false);
-	let qrTarget = $state<{
-		id: string;
-		userEmail: string;
-		name: string | null;
-		attendanceCode: string | null;
-		orgName: string | null;
+	let qrCard = $state<{
+		conferenceUserId: string;
+		code: string;
+		name: string;
+		nsaName: string | null;
+		cardNumber: number;
 	} | null>(null);
 
-	function openQrFor(user: NsaUser, orgName: string) {
-		qrTarget = {
-			id: user.id,
-			userEmail: user.userEmail,
-			name: user.name ?? null,
-			attendanceCode: user.attendanceCode,
-			orgName
-		};
+	/** The card as it is now, signed by this instance (only for a conference of its own). */
+	async function openQrFor(user: NsaUser) {
+		const [card] = await client.mutate.issueNsaCards({
+			__args: { conferenceId, conferenceUserIds: [user.id] },
+			conferenceUserId: true,
+			code: true,
+			name: true,
+			nsaName: true,
+			cardNumber: true
+		});
+		if (!card) return;
+		qrCard = card;
 		qrModalOpen = true;
 	}
 
 	// CSV export — semicolon-separated for Excel-DE default; \r\n for Windows.
 	function exportCsv() {
-		const header = [
-			'id',
-			'name',
-			'attendance_code',
-			'email',
-			'organization',
-			'currently_in_committee'
-		];
+		const header = ['id', 'name', 'email', 'organization', 'currently_in_committee'];
 		const rows: string[][] = [];
 		for (const org of groupedByOrg) {
 			for (const user of org.users) {
@@ -117,14 +114,7 @@
 				const inCommittee = latest?.present
 					? (committeesById.get(latest.committeeId)?.name ?? '')
 					: '';
-				rows.push([
-					user.id,
-					user.name ?? '',
-					user.attendanceCode ?? '',
-					user.userEmail,
-					org.name,
-					inCommittee
-				]);
+				rows.push([user.id, user.name ?? '', user.userEmail, org.name, inCommittee]);
 			}
 		}
 		const escape = (v: string) => {
@@ -146,17 +136,23 @@
 
 <div class="flex flex-col gap-4">
 	<div class="flex flex-wrap items-center justify-end gap-2">
-		<a
-			href={resolve('/app/[conferenceId]/attendance/print', { conferenceId })}
-			class="btn btn-secondary btn-sm"
-			target="_blank"
-			rel="noopener"
-		>
-			<i class="fas fa-print mr-1"></i>
-			{m.printAllCards()}
-		</a>
+		{#if conference?.managedByDelegator}
+			<span class="text-base-content/60 text-sm">
+				<i aria-hidden="true" class="ph-fill ph-link mr-1"></i>{m.nsaCardsFromDelegator()}
+			</span>
+		{:else}
+			<a
+				href={resolve('/app/[conferenceId]/attendance/print', { conferenceId })}
+				class="btn btn-secondary btn-sm"
+				target="_blank"
+				rel="noopener"
+			>
+				<i aria-hidden="true" class="ph-fill ph-printer mr-1"></i>
+				{m.printAllCards()}
+			</a>
+		{/if}
 		<button class="btn btn-ghost btn-sm" onclick={exportCsv}>
-			<i class="fas fa-file-csv mr-1"></i>
+			<i aria-hidden="true" class="ph-fill ph-file-csv mr-1"></i>
 			{m.exportCsv()}
 		</button>
 	</div>
@@ -169,33 +165,30 @@
 					{@const checkedIn = latest?.present}
 					{@const committee = checkedIn ? committeesById.get(latest.committeeId) : null}
 					<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
-						{#if org.faIcon}
-							<i class="fas {org.faIcon} text-lg"></i>
+						{#if org.icon}
+							<i aria-hidden="true" class="ph-fill ph-{org.icon} text-lg"></i>
 						{:else}
-							<i class="fas fa-user-tag text-lg"></i>
+							<i aria-hidden="true" class="ph-fill ph-identification-badge text-lg"></i>
 						{/if}
 						<span class="flex-1">{user.name ?? user.userEmail}</span>
-						{#if user.attendanceCode}
-							<code class="bg-base-200 rounded px-2 py-1 font-mono text-sm">
-								{user.attendanceCode}
-							</code>
-						{/if}
 						{#if checkedIn && committee}
 							<span class="badge badge-success">
-								<i class="fas fa-arrow-right-to-bracket mr-1"></i>
+								<i aria-hidden="true" class="ph-fill ph-sign-in mr-1"></i>
 								{committee.abbreviation ?? committee.name}
 							</span>
 						{:else}
 							<span class="badge badge-ghost">{m.notCheckedIn()}</span>
 						{/if}
-						<button
-							class="btn btn-ghost btn-sm"
-							onclick={() => openQrFor(user, org.name)}
-							aria-label={m.qrCard()}
-							title={m.qrCard()}
-						>
-							<i class="fas fa-qrcode"></i>
-						</button>
+						{#if !conference?.managedByDelegator}
+							<button
+								class="btn btn-ghost btn-sm"
+								onclick={() => openQrFor(user)}
+								aria-label={m.qrCard()}
+								title={m.qrCard()}
+							>
+								<i aria-hidden="true" class="ph-fill ph-qr-code"></i>
+							</button>
+						{/if}
 					</li>
 				{/each}
 			</ul>
@@ -205,6 +198,7 @@
 
 <NsaQrCardModal
 	bind:open={qrModalOpen}
-	nsaUser={qrTarget}
+	bind:card={qrCard}
+	{conferenceId}
 	conferenceTitle={conference?.title ?? ''}
 />

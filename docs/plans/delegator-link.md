@@ -1,0 +1,338 @@
+# DELEGATOR ↔ CHASE link
+
+The same plan lives in munify-delegator as `docs/plans/chase-link.md`. It replaces the JSON file
+round trip between the two apps (delegator's CHASE export and chase's import wizard; chase's
+presence export and delegator's presence import) with a live link between the two instances.
+
+## Decisions
+
+| Topic                        | Decision                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Scope of a link              | **System level**: one delegator instance ↔ one chase instance. Every delegator conference not yet in `POST` exists in chase automatically, under delegator's ids.                                                                                                                                                                                                                                                                                                  |
+| Pairing                      | A delegator system admin enters the chase URL and sends a request; a chase global admin approves it. Both sides keep a hashed token. Either side can unlink.                                                                                                                                                                                                                                                                                                       |
+| Unlinking                    | Freezes both sides: the sync stops, tokens are revoked, chase rows become ordinary local rows, delegator keeps the attendance and resolutions it received.                                                                                                                                                                                                                                                                                                         |
+| Transport                    | **GraphQL subscriptions in both directions**, held by a link worker **inside each app process**. Each side subscribes to what it imports and then reads the current state (see "Sync").                                                                                                                                                                                                                                                                            |
+| Ownership                    | Each field has one owner. Delegator: conferences, committees, agenda, roles, people, working papers, NSA cards. Chase: presence, adopted resolutions, everything about running the session.                                                                                                                                                                                                                                                                        |
+| Chase while linked           | Creating conferences (the import wizard) is off, and so is changing what DELEGATOR owns: synced rows cannot be deleted, and their DELEGATOR fields (names, abbreviations, dates, the people) not changed. What CHASE owns on the same rows (session state, presentation) stays editable. Chase admins may still add **local extras** (a guest chair, a late spectator), which the sync never touches, unless DELEGATOR later brings someone with the same address. |
+| Participants and the release | Participants (delegates, NSAs, single participants) reach chase only once `conference.assignmentReleased` is set. Before that: conference, committees, agenda, roles, team.                                                                                                                                                                                                                                                                                        |
+| Team roles                   | `PROJECT_MANAGEMENT` and `TEAM_COORDINATOR` (delegator's team admins) → chase `ADMIN`; every other team member → `TEAM`.                                                                                                                                                                                                                                                                                                                                           |
+| Custom roles                 | Each custom role (press, judges, …) gets a "CHASE access" setting: spectator (the default), team or none.                                                                                                                                                                                                                                                                                                                                                          |
+| Supervisors                  | `SPECTATOR`, as today.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Presence → delegator         | A live view of chase's records on the attendance import page, scored as today (`scoreDelegates` / `scoreNsas`). **The team applies it**; nothing is written automatically.                                                                                                                                                                                                                                                                                         |
+| Adopted resolutions          | Automatic: chase records a resolution as ADOPTED, delegator renders the adopted text in its own header and stores it as a `resolution` in that committee. Adopting it again replaces it.                                                                                                                                                                                                                                                                           |
+| Working papers               | ACCEPTED working papers appear in chase as drafts and **stay in sync** with delegator's newer versions until chase starts editing them.                                                                                                                                                                                                                                                                                                                            |
+| NSA check-in                 | NSAs only. Chase's NSA scanner accepts delegator's digital nametag (the rotating `MUN1…` code) and a new printed card, both verified offline, plus a search by name. The 6-character `attendanceCode` goes.                                                                                                                                                                                                                                                        |
+| NSA cards                    | A new PDF in delegator: name, NSA, icon and a signed QR. The card is valid until the conference ends and can be revoked by its card number. Unlinked, chase prints the same card with its own key.                                                                                                                                                                                                                                                                 |
+| Code sharing                 | `identityCode.ts` (with its tests) is **copied** into chase, extended there by the card variant, and kept in step by hand.                                                                                                                                                                                                                                                                                                                                         |
+| New mail                     | "Familiarize yourself with CHASE", a new reminder kind with its own window, for seated delegates, NSAs and single participants with CHASE access.                                                                                                                                                                                                                                                                                                                  |
+| Dashboard                    | A CHASE card: open my committee in CHASE, the manual for my role, and for NSAs a hint about the nametag.                                                                                                                                                                                                                                                                                                                                                           |
+| JSON files                   | Kept as a fallback for unlinked setups, under an "advanced" section.                                                                                                                                                                                                                                                                                                                                                                                               |
+| Delivery                     | This document first, then the phases below, on one branch per repo, with unit and e2e tests.                                                                                                                                                                                                                                                                                                                                                                       |
+
+## The link itself
+
+### Pairing
+
+1. Delegator, system admin area: **CHASE link** card → chase URL (https only) → "Send request".
+   Delegator calls chase's `requestDelegatorLink({ delegatorUrl, delegatorToken, nonce })` with a
+   fresh token chase will use to call back, and stores its hash. Delegator fetches only this URL,
+   and only to make this request.
+2. Chase, global admin: a pending request with delegator's URL and a short confirmation code that
+   is also shown in delegator, so the admins can compare them. "Approve" calls delegator's
+   `confirmChaseLink` with chase's own token, then marks the link active.
+3. Both sides keep one row: `instanceLink` (`remoteUrl`, `inboundTokenHash`, `outboundToken`
+   (encrypted with `SECRET` in delegator, the optional `LINK_SECRET` in chase, without which chase
+   refuses to pair), `status` `PENDING` / `ACTIVE` / `FROZEN`, `linkedAt`,
+   `lastEventAt`, `lastReconcileAt`, `lastError`).
+4. Unlinking on either side revokes both tokens through the remote (best effort) and sets
+   `FROZEN` locally.
+
+### The link principal
+
+- A request carrying the link token in the `x-munify-link-token` header (not `Authorization`: both
+  apps take OIDC bearer tokens there) gets `ctx.linkCaller()`, looked up lazily, once per request.
+  This works on `/api/graphql`, delegator's `/api/graphql/stream`, and chase's WebSocket, which takes
+  the token in its connection parameters.
+- Abilities: one read rule per table the other side mirrors (`linkedChase(...)` in delegator's
+  `authHelper/rules.ts`), each with only the columns mirrored. It never matches a user rule, so
+  masks and participant rules are unaffected.
+
+### The link worker
+
+- Started from the server's `init` hook in each app. Only one instance holds it: a blocking
+  Postgres advisory lock on a dedicated connection, so another instance takes over when its
+  holder dies, without retrying on a timer.
+- It runs **ordinary live queries** through the typed client generated from the remote's schema
+  (`bun run link:client`, from the `schema.graphql` each app writes on dev start and build), one
+  per table and page of 1000 rows (`liveTable.ts`). Every answer holds the rows as they are, so
+  the worker keeps the remote's tables in memory and reads nothing twice: chase works out the
+  mirror from them and writes only the rows that differ from its own, announcing only those;
+  delegator works out presence and adopted resolutions, reading a text only to render it.
+- **A list hears changes to the rows it shows, not of a row coming into its filter.** Tables are
+  filtered only where they would be large: the members of seated delegations, the participant
+  rows and users by the ids the other tables name, the final papers. Delegations and single
+  participants are watched whole, so a seat change is heard and the filtered tables are asked
+  again; a row named but not held (a new person, a paper turning final) asks its table again.
+- A row missing across pages is asked for by id before it counts as gone; a page whose first
+  answer failed is asked again with backoff; at most four first answers are awaited at once, so
+  starting up is no burst of heavy queries.
+- **Every (re)connect asks every table again.** There is no timer: a subscription that has gone
+  quiet is noticed by the transport's keep-alive (graphql-ws pings, graphql-sse's stream), which
+  drops the connection, and the reconnect catches up.
+- It reconnects with backoff. The state (`lastEventAt`, `lastReconcileAt`, `lastError`) is
+  written to `instanceLink` and shown on both status cards.
+- Clients: delegator → chase over `graphql-ws`; chase → delegator over `graphql-sse` (distinct
+  connections mode, since the server is not a browser tab).
+
+### Sync, delegator → chase (chase's worker pulls)
+
+Chase's worker watches `conferences` and, per conference, `committees`, `committeeAgendaItems`,
+`conferenceRoles`, `teamMembers`, `delegations`, `delegationMembers`, `singleParticipants` and
+`conferenceSupervisors`, all through delegator's link read rules. The mapping is pure and unit
+tested (`mirror.ts` in chase).
+
+| Delegator                                        | Chase                                                                                           | Id in chase                |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- | -------------------------- |
+| conference (title, start, end, location)         | `conference`                                                                                    | conference id              |
+| committee                                        | `committee` (name, abbreviation)                                                                | committee id               |
+| committeeAgendaItem                              | `agendaItem`                                                                                    | agenda item id             |
+| conferenceRole: nation seated by a committee     | `representation` `DELEGATION` (alpha2/3, regional group)                                        | role id                    |
+| conferenceRole: non-state actor                  | `representation` `NSA` (name, icon)                                                             | role id                    |
+| nation role × committee it seats                 | `committeeMember`                                                                               | `${roleId}_${committeeId}` |
+| NSA delegation                                   | `conferenceMember`                                                                              | delegation id              |
+| team member                                      | `conferenceUser` `ADMIN` / `TEAM`                                                               | team member id             |
+| supervisor                                       | `conferenceUser` `SPECTATOR`                                                                    | supervisor id              |
+| delegation member (nation, after release)        | `conferenceUser` `DELEGATE` → its committee member                                              | delegation member id       |
+| delegation member (NSA, after release)           | `conferenceUser` `NON_STATE_ACTOR` → conference member, with `delegatorUserId` and `cardNumber` | delegation member id       |
+| single participant (after release, CHASE access) | `conferenceUser` `SPECTATOR` / `TEAM`                                                           | single participant id      |
+| accepted working paper                           | `resolutionPaper` draft (see "Working papers")                                                  | paper id                   |
+
+- Every chase row synced from delegator gets `managedByDelegator`. Local extras have none, and the
+  reconcile never touches them, except one sharing an address with someone delegator brings.
+- Reconcile per conference, in one transaction: upsert what delegator has, **delete** the managed
+  rows it no longer has, with what hangs on them (chase's foreign keys cascade). Chase mirrors
+  delegator exactly; a delegate moved to another committee keeps nothing of the old one.
+- A conference moving to `POST` stays in chase (it ran there) but is no longer synced.
+- Unlike today's export, representations are only the roles the conference offers, not every
+  nation. Chase's "add country" stays off for linked conferences.
+
+### Sync, chase → delegator (delegator's worker pulls)
+
+The same pattern the other way: chase gets read rules for the link on its presence events,
+conference users and adopted resolution papers, and delegator's worker watches them with live
+queries through the generated chase client. Delegator renders the adopted resolution's PDF itself
+(typst and the resolution editor are in both apps), so it prints in delegator's header: the
+conference's emblem and the committee's resolution headline. Chase's `/api/pdf` is not involved.
+
+- **Presence:** delegator keeps the latest `linkPresence` per conference in memory and in a
+  `chasePresenceSnapshot` row (JSON, `fetchedAt`), and publishes it. The attendance import page
+  shows it live, scored by the existing `scoreDelegates` / `scoreNsas`, and the team applies it
+  with the existing buttons. The file upload stays below, under "advanced".
+- **Resolutions:** chase lets the link read FINAL papers, their `VOTE_CONCLUDED` snapshots and
+  the votes' outcomes, of synced conferences only, and its conclude and delete mutations now
+  publish the snapshot table too. Delegator's worker watches the concluding snapshots per
+  conference (nested `paper { vote { outcome } }`, so a later outcome reaches it as well), on its
+  own debounce, so presence never triggers a compile; syncs run one at a time. A paper counts when
+  its vote is ADOPTED; its text is the latest concluding snapshot (`adoptedResolutions.ts`). The
+  worker renders the new ones and those with a newer snapshot (`#api/services/typst`, shared with
+  `/api/pdf`), stores the PDF without an uploader (`storeGeneratedFile`) and upserts `resolution`
+  by `chasePaperId` (unique) with `chaseSnapshotId`. A re-render replaces only the file, so a
+  title or committee the team changed stays. A resolution whose paper is no longer adopted is
+  deleted; its old PDFs are left to the file cleanup, which the existing `resolutionOf` read rule
+  and `fileRef()` column already cover.
+  While the link is active nobody deletes such a resolution in delegator (the delete rule and the
+  disabled button in the resolution manager, with a note why), since the next sync would bring it
+  back; unlinking clears `chasePaperId`, which makes them ordinary resolutions. Typst comes with
+  the `typst` dependency's platform package, which every `bun install` (the image's included)
+  puts into `node_modules`; the compile runs that binary directly.
+
+## NSA nametags and cards
+
+### Codes
+
+The module is `#lib/helpers/identityCode.ts` in delegator and a copy in chase
+(`src/lib/helpers/identityCode.ts`); change both together.
+
+- **Digital nametag** (exists): `MUN1…`, signs `userId` and the time it was issued, valid for
+  10 minutes.
+- **Card**: `MUC1.<userId>.<conferenceId>.<expires>.<cardNumber>.<signature>` under its own
+  domain (`munify-identity-card-v1`). It counts at its conference until the end of the day after
+  the conference ends (`identityCardExpiry`). `verifyIdentityCard` answers
+  `{ valid, userId, conferenceId, cardNumber }` or `malformed` / `forged` / `expired` /
+  `otherConference`; whether the number is the person's current one is the caller's check.
+- Delegator signs both with its deployment key (`identityKeyPair.ts`, `issueIdentityCard`), and
+  hands the public key to the linked chase too (`identityCodePublicKey`,
+  `assertCanReadIdentityKey`). Chase's link worker stores it on the link row
+  (`remoteIdentityKey`) on every (re)connect and keeps it after unlinking, so delegator's cards
+  keep scanning. Unlinked, chase signs cards with its own key, derived from `LINK_SECRET`
+  (`src/api/services/identityKeyPair.ts`), with the `conferenceUser` id as the user id.
+
+### Delegator
+
+- `conferenceParticipant.nsaCardNumber` (integer, default 1), read by the link.
+- `nsaCard/`: `issueNsaCards(conferenceId, conferenceParticipantIds?)` signs the cards of the
+  members of NSA delegations (participant care, `manageParticipants`; signing writes nothing);
+  `reprintNsaCard(conferenceParticipantId)` raises the number (CONFLICT past 65535) and answers
+  the new card.
+- `#lib/api/nsaCardsPdf.ts`: A6 cards, four to an A4 sheet with cut lines, each with the logo,
+  the person's name, the NSA's icon and name, the QR (medium error correction, no emblem) and
+  "Karte n". `#lib/api/nsaCards.ts` downloads them: all from the downloads page (badge data),
+  one from the user card (`NsaCardSection`: print the current card, or a new one that voids the
+  earlier ones).
+- The NSA badge CSV (`BadgeData.svelte`) stays as it is.
+
+### Chase
+
+- `conferenceUser.attendanceCode` is dropped (migration), and with it the 6-character fallback,
+  `regenerateNsaAttendanceCode` and the code input. `conferenceUser.cardNumber` comes from the
+  sync (or a reprint here); chairs read it and `delegatorUserId`.
+- `identifyNsa` (`#lib/helpers/nsaScan.ts`) decides who a scanned code stands for, the same way
+  in the scanner and on the server: a nametag by DELEGATOR's key and `delegatorUserId`; a card by
+  DELEGATOR's key (`delegatorUserId`) or chase's own (`conferenceUser` id), refused unless its
+  number is the current one.
+- The scanner (`NsaScannerDrawer`) keeps the keys in the browser (`#lib/api/identityKeys.ts`,
+  query `identityKeys`), identifies the person offline from the conference's NSAs, and sends
+  `{ conferenceUserId, code }`; the server verifies the code again (`resolveNsaTarget`,
+  `#api/services/nsaCards.ts`). The **name search** (`searchNsas`: name, e-mail, NSA, ignoring
+  case and diacritics) sends `{ conferenceUserId }` alone. The optimistic update reads the target
+  by that id.
+- Unlinked, chase prints the cards itself (`issueNsaCards` / `reprintNsaCard`, admins; refused
+  for a synced conference): the print page and the card modal show the signed code, the names
+  and the card number. A synced conference's NSA tab and print page point to DELEGATOR.
+
+## Working papers → chase
+
+- Delegator lets the link read working papers of released mirrored conferences that have an
+  accepted version, and only their accepted versions (`paperPermissions.ts`,
+  `paperVersionPermissions.ts`). The content is the resolution editor's JSON, the same chase
+  stores.
+- Chase's link worker watches them per conference and, after each reconcile, runs
+  `syncWorkingPapers` (`src/api/services/link/workingPaperSync.ts`). `workingPaperChanges`
+  (`workingPapers.ts`, unit tested) decides: a paper goes across with its latest accepted version
+  as a `WORKING_PAPER` draft, written by its delegation's seat in its agenda item's committee
+  (`committeeMemberId(roleId, committeeId)`); `resolutionPaper.delegatorPaperId` (unique),
+  `delegatorVersion` and `detachedAt` record where it came from. The Yjs document is written with
+  the draft, before anybody can open it.
+- **Kept in sync until chase changes it:** a newer accepted version replaces the text through the
+  live document (`applyServerMutation` + `replaceResolution`), so open editors see it. The first
+  edit through a user's connection (Hocuspocus `onChange` with a session; the link's own updates
+  come through a direct connection without one) or any `updateResolutionPaper` by someone who may
+  update the paper sets `detachedAt` (`detach.ts`); from then on newer versions are ignored. The
+  paper page shows "From DELEGATOR, version n" (`DelegatorOriginBadge`), with a hint saying
+  which of the two it is.
+- A draft whose paper is gone from delegator is deleted unless chase changed it.
+- A paper without an agenda item, without its delegation's seat in that committee, or with a text
+  the editor cannot read stays behind (`leftBehind`, with the reason). Showing that list on
+  delegator's CHASE card is still open.
+
+## Familiarize-with-CHASE mail
+
+- New kind `CHASE_INTRO_REMINDER` in `REMINDER_KINDS`, with
+  `CHASE_INTRO_REMINDER_DAYS = 10` in `#lib/helpers/emailKinds.ts`.
+- **It exists only while an instance link is `ACTIVE`.** Without one, the kind is left out of the
+  e-mail page, the user card's owed mails, `openEmailCounts` and the `send-emails` job, and
+  `dueEmails` never owes it. The same goes for every CHASE hint in the UI.
+- `dueEmails` owes it to seated delegation members (nation or NSA) and to single participants
+  whose role has CHASE access, once the assignment is released, within the window before the
+  conference starts. It is keyed by the conference start, so a moved date reminds again, like the
+  survey reminder.
+- Placeholders: `{chaseLink}` (their committee or conference in chase), `{manualLink}` (the
+  manual page for their role: delegate, NSA or spectator, in the recipient's language) and
+  `{committee}`. Default texts built from new `emailAutoChaseIntro…` messages in de and en.
+- Like every kind, it is off by default, its text can be edited, and it appears in the user card's
+  owed mails. The e-mail page explains the rule.
+
+### Spacing the reminders
+
+The reminders before the conference no longer land on the same days:
+
+| Days before the conference | Mail                   |
+| -------------------------- | ---------------------- |
+| 14                         | `OPEN_ISSUES_REMINDER` |
+| 10                         | `CHASE_INTRO_REMINDER` |
+| 7                          | `PHONE_READY_REMINDER` |
+
+Survey and paper deadlines can still fall anywhere, so the sweep also keeps a **gap per person**
+(`spaceReminders`, `#api/handlers/email/reminderSpacing.ts`; every reminder carries the date it
+reminds of, `remindsOf`):
+a reminder (`isReminder`) is not due while the person got another automatic reminder within the
+last `REMINDER_GAP_DAYS` (2), and it moves to the next sweep after the gap. It stays due as long as
+its own window lasts; a reminder whose window closes during the gap is sent on the window's last
+day anyway, so nothing is lost. Mails that report something (acceptance, a review, a payment) are
+never held back. The rule is pure and unit tested with the windows above, and the e-mail page
+explains it.
+
+## Dashboard and UX between the apps
+
+- **Participant dashboard** (preparation and active stages; only while linked and once released):
+  a CHASE card with "Open my committee in CHASE" (`/app/{conferenceId}/{committeeId}`, or the
+  conference for NSAs and single participants), "Manual for my role" (chase's `/docs` page for the
+  role, in the locale), and for NSAs: "Chairs check you in and out of committees with your digital
+  nametag or your printed card", linking to the check-in page.
+- **Delegator team area:** a "CHASE" status card for the conference (link state, last event, last
+  reconcile, what is waiting for the release, papers not transferred) with "Open in CHASE". The
+  system-level link card lives in the admin area.
+- **Chase:** a "managed by DELEGATOR" badge with a link back to the conference in delegator on
+  synced rows. NSAs in chase get "Show my nametag", linking to delegator's check-in page. The
+  launcher hides the import wizard while linked and points system admins to delegator for new
+  conferences.
+- **Fallback files:** delegator's CHASE export and presence import, and chase's import wizard and
+  presence export, move under "advanced" and are hidden while linked.
+
+## Status (2026-11-04)
+
+Phases 1 to 5 are built on `feat/chase-link` (delegator) and `feat/delegator-link` (chase), with
+unit tests, the team's CHASE status card (`ChaseStatusCard`, with the accepted working papers that
+stay behind, `chaseTransferIssue`), chase's links back (`ManagedByDelegatorBadge`, `NametagLink`),
+the link's authorization spec (`e2e/authorization/chase-link.spec.ts`, not run yet) and
+`dev:linked` (see "Running both"). Nothing has run against a database or two live instances yet.
+Still open: the remaining e2e specs listed under Tests, and pairing done by the dev seeds.
+
+## Phases
+
+1. **Link and roster** (both repos): `instanceLink`, pairing UI, link caller and read rules, the
+   link worker with advisory lock and reconcile into chase with `managedByDelegator`, the release
+   rule, the role mappings and the CHASE access setting on custom roles; chase's creation locked
+   and DELEGATOR's fields read-only while linked.
+2. **Back to delegator:** chase's link read rules on presence and resolutions; delegator's link
+   worker, its live presence view and the resolution import.
+3. **NSA codes and cards:** the card variant in both copies of `identityCode.ts`, the card
+   number, `nsaCardsPdf.ts`, chase's scanner verification and name search, `attendanceCode`
+   dropped, chase's own card print when unlinked.
+4. **Working papers:** `linkWorkingPapers`, chase drafts, `detachedAt`.
+5. **Mail and UX:** `CHASE_INTRO_REMINDER`, the dashboard card, status cards, deep links both
+   ways, the fallback files moved under "advanced"; manual pages in chase (en, de, pt), CLAUDE.md
+   and CLAUDE-UI.md in delegator.
+
+## Tests
+
+- **Unit:** snapshot → chase rows mapping (pure, next to today's `chaseExport.test.ts`), the
+  reconcile's diff (upsert / delete / mark inactive, extras untouched), the release rule, the card
+  encode and verify (expiry, other conference, outdated number), `dueEmails` for
+  `CHASE_INTRO_REMINDER`, the working paper detach rule.
+- **e2e (delegator):** link principal abilities (`e2e/authorization/`: reads only through the link
+  rules, never masked columns), roles not reaching chase before release, the CHASE status card,
+  the NSA card PDF, the dashboard card.
+- **e2e (chase):** the scanner with a nametag, a card and the name search; a revoked card refused;
+  read-only synced rows next to editable extras.
+- **Both:** a link test pairs two dev servers (delegator's dev seed, chase's dev seed), then checks
+  a committee renamed in delegator appearing in chase, and a presence record made in chase
+  appearing on delegator's import page.
+
+## Open points for implementation
+
+- The dev setup for two linked instances: likely a `bun run dev:linked` that starts chase next to
+  delegator against the same oidc-mock, with the pairing done by the seed.
+- Chase needs `delegatorUserId` to resolve a scanned user id while the NSA has never logged into
+  chase. With the same identity provider it equals the OIDC sub; with different ones it is still
+  delegator's id, which is what the codes sign.
+
+## Running both
+
+Chase runs next to delegator's dev setup on its own ports: `bun run dev:linked` in chase starts
+its Postgres on 15433 (`linked.docker-compose.yml`), its oidc-mock on 8091 and the app on
+http://localhost:5174; `bun run db:migrate:linked` migrates that database. Chase needs
+`LINK_SECRET` (32 characters or more) in its `.env`. Delegator runs as usual (`bun run dev`, port
+5173, oidc-mock 8090). Then pair them: in delegator, a system admin opens the CHASE link page from
+the conference list and requests `http://localhost:5174` (plain http is accepted on loopback);
+in chase, a global admin approves it on the launcher with the code delegator shows.

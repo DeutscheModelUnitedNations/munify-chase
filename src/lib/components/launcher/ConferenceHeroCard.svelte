@@ -55,13 +55,13 @@
 		<div class="text-base-content/75 flex flex-wrap gap-x-4 gap-y-2 text-sm">
 			{#if dateRange}
 				<span class="inline-flex items-center gap-2 whitespace-nowrap">
-					<i class="fa-duotone fa-calendar"></i>
+					<i aria-hidden="true" class="ph-duotone ph-calendar-blank"></i>
 					{dateRange}
 				</span>
 			{/if}
 			{#if conference.location}
 				<span class="inline-flex items-center gap-2 whitespace-nowrap">
-					<i class="fa-duotone fa-location-dot"></i>
+					<i aria-hidden="true" class="ph-duotone ph-map-pin"></i>
 					{conference.location}
 				</span>
 			{/if}
@@ -78,7 +78,7 @@
 	{/if}
 
 	<a class="btn btn-primary btn-lg mt-1 w-full" {href}>
-		<i class="fa-duotone fa-arrow-right-to-bracket"></i>
+		<i aria-hidden="true" class="ph-duotone ph-sign-in"></i>
 		{m.launcherOpen()}
 	</a>
 </article>

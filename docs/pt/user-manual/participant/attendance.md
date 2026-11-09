@@ -22,8 +22,9 @@ Se achar que está marcado como ausente por engano, avise a presidência, que po
 
 Se participa como ANE e não como delegação, a presença funciona de forma um pouco diferente:
 
-- A organização da conferência entrega-lhe um crachá impresso com um código QR pessoal.
-- A presidência lê o seu crachá à entrada de cada sessão de comité em que participa, o que regista um evento de entrada ou saída para si.
+- A presidência regista a sua entrada e saída à porta de cada sessão de comité em que participa. Para isso lê o seu **crachá digital** (no MUNify DELEGATOR, no seu telemóvel) ou o seu **cartão de ANE impresso**. Ambos têm um código assinado que o dispositivo da presidência verifica mesmo sem internet.
+- Se o código não for lido, a presidência procura-o pelo nome. É precisamente por isso que o seu nome está no cartão.
+- Se perder o cartão, peça um novo à organização. O cartão antigo deixa de funcionar assim que o novo for impresso.
 - Continua a iniciar sessão no CHASE para usar as listas de oradores e os pedidos. Quando abre a conferência, a sua página mostra **A minha presença**: cada entrada e saída, o comité a que se refere e quando aconteceu.
 
 ## Consultar o seu próprio histórico

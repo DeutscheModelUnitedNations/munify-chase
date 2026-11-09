@@ -33,9 +33,10 @@
 			{#each events ?? [] as ev (ev.id)}
 				<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
 					<i
-						class="fas {ev.present
-							? 'fa-arrow-right-to-bracket text-success'
-							: 'fa-arrow-right-from-bracket text-warning'} text-lg"
+						aria-hidden="true"
+						class="ph-fill {ev.present
+							? 'ph-sign-in text-success'
+							: 'ph-sign-out text-warning'} text-lg"
 					></i>
 					<span class="flex-1">{ev.committee?.name ?? '?'}</span>
 					<span class="text-base-content/70 text-sm">{fmt(ev.timestamp)}</span>

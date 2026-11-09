@@ -26,15 +26,15 @@
 	}: Props = $props();
 
 	const categories = $derived([
-		{ id: 'FORMAL' as CommitteestatusEnum, faIcon: 'podium', tooltip: m.formalDebate() },
-		{ id: 'INFORMAL' as CommitteestatusEnum, faIcon: 'messages', tooltip: m.informalCaucus() },
-		{ id: 'PAUSE' as CommitteestatusEnum, faIcon: 'mug-saucer', tooltip: m.pause() },
-		{ id: 'SUSPENSION' as CommitteestatusEnum, faIcon: 'forward-step', tooltip: m.suspension() },
+		{ id: 'FORMAL' as CommitteestatusEnum, icon: 'lectern', tooltip: m.formalDebate() },
+		{ id: 'INFORMAL' as CommitteestatusEnum, icon: 'chats', tooltip: m.informalCaucus() },
+		{ id: 'PAUSE' as CommitteestatusEnum, icon: 'coffee', tooltip: m.pause() },
+		{ id: 'SUSPENSION' as CommitteestatusEnum, icon: 'skip-forward', tooltip: m.suspension() },
 		...(hasModeratedCaucus
 			? [
 					{
 						id: 'MODERATED_INFORMAL' as CommitteestatusEnum,
-						faIcon: 'comments-question-check',
+						icon: 'chats-circle',
 						tooltip: m.moderatedInformalCaucus()
 					}
 				]
@@ -101,7 +101,7 @@
 	<Tabs tabs={categories} bind:activeTab={activeCategory} />
 	<div class="card bg-base-200 flex flex-row items-center gap-2 p-2">
 		<div class="tooltip tooltip-right flex items-center" data-tip={m.minuteOfTheHour()}>
-			<i class="fa-duotone fa-clock w-8 text-center text-2xl"></i>
+			<i aria-hidden="true" class="ph-duotone ph-clock w-8 text-center text-2xl"></i>
 		</div>
 		<div
 			class="grid flex-1 grid-cols-4 items-center gap-1 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-12"
@@ -121,7 +121,7 @@
 	</div>
 	<div class="card bg-base-200 flex flex-row items-center gap-2 p-2">
 		<div class="tooltip tooltip-right flex items-center" data-tip={m.minutesFromNow()}>
-			<i class="fa-duotone fa-timer w-8 text-center text-2xl"></i>
+			<i aria-hidden="true" class="ph-duotone ph-timer w-8 text-center text-2xl"></i>
 		</div>
 		<div class="grid flex-1 grid-cols-4 items-center gap-1 md:grid-cols-5 lg:grid-cols-7">
 			{#each relativeTimes as time (time)}
@@ -137,6 +137,7 @@
 	<div class="flex w-full gap-2">
 		<input
 			type="time"
+			aria-label={m.a11yStatusEndTime()}
 			class="input input-xl w-full flex-1 text-center font-mono"
 			value={untilFormatted}
 			onchange={(e) => {
@@ -154,14 +155,14 @@
 			aria-label="Decrease time"
 			onclick={() => (until = dayjs(until).subtract(1, 'minute'))}
 		>
-			<i class="fa-solid fa-minus"></i>
+			<i aria-hidden="true" class="ph-fill ph-minus"></i>
 		</button>
 		<button
 			class="btn btn-square btn-xl"
 			onclick={() => (until = dayjs(until).add(1, 'minute'))}
 			aria-label="Increase time"
 		>
-			<i class="fa-solid fa-plus"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus"></i>
 		</button>
 		<button
 			class="btn btn-square btn-xl {customNameOpen ? 'btn-primary' : ''}"
@@ -175,7 +176,7 @@
 			}}
 			aria-label="Increase time"
 		>
-			<i class="fa-solid fa-tag"></i>
+			<i aria-hidden="true" class="ph-fill ph-tag"></i>
 		</button>
 	</div>
 	{#if customNameOpen}
@@ -194,7 +195,7 @@
 					abort();
 				}}
 			>
-				<i class="fas fa-xmark mr-2"></i>
+				<i aria-hidden="true" class="ph-fill ph-x mr-2"></i>
 				{m.abort()}
 			</button>
 		{/if}
@@ -209,7 +210,7 @@
 				}
 			}}
 		>
-			<i class="fas fa-save mr-2"></i>
+			<i aria-hidden="true" class="ph-fill ph-floppy-disk mr-2"></i>
 			{m.submitStatus()}
 		</button>
 	</div>

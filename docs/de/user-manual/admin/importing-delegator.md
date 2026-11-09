@@ -48,3 +48,14 @@ Ein Gremium ohne Delegationen erzeugt nur eine Warnung.
 ## Abschließen
 
 Im letzten Schritt **Bearbeiten** klicken Global Admins auf **Konferenz erstellen**. Du landest direkt im Launcher, wo deine neue Konferenz nun erscheint. Alle können mit **Als JSON herunterladen** die Datei speichern, zum Beispiel um sie einem Global Admin zu geben, der sie anwenden kann.
+
+## Mit DELEGATOR verbinden
+
+Statt Dateien hin- und herzuschieben, lässt sich CHASE mit einer MUNify-DELEGATOR-Instanz verbinden. Ein Systemadmin in DELEGATOR fordert die Verbindung mit der Adresse dieser Instanz an. Ein Global Admin bestätigt sie hier im Launcher mit dem Bestätigungscode, den beide Seiten zeigen. Danach gilt:
+
+- Jede DELEGATOR-Konferenz erscheint hier von selbst, mit Gremien, Tagesordnungspunkten, Rollen, Team und, sobald die Zuteilung veröffentlicht ist, den Teilnehmenden. Der Launcher legt dann keine Konferenzen mehr an und importiert keine.
+- Was aus DELEGATOR kommt, wird dort geändert: Namen, Kürzel, Daten und Personen lassen sich hier weder bearbeiten noch löschen. Sitzungsstand, Präsentationseinstellungen und alles, was du hier ergänzt, bleiben bei dir.
+- DELEGATOR liest die Anwesenheit und die angenommenen Resolutionen zurück, und angenommene Arbeitspapiere kommen hier als Entwürfe an (markiert mit **Aus DELEGATOR, Version n**), bis sie hier jemand ändert.
+- Wird die Verbindung getrennt, egal auf welcher Seite, endet all das. Die Einträge bleiben als gewöhnliche lokale erhalten.
+
+Der Dateiimport und der Anwesenheitsexport bleiben unter „Erweitert“ für den Fall ohne Verbindung erhalten.

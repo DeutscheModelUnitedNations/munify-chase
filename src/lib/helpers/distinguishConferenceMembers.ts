@@ -5,7 +5,7 @@ type Representation = {
 	createdAt?: Date;
 	updatedAt?: Date;
 	type: RepresentationType;
-	faIcon?: string | null;
+	icon?: string | null;
 	name?: string | null;
 	conferenceId?: string;
 	alpha2Code?: string | null;
@@ -19,10 +19,10 @@ type Member = {
 };
 
 type DefaultRepresentation = Pick<Representation, 'id' | 'createdAt' | 'updatedAt' | 'type'>;
-type NSARepresentation = Pick<Representation, 'faIcon' | 'name' | 'conferenceId'> & {
+type NSARepresentation = Pick<Representation, 'icon' | 'name' | 'conferenceId'> & {
 	type: 'NSA';
 } & DefaultRepresentation;
-type DelegationRepresentation = Pick<Representation, 'faIcon' | 'name' | 'conferenceId'> & {
+type DelegationRepresentation = Pick<Representation, 'icon' | 'name' | 'conferenceId'> & {
 	type: 'DELEGATION';
 } & DefaultRepresentation;
 type UNRepresentation = Pick<

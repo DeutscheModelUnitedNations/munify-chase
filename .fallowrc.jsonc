@@ -4,6 +4,8 @@
 	"ignorePatterns": [
 		"src/lib/paraglide/**",
 		"src/lib/api/rumbleClient/**",
+		"src/api/services/link/delegatorClient/**",
+		"schema.graphql",
 		"src/api/db/seed-data/schema.d.ts",
 		"drizzle/**"
 	],

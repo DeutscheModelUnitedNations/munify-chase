@@ -25,7 +25,7 @@
 						name?: string | null;
 						alpha2Code?: string | null;
 						alpha3Code?: string | null;
-						faIcon?: string | null;
+						icon?: string | null;
 						type?: string | null;
 					} | null;
 				} | null;
@@ -35,7 +35,7 @@
 						name?: string | null;
 						alpha2Code?: string | null;
 						alpha3Code?: string | null;
-						faIcon?: string | null;
+						icon?: string | null;
 						type?: string | null;
 					} | null;
 				} | null;
@@ -67,7 +67,7 @@
 			in:scale={{ duration: 800, opacity: 0.5, start: 0, easing: bounceOut }}
 			out:scale={{ duration: 500, opacity: 0.5, start: 0 }}
 		>
-			<i class="fas fa-lock"></i>
+			<i aria-hidden="true" class="ph-fill ph-lock"></i>
 		</div>
 	{/if}
 

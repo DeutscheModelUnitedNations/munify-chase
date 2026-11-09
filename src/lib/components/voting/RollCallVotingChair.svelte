@@ -28,7 +28,7 @@
 					name?: string | null;
 					alpha2Code?: string | null;
 					alpha3Code?: string | null;
-					faIcon?: string | null;
+					icon?: string | null;
 					type?: string | null;
 				} | null;
 			}>;
@@ -82,16 +82,16 @@
 			let icon: string;
 			let color: 'info' | 'success' | 'error';
 			if (rollCallVotingAbstain?.includes(member.id)) {
-				icon = 'fa-circle';
+				icon = 'circle';
 				color = 'info';
 			} else if (rollCallVotingPro?.includes(member.id)) {
-				icon = 'fa-circle-plus';
+				icon = 'plus-circle';
 				color = 'success';
 			} else if (rollCallVotingCon?.includes(member.id)) {
-				icon = 'fa-circle-minus';
+				icon = 'minus-circle';
 				color = 'error';
 			} else {
-				icon = 'fa-question';
+				icon = 'question';
 				color = 'info';
 			}
 			return { id: member.id, icon, color };
@@ -319,7 +319,7 @@
 						syncIndex(newIdx);
 					}}
 				>
-					<i class="fas fa-chevron-up"></i>
+					<i aria-hidden="true" class="ph-fill ph-caret-up"></i>
 				</button>
 			</div>
 			<div class="flex flex-row justify-center gap-4">
@@ -329,7 +329,7 @@
 						setVote('CON');
 					}}
 				>
-					<i class="fas fa-circle-minus"></i>
+					<i aria-hidden="true" class="ph-fill ph-minus-circle"></i>
 					{m.con()}
 					<Kbd hotkey="J" />
 				</button>
@@ -340,7 +340,7 @@
 							setVote('ABSTAIN');
 						}}
 					>
-						<i class="fas fa-circle"></i>
+						<i aria-hidden="true" class="ph-fill ph-circle"></i>
 						{m.abstain()}
 						<Kbd hotkey="K" />
 					</button>
@@ -351,7 +351,7 @@
 						setVote('PRO');
 					}}
 				>
-					<i class="fas fa-circle-plus"></i>
+					<i aria-hidden="true" class="ph-fill ph-plus-circle"></i>
 					{m.pro()}
 					<Kbd hotkey="L" />
 				</button>
@@ -365,7 +365,7 @@
 					exit(true);
 				}}
 			>
-				<i class="fas fa-xmark"></i>
+				<i aria-hidden="true" class="ph-fill ph-x"></i>
 				{m.close()}
 				<Kbd hotkey="esc" />
 			</button>
@@ -380,7 +380,7 @@
 				exit(stage === 'EVALUATION');
 			}}
 		>
-			<i class="fa-duotone fa-xmark"></i>
+			<i aria-hidden="true" class="ph-duotone ph-x"></i>
 		</button>
 	</div>
 </Modal>

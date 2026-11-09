@@ -52,7 +52,7 @@
 		<div
 			class="bg-warning text-warning-content flex items-center gap-2 rounded-2xl px-3 py-1.5 text-sm shadow-lg"
 		>
-			<i class="fas fa-wifi-slash"></i>
+			<i aria-hidden="true" class="ph-fill ph-wifi-slash"></i>
 			<div class="flex flex-col leading-tight">
 				<span class="font-medium">{m.offlineBannerTitle()}</span>
 				<span class="text-xs opacity-75">{m.offlineBannerDescription()}</span>

@@ -10,34 +10,21 @@
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: conferenceId },
-		title: true
+		title: true,
+		managedByDelegator: true
 	});
 
-	const nsaUsers = await client.liveQuery.conferenceUsers({
-		__args: {
-			where: {
-				conference: { id: { eq: conferenceId } },
-				conferenceUserType: 'NON_STATE_ACTOR'
-			}
-		},
-		id: true,
-		userEmail: true,
-		name: true,
-		attendanceCode: true,
-		conferenceMember: { representation: { id: true, name: true } }
-	});
-
-	let cards = $derived(
-		(nsaUsers ?? [])
-			.filter((u) => !filterId || u.id === filterId)
-			.map((u) => ({
-				id: u.id,
-				userEmail: u.userEmail,
-				name: u.name ?? null,
-				attendanceCode: u.attendanceCode,
-				orgName: u.conferenceMember?.representation?.name ?? null
-			}))
-	);
+	// Signed by this instance; a conference synced from DELEGATOR gets its cards there.
+	const cards = conference.managedByDelegator
+		? []
+		: await client.mutate.issueNsaCards({
+				__args: { conferenceId, conferenceUserIds: filterId ? [filterId] : undefined },
+				conferenceUserId: true,
+				code: true,
+				name: true,
+				nsaName: true,
+				cardNumber: true
+			});
 
 	onMount(() => {
 		// Auto-print on demand via ?autoprint=1 — caller can decide.
@@ -59,15 +46,19 @@
 		{m.cards()}
 	</span>
 	<button class="btn btn-primary" onclick={() => window.print()}>
-		<i class="fas fa-print mr-2"></i>{m.print()}
+		<i aria-hidden="true" class="ph-fill ph-printer mr-2"></i>{m.print()}
 	</button>
 </div>
 
-<div class="cards-grid p-6">
-	{#each cards as card (card.id)}
-		<NsaCard nsaUser={card} conferenceTitle={conference?.title ?? ''} />
-	{/each}
-</div>
+{#if conference.managedByDelegator}
+	<p class="p-6">{m.nsaCardsFromDelegator()}</p>
+{:else}
+	<div class="cards-grid p-6">
+		{#each cards as card (card.conferenceUserId)}
+			<NsaCard {card} conferenceTitle={conference?.title ?? ''} />
+		{/each}
+	</div>
+{/if}
 
 <style>
 	.cards-grid {

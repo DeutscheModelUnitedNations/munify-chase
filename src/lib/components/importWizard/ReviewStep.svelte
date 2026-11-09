@@ -113,7 +113,7 @@
 	<div class="grid grid-cols-2 gap-3 md:grid-cols-4">
 		<div class="card bg-base-100 border-base-content/10 flex-row items-center gap-3 border p-4">
 			<div class="bg-primary/15 text-primary grid h-11 w-11 place-items-center rounded-lg text-xl">
-				<i class="fa-solid fa-building-columns"></i>
+				<i aria-hidden="true" class="ph-fill ph-bank"></i>
 			</div>
 			<div>
 				<div class="font-mono text-2xl leading-none font-bold">{data.committees.length}</div>
@@ -122,7 +122,7 @@
 		</div>
 		<div class="card bg-base-100 border-base-content/10 flex-row items-center gap-3 border p-4">
 			<div class="bg-primary/15 text-primary grid h-11 w-11 place-items-center rounded-lg text-xl">
-				<i class="fa-solid fa-flag"></i>
+				<i aria-hidden="true" class="ph-fill ph-flag"></i>
 			</div>
 			<div>
 				<div class="font-mono text-2xl leading-none font-bold">{totalDelegations}</div>
@@ -131,7 +131,7 @@
 		</div>
 		<div class="card bg-base-100 border-base-content/10 flex-row items-center gap-3 border p-4">
 			<div class="bg-primary/15 text-primary grid h-11 w-11 place-items-center rounded-lg text-xl">
-				<i class="fa-solid fa-bullhorn"></i>
+				<i aria-hidden="true" class="ph-fill ph-megaphone"></i>
 			</div>
 			<div>
 				<div class="font-mono text-2xl leading-none font-bold">{totalNsas}</div>
@@ -142,7 +142,7 @@
 			<div
 				class="bg-accent/25 text-accent-content grid h-11 w-11 place-items-center rounded-lg text-xl"
 			>
-				<i class="fa-solid fa-landmark-flag"></i>
+				<i aria-hidden="true" class="ph-fill ph-bank"></i>
 			</div>
 			<div>
 				<div class="font-mono text-2xl leading-none font-bold">{totalUn}</div>
@@ -151,7 +151,7 @@
 		</div>
 		<div class="card bg-base-100 border-base-content/10 flex-row items-center gap-3 border p-4">
 			<div class="bg-primary/15 text-primary grid h-11 w-11 place-items-center rounded-lg text-xl">
-				<i class="fa-solid fa-hand"></i>
+				<i aria-hidden="true" class="ph-fill ph-hand"></i>
 			</div>
 			<div>
 				<div class="font-mono text-2xl leading-none font-bold">{totalRequestTypes}</div>
@@ -163,7 +163,7 @@
 	{#if validations.length > 0}
 		<div class="card bg-base-100 border-warning border-l-4 p-5">
 			<div class="mb-3 flex items-center gap-2">
-				<i class="fa-solid fa-triangle-exclamation"></i>
+				<i aria-hidden="true" class="ph-fill ph-warning"></i>
 				<strong>{m.validationsHeading({ count: validations.length })}</strong>
 			</div>
 			<ul class="m-0 flex list-disc flex-col gap-1.5 pl-5">
@@ -176,7 +176,7 @@
 							onclick={() => onJump(v.step)}
 						>
 							{m.jumpToStep()}
-							<i class="fa-solid fa-arrow-right"></i>
+							<i aria-hidden="true" class="ph-fill ph-arrow-right"></i>
 						</button>
 					</li>
 				{/each}
@@ -246,18 +246,18 @@
 					{#if loading}
 						<span class="loading loading-spinner"></span>
 					{:else}
-						<i class="fa-solid fa-paper-plane"></i>
+						<i aria-hidden="true" class="ph-fill ph-paper-plane-tilt"></i>
 						{m.createConference()}
 					{/if}
 				</button>
 			{/if}
 			<button class="btn btn-outline btn-primary btn-lg" onclick={onDownload}>
-				<i class="fa-solid fa-download"></i>
+				<i aria-hidden="true" class="ph-fill ph-download-simple"></i>
 				{m.downloadAsJson()}
 			</button>
 			{#if !isAdmin}
 				<div class="text-base-content/55 flex items-center gap-2 text-sm">
-					<i class="fa-solid fa-lock"></i>
+					<i aria-hidden="true" class="ph-fill ph-lock"></i>
 					{m.applyAdminOnly()}
 				</div>
 			{/if}

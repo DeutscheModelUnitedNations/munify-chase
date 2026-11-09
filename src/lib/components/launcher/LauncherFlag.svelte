@@ -8,7 +8,7 @@
 			type?: RepresentationType | null;
 			alpha2Code?: string | null;
 			alpha3Code?: string | null;
-			faIcon?: string | null;
+			icon?: string | null;
 		} | null;
 		size?: 32 | 36 | 44;
 	}
@@ -19,7 +19,7 @@
 	// country code is present (regardless of role); fall back to UN otherwise.
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const effectiveRep = $derived.by<any>(() => {
-		if (representation?.alpha3Code || representation?.alpha2Code || representation?.faIcon) {
+		if (representation?.alpha3Code || representation?.alpha2Code || representation?.icon) {
 			return representation;
 		}
 		return { type: 'UN' };

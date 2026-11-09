@@ -127,7 +127,7 @@
 				context,
 				keywords,
 				group: 'page',
-				icon: 'diagram-next',
+				icon: 'steps',
 				shortcut,
 				enabled: () => !!speakersList?.speakers?.length,
 				run: nextSpeaker
@@ -140,9 +140,10 @@
 	class="btn btn-lg flex flex-1 gap-2
 		{(!speakersList?.speakers?.length && 'btn-disabled') ||
 		(type === 'SPEAKERS_LIST' ? 'btn-error' : 'btn-warning')}"
+	disabled={!speakersList?.speakers?.length}
 	onclick={nextSpeaker}
 >
-	<i class="fas fa-diagram-next"></i>
+	<i aria-hidden="true" class="ph-fill ph-steps"></i>
 	{m.nextSpeaker()}
 	<Kbd hotkey={shortcut} class="text-base-content" />
 </button>

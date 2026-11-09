@@ -19,11 +19,11 @@
 {#snippet Card(cardData: {
 	number: number | null | undefined;
 	text?: string;
-	faIcon?: string;
+	icon?: string;
 	showZero?: boolean;
 	tooltip?: string;
 })}
-	{@const { number, text, faIcon, showZero = false, tooltip } = cardData}
+	{@const { number, text, icon, showZero = false, tooltip } = cardData}
 	<div
 		class="card bg-base-200 h-full flex-1 flex-col items-center justify-center p-4 shadow-sm tooltip tooltip-bottom"
 		data-tip={tooltip}
@@ -32,37 +32,39 @@
 			{#if text}
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -- card text is internal formatted content -->
 				<p class="whitespace-nowrap">{@html text}</p>
-			{:else if faIcon}
-				<i class="fa-duotone fa-{faIcon.replace('fa-', '')}"></i>
+			{:else if icon}
+				<i aria-hidden="true" class="ph-duotone ph-{icon}"></i>
 			{/if}
 		</div>
-		<h4 class="font-mono text-3xl font-bold">
+		<p class="font-mono text-3xl font-bold">
+			<!-- The tooltip only shows on hover; this is what the number means to a screen reader -->
+			{#if tooltip}<span class="sr-only">{tooltip}:</span>{/if}
 			{(!totalPresent || totalPresent === 0) && !showZero ? '—' : number}
-		</h4>
+		</p>
 	</div>
 {/snippet}
 
 <div class="flex h-full gap-2">
 	{@render Card({
 		number: totalPresent ?? 0,
-		faIcon: 'fa-flag',
+		icon: 'flag',
 		showZero: true,
 		tooltip: m.totalCountriesPresent()
 	})}
 	{@render Card({
 		number: simpleMajority ?? 0,
-		faIcon: 'fa-circle-half-stroke',
+		icon: 'circle-half',
 		tooltip: m.simpleMajorityTooltip()
 	})}
 	{@render Card({
 		number: twoThirdsMajority ?? 0,
-		faIcon: 'fa-circle-chevron-up',
+		icon: 'caret-circle-up',
 		tooltip: m.twoThirdsMajorityTooltip()
 	})}
 	{#if minAmendmentSponsors !== null}
 		{@render Card({
 			number: minAmendmentSponsors ?? 0,
-			faIcon: 'fa-file-plus',
+			icon: 'file-plus',
 			tooltip: m.paperSupportThresholdTooltip()
 		})}
 	{/if}

@@ -47,3 +47,9 @@ Escolha a sua função para começar:
 ## Requisitos técnicos
 
 O CHASE é uma aplicação web que funciona nos navegadores modernos (Chrome, Firefox, Safari, Edge). Não é preciso instalar nada, basta abrir o endereço indicado pelos organizadores da conferência. Existe também uma aplicação nativa para Windows, macOS e Linux, para uma experiência mais integrada.
+
+## Acessibilidade {#accessibility}
+
+O CHASE pode ser usado com teclado e leitor de ecrã. Como delegado ouves quando avanças na lista de oradores e quando chega a tua vez. Quando a mesa abre uma votação, o foco vai diretamente para os botões de voto, e és avisado pouco antes de terminar.
+
+Ao lado do botão de tema claro e escuro podes ativar o **Alto contraste**. Textos, contornos e avisos ficam mais fortes e fáceis de ler. A escolha aplica-se a este dispositivo. Se o teu sistema estiver configurado para aumentar o contraste, o alto contraste está ativo desde o início.

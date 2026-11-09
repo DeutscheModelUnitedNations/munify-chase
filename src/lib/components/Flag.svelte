@@ -6,7 +6,7 @@
 		name?: string | null;
 		alpha2Code?: string | null;
 		alpha3Code?: string | null;
-		faIcon?: string | null;
+		icon?: string | null;
 		regionalGroup?: string | null;
 	}
 
@@ -47,13 +47,7 @@
 	};
 
 	const placeholderIcon = () => {
-		const worldIcons = [
-			'earth-americas',
-			'earth-europe',
-			'earth-asia',
-			'earth-africa',
-			'earth-oceania'
-		];
+		const worldIcons = ['globe-hemisphere-west', 'globe-hemisphere-east', 'globe'];
 		const randomIndex = Math.floor(Math.random() * worldIcons.length);
 		return worldIcons[randomIndex];
 	};
@@ -75,9 +69,9 @@
 		'bg-base-200 text-base-content opacity-50'}"
 >
 	{#if placeholder}
-		<i class="fa-solid fa-{placeholderIcon()} {iconClassNames()}"></i>
-	{:else if representation?.faIcon}
-		<i class="fa-solid fa-{representation.faIcon?.replace('fa-', '')} {iconClassNames()}"></i>
+		<i aria-hidden="true" class="ph-fill ph-{placeholderIcon()} {iconClassNames()}"></i>
+	{:else if representation?.icon}
+		<i aria-hidden="true" class="ph-fill ph-{representation.icon} {iconClassNames()}"></i>
 	{:else}
 		<span class="fi fi-{countryCode}"></span>
 	{/if}

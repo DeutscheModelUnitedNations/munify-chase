@@ -6,6 +6,7 @@
 	import LanguageSwitcher from '#lib/components/LanguageSwitcher.svelte';
 	import * as m from '#lib/paraglide/messages';
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
+	import ContrastToggle from './ContrastToggle.svelte';
 </script>
 
 <div class="w-full p-4">
@@ -22,18 +23,19 @@
 		</nav>
 		<div class="flex">
 			<ThemeSwitcher />
+			<ContrastToggle />
 			<LanguageSwitcher />
 		</div>
 		<nav>
 			<div class="grid grid-flow-col gap-4" id="socials">
 				<a href="https://www.instagram.com/dmun_ev/" aria-label="Instagram">
-					<i class="fa-brands fa-instagram text-3xl"></i>
+					<i aria-hidden="true" class="ph ph-instagram-logo text-3xl"></i>
 				</a>
 				<a href="https://www.youtube.com/user/DeutscheMUNeV" aria-label="YouTube">
-					<i class="fa-brands fa-youtube text-3xl"></i>
+					<i aria-hidden="true" class="ph ph-youtube-logo text-3xl"></i>
 				</a>
 				<a href="https://github.com/deutschemodelunitednations" aria-label="GitHub">
-					<i class="fa-brands fa-github text-3xl"></i>
+					<i aria-hidden="true" class="ph ph-github-logo text-3xl"></i>
 				</a>
 			</div>
 		</nav>

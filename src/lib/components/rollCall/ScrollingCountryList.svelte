@@ -14,7 +14,7 @@
 				name?: string | null;
 				alpha2Code?: string | null;
 				alpha3Code?: string | null;
-				faIcon?: string | null;
+				icon?: string | null;
 				type?: string | null;
 			} | null;
 		}>;
@@ -58,10 +58,10 @@
 
 <div class="relative flex h-full w-full flex-col gap-2 overflow-hidden pr-6 pl-6">
 	<div class="absolute top-0 bottom-0 left-0 z-40 flex items-center justify-center">
-		<i class="fas fa-caret-right text-4xl"></i>
+		<i aria-hidden="true" class="ph-fill ph-caret-right text-4xl"></i>
 	</div>
 	<div class="absolute top-0 right-0 bottom-0 z-40 flex items-center justify-center">
-		<i class="fas fa-caret-left text-4xl"></i>
+		<i aria-hidden="true" class="ph-fill ph-caret-left text-4xl"></i>
 	</div>
 	<div class="relative overflow-hidden" bind:this={listContainerRef} style="max-height: {height};">
 		<div
@@ -107,10 +107,8 @@
 							></span>
 						{:else if icon && index < currentIndex}
 							<i
-								class="fas fa-{icon.icon.replace(
-									'fa-',
-									''
-								)} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-2xl text-{icon.color}"
+								aria-hidden="true"
+								class="ph-fill ph-{icon.icon} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-2xl text-{icon.color}"
 								transition:scale={{
 									delay: 200,
 									duration: 500,
@@ -120,7 +118,8 @@
 							></i>
 						{:else if notPresent}
 							<i
-								class="fas fa-circle-xmark text-error absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
+								aria-hidden="true"
+								class="ph-fill ph-x-circle text-error absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
 								transition:scale={{
 									delay: 200,
 									duration: 500,
@@ -130,7 +129,8 @@
 							></i>
 						{:else if present}
 							<i
-								class="fas fa-check fa-beatfade text-success absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
+								aria-hidden="true"
+								class="ph-fill ph-check icon-beat-fade text-success absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
 								in:scale={{
 									delay: 200,
 									duration: 500,

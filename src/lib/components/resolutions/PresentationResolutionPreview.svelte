@@ -258,7 +258,7 @@
 				<div
 					class="mx-auto flex w-fit items-center gap-2 rounded-full bg-error px-4 py-2 text-error-content"
 				>
-					<i class="fas fa-trash-can text-lg"></i>
+					<i aria-hidden="true" class="ph-fill ph-trash text-lg"></i>
 					<span class="text-lg font-semibold"
 						>{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span
 					>
@@ -282,7 +282,7 @@
 				<div
 					class="mx-auto flex w-fit items-center gap-2 rounded-full bg-warning px-4 py-2 text-warning-content"
 				>
-					<i class="fas fa-pen-to-square text-lg"></i>
+					<i aria-hidden="true" class="ph-fill ph-note-pencil text-lg"></i>
 					<span class="text-lg font-semibold"
 						>{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span
 					>
@@ -306,7 +306,7 @@
 				<div
 					class="mx-auto flex w-fit items-center gap-2 rounded-full bg-green-700 px-4 py-2 text-white"
 				>
-					<i class="fas fa-plus text-lg"></i>
+					<i aria-hidden="true" class="ph-fill ph-plus text-lg"></i>
 					<span class="text-lg font-semibold"
 						>{m.insertAfterPresentation({ index: (activeAmendment.targetPosition ?? 0) + 1 })}</span
 					>
@@ -330,7 +330,7 @@
 					<div
 						class="flex w-fit items-center gap-2 rounded-full bg-info px-4 py-2 text-info-content"
 					>
-						<i class="fas fa-arrows-up-down text-lg"></i>
+						<i aria-hidden="true" class="ph-fill ph-arrows-down-up text-lg"></i>
 						<span class="text-lg font-semibold"
 							>{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span
 						>
@@ -350,7 +350,7 @@
 						</div>
 					{/if}
 					<div class="flex items-center gap-3 rounded-full bg-info px-6 py-3 text-info-content">
-						<i class="fas fa-arrow-down text-2xl"></i>
+						<i aria-hidden="true" class="ph-fill ph-arrow-down text-2xl"></i>
 						<span class="text-xl font-semibold"
 							>{m.moveToPositionPresentation({
 								position: (activeAmendment.targetPosition ?? 0) + 1
@@ -379,7 +379,7 @@
 					{#if clause.id === activeClauseId}
 						<span use:scrollClauseIntoView></span>
 						<div class="badge badge-warning badge-sm gap-1">
-							<i class="fas fa-gavel"></i>
+							<i aria-hidden="true" class="ph-fill ph-gavel"></i>
 						</div>
 					{/if}
 				{/snippet}

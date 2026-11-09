@@ -123,7 +123,7 @@
 			id: 'paper.participant.tab-amendments',
 			title: m.commandShowAmendments,
 			group: 'page',
-			icon: 'pen-to-square',
+			icon: 'note-pencil',
 			visible: () => !team && isWideScreen() && tab !== 'amendments',
 			run: showAmendments
 		},
@@ -131,7 +131,7 @@
 			id: 'paper.participant.tab-comments',
 			title: m.commandShowComments,
 			group: 'page',
-			icon: 'comments',
+			icon: 'chats',
 			visible: () => !team && isWideScreen() && tab !== 'comments',
 			run: showComments
 		},
@@ -161,7 +161,7 @@
 				}}
 				title={m.jumpToActiveAmendment()}
 			>
-				<i class="fas fa-bolt"></i>
+				<i aria-hidden="true" class="ph-fill ph-lightning"></i>
 				{m.jumpToActiveAmendment()}
 			</button>
 		{/if}
@@ -171,7 +171,7 @@
 				onclick={ondeselect}
 				aria-label={m.deselect()}
 			>
-				<i class="fas fa-xmark"></i>
+				<i aria-hidden="true" class="ph-fill ph-x"></i>
 			</button>
 		{/if}
 	</div>
@@ -209,7 +209,7 @@
 				title={m.proposeAmendment()}
 				onclick={openComposer}
 			>
-				<i class="fas fa-plus"></i>
+				<i aria-hidden="true" class="ph-fill ph-plus"></i>
 				{m.proposeAmendment()}
 			</button>
 		{/if}

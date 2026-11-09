@@ -18,6 +18,14 @@
 	// without a new export.
 	const DELEGATOR_PRESENCE_SCHEMA_URL = 'https://delegator.munify.cloud/schemata/presence';
 
+	// a linked DELEGATOR reads the presence itself; the file is only a fallback then
+	const managed = $derived(
+		conferenceId
+			? (await client.query.conference({ __args: { id: conferenceId }, managedByDelegator: true }))
+					.managedByDelegator
+			: false
+	);
+
 	async function download() {
 		if (!conferenceId) {
 			console.warn('Cannot export presence data without conferenceId');
@@ -38,7 +46,7 @@
 						id: true,
 						alpha2Code: true,
 						alpha3Code: true,
-						faIcon: true,
+						icon: true,
 						type: true,
 						name: true
 					}
@@ -49,7 +57,7 @@
 						id: true,
 						alpha2Code: true,
 						alpha3Code: true,
-						faIcon: true,
+						icon: true,
 						type: true,
 						name: true
 					}
@@ -125,16 +133,27 @@
 	}
 </script>
 
-<button
-	class="btn btn-sm btn-ghost gap-2"
-	onclick={download}
-	disabled={isDownloading || !conferenceId}
-	aria-label={m.exportAttendanceData()}
->
-	{#if isDownloading}
-		<span class="loading loading-spinner loading-xs"></span>
-	{:else}
-		<i class="fa-duotone fa-download"></i>
-	{/if}
-	<span class="hidden sm:inline">{m.exportAttendanceData()}</span>
-</button>
+{#snippet button()}
+	<button
+		class="btn btn-sm btn-ghost gap-2"
+		onclick={download}
+		disabled={isDownloading || !conferenceId}
+		aria-label={m.exportAttendanceData()}
+	>
+		{#if isDownloading}
+			<span class="loading loading-spinner loading-xs"></span>
+		{:else}
+			<i aria-hidden="true" class="ph-duotone ph-download-simple"></i>
+		{/if}
+		<span class="hidden sm:inline">{m.exportAttendanceData()}</span>
+	</button>
+{/snippet}
+
+{#if managed}
+	<details>
+		<summary class="cursor-pointer text-sm">{m.presenceExportLinkedFallback()}</summary>
+		<div class="mt-2">{@render button()}</div>
+	</details>
+{:else}
+	{@render button()}
+{/if}

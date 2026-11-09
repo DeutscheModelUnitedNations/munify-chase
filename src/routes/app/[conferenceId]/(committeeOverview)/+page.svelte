@@ -6,6 +6,7 @@
 	import ThemeSwitcher from '#lib/components/ThemeSwitcher.svelte';
 	import CurrentTime from '#lib/components/CurrentTime.svelte';
 	import * as m from '#lib/paraglide/messages';
+	import ManagedByDelegatorBadge from '#lib/components/delegatorLink/ManagedByDelegatorBadge.svelte';
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },
@@ -26,7 +27,10 @@
 </script>
 
 <div class="navbar bg-base-100 shadow-sm">
-	<h1 class=" ml-4 flex-1 text-3xl font-bold">{m.committeeOverview()}</h1>
+	<h1 class=" ml-4 text-3xl font-bold">{m.committeeOverview()}</h1>
+	<div class="ml-3 flex-1">
+		<ManagedByDelegatorBadge conferenceId={page.params.conferenceId!} />
+	</div>
 	<div class="flex-none">
 		<CurrentTime />
 	</div>
@@ -37,7 +41,7 @@
 			href={resolve('/app/(launcher)')}
 			aria-label="Go back to app"
 		>
-			<i class="fa-duotone fa-home"></i>
+			<i aria-hidden="true" class="ph-duotone ph-house"></i>
 		</a>
 	</div>
 </div>

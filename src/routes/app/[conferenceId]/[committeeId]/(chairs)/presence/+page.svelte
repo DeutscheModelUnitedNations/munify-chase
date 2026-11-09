@@ -55,7 +55,7 @@
 				alpha3Code: true,
 				regionalGroup: true,
 				type: true,
-				faIcon: true
+				icon: true
 			}
 		},
 		conference: {
@@ -68,7 +68,7 @@
 					alpha2Code: true,
 					alpha3Code: true,
 					type: true,
-					faIcon: true
+					icon: true
 				}
 			}
 		}
@@ -116,12 +116,12 @@
 		{
 			id: false,
 			name: m.absent(),
-			faIcon: 'fa-xmark'
+			icon: 'x'
 		},
 		{
 			id: true,
 			name: m.present(),
-			faIcon: 'fa-check'
+			icon: 'check'
 		}
 	];
 
@@ -134,7 +134,7 @@
 			id: 'presence.roll-call',
 			title: activeSession ? m.resumeRollCall : m.rollCall,
 			group: 'page',
-			icon: activeSession ? 'rotate-right' : 'user-magnifying-glass',
+			icon: activeSession ? 'arrow-clockwise' : 'user-focus',
 			visible: () => !!committee,
 			run: openRollCall
 		}
@@ -171,7 +171,7 @@
 					<div class="flex flex-col gap-2">
 						{#if activeSession}
 							<div class="alert alert-info p-2 text-sm">
-								<i class="fas fa-circle-info"></i>
+								<i aria-hidden="true" class="ph-fill ph-info"></i>
 								<span>
 									{m.rollCallActiveAt({
 										index: activeSession.currentMemberIndex + 1,
@@ -180,12 +180,12 @@
 								</span>
 							</div>
 							<button class="btn btn-warning btn-xl" onclick={openRollCall}>
-								<i class="fas fa-rotate-right mr-2"></i>
+								<i aria-hidden="true" class="ph-fill ph-arrow-clockwise mr-2"></i>
 								{m.resumeRollCall()}
 							</button>
 						{:else}
 							<button class="btn btn-primary btn-xl" onclick={openRollCall}>
-								<i class="fas fa-user-magnifying-glass mr-2"></i>
+								<i aria-hidden="true" class="ph-fill ph-user-focus mr-2"></i>
 								{m.rollCall()}
 							</button>
 						{/if}
@@ -195,7 +195,9 @@
 								<summary
 									class="text-base-content/60 hover:text-base-content flex cursor-pointer select-none list-none items-center gap-1 text-sm transition-colors"
 								>
-									<i class="fas fa-chevron-right text-xs transition-transform group-open:rotate-90"
+									<i
+										aria-hidden="true"
+										class="ph-fill ph-caret-right text-xs transition-transform group-open:rotate-90"
 									></i>
 									{m.pastRollCalls({ count: pastSessions.length })}
 								</summary>
@@ -217,12 +219,12 @@
 												class="text-base-content/50 mt-0.5 flex items-center justify-between gap-2 text-xs"
 											>
 												<span>
-													<i class="fas fa-flag-checkered mr-1"></i>
+													<i aria-hidden="true" class="ph-fill ph-flag-checkered mr-1"></i>
 													{dayjs(session.completedAt).format('HH:mm')}
 												</span>
 												{#if session.startedBy}
 													<span class="truncate">
-														<i class="fas fa-user mr-1"></i>
+														<i aria-hidden="true" class="ph-fill ph-user mr-1"></i>
 														{session.startedBy.name ?? session.startedBy.userEmail}
 													</span>
 												{/if}
@@ -264,15 +266,19 @@
 									data-tip={translateRegionalGroupEnum(group)}
 								>
 									{#if group === 'AFRICA'}
-										<i class="fas fa-earth-africa text-blue-500"></i>
+										<i aria-hidden="true" class="ph-fill ph-globe-hemisphere-east text-blue-500"
+										></i>
 									{:else if group === 'ASIA_PACIFIC'}
-										<i class="fas fa-earth-asia text-green-500"></i>
+										<i aria-hidden="true" class="ph-fill ph-globe-hemisphere-east text-green-500"
+										></i>
 									{:else if group === 'EASTERN_EUROPE'}
-										<i class="fas fa-earth-europe text-red-500"></i>
+										<i aria-hidden="true" class="ph-fill ph-globe-hemisphere-east text-red-500"></i>
 									{:else if group === 'LATIN_AMERICA_CARIBBEAN'}
-										<i class="fas fa-earth-americas text-pink-500"></i>
+										<i aria-hidden="true" class="ph-fill ph-globe-hemisphere-west text-pink-500"
+										></i>
 									{:else if group === 'WESTERN_EUROPE_OTHERS'}
-										<i class="fas fa-earth-europe text-yellow-500"></i>
+										<i aria-hidden="true" class="ph-fill ph-globe-hemisphere-east text-yellow-500"
+										></i>
 									{/if}
 								</div>
 							{/if}

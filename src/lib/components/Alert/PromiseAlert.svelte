@@ -66,7 +66,7 @@
 						</div>
 						<div class="modal-actions flex w-full gap-2">
 							<AlertDialog.Cancel onclick={$alertDialogStore?.onClose} class="btn btn-lg flex-1">
-								<i class="fas fa-xmark"></i>
+								<i aria-hidden="true" class="ph-fill ph-x"></i>
 								{$alertDialogStore?.cancelText}
 								<Kbd hotkey="esc" size="sm" />
 							</AlertDialog.Cancel>
@@ -74,7 +74,7 @@
 								onclick={$alertDialogStore?.onConfirm}
 								class="btn btn-{$alertDialogStore?.confirmColor ?? 'primary'} btn-lg flex-1"
 							>
-								<i class="fas fa-check"></i>
+								<i aria-hidden="true" class="ph-fill ph-check"></i>
 								{$alertDialogStore?.confirmText}
 								<Kbd hotkey="enter" size="sm" class="text-base-content" />
 							</AlertDialog.Action>

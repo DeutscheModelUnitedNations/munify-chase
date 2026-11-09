@@ -34,12 +34,12 @@
 	const voteTypeTabs: {
 		id: 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED';
 		label: string;
-		faIcon: string;
+		icon: string;
 	}[] = $derived(
 		[
-			{ id: 'SHOW_OF_HANDS' as const, label: m.showOfHandsVoting(), faIcon: 'hand-wave' },
-			{ id: 'ROLL_CALL' as const, label: m.rollCallVoting(), faIcon: 'list-check' },
-			{ id: 'DEVICE_BASED' as const, label: m.deviceBasedVoting(), faIcon: 'mobile' }
+			{ id: 'SHOW_OF_HANDS' as const, label: m.showOfHandsVoting(), icon: 'hand-waving' },
+			{ id: 'ROLL_CALL' as const, label: m.rollCallVoting(), icon: 'list-checks' },
+			{ id: 'DEVICE_BASED' as const, label: m.deviceBasedVoting(), icon: 'device-mobile' }
 		].filter((tab) => tab.id !== 'DEVICE_BASED' || !isLocalConferenceActive())
 	);
 
@@ -112,7 +112,7 @@
 		>
 			{#snippet ListItem(option)}
 				<div class="flex items-center gap-2">
-					<i class="fas fa-box-ballot"></i>
+					<i aria-hidden="true" class="ph-fill ph-box-arrow-down"></i>
 					<span>{option.label}</span>
 				</div>
 			{/snippet}
@@ -123,7 +123,7 @@
 					aria-label="Clear selection"
 					onclick={() => (voteName = '')}
 				>
-					<i class="fas fa-trash"></i>
+					<i aria-hidden="true" class="ph-fill ph-trash"></i>
 				</button>
 			{/snippet}
 		</Combobox>
@@ -131,7 +131,7 @@
 	</fieldset>
 
 	<button class="btn btn-primary w-full" onclick={onstart} data-tour={tourAnchor('start')}>
-		<i class="fas fa-box-ballot"></i>
+		<i aria-hidden="true" class="ph-fill ph-box-arrow-down"></i>
 		{m.startVote()}
 	</button>
 </div>

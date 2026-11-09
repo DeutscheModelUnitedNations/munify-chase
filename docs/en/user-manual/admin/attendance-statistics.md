@@ -14,10 +14,10 @@ Two pages in the conference menu give Admins and Team Members a conference-wide 
 
 - **Not present**: NSAs not checked in anywhere and absent delegates, grouped by committee. This tab opens first.
 - **By committee**: presence per committee and live NSA check-ins, flagging anyone checked in for a long time without a checkout (a likely forgotten badge scan).
-- **By NSA**: every NSA person with their attendance code and current committee, plus **QR card**, **Print all cards** and **Export CSV**. See [NSA Management](./nsa-management#people-and-attendance-codes).
+- **By NSA**: every NSA person with their current committee, plus **QR card**, **Print all cards** and **Export CSV**. See [NSA Management](./nsa-management#people-and-attendance-codes).
 - **NSA history & corrections**: the full NSA check-in log with **Add entry** and an edit button per row for corrections.
 
-![The By NSA attendance tab with attendance codes, QR card buttons, and Print all cards](shot:admin/attendance-by-nsa)
+![The By NSA attendance tab with QR card buttons, and Print all cards](shot:admin/attendance-by-nsa)
 
 More in [Roll Call & Attendance](../chair/roll-call-attendance).
 

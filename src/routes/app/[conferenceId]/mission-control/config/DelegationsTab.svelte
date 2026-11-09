@@ -16,7 +16,7 @@
 		alpha2Code: string | null;
 		alpha3Code: string | null;
 		type: string;
-		faIcon: string | null;
+		icon: string | null;
 	}
 
 	interface Committee {
@@ -128,14 +128,14 @@
 										onclick={() => openEditModal(delegation)}
 										aria-label={m.edit()}
 									>
-										<i class="fas fa-pen text-sm"></i>
+										<i aria-hidden="true" class="ph-fill ph-pen text-sm"></i>
 									</button>
 									<button
 										class="btn btn-ghost btn-sm text-error"
 										onclick={() => deleteDelegation(delegation.id)}
 										aria-label={m.deleteRepresentation()}
 									>
-										<i class="fas fa-trash text-sm"></i>
+										<i aria-hidden="true" class="ph-fill ph-trash text-sm"></i>
 									</button>
 								</div>
 							</td>
@@ -148,7 +148,7 @@
 
 	<div class="mt-6">
 		<button class="btn btn-primary" onclick={() => (addCountriesModalOpen = true)}>
-			<i class="fas fa-plus"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus"></i>
 			{m.addRepresentation()}
 		</button>
 	</div>

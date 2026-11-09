@@ -1,7 +1,7 @@
 <script lang="ts" generics="T">
 	type Tab = {
 		id: T;
-		faIcon?: string;
+		icon?: string;
 		label?: string;
 		tooltip?: string;
 	};
@@ -24,7 +24,7 @@
 				: ''} h-auto items-center py-3 tooltip tooltip-bottom"
 			data-tip={tab.tooltip}
 			aria-selected={activeTab === tab.id}
-			aria-label={tab.label ?? tab.faIcon}
+			aria-label={tab.label ?? tab.icon}
 			tabindex={activeTab === tab.id ? 0 : -1}
 			onclick={() => {
 				if (activeTab === tab.id) return;
@@ -34,8 +34,8 @@
 				activeTab = tab.id;
 			}}
 		>
-			{#if tab.faIcon}
-				<i class="fa-solid fa-{tab.faIcon?.replace('fa-', '')} {tab.label ? 'sm:mr-2' : ''} text-lg"
+			{#if tab.icon}
+				<i aria-hidden="true" class="ph-fill ph-{tab.icon} {tab.label ? 'sm:mr-2' : ''} text-lg"
 				></i>
 			{/if}
 			{#if tab.label}

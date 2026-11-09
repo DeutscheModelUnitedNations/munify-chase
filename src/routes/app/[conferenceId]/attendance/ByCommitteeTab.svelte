@@ -73,7 +73,7 @@
 			userEmail: true,
 			name: true,
 			conferenceMember: {
-				representation: { name: true, faIcon: true }
+				representation: { name: true, icon: true }
 			}
 		}
 	});
@@ -116,7 +116,7 @@
 <div class="flex flex-col gap-4">
 	{#if conferenceTotals.total > 0}
 		<div class="text-base-content/70 flex items-center gap-2 px-1 text-sm">
-			<i class="fa-duotone fa-users-line"></i>
+			<i aria-hidden="true" class="ph-duotone ph-users-three"></i>
 			<span>{m.delegatePresence()}:</span>
 			<span class="font-semibold tabular-nums"
 				>{m.delegatesPresentOfTotal({
@@ -160,10 +160,10 @@
 					{#each list as event (event.id)}
 						{@const rep = event.conferenceUser?.conferenceMember?.representation}
 						<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
-							{#if rep?.faIcon}
-								<i class="fas {rep.faIcon} text-lg"></i>
+							{#if rep?.icon}
+								<i aria-hidden="true" class="ph-fill ph-{rep.icon} text-lg"></i>
 							{:else}
-								<i class="fas fa-user-tag text-lg"></i>
+								<i aria-hidden="true" class="ph-fill ph-identification-badge text-lg"></i>
 							{/if}
 							<span class="flex-1">
 								{event.conferenceUser?.name ?? event.conferenceUser?.userEmail ?? m.unknown()}
@@ -179,7 +179,9 @@
 									class="badge badge-warning"
 									title={m.forgottenCheckoutWarning({ hours: WARNING_HOURS })}
 								>
-									<i class="fas fa-triangle-exclamation"></i>
+									<i aria-hidden="true" class="ph-fill ph-warning"></i>
+									<span class="sr-only">{m.forgottenCheckoutWarning({ hours: WARNING_HOURS })}</span
+									>
 								</span>
 							{/if}
 						</li>

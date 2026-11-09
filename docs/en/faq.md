@@ -44,7 +44,7 @@ See the [self-hosting guide](https://munify.cloud/chase/selfhost/getting-started
 
 ## Is there a desktop app?
 
-Yes. CHASE ships a native desktop app for macOS, Windows, and Linux. Download the latest installer from the [GitHub releases page](https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest).
+Yes. CHASE ships a native desktop app for macOS, Windows, and Linux. Download the latest installer from the [download section on the home page](/#download). It picks the right file for your system, and all installers are also on the [GitHub releases page](https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest).
 
 The released desktop app connects to the CHASE server it was built for and keeps working when the connection drops for a moment. If you host CHASE yourself, use the web app in the browser, or build the desktop app with your own server address.
 

@@ -111,7 +111,7 @@
 	<div class="modal-box mx-auto mt-4 w-full max-w-xl p-0 sm:mt-0">
 		<Command.Root loop {filter} label={m.commandPaletteTitle()}>
 			<div class="border-base-300 flex items-center gap-3 border-b px-4">
-				<i class="fa-duotone fa-magnifying-glass opacity-60"></i>
+				<i aria-hidden="true" class="ph-duotone ph-magnifying-glass opacity-60"></i>
 				<Command.Input
 					bind:value={search}
 					placeholder={m.commandPalettePlaceholder()}
@@ -140,7 +140,10 @@
 										onSelect={() => run(command)}
 										class="rounded-field data-selected:bg-base-200 flex cursor-pointer items-center gap-3 px-3 py-2 data-disabled:cursor-not-allowed data-disabled:opacity-40"
 									>
-										<i class="fa-duotone fa-{command.icon ?? 'angle-right'} w-5 text-center"></i>
+										<i
+											aria-hidden="true"
+											class="ph-duotone ph-{command.icon ?? 'caret-right'} w-5 text-center"
+										></i>
 										<span class="flex-1">
 											{command.title()}
 											{#if command.context}

@@ -121,12 +121,12 @@
 		<!-- Summary -->
 		<div class="mb-4 flex flex-wrap gap-2">
 			<div class="badge badge-primary">
-				<i class="fa-duotone fa-check mr-1"></i>
+				<i aria-hidden="true" class="ph-duotone ph-check mr-1"></i>
 				{m.countriesRecognized({ count: parsedCountries.length })}
 			</div>
 			{#if unrecognizedStrings.length > 0}
 				<div class="badge badge-warning">
-					<i class="fa-duotone fa-question mr-1"></i>
+					<i aria-hidden="true" class="ph-duotone ph-question mr-1"></i>
 					{m.codesUnrecognized({ count: unrecognizedStrings.length })}
 				</div>
 			{/if}
@@ -167,7 +167,7 @@
 			{m.abort()}
 		</button>
 		<button class="btn btn-primary" onclick={handleSubmit} disabled={parsedCountries.length === 0}>
-			<i class="fa-solid fa-plus mr-1"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus mr-1"></i>
 			{m.addCountriesCount({ count: parsedCountries.length })}
 		</button>
 	</div>

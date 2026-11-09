@@ -220,25 +220,28 @@
 				context,
 				keywords,
 				group: 'page',
-				icon: 'rotate-left',
+				icon: 'arrow-counter-clockwise',
 				shortcut: resetShortcut,
 				enabled: hasSpeakers,
 				run: resetTimer
 			}
 		];
 	});
+
+	const noSpeakers = $derived(!speakersList?.speakers?.length);
 </script>
 
 <div class="flex gap-2">
 	<button
 		class="btn btn-lg join-item flex flex-1 gap-2
-			{!speakersList?.speakers?.length ? 'btn-disabled' : timerRunning ? 'bg-error' : 'bg-success'}"
+			{noSpeakers ? 'btn-disabled' : timerRunning ? 'bg-error' : 'bg-success'}"
+		disabled={noSpeakers}
 		onclick={toggleTimer}
 	>
 		{#if timerRunning}
-			<i class="fas fa-pause"></i>
+			<i aria-hidden="true" class="ph-fill ph-pause"></i>
 		{:else}
-			<i class="fas fa-play"></i>
+			<i aria-hidden="true" class="ph-fill ph-play"></i>
 		{/if}
 		{m.timer()}
 		<Kbd hotkey={timerShortcut} class="text-base-content" />
@@ -246,27 +249,32 @@
 	<div class="join">
 		<button
 			class="btn btn-lg join-item flex gap-2
-				{!speakersList?.speakers?.length ? 'btn-disabled' : 'btn-square'}"
-			aria-label="remove time"
+				{noSpeakers ? 'btn-disabled' : 'btn-square'}"
+			aria-label={m.commandSpeakersListRemoveTime()}
+			disabled={noSpeakers}
 			onclick={removeTime}
 		>
-			<i class="fas fa-minus"></i>
+			<i aria-hidden="true" class="ph-fill ph-minus"></i>
 		</button>
 		<button
 			class="btn btn-lg join-item flex gap-2
-				{!speakersList?.speakers?.length ? 'btn-disabled' : ''}"
+				{noSpeakers ? 'btn-disabled' : ''}"
+			disabled={noSpeakers}
 			onclick={resetTimer}
 		>
-			<i class="fas fa-rotate-left"></i>
+			<i aria-hidden="true" class="ph-fill ph-arrow-counter-clockwise"></i>
+			<!-- Named in words a voice user can say along with the shortcut shown -->
+			<span class="sr-only">{m.commandSpeakersListResetTimer()}</span>
 			<Kbd hotkey={resetShortcut} class="text-base-content" />
 		</button>
 		<button
 			class="btn btn-lg join-item flex gap-2
-				{!speakersList?.speakers?.length ? 'btn-disabled' : 'btn-square'}"
-			aria-label="add time"
+				{noSpeakers ? 'btn-disabled' : 'btn-square'}"
+			aria-label={m.commandSpeakersListAddTime()}
+			disabled={noSpeakers}
 			onclick={addTime}
 		>
-			<i class="fas fa-plus"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus"></i>
 		</button>
 	</div>
 </div>

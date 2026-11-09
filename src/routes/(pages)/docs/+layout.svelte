@@ -18,14 +18,14 @@
 
 	<div class="drawer-content min-w-0 pb-16 lg:pl-10">
 		<label for="docs-drawer" class="btn btn-sm btn-ghost mb-4 lg:hidden">
-			<i class="fa-duotone fa-bars"></i>
+			<i aria-hidden="true" class="ph-duotone ph-list"></i>
 			{m.docsMenu()}
 		</label>
 		{@render children()}
 	</div>
 
 	<div class="drawer-side z-40 lg:z-auto">
-		<label for="docs-drawer" aria-label={m.close()} class="drawer-overlay"></label>
+		<label for="docs-drawer" class="drawer-overlay"><span class="sr-only">{m.close()}</span></label>
 		<nav
 			class="bg-base-100 min-h-full w-72 p-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:min-h-0 lg:overflow-y-auto lg:p-0"
 			aria-label={m.homeDocsTitle()}

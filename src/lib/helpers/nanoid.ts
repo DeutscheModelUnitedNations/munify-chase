@@ -8,9 +8,8 @@ export const nanoid = customAlphabet(NANOID_ALPHABET, NANOID_LENGTH);
 
 const NANOID_RE = new RegExp(`^[${NANOID_ALPHABET}]{${NANOID_LENGTH}}$`);
 export const isValidNanoid = (id: string): boolean => NANOID_RE.test(id);
-export const nanoidValidation = z.string().transform((val) => {
-	if (isValidNanoid(val)) {
-		return val;
-	}
-	return nanoid();
-});
+/** The id a client chose for a row it creates (offline-first), or a fresh one when it chose none. */
+export const nanoidValidation = z
+	.string()
+	.optional()
+	.transform((val) => (val && isValidNanoid(val) ? val : nanoid()));

@@ -32,7 +32,7 @@
 			userEmail: true,
 			name: true,
 			conferenceMember: {
-				representation: { name: true, faIcon: true }
+				representation: { name: true, icon: true }
 			}
 		}
 	});
@@ -66,7 +66,7 @@
 			id: 'presence.scan-nsa',
 			title: m.scanNsaPerson,
 			group: 'page',
-			icon: 'qrcode',
+			icon: 'qr-code',
 			run: openScanner
 		}
 	]);
@@ -80,7 +80,7 @@
 <BasicCard title={m.nsaAttendance()} data-tour="presence.nsa">
 	<div class="flex flex-col gap-3">
 		<button class="btn btn-primary btn-xl" onclick={openScanner}>
-			<i class="fas fa-qrcode mr-2"></i>
+			<i aria-hidden="true" class="ph-fill ph-qr-code mr-2"></i>
 			{m.scanNsaPerson()}
 		</button>
 
@@ -91,10 +91,10 @@
 					<li
 						class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
 					>
-						{#if rep?.faIcon}
-							<i class="fas {rep.faIcon} text-xl"></i>
+						{#if rep?.icon}
+							<i aria-hidden="true" class="ph-fill ph-{rep.icon} text-xl"></i>
 						{:else}
-							<i class="fas fa-user-tag text-xl"></i>
+							<i aria-hidden="true" class="ph-fill ph-identification-badge text-xl"></i>
 						{/if}
 						<div class="flex flex-1 flex-col">
 							<h3 class="text-lg">
@@ -119,4 +119,4 @@
 	</div>
 </BasicCard>
 
-<NsaScannerDrawer bind:open={drawerOpen} {committeeId} />
+<NsaScannerDrawer bind:open={drawerOpen} {conferenceId} {committeeId} />

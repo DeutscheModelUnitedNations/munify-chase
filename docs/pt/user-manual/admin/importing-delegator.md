@@ -48,3 +48,14 @@ Um comité sem delegações só mostra um aviso.
 ## Concluir
 
 No último passo, **Editar**, os administradores globais clicam em **Criar Conferência**. É levado diretamente para o iniciador, onde a nova conferência já aparece. Qualquer pessoa pode clicar em **Baixar como JSON** para guardar o ficheiro, por exemplo para o entregar a um administrador global que o possa aplicar.
+
+## Ligar ao DELEGATOR
+
+Em vez de trocar ficheiros, o CHASE pode ser ligado a uma instância do MUNify DELEGATOR. Um administrador de sistema no DELEGATOR pede a ligação com o endereço desta instância; um Global Admin aprova-a aqui no launcher com o código de confirmação que ambos os lados mostram. A partir daí:
+
+- Cada conferência do DELEGATOR aparece aqui por si, com os seus comités, pontos da agenda, funções, equipa e, assim que a atribuição for publicada, os participantes. O launcher deixa de criar ou importar conferências.
+- O que vem do DELEGATOR altera-se lá: nomes, siglas, datas e pessoas não podem ser editados nem eliminados aqui. O estado das sessões, as definições de apresentação e tudo o que acrescentar localmente continuam a ser seus.
+- O DELEGATOR lê de volta a presença e as resoluções adotadas, e os documentos de trabalho aceites chegam aqui como rascunhos (marcados com **Do DELEGATOR, versão n**) até alguém os alterar aqui.
+- Desfazer a ligação, de qualquer um dos lados, termina tudo isto. Os registos ficam como registos locais normais.
+
+A importação de ficheiros e a exportação de presença continuam disponíveis em "avançado" para quando não há ligação.

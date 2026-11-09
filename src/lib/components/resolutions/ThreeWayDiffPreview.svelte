@@ -193,7 +193,7 @@
 		</div>
 	{:else if annotated.blocks.length === 0}
 		<div class="py-6 text-center font-sans text-base-content/50">
-			<i class="fa-solid fa-paragraph mb-2 text-2xl"></i>
+			<i aria-hidden="true" class="ph-fill ph-paragraph mb-2 text-2xl"></i>
 			<p>Empty clause</p>
 		</div>
 	{:else}

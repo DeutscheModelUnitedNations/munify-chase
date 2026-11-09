@@ -44,7 +44,7 @@
 	/>
 
 	<div class="bg-accent/15 border-accent/40 flex items-center gap-3 rounded-box border p-4 text-sm">
-		<i class="fa-solid fa-circle-info"></i>
+		<i aria-hidden="true" class="ph-fill ph-info"></i>
 		<div>
 			{m.uniqueDelegationsAcross({
 				delegations: totalDelegations,
@@ -79,7 +79,7 @@
 						class="btn btn-primary btn-sm"
 						onclick={() => onOpenAddCountries(committee.id)}
 					>
-						<i class="fa-solid fa-plus"></i>
+						<i aria-hidden="true" class="ph-fill ph-plus"></i>
 						{m.addCountry()}
 					</button>
 				</div>

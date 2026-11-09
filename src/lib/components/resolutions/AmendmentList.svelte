@@ -66,7 +66,7 @@
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true,
-					faIcon: true,
+					icon: true,
 					type: true
 				}
 			},
@@ -87,7 +87,7 @@
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true,
-					faIcon: true,
+					icon: true,
 					type: true
 				}
 			},
@@ -158,7 +158,7 @@
 		createdAt: true,
 		proposer: {
 			id: true,
-			representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+			representation: { name: true, alpha2Code: true, alpha3Code: true, icon: true, type: true }
 		},
 		sponsors: { id: true, amendmentId: true, committeeMember: { id: true } }
 	});
@@ -421,7 +421,7 @@
 					class="bg-warning/15 border-warning/40 text-warning-content flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm hover:brightness-95 active:brightness-90"
 					onclick={() => (activeTrigger = group.triggerId)}
 				>
-					<i class="fas fa-triangle-exclamation text-warning shrink-0"></i>
+					<i aria-hidden="true" class="ph-fill ph-warning text-warning shrink-0"></i>
 					<span class="flex-1">
 						<span class="font-semibold">
 							{group.items.length} amendment{group.items.length > 1 ? 's' : ''} need{group.items
@@ -432,7 +432,7 @@
 						after accepting
 						<span class="font-mono">{group.trigger?.documentNumber ?? 'amendment'}</span>
 					</span>
-					<i class="fas fa-chevron-right text-warning/60 shrink-0 text-xs"></i>
+					<i aria-hidden="true" class="ph-fill ph-caret-right text-warning/60 shrink-0 text-xs"></i>
 				</button>
 			{/each}
 		</div>
@@ -455,7 +455,7 @@
 					{:else if aiSortOrder.size > 0}
 						<AiIcon size="xs" />
 					{:else}
-						<i class="fas fa-wand-magic-sparkles"></i>
+						<i aria-hidden="true" class="ph-fill ph-magic-wand"></i>
 					{/if}
 					Sort by impact
 				</button>
@@ -478,13 +478,13 @@
 						<div class="flex items-center gap-1.5">
 							<span class="flex items-center gap-1.5 font-mono text-sm font-semibold">
 								{#if a.type === 'ADD'}
-									<i class="fas fa-plus"></i>
+									<i aria-hidden="true" class="ph-fill ph-plus"></i>
 								{:else if a.type === 'DELETE'}
-									<i class="fas fa-trash"></i>
+									<i aria-hidden="true" class="ph-fill ph-trash"></i>
 								{:else if a.type === 'ALTER_TEXT'}
-									<i class="fas fa-pen"></i>
+									<i aria-hidden="true" class="ph-fill ph-pen"></i>
 								{:else if a.type === 'ALTER_POSITION'}
-									<i class="fas fa-arrows-up-down"></i>
+									<i aria-hidden="true" class="ph-fill ph-arrows-down-up"></i>
 								{/if}
 								{#if a.documentNumber}
 									{a.documentNumber}
@@ -513,7 +513,8 @@
 								needed: String(minAmendmentSponsors)
 							})}
 							<i
-								class="fas fa-chevron-down text-[0.6rem] transition-transform duration-200"
+								aria-hidden="true"
+								class="ph-fill ph-caret-down text-[0.6rem] transition-transform duration-200"
 								class:rotate-180={sponsorsExpanded}
 							></i>
 						</button>
@@ -576,7 +577,7 @@
 									disabled={busyId === a.id || a.status === 'PENDING'}
 									onclick={() => present(a.id)}
 								>
-									<i class="fa-solid fa-eye"></i>
+									<i aria-hidden="true" class="ph-fill ph-eye"></i>
 									{m.present()}
 								</button>
 							{/if}
@@ -586,7 +587,7 @@
 									disabled={busyId === a.id || busyId === 'unpresent' || a.status === 'PENDING'}
 									onclick={() => startAmendmentVote(a)}
 								>
-									<i class="fas fa-person-booth"></i>
+									<i aria-hidden="true" class="ph-fill ph-check-square-offset"></i>
 									{m.startVote()}
 								</button>
 								<div class="dropdown dropdown-end join-item flex">
@@ -596,7 +597,7 @@
 										aria-label={m.decideManually()}
 										title={m.decideManually()}
 									>
-										<i class="fas fa-chevron-down"></i>
+										<i aria-hidden="true" class="ph-fill ph-caret-down"></i>
 									</button>
 									<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 									<ul
@@ -609,7 +610,7 @@
 												disabled={busyId === a.id}
 												onclick={() => (pendingDecision = { kind: 'consensus', amendmentId: a.id })}
 											>
-												<i class="fas fa-handshake"></i>
+												<i aria-hidden="true" class="ph-fill ph-handshake"></i>
 												{m.adoptByConsensus()}
 											</button>
 										</li>
@@ -619,7 +620,7 @@
 												disabled={busyId === a.id}
 												onclick={() => (pendingDecision = { kind: 'accept', amendmentId: a.id })}
 											>
-												<i class="fas fa-check"></i>
+												<i aria-hidden="true" class="ph-fill ph-check"></i>
 												{m.accept()}
 											</button>
 										</li>
@@ -629,7 +630,7 @@
 												disabled={busyId === a.id}
 												onclick={() => (pendingDecision = { kind: 'reject', amendmentId: a.id })}
 											>
-												<i class="fas fa-xmark"></i>
+												<i aria-hidden="true" class="ph-fill ph-x"></i>
 												{m.reject()}
 											</button>
 										</li>
@@ -675,17 +676,19 @@
 
 			<div class="text-base-content/70 mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
 				<span
-					><i class="fas fa-check text-success"></i>
+					><i aria-hidden="true" class="ph-fill ph-check text-success"></i>
 					{voteOutcome.result.votesFor}
 					{m.votesFor()}</span
 				>
 				<span
-					><i class="fas fa-xmark text-error"></i>
+					><i aria-hidden="true" class="ph-fill ph-x text-error"></i>
 					{voteOutcome.result.votesAgainst}
 					{m.votesAgainst()}</span
 				>
 				<span
-					><i class="fas fa-minus"></i> {voteOutcome.result.votesAbstain} {m.votesAbstain()}</span
+					><i aria-hidden="true" class="ph-fill ph-minus"></i>
+					{voteOutcome.result.votesAbstain}
+					{m.votesAbstain()}</span
 				>
 			</div>
 

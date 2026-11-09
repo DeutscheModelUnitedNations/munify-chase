@@ -19,7 +19,7 @@
 				name?: string | null;
 				alpha2Code?: string | null;
 				alpha3Code?: string | null;
-				faIcon?: string | null;
+				icon?: string | null;
 				type?: string | null;
 			} | null;
 		}>;
@@ -220,7 +220,7 @@
 				setPresence(false);
 			}}
 		>
-			<i class="fas fa-xmark"></i>
+			<i aria-hidden="true" class="ph-fill ph-x"></i>
 			{m.absent()}
 			<Kbd hotkey="J" />
 		</button>
@@ -234,7 +234,7 @@
 					syncIndex(newIndex);
 				}}
 			>
-				<i class="fas fa-chevron-up"></i>
+				<i aria-hidden="true" class="ph-fill ph-caret-up"></i>
 			</button>
 			<button
 				class="btn btn-outline btn-lg join-item"
@@ -245,7 +245,7 @@
 					syncIndex(newIndex);
 				}}
 			>
-				<i class="fas fa-chevron-down"></i>
+				<i aria-hidden="true" class="ph-fill ph-caret-down"></i>
 			</button>
 		</div>
 		<button
@@ -254,7 +254,7 @@
 				setPresence(true);
 			}}
 		>
-			<i class="fas fa-check"></i>
+			<i aria-hidden="true" class="ph-fill ph-check"></i>
 			{m.present()}
 			<Kbd hotkey="L" />
 		</button>
@@ -267,7 +267,7 @@
 					active = false;
 				}}
 			>
-				<i class="fa-duotone fa-xmark"></i>
+				<i aria-hidden="true" class="ph-duotone ph-x"></i>
 			</button>
 		</div>
 	</div></Modal

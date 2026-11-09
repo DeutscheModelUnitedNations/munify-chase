@@ -39,6 +39,6 @@
 		onclick={dismiss}
 		aria-label={m.close()}
 	>
-		<i class="fas fa-xmark"></i>
+		<i aria-hidden="true" class="ph-fill ph-x"></i>
 	</button>
 </div>

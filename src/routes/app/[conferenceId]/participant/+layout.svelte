@@ -33,7 +33,7 @@
 				alpha2Code: true,
 				alpha3Code: true,
 				type: true,
-				faIcon: true
+				icon: true
 			}
 		},
 		conferenceMember: {
@@ -43,7 +43,7 @@
 				name: true,
 				alpha3Code: true,
 				type: true,
-				faIcon: true
+				icon: true
 			}
 		}
 	});

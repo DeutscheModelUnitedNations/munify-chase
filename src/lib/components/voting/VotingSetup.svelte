@@ -20,7 +20,7 @@
 					name?: string | null;
 					alpha2Code?: string | null;
 					alpha3Code?: string | null;
-					faIcon?: string | null;
+					icon?: string | null;
 					type?: string | null;
 				} | null;
 			}>;
@@ -62,7 +62,7 @@
 			id: 'voting.start',
 			title: m.startVote,
 			group: 'page',
-			icon: 'box-ballot',
+			icon: 'box-arrow-down',
 			visible: () => !activeVotingSession,
 			run: startVote
 		},
@@ -70,7 +70,7 @@
 			id: 'voting.resume',
 			title: m.resumeVote,
 			group: 'page',
-			icon: 'rotate-right',
+			icon: 'arrow-clockwise',
 			visible: () => !!activeVotingSession,
 			run: openResume
 		}
@@ -97,11 +97,11 @@
 {#if activeVotingSession}
 	<div class="flex flex-col gap-3" data-tour="voting.resume">
 		<div class="alert alert-warning p-2 text-sm">
-			<i class="fas fa-circle-exclamation"></i>
+			<i aria-hidden="true" class="ph-fill ph-warning-circle"></i>
 			<span>{m.voteInProgress()}</span>
 		</div>
 		<button class="btn btn-warning btn-xl" onclick={openResume}>
-			<i class="fas fa-rotate-right mr-2"></i>
+			<i aria-hidden="true" class="ph-fill ph-arrow-clockwise mr-2"></i>
 			{m.resumeVote()}
 		</button>
 	</div>

@@ -7,7 +7,7 @@
 
 <!-- Robot icon with a spinning orbit arc to signal an active AI process -->
 <span class="ai-spinner ai-spinner--{size}" aria-label="AI processing" role="status">
-	<i class="fas fa-robot"></i>
+	<i aria-hidden="true" class="ph-fill ph-robot"></i>
 </span>
 
 <style>

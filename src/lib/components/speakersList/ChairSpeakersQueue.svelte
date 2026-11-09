@@ -21,7 +21,7 @@
 				name?: string | null;
 				alpha2Code?: string | null;
 				alpha3Code?: string | null;
-				faIcon?: string | null;
+				icon?: string | null;
 				type?: string | null;
 			} | null;
 		} | null;
@@ -31,7 +31,7 @@
 				name?: string | null;
 				alpha2Code?: string | null;
 				alpha3Code?: string | null;
-				faIcon?: string | null;
+				icon?: string | null;
 				type?: string | null;
 			} | null;
 		} | null;
@@ -111,14 +111,14 @@
 						aria-label="Delete Speaker"
 						onclick={() => removeSpeaker(speaker.id)}
 					>
-						<i class="fa-solid fa-trash"></i>
+						<i aria-hidden="true" class="ph-fill ph-trash"></i>
 					</button>
 					<button
 						class="btn btn-sm join-item btn-square btn-soft btn-primary"
 						aria-label="Move Speaker Up"
 						onclick={() => moveSpeaker(speaker.id, currentPosition(speaker.id) - 1)}
 					>
-						<i class="fa-solid fa-chevron-up"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-up"></i>
 					</button>
 					{#if i < speakers.length - 1}
 						<button
@@ -126,7 +126,7 @@
 							aria-label="Move Speaker Down"
 							onclick={() => moveSpeaker(speaker.id, currentPosition(speaker.id) + 1)}
 						>
-							<i class="fa-solid fa-chevron-down"></i>
+							<i aria-hidden="true" class="ph-fill ph-caret-down"></i>
 						</button>
 					{/if}
 					<button
@@ -134,7 +134,7 @@
 						aria-label="Move Speaker to Top"
 						onclick={() => moveSpeaker(speaker.id, 0)}
 					>
-						<i class="fa-solid fa-chevrons-up"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-double-up"></i>
 					</button>
 					{#if i < speakers.length - 1}
 						<button
@@ -142,7 +142,7 @@
 							aria-label="Move Speaker to Bottom"
 							onclick={() => moveSpeaker(speaker.id, bottomPosition)}
 						>
-							<i class="fa-solid fa-chevrons-down"></i>
+							<i aria-hidden="true" class="ph-fill ph-caret-double-down"></i>
 						</button>
 					{/if}
 				</div>
@@ -152,6 +152,6 @@
 		<StripesAlert badgeText={m.listEmpty()} />
 	{/if}
 	{#if closed}
-		<StripesAlert badgeColor="error" stripeColor="error" faIcon="lock" badgeText={m.listClosed()} />
+		<StripesAlert badgeColor="error" stripeColor="error" icon="lock" badgeText={m.listClosed()} />
 	{/if}
 </div>

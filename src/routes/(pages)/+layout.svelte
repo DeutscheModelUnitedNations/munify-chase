@@ -11,7 +11,9 @@
 		<Navbar />
 	{/if}
 
-	{@render children()}
+	<main id="main-content" tabindex="-1">
+		{@render children()}
+	</main>
 
 	{#if !isTauri()}
 		<Footer />

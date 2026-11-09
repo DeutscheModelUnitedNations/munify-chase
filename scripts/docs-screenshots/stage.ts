@@ -26,10 +26,10 @@ export const STAGE = {
 	commentSpeakers: ['US', 'AR'],
 	// Named like the app's default set, in the language being captured
 	requestTypes: [
-		{ message: 'requestTypeRightToInformation', faIcon: 'fa-circle-info', delegatesOnly: false },
-		{ message: 'requestTypeRollCallVote', faIcon: 'fa-bullhorn', delegatesOnly: false },
-		{ message: 'requestTypeInformalSession', faIcon: 'fa-comments', delegatesOnly: false },
-		{ message: 'requestTypeEndDebate', faIcon: 'fa-flag-checkered', delegatesOnly: true }
+		{ message: 'requestTypeRightToInformation', icon: 'info', delegatesOnly: false },
+		{ message: 'requestTypeRollCallVote', icon: 'megaphone', delegatesOnly: false },
+		{ message: 'requestTypeInformalSession', icon: 'chats', delegatesOnly: false },
+		{ message: 'requestTypeEndDebate', icon: 'flag-checkered', delegatesOnly: true }
 	],
 	// country -> index into requestTypes
 	pendingRequests: [
@@ -38,9 +38,9 @@ export const STAGE = {
 		['DE', 1]
 	],
 	nsaPeople: [
-		{ name: 'Lena Fischer', email: 'l.fischer@icrc.dev', code: 'K7M2QX', checkedIn: true },
-		{ name: 'Tomás Ribeiro', email: 't.ribeiro@icrc.dev', code: 'P4W9HN', checkedIn: false },
-		{ name: 'Amara Okafor', email: 'a.okafor@icrc.dev', code: 'R3T8ZD', checkedIn: false }
+		{ name: 'Lena Fischer', email: 'l.fischer@icrc.dev', checkedIn: true },
+		{ name: 'Tomás Ribeiro', email: 't.ribeiro@icrc.dev', checkedIn: false },
+		{ name: 'Amara Okafor', email: 'a.okafor@icrc.dev', checkedIn: false }
 	],
 	// country, minutes ago it ended, seconds spoken
 	speeches: [
@@ -295,8 +295,7 @@ export async function stage(t?: Translate): Promise<StageIds> {
 				conferenceUserType: 'NON_STATE_ACTOR',
 				userEmail: person.email,
 				name: person.name,
-				conferenceMemberId: icrc.id,
-				attendanceCode: person.code
+				conferenceMemberId: icrc.id
 			})
 			.returning();
 		if (person.checkedIn) {

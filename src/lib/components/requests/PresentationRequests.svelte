@@ -10,13 +10,13 @@
 		name?: string | null;
 		alpha2Code?: string | null;
 		alpha3Code?: string | null;
-		faIcon?: string | null;
+		icon?: string | null;
 		type?: string | null;
 	};
 
 	export type PresentationRequest = {
 		id: string;
-		requestType?: { name: string; faIcon?: string | null } | null;
+		requestType?: { name: string; icon?: string | null } | null;
 		representation: Representation | null;
 	};
 
@@ -44,7 +44,7 @@
 
 <div class="flex h-full min-h-0 w-full flex-col gap-3">
 	<div class="flex shrink-0 items-center gap-3">
-		<i class="fa-duotone fa-hand text-warning text-2xl"></i>
+		<i aria-hidden="true" class="ph-duotone ph-hand text-warning text-2xl"></i>
 		<h2 class="flex-1 text-xl font-bold">{m.requests()}</h2>
 		<span class="badge badge-warning badge-lg font-bold tabular-nums">{requests.length}</span>
 	</div>
@@ -59,10 +59,8 @@
 				out:fly={queueOut}
 			>
 				<i
-					class="fas fa-{(req.requestType?.faIcon ?? 'fa-flag').replace(
-						'fa-',
-						''
-					)} w-6 shrink-0 text-center text-lg"
+					aria-hidden="true"
+					class="ph-fill ph-{req.requestType?.icon ?? 'flag'} w-6 shrink-0 text-center text-lg"
 				></i>
 				<Flag representation={req.representation} size="xs" />
 				<div class="flex min-w-0 flex-col leading-tight">

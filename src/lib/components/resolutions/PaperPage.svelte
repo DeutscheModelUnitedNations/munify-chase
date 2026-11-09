@@ -31,6 +31,7 @@
 	import ClausePresenceBadges from './ClausePresenceBadges.svelte';
 
 	import SyncBadge from './SyncBadge.svelte';
+	import DelegatorOriginBadge from './DelegatorOriginBadge.svelte';
 	import ChairControlBar from './ChairControlBar.svelte';
 	import ClauseContextPanel from './ClauseContextPanel.svelte';
 	import CommitteePhaseToggles from './CommitteePhaseToggles.svelte';
@@ -112,6 +113,8 @@
 		status: true,
 		documentNumber: true,
 		updatedAt: true,
+		delegatorVersion: true,
+		detachedAt: true,
 		committee: { id: true },
 		agendaItem: { id: true, title: true },
 		creatorCommitteeMember: {
@@ -522,7 +525,7 @@
 		clauseEl.append(setCurrentBtn);
 
 		function renderHandle(_cc: number, _ac: number) {
-			return '<i class="fas fa-chevron-right"></i>';
+			return '<i aria-hidden="true" class="ph-fill ph-caret-right"></i>';
 		}
 
 		type BtnState = 'hidden' | 'next' | 'other';
@@ -545,12 +548,12 @@
 				setCurrentBtn.style.display = '';
 				setCurrentBtn.className =
 					'clause-set-current-btn clause-set-current-btn--next btn btn-xs btn-success gap-1';
-				setCurrentBtn.innerHTML = `<i class="fas fa-play"></i>${m.setAsCurrentClause()}`;
+				setCurrentBtn.innerHTML = `<i aria-hidden="true" class="ph-fill ph-play"></i>${m.setAsCurrentClause()}`;
 			} else {
 				setCurrentBtn.style.display = '';
 				setCurrentBtn.className =
 					'clause-set-current-btn clause-set-current-btn--other btn btn-xs btn-ghost gap-1';
-				setCurrentBtn.innerHTML = '<i class="fas fa-play"></i>';
+				setCurrentBtn.innerHTML = '<i aria-hidden="true" class="ph-fill ph-play"></i>';
 			}
 		}
 
@@ -777,7 +780,7 @@
 			id: 'paper.chair.history',
 			title: m.documentHistory,
 			group: 'page',
-			icon: 'clock-rotate-left',
+			icon: 'clock-counter-clockwise',
 			visible: () => team,
 			run: openHistory
 		},
@@ -833,7 +836,7 @@
 			id: 'paper.participant.submit',
 			title: m.commandSubmitPaper,
 			group: 'page',
-			icon: 'paper-plane',
+			icon: 'paper-plane-tilt',
 			visible: () => !team && status === 'WORKING_PAPER' && isCreator,
 			enabled: () => !submitting,
 			run: openSubmitConfirm
@@ -842,7 +845,7 @@
 			id: 'paper.participant.share-codes',
 			title: m.shareCodes,
 			group: 'page',
-			icon: 'share-nodes',
+			icon: 'share-network',
 			visible: () => !team && status === 'WORKING_PAPER' && isCreator,
 			run: openShareCodes
 		},
@@ -850,7 +853,7 @@
 			id: 'paper.participant.sponsors',
 			title: m.sponsors,
 			group: 'page',
-			icon: 'users-gear',
+			icon: 'user-gear',
 			visible: () => !team,
 			run: toggleSponsors
 		},
@@ -890,7 +893,7 @@
 		<header class="bg-base-200 flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
 			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- backHref is a pre-resolved prop -->
 			<a class="btn btn-ghost btn-sm" href={backHref} aria-label={m.back()}>
-				<i class="fas fa-arrow-left"></i>
+				<i aria-hidden="true" class="ph-fill ph-arrow-left"></i>
 			</a>
 			<div class="min-w-0">
 				{#if editingDocNum && team}
@@ -923,7 +926,7 @@
 								title="Set document number"
 								onclick={startEditingDocNum}
 							>
-								<i class="fas fa-pen text-xs"></i>
+								<i aria-hidden="true" class="ph-fill ph-pen text-xs"></i>
 							</button>
 						{/if}
 					</div>
@@ -972,7 +975,7 @@
 						yClient?.store.snapshot &&
 						downloadResolutionTypst(yClient.store.snapshot, headerData, paper?.documentNumber)}
 				>
-					<i class="fas fa-file-code"></i>
+					<i aria-hidden="true" class="ph-fill ph-file-code"></i>
 				</button>
 				<button
 					type="button"
@@ -985,7 +988,7 @@
 					{#if isExportingPdf}
 						<span class="loading loading-spinner loading-xs"></span>
 					{:else}
-						<i class="fas fa-file-pdf"></i>
+						<i aria-hidden="true" class="ph-fill ph-file-pdf"></i>
 					{/if}
 				</button>
 				{#if yClient && yClient.remotePresences.length > 0}
@@ -994,10 +997,14 @@
 						onclick={() => (presenceOpen = true)}
 						title="Co-editors"
 					>
-						<i class="fas fa-users"></i>
+						<i aria-hidden="true" class="ph-fill ph-users"></i>
 						{yClient.remotePresences.length}
 					</button>
 				{/if}
+				<DelegatorOriginBadge
+					delegatorVersion={paper?.delegatorVersion}
+					detached={paper?.detachedAt != null}
+				/>
 				{#if yClient}
 					<SyncBadge
 						connectionState={yClient.connectionState}
@@ -1012,7 +1019,7 @@
 						onclick={openShareCodes}
 						title={m.shareCodes()}
 					>
-						<i class="fas fa-share-nodes"></i>
+						<i aria-hidden="true" class="ph-fill ph-share-network"></i>
 						{m.shareCodes()}
 					</button>
 				{/if}
@@ -1022,13 +1029,13 @@
 					onclick={toggleSponsors}
 					title={m.sponsors()}
 				>
-					<i class="fas fa-users-gear"></i>
+					<i aria-hidden="true" class="ph-fill ph-user-gear"></i>
 					{m.sponsors()}
 				</button>
 				{#if team}
 					<div class="dropdown dropdown-end">
 						<button tabindex="0" class="btn btn-ghost btn-sm" title="Committee settings">
-							<i class="fas fa-gear"></i>
+							<i aria-hidden="true" class="ph-fill ph-gear"></i>
 						</button>
 						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 						<div
@@ -1049,7 +1056,7 @@
 						onclick={openAiSettings}
 						title={m.aiOnboardingOpenSettings()}
 					>
-						<i class="fas fa-robot"></i>
+						<i aria-hidden="true" class="ph-fill ph-robot"></i>
 					</button>
 					<button
 						class="btn btn-ghost btn-sm"
@@ -1057,7 +1064,7 @@
 						onclick={openHistory}
 						title={m.documentHistory()}
 					>
-						<i class="fas fa-clock-rotate-left"></i>
+						<i aria-hidden="true" class="ph-fill ph-clock-counter-clockwise"></i>
 					</button>
 					<button
 						class="btn btn-sm"
@@ -1067,7 +1074,7 @@
 						onclick={toggleActiveDr}
 						title={activeDrBlocker ?? (isActiveDr ? m.activeDraftResolution() : m.setActiveDr())}
 					>
-						<i class="fas fa-star"></i>
+						<i aria-hidden="true" class="ph-fill ph-star"></i>
 						{isActiveDr ? m.activeDraftResolution() : m.setActiveDr()}
 					</button>
 				{/if}
@@ -1078,7 +1085,7 @@
 						disabled={submitting}
 						onclick={openSubmitConfirm}
 					>
-						<i class="fas fa-paper-plane"></i>
+						<i aria-hidden="true" class="ph-fill ph-paper-plane-tilt"></i>
 						{m.submit()}
 					</button>
 				{/if}
@@ -1091,7 +1098,7 @@
 				role="status"
 				class="bg-warning/10 border-warning/30 flex items-center gap-2 border-b px-4 py-2 text-sm"
 			>
-				<i class="fas fa-lock text-warning shrink-0"></i>
+				<i aria-hidden="true" class="ph-fill ph-lock text-warning shrink-0"></i>
 				<span>{m.paperLockedAfterSubmission()}</span>
 			</div>
 		{/if}
@@ -1116,14 +1123,14 @@
 					>
 						<div class="border-base-300 flex items-center justify-between border-b px-3 py-2">
 							<span class="text-sm font-semibold">
-								<i class="fa-solid fa-eye mr-1.5"></i>{m.resolutionPreview()}
+								<i aria-hidden="true" class="ph-fill ph-eye mr-1.5"></i>{m.resolutionPreview()}
 							</span>
 							<button
 								class="btn btn-ghost btn-xs"
 								title={m.resolutionHidePreview()}
 								onclick={hidePreview}
 							>
-								<i class="fas fa-chevron-left"></i>
+								<i aria-hidden="true" class="ph-fill ph-caret-left"></i>
 							</button>
 						</div>
 						{#if browser && yClient}
@@ -1161,7 +1168,7 @@
 							title={m.resolutionShowPreview()}
 							onclick={showPreview}
 						>
-							<i class="fas fa-chevron-right"></i>
+							<i aria-hidden="true" class="ph-fill ph-caret-right"></i>
 						</button>
 					</div>
 				{/if}
@@ -1270,7 +1277,7 @@
 							suggestRemoveClauseId = null;
 						}}
 					>
-						<i class="fas fa-trash"></i>
+						<i aria-hidden="true" class="ph-fill ph-trash"></i>
 						{m.removeClause()}
 					</button>
 				</div>
@@ -1302,7 +1309,7 @@
 							await setCurrentClause(idx);
 						}}
 					>
-						<i class="fas fa-play"></i>
+						<i aria-hidden="true" class="ph-fill ph-play"></i>
 						{m.selectOutOfOrderConfirm()}
 					</button>
 				</div>
@@ -1326,7 +1333,8 @@
 						{m.cancel()}
 					</button>
 					<button class="btn btn-primary" disabled={submitting} onclick={submitPaper}>
-						{#if submitting}<i class="fas fa-spinner fa-spin"></i>{/if}
+						{#if submitting}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"
+							></i>{/if}
 						{m.submit()}
 					</button>
 				</div>
@@ -1350,7 +1358,7 @@
 						onclick={() => (shareOpen = false)}
 						aria-label={m.close()}
 					>
-						<i class="fas fa-xmark"></i>
+						<i aria-hidden="true" class="ph-fill ph-x"></i>
 					</button>
 				</div>
 				<div class="px-4">
@@ -1368,14 +1376,14 @@
 			<div class="modal-box">
 				<div class="mb-3 flex items-center justify-between">
 					<h3 class="text-lg font-bold">
-						<i class="fas fa-users mr-2"></i>Co-editors
+						<i aria-hidden="true" class="ph-fill ph-users mr-2"></i>Co-editors
 					</h3>
 					<button
 						class="btn btn-ghost btn-sm"
 						onclick={() => (presenceOpen = false)}
 						aria-label={m.close()}
 					>
-						<i class="fas fa-xmark"></i>
+						<i aria-hidden="true" class="ph-fill ph-x"></i>
 					</button>
 				</div>
 				<div class="px-1">
@@ -1398,7 +1406,7 @@
 						onclick={() => (detailsOpen = false)}
 						aria-label={m.close()}
 					>
-						<i class="fas fa-xmark"></i>
+						<i aria-hidden="true" class="ph-fill ph-x"></i>
 					</button>
 				</div>
 				<div class="space-y-4 px-4">
@@ -1447,7 +1455,7 @@
 				<div
 					class="flex w-56 items-center gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs"
 				>
-					<i class="fas fa-circle-check text-success shrink-0"></i>
+					<i aria-hidden="true" class="ph-fill ph-check-circle text-success shrink-0"></i>
 					<div class="min-w-0">
 						<p class="font-medium">AI model ready</p>
 						{#if aiModelId}
@@ -1459,7 +1467,7 @@
 				<div
 					class="flex w-56 items-start gap-2 rounded-xl border border-base-300 bg-base-100 p-3 shadow-lg text-xs"
 				>
-					<i class="fas fa-microchip opacity-40 mt-0.5 shrink-0"></i>
+					<i aria-hidden="true" class="ph-fill ph-cpu opacity-40 mt-0.5 shrink-0"></i>
 					<div>
 						<p class="font-medium">AI features unavailable</p>
 						<p class="opacity-50 mt-0.5">{aiDisabledReason}</p>
@@ -1470,7 +1478,7 @@
 	{/if}
 {:else}
 	<div class="flex h-full w-full items-center justify-center">
-		<i class="fas fa-spinner fa-spin text-3xl opacity-50"></i>
+		<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin text-3xl opacity-50"></i>
 	</div>
 {/if}
 
@@ -1520,7 +1528,7 @@
 				<div class="flex items-center gap-1" class:opacity-100={selectedClauseId === clause.id}>
 					{#if isCurrent && isDebatePhase}
 						<button class="btn btn-xs btn-secondary gap-1" onclick={() => selectClause(clause.id)}>
-							<i class="fas fa-caret-right"></i>{m.currentClause()}
+							<i aria-hidden="true" class="ph-fill ph-caret-right"></i>{m.currentClause()}
 						</button>
 					{/if}
 					{#if outcome}
@@ -1539,7 +1547,7 @@
 									? selectClauseAndOpenReview(clause.id)
 									: selectClauseWithTab(clause.id, 'amendments')}
 						>
-							<i class="fas fa-pen-nib"></i>{ac}
+							<i aria-hidden="true" class="ph-fill ph-pen-nib"></i>{ac}
 							{#if hasReview}<span class="badge badge-error badge-xs absolute -right-1 -top-1"
 									>!</span
 								>{/if}
@@ -1550,7 +1558,7 @@
 							aria-label={m.goToReview()}
 							onclick={() => selectClauseAndOpenReview(clause.id)}
 						>
-							<i class="fas fa-triangle-exclamation"></i>
+							<i aria-hidden="true" class="ph-fill ph-warning"></i>
 						</button>
 					{/if}
 					{#if cc}
@@ -1558,7 +1566,7 @@
 							class="btn btn-xs gap-1"
 							onclick={() => selectClauseWithTab(clause.id, 'comments')}
 						>
-							<i class="fas fa-comment"></i>{cc}
+							<i aria-hidden="true" class="ph-fill ph-chat"></i>{cc}
 						</button>
 					{/if}
 				</div>

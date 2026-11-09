@@ -7,11 +7,12 @@
 	import { promiseToastStrings } from '#lib/utils/toast';
 	import { getDefaultRequestTypes } from '#lib/data/defaultRequestTypes';
 	import ConfirmModal from '#lib/components/ConfirmModal.svelte';
+	import IconPicker from '#lib/components/IconPicker.svelte';
 
 	interface RequestType {
 		id: string;
 		name: string;
-		faIcon: string | null;
+		icon: string | null;
 		priority: number;
 		enabled: boolean;
 		delegatesOnly: boolean;
@@ -43,7 +44,7 @@
 							id: nanoid(),
 							conferenceId,
 							name: rt.name,
-							faIcon: rt.faIcon,
+							icon: rt.icon,
 							delegatesOnly: rt.delegatesOnly
 						},
 						id: true
@@ -60,7 +61,7 @@
 	async function addRequestType() {
 		await toast.promise(
 			client.mutate.createRequestType({
-				__args: { id: nanoid(), conferenceId, name: '', faIcon: 'fa-flag' },
+				__args: { id: nanoid(), conferenceId, name: '', icon: 'flag' },
 				id: true
 			}),
 			promiseToastStrings(m.requestTypes(), 'create')
@@ -75,9 +76,9 @@
 		);
 	}
 
-	async function updateIcon(id: string, faIcon: string) {
+	async function updateIcon(id: string, icon: string) {
 		await toast.promise(
-			client.mutate.updateRequestType({ __args: { id, faIcon }, id: true }),
+			client.mutate.updateRequestType({ __args: { id, icon }, id: true }),
 			promiseToastStrings(m.requestTypes(), 'update')
 		);
 	}
@@ -136,7 +137,6 @@
 			<thead>
 				<tr>
 					<th></th>
-					<th></th>
 					<th>{m.icon()}</th>
 					<th>{m.name()}</th>
 					<th>{m.enabled()}</th>
@@ -148,7 +148,7 @@
 			<tbody>
 				{#if sorted.length === 0}
 					<tr>
-						<td colspan="8" class="text-base-content/60 text-center">{m.noData()}</td>
+						<td colspan="7" class="text-base-content/60 text-center">{m.noData()}</td>
 					</tr>
 				{:else}
 					{#each sorted as rt, i (rt.id)}
@@ -162,7 +162,7 @@
 										disabled={i === 0}
 										onclick={() => moveRequestType(i, -1)}
 									>
-										<i class="fa-solid fa-chevron-up"></i>
+										<i aria-hidden="true" class="ph-fill ph-caret-up"></i>
 									</button>
 									<button
 										type="button"
@@ -171,20 +171,15 @@
 										disabled={i === sorted.length - 1}
 										onclick={() => moveRequestType(i, 1)}
 									>
-										<i class="fa-solid fa-chevron-down"></i>
+										<i aria-hidden="true" class="ph-fill ph-caret-down"></i>
 									</button>
 								</div>
 							</td>
-							<td class="w-8">
-								<i class="fas fa-{(rt.faIcon ?? 'fa-flag').replace('fa-', '')}"></i>
-							</td>
-							<td class="w-32">
-								<input
-									type="text"
-									class="input input-bordered input-sm w-full font-mono text-xs"
-									value={rt.faIcon ?? ''}
-									placeholder={m.icon()}
-									onchange={(e) => updateIcon(rt.id, e.currentTarget.value)}
+							<td class="w-12">
+								<IconPicker
+									value={rt.icon}
+									triggerClass="btn btn-sm btn-square"
+									onchange={(icon) => updateIcon(rt.id, icon)}
 								/>
 							</td>
 							<td>
@@ -229,7 +224,7 @@
 									onclick={() => requestDelete(rt.id)}
 									aria-label={m.delete()}
 								>
-									<i class="fas fa-trash text-sm"></i>
+									<i aria-hidden="true" class="ph-fill ph-trash text-sm"></i>
 								</button>
 							</td>
 						</tr>
@@ -241,11 +236,11 @@
 
 	<div class="mt-6 flex gap-2">
 		<button class="btn btn-primary" disabled={loadingDefaults} onclick={loadDefaults}>
-			<i class="fas fa-wand-magic-sparkles"></i>
+			<i aria-hidden="true" class="ph-fill ph-magic-wand"></i>
 			{m.loadDefaultRequestTypes()}
 		</button>
 		<button class="btn btn-ghost" onclick={addRequestType}>
-			<i class="fas fa-plus"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus"></i>
 			{m.addRequestType()}
 		</button>
 	</div>

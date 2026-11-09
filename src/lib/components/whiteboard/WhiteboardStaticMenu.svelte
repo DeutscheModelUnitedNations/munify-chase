@@ -38,19 +38,19 @@
 		[
 			{
 				label: m.h1(),
-				icon: 'fa-1',
+				icon: 'number-one',
 				command: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
 				active: () => editor.isActive('heading', { level: 2 })
 			},
 			{
 				label: m.h2(),
-				icon: 'fa-2',
+				icon: 'number-two',
 				command: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
 				active: () => editor.isActive('heading', { level: 3 })
 			},
 			{
 				label: m.h3(),
-				icon: 'fa-3',
+				icon: 'number-three',
 				command: () => editor.chain().focus().toggleHeading({ level: 4 }).run(),
 				active: () => editor.isActive('heading', { level: 4 })
 			}
@@ -58,19 +58,19 @@
 		[
 			{
 				label: m.bulletedList(),
-				icon: 'fa-list-ul',
+				icon: 'list-bullets',
 				command: () => editor.chain().focus().toggleBulletList().run(),
 				active: () => editor.isActive('bulletList')
 			},
 			{
 				label: m.numberedList(),
-				icon: 'fa-list-ol',
+				icon: 'list-numbers',
 				command: () => editor.chain().focus().toggleOrderedList().run(),
 				active: () => editor.isActive('orderedList')
 			},
 			{
 				label: m.blockquote(),
-				icon: 'fa-quote-left',
+				icon: 'quotes',
 				command: () => editor.chain().focus().toggleBlockquote().run(),
 				active: () => editor.isActive('blockquote')
 			}
@@ -78,14 +78,14 @@
 		[
 			{
 				label: m.horizontalRule(),
-				icon: 'fa-ellipsis',
+				icon: 'dots-three',
 				command: () => editor.chain().focus().setHorizontalRule().run()
 			}
 		],
 		[
 			{
 				label: m.img(),
-				icon: 'fa-image',
+				icon: 'image',
 				command: async () => {
 					const imageUrl = await openImageModal();
 					if (imageUrl) {
@@ -95,7 +95,7 @@
 			},
 			{
 				label: m.genQRCode(),
-				icon: 'fa-qrcode',
+				icon: 'qr-code',
 				command: async () => {
 					const qrCodeURL = await openQRCodeModal();
 					if (qrCodeURL) {
@@ -107,12 +107,12 @@
 		[
 			{
 				label: m.undo(),
-				icon: 'fa-rotate-left',
+				icon: 'arrow-counter-clockwise',
 				command: () => editor.chain().focus().undo().run()
 			},
 			{
 				label: m.redo(),
-				icon: 'fa-rotate-right',
+				icon: 'arrow-clockwise',
 				command: () => editor.chain().focus().redo().run()
 			}
 		]
@@ -129,7 +129,7 @@
 						aria-label={button.label}
 						onclick={() => button.command()}
 					>
-						<i class={`fa-duotone ${button.icon}`}></i>
+						<i aria-hidden="true" class={`ph-duotone ph-${button.icon}`}></i>
 					</button>
 				</div>
 			{/each}

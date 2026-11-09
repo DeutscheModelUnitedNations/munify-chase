@@ -13,7 +13,7 @@ Com os pedidos, os delegados e os ANE podem enviar pontos e moções (por exempl
 Abra **Configuração** e mude para o separador **Pedidos**. Cada tipo de pedido ocupa uma linha:
 
 - As setas **Mover para cima** / **Mover para baixo** definem a ordem. A presidência vê os pedidos pendentes ordenados por esta ordem, por isso coloque os tipos mais urgentes no topo.
-- **Ícone**: um nome de ícone Font Awesome, como `fa-flag`.
+- **Ícone**: clique nele para abrir o seletor de ícones. Pesquise por nome ou palavra-chave (as palavras-chave estão em inglês) e clique num ícone para o escolher.
 - **Nome**: o que os delegados veem no botão.
 - **Ativado**: desligue um tipo para o ocultar sem o eliminar.
 - **Apenas delegados**: quando está ligado, os ANE não podem fazer este pedido.

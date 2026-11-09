@@ -4,11 +4,11 @@
 	interface Props {
 		stripeColor?: string;
 		badgeColor?: string;
-		faIcon?: string;
+		icon?: string;
 		badgeText?: string;
 	}
 
-	let { stripeColor = 'base-300', badgeColor = 'primary', faIcon, badgeText }: Props = $props();
+	let { stripeColor = 'base-300', badgeColor = 'primary', icon, badgeText }: Props = $props();
 </script>
 
 <div
@@ -17,8 +17,8 @@
 	in:fade={{ duration: 500 }}
 >
 	<div class="badge badge-xl badge-{badgeColor} m-4 shadow-sm">
-		{#if faIcon}
-			<i class="fa-solid fa-{faIcon.replace('fa-', '')} text-base-content"></i>
+		{#if icon}
+			<i aria-hidden="true" class="ph-fill ph-{icon} text-base-content"></i>
 		{/if}
 		{#if badgeText}
 			{badgeText}

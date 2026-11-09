@@ -5,6 +5,7 @@
 	import { nanoid } from '#lib/helpers/nanoid';
 	import { getDefaultRequestTypes } from '#lib/data/defaultRequestTypes';
 	import StepHeader from './StepHeader.svelte';
+	import IconPicker from '#lib/components/IconPicker.svelte';
 
 	type ImportData = z.infer<typeof importDataSchema>;
 
@@ -22,7 +23,7 @@
 			data.requestTypes.push({
 				id: nanoid(),
 				name: rt.name,
-				faIcon: rt.faIcon,
+				icon: rt.icon,
 				enabled: true,
 				delegatesOnly: rt.delegatesOnly
 			});
@@ -34,7 +35,7 @@
 		data.requestTypes.push({
 			id: nanoid(),
 			name: '',
-			faIcon: 'fa-flag',
+			icon: 'flag',
 			enabled: true,
 			delegatesOnly: false
 		});
@@ -78,7 +79,7 @@
 						disabled={i === 0}
 						onclick={() => moveRequestType(i, -1)}
 					>
-						<i class="fa-solid fa-chevron-up"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-up"></i>
 					</button>
 					<button
 						type="button"
@@ -87,17 +88,12 @@
 						disabled={i === (data.requestTypes?.length ?? 0) - 1}
 						onclick={() => moveRequestType(i, 1)}
 					>
-						<i class="fa-solid fa-chevron-down"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-down"></i>
 					</button>
 				</div>
-				<div class="btn join-item bg-primary text-primary-content w-14 pointer-events-none">
-					<i class="fa-solid fa-{(rt.faIcon ?? 'fa-flag').replace('fa-', '')}"></i>
-				</div>
-				<input
-					type="text"
-					class="input input-bordered join-item w-32 font-mono text-sm"
-					bind:value={rt.faIcon}
-					placeholder={m.icon()}
+				<IconPicker
+					bind:value={rt.icon}
+					triggerClass="btn join-item bg-primary text-primary-content w-14"
 				/>
 				<input
 					type="text"
@@ -119,18 +115,18 @@
 					aria-label="Remove request type"
 					onclick={() => removeRequestType(i)}
 				>
-					<i class="fa-solid fa-trash"></i>
+					<i aria-hidden="true" class="ph-fill ph-trash"></i>
 				</button>
 			</div>
 		{/each}
 
 		<div class="mt-2 flex gap-2">
 			<button type="button" class="btn btn-sm" onclick={loadDefaults}>
-				<i class="fa-solid fa-wand-magic-sparkles"></i>
+				<i aria-hidden="true" class="ph-fill ph-magic-wand"></i>
 				{m.loadDefaultRequestTypes()}
 			</button>
 			<button type="button" class="btn btn-sm btn-ghost" onclick={addRequestType}>
-				<i class="fa-solid fa-plus"></i>
+				<i aria-hidden="true" class="ph-fill ph-plus"></i>
 				{m.addRequestType()}
 			</button>
 		</div>

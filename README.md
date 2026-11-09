@@ -5,11 +5,11 @@
 MUNify CHASE is a software for managing debates of Model United Nations conferences — speakers lists, digital voting, resolution editing, roll-call, and more. It is part of the MUNify Project by the German non-profit [Deutsche Model United Nations (DMUN) e.V.](https://dmun.de).
 
 <p align="center">
-  <a href="https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest">
+  <a href="https://chase.munify.cloud/#download">
     <img src="https://img.shields.io/badge/⬇%20Download%20Native%20Client-macOS%20%7C%20Windows%20%7C%20Linux-blue?style=for-the-badge" alt="Download Native Client" />
   </a>
   <br/>
-  <sub>Opens the latest release page — scroll down to <strong>Assets</strong> to find the installer for your platform.</sub>
+  <sub>Opens the download section, which offers the installer for your platform. All files are also on the <a href="https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest">latest release</a>.</sub>
 </p>
 
 ---
@@ -40,7 +40,7 @@ CHASE works best alongside [MUNify DELEGATOR](https://github.com/DeutscheModelUn
 
 ## Native Client
 
-CHASE ships a Tauri-based desktop app (macOS `.dmg`, Windows `.exe`, Linux `.deb` / `.AppImage`). Installers are attached to every [GitHub release](https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest).
+CHASE ships a Tauri-based desktop app (macOS `.dmg`, Windows `.exe`, Linux `.deb` / `.AppImage`). Installers are attached to every [GitHub release](https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest). The landing page links to them through stable URLs (`/download/windows`, `/download/macos`, `/download/linux-appimage`, `/download/linux-deb`, `/download/linux-rpm`) that redirect to the installer of the newest stable release. Set `GITHUB_TOKEN` (no scopes needed) to raise the GitHub API rate limit for that lookup.
 
 The desktop app is built from the `native-client` branch — a server-free fork of `main`. A workflow merges `main` into `native-client` automatically on every commit, strips server-only files, and either pushes directly or opens a PR if there are conflicts. Release builds are triggered by version tags and published to the same release alongside the Docker image.
 

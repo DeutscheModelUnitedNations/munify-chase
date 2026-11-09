@@ -54,14 +54,14 @@
 			{#each codes as c (c.id)}
 				<li class="flex items-center justify-between gap-2">
 					<button class="btn btn-ghost btn-sm font-mono" onclick={() => copy(c.code)}>
-						<i class="fas fa-copy"></i>
+						<i aria-hidden="true" class="ph-fill ph-copy"></i>
 						{c.code}
 					</button>
 					<span class="badge badge-sm">
 						{c.permission === 'EDIT' ? m.shareEdit() : m.shareSponsor()}
 					</span>
 					<button class="btn btn-ghost btn-xs" aria-label={m.delete()} onclick={() => remove(c.id)}>
-						<i class="fas fa-trash text-error"></i>
+						<i aria-hidden="true" class="ph-fill ph-trash text-error"></i>
 					</button>
 				</li>
 			{/each}
@@ -72,7 +72,7 @@
 
 	<div class="join">
 		<button class="btn btn-ghost btn-sm join-item" disabled={busy} onclick={() => create('EDIT')}>
-			<i class="fas fa-pen"></i>
+			<i aria-hidden="true" class="ph-fill ph-pen"></i>
 			{m.shareEdit()}
 		</button>
 		<button
@@ -80,7 +80,7 @@
 			disabled={busy}
 			onclick={() => create('SPONSOR')}
 		>
-			<i class="fas fa-handshake"></i>
+			<i aria-hidden="true" class="ph-fill ph-handshake"></i>
 			{m.shareSponsor()}
 		</button>
 	</div>

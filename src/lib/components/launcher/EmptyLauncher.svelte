@@ -56,7 +56,7 @@
 		class="alert alert-info alert-soft border-primary/30 max-w-md flex-col items-center border border-dashed text-center"
 	>
 		<div class="text-primary inline-flex items-center gap-2 text-sm font-semibold">
-			<i class="fa-duotone fa-circle-info"></i>
+			<i aria-hidden="true" class="ph-duotone ph-info"></i>
 			{m.launcherEmptyHintTitle()}
 		</div>
 		<p class="text-base-content/70 m-0 text-sm">{m.launcherEmptyHintBody()}</p>

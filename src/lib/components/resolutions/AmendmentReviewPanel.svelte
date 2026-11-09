@@ -18,7 +18,7 @@
 		name: string | null | undefined;
 		alpha2Code: string | null | undefined;
 		alpha3Code: string | null | undefined;
-		faIcon: string | null | undefined;
+		icon: string | null | undefined;
 		type: string | null | undefined;
 	}
 
@@ -242,7 +242,7 @@
 					<AiSpinner size="sm" />
 				{/if}
 				<button class="btn btn-ghost btn-sm cursor-pointer" onclick={onclose}>
-					<i class="fas fa-xmark"></i>
+					<i aria-hidden="true" class="ph-fill ph-x"></i>
 					Close
 				</button>
 			</div>
@@ -259,7 +259,7 @@
 			<div class="flex flex-col gap-3">
 				<div class="flex items-center gap-2 text-xs text-base-content/50">
 					{#if trigger.type === 'ALTER_TEXT'}
-						<i class="fas fa-pen opacity-60"></i>
+						<i aria-hidden="true" class="ph-fill ph-pen opacity-60"></i>
 					{/if}
 					{#if trigger.documentNumber}
 						<span class="font-mono font-semibold">{trigger.documentNumber}</span>
@@ -298,7 +298,7 @@
 		<!-- Step content -->
 		{#if allResolved}
 			<div class="py-6 text-center">
-				<i class="fas fa-circle-check text-success text-2xl"></i>
+				<i aria-hidden="true" class="ph-fill ph-check-circle text-success text-2xl"></i>
 				<p class="mt-2 font-semibold">All amendments reviewed</p>
 				<button class="btn btn-primary mt-4 cursor-pointer" onclick={onclose}>Done</button>
 			</div>
@@ -316,7 +316,7 @@
 				<RewriteStep items={rewriteItems} {currentlyProcessingId} onrerunItem={rerunRewrite} />
 			{:else}
 				<div class="flex flex-col items-center gap-2 py-8 text-center">
-					<i class="fas fa-circle-check text-success text-2xl"></i>
+					<i aria-hidden="true" class="ph-fill ph-check-circle text-success text-2xl"></i>
 					<p class="font-semibold">No text adjustments needed</p>
 					<p class="text-base-content/50 max-w-xs text-sm">
 						All surviving amendments were marked clean — nothing needs rewording.

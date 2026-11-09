@@ -88,7 +88,7 @@
 			context: () => item.title,
 			keywords: [item.title],
 			group: 'page' as const,
-			icon: 'list-ol',
+			icon: 'list-numbers',
 			visible: () => item.id !== activeAgendaItem?.id,
 			run: () => selectAgendaItem(item.id)
 		}))
@@ -96,7 +96,12 @@
 </script>
 
 <div class="join">
-	<select class="select select-lg join-item w-full" onchange={update} bind:value>
+	<select
+		class="select select-lg join-item w-full"
+		aria-label={m.agendaItem()}
+		onchange={update}
+		bind:value
+	>
 		<option disabled selected={!activeAgendaItem}>
 			{m.selectAgendaItem()}
 		</option>
@@ -107,6 +112,6 @@
 		{/each}
 	</select>
 	<button class="btn join-item btn-lg" onclick={addAgendaItem} aria-label={m.addAgendaItem()}>
-		<i class="fas fa-plus"></i>
+		<i aria-hidden="true" class="ph-fill ph-plus"></i>
 	</button>
 </div>

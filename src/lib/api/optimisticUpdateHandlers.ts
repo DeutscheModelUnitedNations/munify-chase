@@ -1,7 +1,6 @@
 import { gql } from '@urql/core';
 import type { Cache, OptimisticMutationConfig, UpdatesConfig } from '@urql/exchange-graphcache';
 import { nanoid } from '#lib/helpers/nanoid';
-import { attendanceCode as generateAttendanceCode } from '#lib/helpers/attendanceCode';
 import { getServerTime } from '#lib/state/serverClock.svelte';
 import { calculateMajority } from '#lib/utils/majorities';
 import { compareSpeakers } from '#lib/helpers/speakerSort';
@@ -513,7 +512,6 @@ export const optimistic: OptimisticMutationConfig = {
 	createConferenceUser: (args) => {
 		const id = ensureId(args);
 		const type = args.conferenceUserType as string;
-		const attendanceCode = type === 'NON_STATE_ACTOR' ? generateAttendanceCode() : null;
 		const name =
 			typeof args.name === 'string' && args.name.trim().length > 0 ? args.name.trim() : null;
 		return {
@@ -524,7 +522,7 @@ export const optimistic: OptimisticMutationConfig = {
 			userEmail: args.userEmail as string,
 			name,
 			conferenceUserType: type,
-			attendanceCode,
+			cardNumber: 1,
 			committeeMemberId: null,
 			committeeMember: null,
 			conferenceMemberId: null,
@@ -538,19 +536,7 @@ export const optimistic: OptimisticMutationConfig = {
 			updatedAt: null
 		};
 	},
-	updateConferenceUser: (args, cache) => {
-		const current = readEntity<{ attendanceCode?: string | null; conferenceUserType?: string }>(
-			cache,
-			gql`
-				fragment UpdateConferenceUserCurrent on Conferenceuser {
-					id
-					attendanceCode
-					conferenceUserType
-				}
-			`,
-			{ __typename: 'Conferenceuser', id: args.id as string }
-		);
-
+	updateConferenceUser: (args) => {
 		const result: Record<string, unknown> = {
 			__typename: 'Conferenceuser',
 			id: args.id,
@@ -577,19 +563,11 @@ export const optimistic: OptimisticMutationConfig = {
 		if (type !== 'NON_STATE_ACTOR') {
 			result.conferenceMemberId = null;
 			result.conferenceMember = null;
-			if (current?.attendanceCode) result.attendanceCode = null;
-		} else {
-			if (args.conferenceMemberId !== undefined) {
-				result.conferenceMemberId = args.conferenceMemberId ?? null;
-				result.conferenceMember = args.conferenceMemberId
-					? { __typename: 'Conferencemember', id: args.conferenceMemberId as string }
-					: null;
-			}
-			// Promotion to NSA without an existing code → mint one locally so the UI can
-			// display it immediately. The server will replace it with a unique value.
-			if (!current?.attendanceCode) {
-				result.attendanceCode = generateAttendanceCode();
-			}
+		} else if (args.conferenceMemberId !== undefined) {
+			result.conferenceMemberId = args.conferenceMemberId ?? null;
+			result.conferenceMember = args.conferenceMemberId
+				? { __typename: 'Conferencemember', id: args.conferenceMemberId as string }
+				: null;
 		}
 
 		return result;
@@ -599,117 +577,8 @@ export const optimistic: OptimisticMutationConfig = {
 	// -------------------------------------------------------------------------
 	// presenceEvent.ts
 	// -------------------------------------------------------------------------
-	recordNsaCheckIn: (args, cache) => {
-		const id = ensureId(args);
-		const now = getServerTime().toDate();
-		// Best-effort: try to resolve the NSA conferenceUser from the cache by scanning
-		// known Conferenceuser entries. If we can't find them we still return a phantom
-		// event — the conferenceUserId will be reconciled when the real response arrives.
-		const target = resolveNsaTargetInCache(cache, args.committeeId as string, args.code as string);
-		const conferenceUserId = target?.id ?? `pending-${id}`;
-
-		// If the user is currently checked into a different committee, mirror the server's
-		// AUTO_SWITCH side effect: flip their derived fields and the latest event chain.
-		if (
-			target?.isCheckedIn &&
-			target.currentCommitteeId &&
-			target.currentCommitteeId !== args.committeeId
-		) {
-			cache.writeFragment(
-				gql`
-					fragment NsaAutoSwitch on Conferenceuser {
-						id
-						isCheckedIn
-						currentCommitteeId
-						currentCheckedInSince
-					}
-				`,
-				{
-					__typename: 'Conferenceuser',
-					id: target.id,
-					isCheckedIn: true,
-					currentCommitteeId: args.committeeId,
-					currentCheckedInSince: now
-				}
-			);
-		} else if (target) {
-			cache.writeFragment(
-				gql`
-					fragment NsaCheckIn on Conferenceuser {
-						id
-						isCheckedIn
-						currentCommitteeId
-						currentCheckedInSince
-					}
-				`,
-				{
-					__typename: 'Conferenceuser',
-					id: target.id,
-					isCheckedIn: true,
-					currentCommitteeId: args.committeeId,
-					currentCheckedInSince: now
-				}
-			);
-		}
-
-		return {
-			__typename: 'Presenceevent',
-			id,
-			conferenceUserId,
-			conferenceUser: { __typename: 'Conferenceuser', id: conferenceUserId },
-			committeeId: args.committeeId,
-			committee: { __typename: 'Committee', id: args.committeeId as string },
-			present: true,
-			type: 'NSA_SCAN',
-			timestamp: now,
-			note: null,
-			rollCallSessionId: null,
-			rollCallSession: null,
-			triggeredBy: null
-		};
-	},
-	recordNsaCheckOut: (args, cache) => {
-		const id = ensureId(args);
-		const now = getServerTime().toDate();
-		const target = resolveNsaTargetInCache(cache, args.committeeId as string, args.code as string);
-		const conferenceUserId = target?.id ?? `pending-${id}`;
-
-		if (target) {
-			cache.writeFragment(
-				gql`
-					fragment NsaCheckOut on Conferenceuser {
-						id
-						isCheckedIn
-						currentCommitteeId
-						currentCheckedInSince
-					}
-				`,
-				{
-					__typename: 'Conferenceuser',
-					id: target.id,
-					isCheckedIn: false,
-					currentCommitteeId: null,
-					currentCheckedInSince: null
-				}
-			);
-		}
-
-		return {
-			__typename: 'Presenceevent',
-			id,
-			conferenceUserId,
-			conferenceUser: { __typename: 'Conferenceuser', id: conferenceUserId },
-			committeeId: args.committeeId,
-			committee: { __typename: 'Committee', id: args.committeeId as string },
-			present: false,
-			type: 'NSA_SCAN',
-			timestamp: now,
-			note: null,
-			rollCallSessionId: null,
-			rollCallSession: null,
-			triggeredBy: null
-		};
-	},
+	recordNsaCheckIn: (args, cache) => optimisticNsaScan({ args, cache, checkIn: true }),
+	recordNsaCheckOut: (args, cache) => optimisticNsaScan({ args, cache, checkIn: false }),
 	insertPresenceEvent: (args, cache) => {
 		const id = ensureId(args);
 		const timestamp = (args.timestamp as Date | string | undefined) ?? getServerTime().toDate();
@@ -820,11 +689,6 @@ export const optimistic: OptimisticMutationConfig = {
 			committee: { __typename: 'Committee', id: existing?.committeeId ?? 'unknown' }
 		};
 	},
-	regenerateNsaAttendanceCode: (args) => ({
-		__typename: 'Conferenceuser',
-		id: args.conferenceUserId,
-		attendanceCode: generateAttendanceCode()
-	}),
 
 	// -------------------------------------------------------------------------
 	// representation.ts
@@ -840,7 +704,7 @@ export const optimistic: OptimisticMutationConfig = {
 			name: (args.name as string | undefined) ?? null,
 			alpha2Code: (args.alpha2Code as string | undefined) ?? null,
 			alpha3Code: (args.alpha3Code as string | undefined) ?? null,
-			faIcon: (args.faIcon as string | undefined) ?? null,
+			icon: (args.icon as string | undefined) ?? null,
 			regionalGroup: null,
 			committeeMembers: [],
 			conferenceMembers: [],
@@ -1009,7 +873,7 @@ export const optimistic: OptimisticMutationConfig = {
 					name?: string | null;
 					alpha2Code?: string | null;
 					alpha3Code?: string | null;
-					faIcon?: string | null;
+					icon?: string | null;
 					type?: string | null;
 				} | null;
 			}>(
@@ -1022,7 +886,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1041,7 +905,7 @@ export const optimistic: OptimisticMutationConfig = {
 								name
 								alpha2Code
 								alpha3Code
-								faIcon
+								icon
 								type
 							}
 						}
@@ -1268,7 +1132,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1289,7 +1153,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1314,7 +1178,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1325,7 +1189,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1441,7 +1305,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1461,7 +1325,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1480,7 +1344,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1491,7 +1355,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1889,7 +1753,7 @@ export const optimistic: OptimisticMutationConfig = {
 			conferenceId: args.conferenceId as string,
 			conference: { __typename: 'Conference', id: args.conferenceId as string },
 			name: args.name as string,
-			faIcon: (args.faIcon as string | undefined) ?? null,
+			icon: (args.icon as string | undefined) ?? null,
 			priority: 0,
 			enabled: true,
 			delegatesOnly: (args.delegatesOnly as boolean | undefined) ?? false,
@@ -1906,7 +1770,7 @@ export const optimistic: OptimisticMutationConfig = {
 		};
 		for (const field of [
 			'name',
-			'faIcon',
+			'icon',
 			'priority',
 			'enabled',
 			'delegatesOnly',
@@ -1925,77 +1789,111 @@ export const optimistic: OptimisticMutationConfig = {
 // Cache-lookup helpers used by optimistic handlers
 // ---------------------------------------------------------------------------
 
-function resolveNsaTargetInCache(
-	cache: Cache,
-	committeeId: string,
-	rawCode: string
-): {
-	id: string;
-	isCheckedIn?: boolean;
-	currentCommitteeId?: string | null;
-} | null {
-	const code = (rawCode ?? '').trim();
-	if (!code) return null;
-	const upper = code.toUpperCase();
-
-	// Walk every cached Conferenceuser and match by id / attendanceCode / linked userId.
-	const queryFields = cache.inspectFields('Query');
-	const userKeys = new Set<string>();
-	for (const f of queryFields) {
-		const value = cache.resolve('Query', f.fieldName, f.arguments);
-		if (Array.isArray(value)) {
-			for (const v of value)
-				if (typeof v === 'string' && v.startsWith('Conferenceuser:')) userKeys.add(v);
-		} else if (typeof value === 'string' && value.startsWith('Conferenceuser:')) {
-			userKeys.add(value);
-		}
-	}
-
-	// Fall back: if we know the committee, walk the conference's users via the committee → conference link.
-	const conferenceId = cache.resolve(
-		{ __typename: 'Committee', id: committeeId },
-		'conferenceId'
-	) as string | undefined;
-
-	for (const key of userKeys) {
-		const id = key.slice('Conferenceuser:'.length);
-		const data = readEntity<{
-			id: string;
-			conferenceId?: string;
-			conferenceUserType?: string;
-			attendanceCode?: string | null;
-			isCheckedIn?: boolean;
-			currentCommitteeId?: string | null;
-			user?: { id?: string } | null;
-		}>(
-			cache,
-			gql`
-				fragment NsaResolveSnapshot on Conferenceuser {
-					id
-					conferenceId
-					conferenceUserType
-					attendanceCode
-					isCheckedIn
-					currentCommitteeId
-					user {
-						id
-					}
-				}
-			`,
-			{ __typename: 'Conferenceuser', id }
+/**
+ * The NSA a check-in or check-out names, as the cache knows them. The scanner identifies the
+ * person itself (a scanned code, verified offline, or a pick from the name search) and sends their
+ * id along; the server checks the code again.
+ */
+/**
+ * A chair's NSA scan, before the server answers. Best-effort: the NSA is looked up in the cache;
+ * without them it is still a phantom event, which the real response reconciles. Checking in here
+ * also covers the server checking them out of another committee first (AUTO_SWITCH).
+ */
+function optimisticNsaScan({
+	args,
+	cache,
+	checkIn
+}: {
+	args: Record<string, unknown>;
+	cache: Cache;
+	checkIn: boolean;
+}) {
+	const id = ensureId(args);
+	const now = getServerTime().toDate();
+	const committeeId = args.committeeId as string;
+	const target = nsaTargetInCache(cache, args.conferenceUserId);
+	const conferenceUserId = target?.id ?? `pending-${id}`;
+	if (target) {
+		writeNsaPresence(
+			checkIn
+				? { cache, id: target.id, committeeId, since: now }
+				: { cache, id: target.id, committeeId: null, since: null }
 		);
-		if (!data) continue;
-		if (data.conferenceUserType !== 'NON_STATE_ACTOR') continue;
-		if (conferenceId && data.conferenceId && data.conferenceId !== conferenceId) continue;
-		if (data.id === code || data.attendanceCode === upper || data.user?.id === code) {
-			return {
-				id: data.id,
-				isCheckedIn: data.isCheckedIn,
-				currentCommitteeId: data.currentCommitteeId ?? null
-			};
-		}
 	}
-	return null;
+	return {
+		__typename: 'Presenceevent',
+		id,
+		conferenceUserId,
+		conferenceUser: { __typename: 'Conferenceuser', id: conferenceUserId },
+		committeeId,
+		committee: { __typename: 'Committee', id: committeeId },
+		present: checkIn,
+		type: 'NSA_SCAN',
+		timestamp: now,
+		note: null,
+		rollCallSessionId: null,
+		rollCallSession: null,
+		triggeredBy: null
+	};
+}
+
+/** An NSA's derived presence fields: checked into `committeeId` since `since`, or out (`null`). */
+function writeNsaPresence({
+	cache,
+	id,
+	committeeId,
+	since
+}: {
+	cache: Cache;
+	id: string;
+	committeeId: string | null;
+	since: Date | null;
+}) {
+	cache.writeFragment(
+		gql`
+			fragment NsaPresence on Conferenceuser {
+				id
+				isCheckedIn
+				currentCommitteeId
+				currentCheckedInSince
+			}
+		`,
+		{
+			__typename: 'Conferenceuser',
+			id,
+			isCheckedIn: committeeId !== null,
+			currentCommitteeId: committeeId,
+			currentCheckedInSince: since
+		}
+	);
+}
+
+function nsaTargetInCache(
+	cache: Cache,
+	conferenceUserId: unknown
+): { id: string; isCheckedIn?: boolean; currentCommitteeId?: string | null } | null {
+	if (typeof conferenceUserId !== 'string' || !conferenceUserId) return null;
+	const data = readEntity<{
+		id: string;
+		isCheckedIn?: boolean;
+		currentCommitteeId?: string | null;
+	}>(
+		cache,
+		gql`
+			fragment NsaTargetSnapshot on Conferenceuser {
+				id
+				isCheckedIn
+				currentCommitteeId
+			}
+		`,
+		{ __typename: 'Conferenceuser', id: conferenceUserId }
+	);
+	if (!data) return null;
+	return {
+		id: data.id,
+		isCheckedIn: data.isCheckedIn,
+		currentCommitteeId: data.currentCommitteeId ?? null
+	};
 }
 
 /**
@@ -2154,10 +2052,9 @@ function findSelfConferenceUser(
 	committeeMemberId?: string | null;
 	conferenceMemberId?: string | null;
 } | null {
-	// The participant abilities query only returns the calling user's own attendance code,
-	// so we can scan known Conferenceuser entries and pick the one whose attendanceCode is
-	// readable (server hides it for everyone else). Falls back to the first match in the
-	// given conference where the role is DELEGATE / NON_STATE_ACTOR.
+	// Participants read only their own row's email, so the cached Conferenceuser whose email is
+	// readable is the caller's. Falls back to the first match in the given conference where the
+	// role is DELEGATE / NON_STATE_ACTOR.
 	const queryFields = cache.inspectFields('Query');
 	const keys = new Set<string>();
 	for (const f of queryFields) {

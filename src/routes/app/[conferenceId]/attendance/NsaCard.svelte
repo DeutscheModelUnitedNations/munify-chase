@@ -2,42 +2,29 @@
 	import { m } from '#lib/paraglide/messages';
 	import QrCodeSvg from '#lib/components/qr/QrCodeSvg.svelte';
 
+	/** A printed NSA card: the signed card code as a QR, and the names to find the person by. */
 	interface Props {
-		nsaUser: {
-			id: string;
-			userEmail: string;
-			name: string | null;
-			attendanceCode: string | null;
-			orgName: string | null;
-		};
+		card: { code: string; name: string; nsaName: string | null; cardNumber: number };
 		conferenceTitle: string;
 	}
 
-	let { nsaUser, conferenceTitle }: Props = $props();
+	let { card, conferenceTitle }: Props = $props();
 </script>
 
 <div class="nsa-card">
 	<div class="nsa-card-header">
-		<div class="conference-title">{conferenceTitle}</div>
-		<div class="org-name">{nsaUser.orgName ?? m.unknown()}</div>
-		<div class="user-email">{nsaUser.name ?? nsaUser.userEmail}</div>
+		<div class="person-name">{card.name}</div>
+		<div class="org-name">{card.nsaName ?? m.unknown()}</div>
 	</div>
 
 	<div class="qr-wrapper">
-		<QrCodeSvg data={nsaUser.id} errorCorrection="Q" />
+		<QrCodeSvg data={card.code} errorCorrection="M" />
 	</div>
 
-	{#if nsaUser.attendanceCode}
-		<div class="code-row">
-			<span class="code-label">{m.attendanceCode()}</span>
-			<span class="code-value">{nsaUser.attendanceCode}</span>
-		</div>
-	{:else}
-		<div class="code-row">
-			<span class="code-label">{m.attendanceCode()}</span>
-			<span class="code-missing">—</span>
-		</div>
-	{/if}
+	<div class="footer">
+		<span>{conferenceTitle}</span>
+		<span>{m.nsaCardNumber({ number: card.cardNumber })}</span>
+	</div>
 </div>
 
 <style>
@@ -62,24 +49,16 @@
 		width: 100%;
 	}
 
-	.conference-title {
-		font-size: 7pt;
-		opacity: 0.65;
-		line-height: 1.2;
-	}
-
-	.org-name {
-		font-size: 11pt;
+	.person-name {
+		font-size: 12pt;
 		font-weight: 700;
-		margin-top: 0.5mm;
 		line-height: 1.15;
 	}
 
-	.user-email {
-		font-size: 7pt;
-		opacity: 0.85;
+	.org-name {
+		font-size: 9pt;
 		margin-top: 0.5mm;
-		word-break: break-all;
+		line-height: 1.15;
 	}
 
 	.qr-wrapper {
@@ -93,35 +72,16 @@
 	}
 
 	.qr-wrapper :global(.qr-code) {
-		width: min(40mm, 100%);
+		width: min(48mm, 100%);
 		aspect-ratio: 1 / 1;
 	}
 
-	.code-row {
+	.footer {
 		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.5mm;
-	}
-
-	.code-label {
-		font-size: 7pt;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		opacity: 0.6;
-	}
-
-	.code-value {
-		font-family: 'Roboto Mono', ui-monospace, monospace;
-		font-size: 13pt;
-		font-weight: 600;
-		letter-spacing: 0.15em;
-	}
-
-	.code-missing {
-		font-family: 'Roboto Mono', ui-monospace, monospace;
-		font-size: 13pt;
-		font-weight: 600;
-		opacity: 0.4;
+		justify-content: space-between;
+		gap: 2mm;
+		width: 100%;
+		font-size: 6.5pt;
+		opacity: 0.65;
 	}
 </style>

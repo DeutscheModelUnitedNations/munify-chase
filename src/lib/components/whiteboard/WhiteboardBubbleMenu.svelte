@@ -17,25 +17,25 @@
 		[
 			{
 				label: m.bold(),
-				icon: 'fa-bold',
+				icon: 'text-b',
 				command: () => editor.chain().focus().toggleBold().run(),
 				active: () => editor.isActive('bold')
 			},
 			{
 				label: m.italic(),
-				icon: 'fa-italic',
+				icon: 'text-italic',
 				command: () => editor.chain().focus().toggleItalic().run(),
 				active: () => editor.isActive('italic')
 			},
 			{
 				label: m.underline(),
-				icon: 'fa-underline',
+				icon: 'text-underline',
 				command: () => editor.chain().focus().toggleUnderline().run(),
 				active: () => editor.isActive('underline')
 			},
 			{
 				label: m.strikethrough(),
-				icon: 'fa-strikethrough',
+				icon: 'text-strikethrough',
 				command: () => editor.chain().focus().toggleStrike().run(),
 				active: () => editor.isActive('strike')
 			}
@@ -43,13 +43,13 @@
 		[
 			{
 				label: m.code(),
-				icon: 'fa-code',
+				icon: 'code',
 				command: () => editor.chain().focus().toggleCode().run(),
 				active: () => editor.isActive('code')
 			},
 			{
 				label: m.link(),
-				icon: 'fa-link',
+				icon: 'link',
 				command: () => {
 					if (editor.isActive('link')) {
 						editor.chain().focus().unsetLink().run();
@@ -66,7 +66,7 @@
 		[
 			{
 				label: m.clearFormatting(),
-				icon: 'fa-eraser',
+				icon: 'eraser',
 				command: () => {
 					editor.chain().focus().clearNodes().run();
 					editor.chain().focus().unsetAllMarks().run();
@@ -86,7 +86,7 @@
 						aria-label={button.label}
 						onclick={() => button.command()}
 					>
-						<i class={`fa-duotone ${button.icon}`}></i>
+						<i aria-hidden="true" class={`ph-duotone ph-${button.icon}`}></i>
 					</button>
 				</div>
 			{/each}

@@ -1,6 +1,10 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
 	import { getServerTime } from '#lib/state/serverTime.svelte';
+	import { m } from '#lib/paraglide/messages';
+
+	/** When a screen reader hears that the window is closing: once, not every tick */
+	const ANNOUNCE_AT_SECONDS = 10;
 
 	interface Props {
 		startTimestamp: Date | string | null;
@@ -25,6 +29,8 @@
 		expired = secondsLeft <= 0;
 	});
 
+	let closingSoon = $derived(secondsLeft > 0 && secondsLeft <= ANNOUNCE_AT_SECONDS);
+
 	let progress = $derived(Math.max(0, Math.min(100, (secondsLeft / windowSeconds) * 100)));
 </script>
 
@@ -32,7 +38,7 @@
 	<!-- A native <progress> element's `value` can't be CSS-transitioned, so each 500ms
 		server-time tick (see serverTime.svelte.ts) would snap the fill instead of gliding —
 		a plain div with a `width` transition animates smoothly between ticks instead. -->
-	<div class="bg-base-300 h-2 w-full overflow-hidden rounded-full">
+	<div class="bg-base-300 h-2 w-full overflow-hidden rounded-full" aria-hidden="true">
 		<div
 			class="h-full rounded-full transition-[width] duration-500 ease-linear {progress <= 20
 				? 'bg-error'
@@ -42,5 +48,10 @@
 			style="width: {progress}%"
 		></div>
 	</div>
-	<span class="text-center font-mono text-sm">{Math.max(0, Math.ceil(secondsLeft))}s</span>
+	<span class="text-center font-mono text-sm" role="timer"
+		>{Math.max(0, Math.ceil(secondsLeft))}s</span
+	>
+	<span class="sr-only" aria-live="polite"
+		>{closingSoon ? m.a11yVoteClosingSoon({ seconds: String(ANNOUNCE_AT_SECONDS) }) : ''}</span
+	>
 </div>

@@ -26,3 +26,7 @@ vite.config.ts.timestamp-*
 .claude
 
 .lazyi18n
+
+# Playwright
+/test-results
+/playwright-report

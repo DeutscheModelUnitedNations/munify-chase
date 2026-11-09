@@ -29,7 +29,7 @@
 					name?: string | null;
 					alpha2Code?: string | null;
 					alpha3Code?: string | null;
-					faIcon?: string | null;
+					icon?: string | null;
 					type?: string | null;
 					regionalGroup?: string | null;
 				} | null;
@@ -165,7 +165,7 @@
 					total={members?.length}
 				/>
 
-				<FlagRow faIcon="arrow-right" countValue={remainingMembers?.length}>
+				<FlagRow icon="arrow-right" countValue={remainingMembers?.length}>
 					{#each remainingMembers ?? [] as member (member.id)}
 						<div
 							animate:flip={flipOptions}
@@ -177,7 +177,7 @@
 					{/each}
 				</FlagRow>
 
-				<FlagRow color="success" faIcon="circle-plus" countValue={proMembers?.length}>
+				<FlagRow color="success" icon="plus-circle" countValue={proMembers?.length}>
 					{#each proMembers?.toReversed() ?? [] as member (member.id)}
 						<div
 							animate:flip={flipOptions}
@@ -190,7 +190,7 @@
 				</FlagRow>
 
 				{#if session.withAbstentions}
-					<FlagRow color="info" faIcon="circle" countValue={abstainMembers?.length}>
+					<FlagRow color="info" icon="circle" countValue={abstainMembers?.length}>
 						{#each abstainMembers?.toReversed() ?? [] as member (member.id)}
 							<div
 								animate:flip={flipOptions}
@@ -203,7 +203,7 @@
 					</FlagRow>
 				{/if}
 
-				<FlagRow color="error" faIcon="circle-minus" countValue={conMembers?.length}>
+				<FlagRow color="error" icon="minus-circle" countValue={conMembers?.length}>
 					{#each conMembers?.toReversed() ?? [] as member (member.id)}
 						<div
 							animate:flip={flipOptions}
@@ -217,7 +217,7 @@
 			{:else}
 				<div class="flex items-center justify-center py-6">
 					<span class="text-2xl opacity-70">
-						<i class="fas fa-lock mr-2"></i>
+						<i aria-hidden="true" class="ph-fill ph-lock mr-2"></i>
 						{m.deviceVoteResultsPending()}
 					</span>
 				</div>

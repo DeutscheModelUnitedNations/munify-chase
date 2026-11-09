@@ -85,12 +85,12 @@
 		{
 			id: true,
 			label: m.on(),
-			faIcon: 'fa-check'
+			icon: 'check'
 		},
 		{
 			id: false,
 			label: m.off(),
-			faIcon: 'fa-xmark'
+			icon: 'x'
 		}
 	];
 
@@ -100,7 +100,7 @@
 			id: 'setup.regional-groups',
 			title: shown ? m.commandHideRegionalGroups : m.commandShowRegionalGroups,
 			group: 'page',
-			icon: 'earth-europe',
+			icon: 'globe-hemisphere-east',
 			run: () => toggleRegionalGroups(!shown)
 		};
 	};
@@ -124,18 +124,20 @@
 			title: m.commandSetPresentationLayout,
 			context: layoutPresetLabels[preset] ?? (() => preset),
 			group: 'page' as const,
-			icon: 'table-layout',
+			icon: 'layout',
 			visible: () => committeeData?.presentationLayout !== preset,
 			run: () => changeLayout(preset)
 		})),
 		regionalGroupsCommand(),
 		presentationRequestsCommand()
 	]);
+
+	const ids = $props.id();
 </script>
 
 <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">
 	<legend class="fieldset-legend">{m.layout()}</legend>
-	<select class="select w-full" onchange={changeLayoutKey}>
+	<select class="select w-full" aria-label={m.layout()} onchange={changeLayoutKey}>
 		<option disabled selected>{m.layoutSelect()}</option>
 		{#each getPresentationLayoutPresets() as preset (preset)}
 			<option value={preset} selected={committeeData?.presentationLayout === preset}>
@@ -147,12 +149,13 @@
 	<div class="divider"></div>
 	<div class="flex flex-col gap-4">
 		<div class="flex items-center gap-4">
-			<i class="fa-duotone fa-text-size text-2xl"></i>
+			<i aria-hidden="true" class="ph-duotone ph-text-aa text-2xl"></i>
 			<input
 				type="range"
 				min="10"
 				max="50"
 				step="1"
+				aria-labelledby="{ids}-base-font"
 				bind:value={localRootFontSize}
 				onchange={() =>
 					client.mutate
@@ -166,16 +169,17 @@
 			<span class="w-10 text-center">{localRootFontSize}</span>
 		</div>
 	</div>
-	<p class="label w-full whitespace-normal">{m.baseFontSizeDescription()}</p>
+	<p id="{ids}-base-font" class="label w-full whitespace-normal">{m.baseFontSizeDescription()}</p>
 	<div class="divider"></div>
 	<div class="flex flex-col gap-4">
 		<div class="flex items-center gap-4">
-			<i class="fa-duotone fa-file-lines text-2xl"></i>
+			<i aria-hidden="true" class="ph-duotone ph-file-text text-2xl"></i>
 			<input
 				type="range"
 				min="10"
 				max="50"
 				step="1"
+				aria-labelledby="{ids}-resolution-font"
 				bind:value={localResolutionFontSize}
 				onchange={() =>
 					client.mutate
@@ -192,7 +196,9 @@
 			<span class="w-10 text-center">{localResolutionFontSize}</span>
 		</div>
 	</div>
-	<p class="label w-full whitespace-normal">{m.resolutionFontSizeDescription()}</p>
+	<p id="{ids}-resolution-font" class="label w-full whitespace-normal">
+		{m.resolutionFontSizeDescription()}
+	</p>
 </fieldset>
 
 <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-full border p-4">

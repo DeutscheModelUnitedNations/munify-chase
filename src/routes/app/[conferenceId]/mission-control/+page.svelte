@@ -73,7 +73,7 @@
 								name: true,
 								alpha2Code: true,
 								alpha3Code: true,
-								faIcon: true,
+								icon: true,
 								type: true
 							}
 						},
@@ -83,7 +83,7 @@
 								name: true,
 								alpha2Code: true,
 								alpha3Code: true,
-								faIcon: true,
+								icon: true,
 								type: true
 							}
 						}
@@ -279,6 +279,8 @@
 	agendaItem={adoptingCommittee?.activeAgendaItem?.title ?? ''}
 />
 
-{#if conference}
-	<MissionControlGrid conference={conference as unknown as MissionControlConference} {pulse} />
-{/if}
+<main id="main-content" tabindex="-1">
+	{#if conference}
+		<MissionControlGrid conference={conference as unknown as MissionControlConference} {pulse} />
+	{/if}
+</main>

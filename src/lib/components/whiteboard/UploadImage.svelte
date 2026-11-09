@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { modalFocus } from '#lib/helpers/modalFocus';
 	import { m } from '#lib/paraglide/messages';
 
 	interface Props {
@@ -76,7 +77,12 @@
 	}
 </script>
 
-<dialog class="modal" open={showModal}>
+<dialog
+	class="modal"
+	open={showModal}
+	aria-modal="true"
+	{@attach showModal ? modalFocus(handleCancel) : undefined}
+>
 	<div class="modal-box bg-base-200">
 		<h3 class="mb-4 text-lg font-bold">{m.img()}</h3>
 
@@ -85,14 +91,14 @@
 				class="tab flex-1 {activeTab === 'UPLOAD' ? 'tab-active' : ''}"
 				onclick={() => (activeTab = 'UPLOAD')}
 			>
-				<i class="fa-duotone fa-upload mr-2"></i>
+				<i aria-hidden="true" class="ph-duotone ph-upload-simple mr-2"></i>
 				{m.upload()}
 			</button>
 			<button
 				class="tab tab-bordered flex-1 {activeTab === 'URL' ? 'tab-active' : ''}"
 				onclick={() => (activeTab = 'URL')}
 			>
-				<i class="fa-duotone fa-link mr-2"></i>
+				<i aria-hidden="true" class="ph-duotone ph-link mr-2"></i>
 				{m.url()}
 			</button>
 		</div>
@@ -121,9 +127,9 @@
 						disabled={!uploadedFile || isUploading}
 					>
 						{#if isUploading}
-							<i class="fa-solid fa-spinner fa-spin"></i>
+							<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>
 						{:else}
-							<i class="fa-solid fa-upload mr-2"></i>
+							<i aria-hidden="true" class="ph-fill ph-upload-simple mr-2"></i>
 						{/if}
 						{m.submitImg()}
 					</button>
@@ -140,7 +146,7 @@
 					</div>
 
 					<button class="btn btn-primary" onclick={handleUrlSubmit} disabled={!imageUrl}>
-						<i class="fa-solid fa-check mr-2"></i>
+						<i aria-hidden="true" class="ph-fill ph-check mr-2"></i>
 						{m.submitImg()}
 					</button>
 				</div>
@@ -149,10 +155,15 @@
 
 		<div class="modal-action">
 			<button class="btn btn-error" onclick={handleCancel}>
-				<i class="fas fa-xmark"></i>{m.abort()}
+				<i aria-hidden="true" class="ph-fill ph-x"></i>{m.abort()}
 			</button>
 		</div>
 	</div>
-	<button type="button" class="modal-backdrop" onclick={handleCancel} aria-label="Close modal"
+	<button
+		type="button"
+		class="modal-backdrop"
+		tabindex="-1"
+		onclick={handleCancel}
+		aria-label={m.close()}
 	></button>
 </dialog>

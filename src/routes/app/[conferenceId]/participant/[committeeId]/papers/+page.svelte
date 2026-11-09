@@ -56,7 +56,7 @@
 				type: true,
 				alpha2Code: true,
 				alpha3Code: true,
-				faIcon: true
+				icon: true
 			}
 		},
 		editors: { id: true, conferenceUser: { id: true } },
@@ -156,7 +156,10 @@
 			disabled={creating || !committee?.activeAgendaItem}
 			onclick={createPaper}
 		>
-			{#if creating}<i class="fas fa-spinner fa-spin"></i>{:else}<i class="fas fa-plus"></i>{/if}
+			{#if creating}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>{:else}<i
+					aria-hidden="true"
+					class="ph-fill ph-plus"
+				></i>{/if}
 			{m.newWorkingPaper()}
 		</button>
 		<div class="join" data-tour="papers.redeem">
@@ -167,8 +170,8 @@
 				bind:value={code}
 			/>
 			<button class="btn join-item" disabled={redeeming || !code.trim()} onclick={redeem}>
-				{#if redeeming}<i class="fas fa-spinner fa-spin"></i>{:else}<i class="fas fa-ticket"
-					></i>{/if}
+				{#if redeeming}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"
+					></i>{:else}<i aria-hidden="true" class="ph-fill ph-ticket"></i>{/if}
 				{m.redeem()}
 			</button>
 		</div>
@@ -198,7 +201,7 @@
 						<span class="badge badge-sm {statusBadgeClass(p.status as PaperStatus)}">
 							{statusLabel(p.status as PaperStatus)}
 						</span>
-						<i class="fas fa-chevron-right opacity-50"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-right opacity-50"></i>
 					</div>
 				</a>
 			{/each}
@@ -227,12 +230,13 @@
 							{/if}
 						</div>
 						<span class="badge badge-ghost gap-1"
-							><i class="fas fa-handshake"></i>{p.sponsors?.length ?? 0}</span
+							><i aria-hidden="true" class="ph-fill ph-handshake"></i>{p.sponsors?.length ??
+								0}</span
 						>
 						<span class="badge badge-sm {statusBadgeClass(p.status as PaperStatus)}">
 							{statusLabel(p.status as PaperStatus)}
 						</span>
-						<i class="fas fa-chevron-right opacity-50"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-right opacity-50"></i>
 					</div>
 				</a>
 			{/each}
@@ -261,12 +265,13 @@
 							{/if}
 						</div>
 						<span class="badge badge-ghost gap-1"
-							><i class="fas fa-handshake"></i>{p.sponsors?.length ?? 0}</span
+							><i aria-hidden="true" class="ph-fill ph-handshake"></i>{p.sponsors?.length ??
+								0}</span
 						>
 						<span class="badge badge-sm {statusBadgeClass(p.status as PaperStatus)}">
 							{statusLabel(p.status as PaperStatus)}
 						</span>
-						<i class="fas fa-chevron-right opacity-50"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-right opacity-50"></i>
 					</div>
 				</a>
 			{/each}

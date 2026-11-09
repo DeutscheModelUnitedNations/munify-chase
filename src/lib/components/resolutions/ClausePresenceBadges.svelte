@@ -35,11 +35,11 @@
 
 	function getAvatar(info: (typeof editorsWithMeta)[number]): {
 		emoji: string | null;
-		faIcon: string;
+		icon: string;
 		label: string;
 	} {
 		const meta = info.userMeta;
-		if (!meta) return { emoji: null, faIcon: 'fa-user', label: info.user.name || '?' };
+		if (!meta) return { emoji: null, icon: 'user', label: info.user.name || '?' };
 
 		const isParticipant =
 			meta.conferenceUserType === 'DELEGATE' || meta.conferenceUserType === 'NON_STATE_ACTOR';
@@ -49,14 +49,14 @@
 				(meta.alpha3Code ? getTranslatedCountryNameFromAlpha3Code(meta.alpha3Code) : null) ??
 				meta.nationName ??
 				'?';
-			return { emoji: toFlagEmoji(meta.alpha2Code), faIcon: 'fa-earth-europe', label };
+			return { emoji: toFlagEmoji(meta.alpha2Code), icon: 'globe-hemisphere-east', label };
 		}
 
 		if (isTeam(viewer)) {
-			return { emoji: null, faIcon: 'fa-user', label: info.user.name || '?' };
+			return { emoji: null, icon: 'user', label: info.user.name || '?' };
 		}
 
-		return { emoji: null, faIcon: 'fa-shield', label: m.roleTeam() };
+		return { emoji: null, icon: 'shield', label: m.roleTeam() };
 	}
 </script>
 
@@ -77,7 +77,11 @@
 					{#if avatar.emoji}
 						{avatar.emoji}
 					{:else}
-						<i class="fas {avatar.faIcon} text-base-content/50" style="font-size: 0.5rem"></i>
+						<i
+							aria-hidden="true"
+							class="ph-fill ph-{avatar.icon} text-base-content/50"
+							style="font-size: 0.5rem"
+						></i>
 					{/if}
 				</div>
 			</div>

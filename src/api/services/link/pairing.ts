@@ -30,21 +30,27 @@ export async function receiveLinkRequest({
 	linkSecret();
 	const removedId = await db.transaction(async (tx) => {
 		const existing = await tx.query.instanceLink.findFirst({ columns: { id: true, status: true } });
-		if (existing && existing.status !== 'FROZEN') {
-			throw new GraphQLError('This instance is already linked, or a link request is pending.');
-		}
-		if (existing)
-			await tx.delete(schema.instanceLink).where(eq(schema.instanceLink.id, existing.id));
+		const replaced = replaceableLink(existing);
+		if (replaced) await tx.delete(schema.instanceLink).where(eq(schema.instanceLink.id, replaced));
 		await tx.insert(schema.instanceLink).values({
 			remoteUrl,
 			outboundToken: sealLinkToken(token),
 			confirmationCode,
 			status: 'PENDING'
 		});
-		return existing?.id;
+		return replaced;
 	});
 	if (removedId) instanceLinkPubsub.removed();
 	instanceLinkPubsub.created();
+}
+
+/** A link a new request may replace: only a frozen one. Its id, or none when there is no link. */
+function replaceableLink(existing: { id: string; status: string } | undefined) {
+	if (!existing) return undefined;
+	if (existing.status !== 'FROZEN') {
+		throw new GraphQLError('This instance is already linked, or a link request is pending.');
+	}
+	return existing.id;
 }
 
 export async function approveLink({ confirmationCode }: { confirmationCode: string }) {

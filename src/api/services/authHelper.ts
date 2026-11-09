@@ -12,7 +12,7 @@ export function isAdminEmail(email: string) {
 }
 
 /** A filter no row matches, for a rule that grants nothing. */
-export const NO_ROWS = { RAW: sql`false` };
+const NO_ROWS = { RAW: sql`false` };
 
 /**
  * A filter every row matches, for a global admin. Not `{}`: inside an `OR` (the paper's update
@@ -169,7 +169,7 @@ export function isPaperAuthor(ctx: Context) {
 }
 
 /** The linked MUNify DELEGATOR calling with its token, once the link is approved. */
-export async function isLinkedDelegator(ctx: Context) {
+async function isLinkedDelegator(ctx: Context) {
 	return (await ctx.linkCaller())?.status === 'ACTIVE';
 }
 

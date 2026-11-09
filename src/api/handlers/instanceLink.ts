@@ -24,7 +24,7 @@ abilityBuilder.instanceLink.allow('read').when(() => ({
 	columns: { id: true, remoteUrl: true, status: true }
 }));
 
-export const InstanceLinkRef = object({ table: 'instanceLink' });
+object({ table: 'instanceLink' });
 
 query({ table: 'instanceLink' });
 

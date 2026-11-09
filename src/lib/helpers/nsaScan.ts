@@ -44,6 +44,49 @@ export type NsaScan<T extends NsaCandidate> =
 type PersonClaims = Extract<SignedCodeClaims, { kind: 'live' | 'nsaCard' }>;
 type Signed = { signedBy: 'delegator' | 'own'; claims: PersonClaims };
 
+/** This instance only ever signs cards; DELEGATOR's nametags and cards both count. */
+function isPersonClaim(
+	claims: SignedCodeClaims,
+	signedBy: Signed['signedBy']
+): claims is PersonClaims {
+	return claims.kind === 'nsaCard' || (claims.kind === 'live' && signedBy === 'delegator');
+}
+
+/** What a genuine code's claims say about an NSA of this conference. */
+function acceptClaims({
+	claims,
+	signedBy,
+	conferenceId
+}: {
+	claims: SignedCodeClaims;
+	signedBy: Signed['signedBy'];
+	conferenceId: string;
+}): Signed | NsaScanFailure {
+	if (!isPersonClaim(claims, signedBy)) return 'wrongKind';
+	if (claims.conferenceId !== conferenceId) return 'otherConference';
+	return { signedBy, claims };
+}
+
+/** The code checked against one side's keys; nothing when that side has none. */
+async function checkAgainst({
+	code,
+	keys,
+	signedBy,
+	conferenceId,
+	now
+}: {
+	code: string;
+	keys: SignedCodeKeys;
+	signedBy: Signed['signedBy'];
+	conferenceId: string;
+	now: number;
+}): Promise<Signed | NsaScanFailure | undefined> {
+	if (keys.size === 0) return undefined;
+	const check = await verifySignedCode({ text: code, keys, now });
+	if (check.valid) return acceptClaims({ claims: check.claims, signedBy, conferenceId });
+	return check.reason === 'expired' ? 'expired' : 'forged';
+}
+
 /** The code checked against DELEGATOR's keys, then this instance's: who signed it, and what it says. */
 async function verifyScan({
 	code,
@@ -59,21 +102,10 @@ async function verifyScan({
 	if (!looksLikeSignedCode(code)) return 'unsigned';
 	let failure: NsaScanFailure = 'noKey';
 	for (const signedBy of ['delegator', 'own'] as const) {
-		if (keys[signedBy].size === 0) continue;
-		const check = await verifySignedCode({ text: code, keys: keys[signedBy], now });
-		if (!check.valid) {
-			// only the other side's keys may still make it genuine
-			if (check.reason === 'expired') return 'expired';
-			failure = 'forged';
-			continue;
-		}
-		const { claims } = check;
-		// this instance only ever signs cards; DELEGATOR's nametags and cards both count
-		if (claims.kind === 'nsaCard' || (claims.kind === 'live' && signedBy === 'delegator')) {
-			if (claims.conferenceId !== conferenceId) return 'otherConference';
-			return { signedBy, claims };
-		}
-		return 'wrongKind';
+		const result = await checkAgainst({ code, keys: keys[signedBy], signedBy, conferenceId, now });
+		// a forged one: only the other side's keys may still make it genuine
+		if (result === 'forged') failure = 'forged';
+		else if (result !== undefined) return result;
 	}
 	return failure;
 }

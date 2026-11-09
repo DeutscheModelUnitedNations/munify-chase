@@ -19,3 +19,22 @@ export function searchNsas<
 		})
 		.slice(0, limit);
 }
+
+/** A conference user as the NSA scanner and its name search use it. */
+export function nsaOfUser(user: {
+	id: string;
+	name?: string | null;
+	userEmail: string;
+	delegatorUserId?: string | null;
+	cardNumber: number;
+	conferenceMember?: { representation?: { name?: string | null } | null } | null;
+}) {
+	return {
+		id: user.id,
+		name: user.name ?? null,
+		userEmail: user.userEmail,
+		delegatorUserId: user.delegatorUserId ?? null,
+		cardNumber: user.cardNumber,
+		nsaName: user.conferenceMember?.representation?.name ?? null
+	};
+}

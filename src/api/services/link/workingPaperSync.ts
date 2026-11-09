@@ -62,30 +62,34 @@ export async function syncWorkingPapers({
 	const leftBehind: LeftBehind[] = [...changes.leftBehind];
 
 	for (const paper of changes.takeOver) {
-		const content = readableResolution(contents.get(paper.versionId));
-		if (!content) {
-			leftBehind.push({ paperId: paper.delegatorPaperId, reason: 'unreadable' });
-			continue;
-		}
-		if (paper.draftId) {
-			await replaceText({ draftId: paper.draftId, version: paper.version, content });
-		} else {
-			await createDraft({ paper, content });
-		}
+		const taken = await takeOver({ paper, content: contents.get(paper.versionId) });
+		if (!taken) leftBehind.push({ paperId: paper.delegatorPaperId, reason: 'unreadable' });
 	}
-
-	if (changes.remove.length > 0) {
-		await db
-			.delete(schema.resolutionPaper)
-			.where(
-				and(
-					inArray(schema.resolutionPaper.id, changes.remove),
-					isNull(schema.resolutionPaper.detachedAt)
-				)
-			);
-		paperPubsub.removed();
-	}
+	await removeDrafts(changes.remove);
 	return leftBehind;
+}
+
+/** Writes one paper's text into its draft, or a new draft; false when the text is unreadable. */
+async function takeOver({ paper, content }: { paper: PaperToTakeOver; content: unknown }) {
+	const resolution = readableResolution(content);
+	if (!resolution) return false;
+	if (paper.draftId) {
+		await replaceText({ draftId: paper.draftId, version: paper.version, content: resolution });
+	} else {
+		await createDraft({ paper, content: resolution });
+	}
+	return true;
+}
+
+/** Drafts whose paper DELEGATOR no longer offers; one somebody detached stays. */
+async function removeDrafts(ids: readonly string[]) {
+	if (ids.length === 0) return;
+	await db
+		.delete(schema.resolutionPaper)
+		.where(
+			and(inArray(schema.resolutionPaper.id, [...ids]), isNull(schema.resolutionPaper.detachedAt))
+		);
+	paperPubsub.removed();
 }
 
 /** The texts of the given versions, by id; a list answers at most a page. */

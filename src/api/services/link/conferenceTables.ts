@@ -1,5 +1,6 @@
 import type { DelegatorClient } from './delegatorRemote';
 import type { DelegatorTables } from './joinTables';
+import { participantIdsOf, sameIds, seatsKey, userIdsOf } from './followedIds';
 import { liveTable, type Gate, type LiveResult } from './liveTable';
 
 /**
@@ -144,46 +145,41 @@ export function watchConferenceTables({
 
 	/** The seated delegations, as last seen. */
 	let seats: string | undefined;
-	const sameIds = (a: readonly string[], b: readonly string[]) =>
-		a.length === b.length && a.every((id, i) => id === b[i]);
-	const idsOf = (values: Iterable<string>) => [...new Set(values)].sort();
+
+	/** The members follow the seats: a list hears of its rows changing, not of rows coming in. */
+	function followSeats() {
+		if (!tables.delegations.ready()) return;
+		const now = seatsKey(tables.delegations.rows());
+		if (seats !== undefined && seats !== now) tables.delegationMembers.refresh();
+		seats = now;
+	}
+
+	function followParticipants() {
+		const { delegationMembers, singleParticipants, supervisors } = tables;
+		if (![delegationMembers, singleParticipants, supervisors].every((t) => t.ready())) return;
+		const now = participantIdsOf({
+			delegationMembers: delegationMembers.rows(),
+			singleParticipants: singleParticipants.rows(),
+			supervisors: supervisors.rows()
+		});
+		if (sameIds(now, participantIds)) return;
+		participantIds = now;
+		tables.participants.refresh();
+	}
+
+	function followUsers() {
+		if (!tables.participants.ready() || !tables.teamMembers.ready()) return;
+		const now = userIdsOf([...tables.participants.rows(), ...tables.teamMembers.rows()]);
+		if (sameIds(now, userIds)) return;
+		userIds = now;
+		tables.users.refresh();
+	}
 
 	/** After any table changed: asks the tables that follow from it again, when what they follow changed. */
 	function changed() {
-		const { delegations, delegationMembers, singleParticipants, supervisors, participants } =
-			tables;
-		if (delegations.ready()) {
-			const now = delegations
-				.rows()
-				.filter((row) => row.assignedRoleId)
-				.map((row) => `${row.id}:${row.assignedRoleId}`)
-				.sort()
-				.join(',');
-			if (seats !== undefined && seats !== now) delegationMembers.refresh();
-			seats = now;
-		}
-		if (delegationMembers.ready() && singleParticipants.ready() && supervisors.ready()) {
-			const now = idsOf(
-				[
-					...delegationMembers.rows(),
-					...singleParticipants.rows().filter((row) => row.assignedRoleId),
-					...supervisors.rows()
-				].map((row) => row.conferenceParticipantId)
-			);
-			if (!sameIds(now, participantIds)) {
-				participantIds = now;
-				participants.refresh();
-			}
-		}
-		if (participants.ready() && tables.teamMembers.ready()) {
-			const now = idsOf(
-				[...participants.rows(), ...tables.teamMembers.rows()].map((row) => row.userId)
-			);
-			if (!sameIds(now, userIds)) {
-				userIds = now;
-				tables.users.refresh();
-			}
-		}
+		followSeats();
+		followParticipants();
+		followUsers();
 		onChange();
 	}
 

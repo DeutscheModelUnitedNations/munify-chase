@@ -577,117 +577,8 @@ export const optimistic: OptimisticMutationConfig = {
 	// -------------------------------------------------------------------------
 	// presenceEvent.ts
 	// -------------------------------------------------------------------------
-	recordNsaCheckIn: (args, cache) => {
-		const id = ensureId(args);
-		const now = getServerTime().toDate();
-		// Best-effort: try to resolve the NSA conferenceUser from the cache by scanning
-		// known Conferenceuser entries. If we can't find them we still return a phantom
-		// event — the conferenceUserId will be reconciled when the real response arrives.
-		const target = nsaTargetInCache(cache, args.conferenceUserId);
-		const conferenceUserId = target?.id ?? `pending-${id}`;
-
-		// If the user is currently checked into a different committee, mirror the server's
-		// AUTO_SWITCH side effect: flip their derived fields and the latest event chain.
-		if (
-			target?.isCheckedIn &&
-			target.currentCommitteeId &&
-			target.currentCommitteeId !== args.committeeId
-		) {
-			cache.writeFragment(
-				gql`
-					fragment NsaAutoSwitch on Conferenceuser {
-						id
-						isCheckedIn
-						currentCommitteeId
-						currentCheckedInSince
-					}
-				`,
-				{
-					__typename: 'Conferenceuser',
-					id: target.id,
-					isCheckedIn: true,
-					currentCommitteeId: args.committeeId,
-					currentCheckedInSince: now
-				}
-			);
-		} else if (target) {
-			cache.writeFragment(
-				gql`
-					fragment NsaCheckIn on Conferenceuser {
-						id
-						isCheckedIn
-						currentCommitteeId
-						currentCheckedInSince
-					}
-				`,
-				{
-					__typename: 'Conferenceuser',
-					id: target.id,
-					isCheckedIn: true,
-					currentCommitteeId: args.committeeId,
-					currentCheckedInSince: now
-				}
-			);
-		}
-
-		return {
-			__typename: 'Presenceevent',
-			id,
-			conferenceUserId,
-			conferenceUser: { __typename: 'Conferenceuser', id: conferenceUserId },
-			committeeId: args.committeeId,
-			committee: { __typename: 'Committee', id: args.committeeId as string },
-			present: true,
-			type: 'NSA_SCAN',
-			timestamp: now,
-			note: null,
-			rollCallSessionId: null,
-			rollCallSession: null,
-			triggeredBy: null
-		};
-	},
-	recordNsaCheckOut: (args, cache) => {
-		const id = ensureId(args);
-		const now = getServerTime().toDate();
-		const target = nsaTargetInCache(cache, args.conferenceUserId);
-		const conferenceUserId = target?.id ?? `pending-${id}`;
-
-		if (target) {
-			cache.writeFragment(
-				gql`
-					fragment NsaCheckOut on Conferenceuser {
-						id
-						isCheckedIn
-						currentCommitteeId
-						currentCheckedInSince
-					}
-				`,
-				{
-					__typename: 'Conferenceuser',
-					id: target.id,
-					isCheckedIn: false,
-					currentCommitteeId: null,
-					currentCheckedInSince: null
-				}
-			);
-		}
-
-		return {
-			__typename: 'Presenceevent',
-			id,
-			conferenceUserId,
-			conferenceUser: { __typename: 'Conferenceuser', id: conferenceUserId },
-			committeeId: args.committeeId,
-			committee: { __typename: 'Committee', id: args.committeeId as string },
-			present: false,
-			type: 'NSA_SCAN',
-			timestamp: now,
-			note: null,
-			rollCallSessionId: null,
-			rollCallSession: null,
-			triggeredBy: null
-		};
-	},
+	recordNsaCheckIn: (args, cache) => optimisticNsaScan({ args, cache, checkIn: true }),
+	recordNsaCheckOut: (args, cache) => optimisticNsaScan({ args, cache, checkIn: false }),
 	insertPresenceEvent: (args, cache) => {
 		const id = ensureId(args);
 		const timestamp = (args.timestamp as Date | string | undefined) ?? getServerTime().toDate();
@@ -1903,6 +1794,80 @@ export const optimistic: OptimisticMutationConfig = {
  * person itself (a scanned code, verified offline, or a pick from the name search) and sends their
  * id along; the server checks the code again.
  */
+/**
+ * A chair's NSA scan, before the server answers. Best-effort: the NSA is looked up in the cache;
+ * without them it is still a phantom event, which the real response reconciles. Checking in here
+ * also covers the server checking them out of another committee first (AUTO_SWITCH).
+ */
+function optimisticNsaScan({
+	args,
+	cache,
+	checkIn
+}: {
+	args: Record<string, unknown>;
+	cache: Cache;
+	checkIn: boolean;
+}) {
+	const id = ensureId(args);
+	const now = getServerTime().toDate();
+	const committeeId = args.committeeId as string;
+	const target = nsaTargetInCache(cache, args.conferenceUserId);
+	const conferenceUserId = target?.id ?? `pending-${id}`;
+	if (target) {
+		writeNsaPresence(
+			checkIn
+				? { cache, id: target.id, committeeId, since: now }
+				: { cache, id: target.id, committeeId: null, since: null }
+		);
+	}
+	return {
+		__typename: 'Presenceevent',
+		id,
+		conferenceUserId,
+		conferenceUser: { __typename: 'Conferenceuser', id: conferenceUserId },
+		committeeId,
+		committee: { __typename: 'Committee', id: committeeId },
+		present: checkIn,
+		type: 'NSA_SCAN',
+		timestamp: now,
+		note: null,
+		rollCallSessionId: null,
+		rollCallSession: null,
+		triggeredBy: null
+	};
+}
+
+/** An NSA's derived presence fields: checked into `committeeId` since `since`, or out (`null`). */
+function writeNsaPresence({
+	cache,
+	id,
+	committeeId,
+	since
+}: {
+	cache: Cache;
+	id: string;
+	committeeId: string | null;
+	since: Date | null;
+}) {
+	cache.writeFragment(
+		gql`
+			fragment NsaPresence on Conferenceuser {
+				id
+				isCheckedIn
+				currentCommitteeId
+				currentCheckedInSince
+			}
+		`,
+		{
+			__typename: 'Conferenceuser',
+			id,
+			isCheckedIn: committeeId !== null,
+			currentCommitteeId: committeeId,
+			currentCheckedInSince: since
+		}
+	);
+}
+
 function nsaTargetInCache(
 	cache: Cache,
 	conferenceUserId: unknown

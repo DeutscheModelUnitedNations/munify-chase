@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rowChanges } from './rowChanges';
+import { displacedExtras, rowChanges } from './rowChanges';
 
 const managed = { managedByDelegator: true };
 const none: { id: string; name: string }[] = [];
@@ -59,5 +59,31 @@ describe('rowChanges', () => {
 			fields: ['start', 'location']
 		});
 		expect(changes.write).toEqual([]);
+	});
+});
+
+describe('displacedExtras', () => {
+	const mirrored = [{ id: 'm1', userEmail: 'a@example.org' }];
+
+	it('names a local extra sharing a mirrored address', () => {
+		expect(
+			displacedExtras({
+				current: [{ id: 'x', userEmail: 'a@example.org', managedByDelegator: false }],
+				mirrored
+			})
+		).toEqual(['x']);
+	});
+
+	it('keeps managed rows, the mirrored row itself and other addresses', () => {
+		expect(
+			displacedExtras({
+				current: [
+					{ id: 'm1', userEmail: 'a@example.org', managedByDelegator: false },
+					{ id: 'm2', userEmail: 'a@example.org', managedByDelegator: true },
+					{ id: 'y', userEmail: 'b@example.org', managedByDelegator: false }
+				],
+				mirrored
+			})
+		).toEqual([]);
 	});
 });

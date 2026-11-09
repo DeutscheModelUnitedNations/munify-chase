@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { searchNsas } from './nsaSearch';
+import { nsaOfUser, searchNsas } from './nsaSearch';
 
 const nsas = [
 	{ name: 'Zoë Müller', userEmail: 'zoe@example.org', nsaName: 'Amnesty International' },
@@ -18,5 +18,38 @@ describe('searchNsas', () => {
 
 	it('finds nobody for an empty query', () => {
 		expect(searchNsas({ nsas, query: '  ' })).toEqual([]);
+	});
+});
+
+describe('nsaOfUser', () => {
+	it('takes the organisation from the representation', () => {
+		expect(
+			nsaOfUser({
+				id: 'u1',
+				name: 'Zoë',
+				userEmail: 'zoe@example.org',
+				delegatorUserId: 'd1',
+				cardNumber: 2,
+				conferenceMember: { representation: { name: 'Amnesty International' } }
+			})
+		).toEqual({
+			id: 'u1',
+			name: 'Zoë',
+			userEmail: 'zoe@example.org',
+			delegatorUserId: 'd1',
+			cardNumber: 2,
+			nsaName: 'Amnesty International'
+		});
+	});
+
+	it('fills what is missing with null', () => {
+		expect(nsaOfUser({ id: 'u2', userEmail: 'press@example.org', cardNumber: 0 })).toEqual({
+			id: 'u2',
+			name: null,
+			userEmail: 'press@example.org',
+			delegatorUserId: null,
+			cardNumber: 0,
+			nsaName: null
+		});
 	});
 });

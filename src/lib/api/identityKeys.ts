@@ -1,5 +1,6 @@
 import { client } from '#lib/api/rumbleClient/client';
 import type { IdentityKeys } from '#lib/helpers/nsaScan';
+import { z } from 'zod/v4';
 
 const STORAGE_KEY = 'identityKeys';
 
@@ -14,24 +15,25 @@ const toKeys = (stored: StoredKeys): IdentityKeys => ({
 	own: toMap(stored.own)
 });
 
-function keyList(value: unknown): KeyList {
-	if (!Array.isArray(value)) return [];
-	return value.flatMap((entry: unknown) => {
-		if (typeof entry !== 'object' || entry === null) return [];
-		const kid: unknown = Reflect.get(entry, 'kid');
-		const publicKey: unknown = Reflect.get(entry, 'publicKey');
-		return typeof kid === 'number' && typeof publicKey === 'string' ? [{ kid, publicKey }] : [];
-	});
-}
+const keyEntry = z.object({ kid: z.number(), publicKey: z.string() });
+/** A stored list as far as it is readable: malformed entries are dropped, anything else is none. */
+const keyListSchema = z
+	.array(z.unknown())
+	.catch([])
+	.transform((entries): KeyList =>
+		entries.flatMap((entry) => {
+			const parsed = keyEntry.safeParse(entry);
+			return parsed.success ? [{ kid: parsed.data.kid, publicKey: parsed.data.publicKey }] : [];
+		})
+	);
+const storedSchema = z.object({ delegator: keyListSchema, own: keyListSchema });
+
+const keyList = (value: unknown): KeyList => keyListSchema.parse(value);
 
 function readStored(): IdentityKeys | null {
 	try {
-		const stored: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
-		if (typeof stored !== 'object' || stored === null) return null;
-		return toKeys({
-			delegator: keyList(Reflect.get(stored, 'delegator')),
-			own: keyList(Reflect.get(stored, 'own'))
-		});
+		const stored = storedSchema.safeParse(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null'));
+		return stored.success ? toKeys(stored.data) : null;
 	} catch {
 		return null;
 	}

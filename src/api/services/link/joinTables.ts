@@ -39,7 +39,7 @@ export interface DelegatorTables {
 }
 
 /** Ids rows point at that their table does not hold (yet): asked for again before they count. */
-export interface MissingRows {
+interface MissingRows {
 	users: string[];
 	participants: string[];
 	delegations: string[];

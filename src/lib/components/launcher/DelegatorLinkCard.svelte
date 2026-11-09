@@ -86,11 +86,15 @@
 			{m.delegatorLinkActiveTitle()}
 		</h2>
 		<p class="m-0 text-sm">{m.delegatorLinkActiveBody({ url: link.remoteUrl })}</p>
-		<dl class="m-0 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
-			<dt class="text-base-content/60">{m.delegatorLinkLinkedAt()}</dt>
-			<dd class="m-0">{formatTime(link.linkedAt)}</dd>
-			<dt class="text-base-content/60">{m.delegatorLinkLastSync()}</dt>
-			<dd class="m-0">{formatTime(link.lastReconcileAt)}</dd>
+		<dl class="m-0 flex flex-col gap-1 text-sm">
+			<div class="flex flex-wrap gap-x-6">
+				<dt class="text-base-content/60">{m.delegatorLinkLinkedAt()}</dt>
+				<dd class="m-0">{formatTime(link.linkedAt)}</dd>
+			</div>
+			<div class="flex flex-wrap gap-x-6">
+				<dt class="text-base-content/60">{m.delegatorLinkLastSync()}</dt>
+				<dd class="m-0">{formatTime(link.lastReconcileAt)}</dd>
+			</div>
 		</dl>
 		{#if link.lastError}
 			<div class="alert alert-warning text-sm">

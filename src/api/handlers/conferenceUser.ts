@@ -127,7 +127,7 @@ abilityBuilder.conferenceUser.allow(['update', 'delete']).when((ctx) => ({
 	where: { ...isAdminInConference(ctx), ...NOT_MANAGED_BY_DELEGATOR }
 }));
 
-export const ConferenceUserRef = object({
+const ConferenceUserRef = object({
 	table: 'conferenceUser',
 	adjust: (t) => ({
 		// Override the auto-generated `user` relation to be nullable: rumble

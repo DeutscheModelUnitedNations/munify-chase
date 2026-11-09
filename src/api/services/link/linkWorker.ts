@@ -1,5 +1,11 @@
 import { db, schema } from '#api/db/db';
 import { and, eq, sql } from 'drizzle-orm';
+import {
+	conferenceChange,
+	openConferences,
+	tablesToAskAgain,
+	type ConferenceRow
+} from './conferenceRows';
 import { watchConferenceTables, type ConferenceTables } from './conferenceTables';
 import { createDelegatorClient, type DelegatorClient } from './delegatorRemote';
 import { joinTables } from './joinTables';
@@ -35,16 +41,6 @@ const CONFERENCE = {
 	state: true,
 	assignmentReleased: true
 } as const;
-
-interface ConferenceRow {
-	id: string;
-	title: string;
-	location?: string | null;
-	startConference: Date;
-	endConference: Date;
-	state: string;
-	assignmentReleased: boolean;
-}
 
 let running: { stop: () => void } | undefined;
 
@@ -117,28 +113,34 @@ function runWorker() {
 		cleanups.push(() => remote.dispose());
 
 		/** Brings one conference's mirror up to what the tables hold, once they all answered. */
-		const apply = async (conferenceId: string) => {
+		/** A conference whose tables have all answered, with them. */
+		const answered = (conferenceId: string) => {
 			const watch = watches.get(conferenceId);
 			const conference = conferences.get(conferenceId);
-			if (!watch || !conference || !watch.ready()) return;
+			return watch?.ready() && conference ? { watch, conference } : undefined;
+		};
+
+		const apply = async (conferenceId: string) => {
+			const ready = answered(conferenceId);
+			if (!ready) return;
+			const { watch, conference } = ready;
 			const { source, papers, missing } = joinTables({ conference, tables: watch.tables() });
 
-			// a row pointing at one its table does not hold yet: that table is asked again once, and
-			// the mirror waits for the answer rather than dropping the person meanwhile
-			const asked = askedAgain.get(conferenceId) ?? new Set<string>();
-			const again = (ids: string[]) => ids.some((id) => !asked.has(id));
-			const stale = [
-				...(again(missing.users) ? (['users'] as const) : []),
-				...(again(missing.participants) ? (['participants'] as const) : []),
-				...(again(missing.delegations) ? (['delegations'] as const) : [])
-			];
-			const stillMissing = [...missing.users, ...missing.participants, ...missing.delegations];
-			askedAgain.set(conferenceId, new Set(stillMissing));
-			if (stale.length > 0) {
-				watch.refresh(stale);
-				return;
-			}
+			const { stale, stillMissing } = tablesToAskAgain({
+				missing,
+				asked: askedAgain.get(conferenceId) ?? new Set()
+			});
+			askedAgain.set(conferenceId, stillMissing);
+			if (stale.length > 0) return watch.refresh(stale);
 
+			await writeMirror({ conferenceId, source, papers });
+		};
+
+		const writeMirror = async ({
+			conferenceId,
+			source,
+			papers
+		}: { conferenceId: string } & Pick<ReturnType<typeof joinTables>, 'source' | 'papers'>) => {
 			try {
 				await reconcileConference(mirrorConference(source));
 				// after the mirror: a draft needs its committee, agenda item and seat in place
@@ -193,49 +195,37 @@ function runWorker() {
 		// DELEGATOR shows the link the conferences it mirrors; a public one that has ended may still be
 		// readable, so the state decides. Set up again on every (re)connect: a first answer that failed
 		// (the other side was away) leaves no watch behind otherwise.
+		/** Conferences that ended or went away: their watch stops and CHASE keeps them as they are. */
+		const release = (current: ReadonlyMap<string, ConferenceRow>) => {
+			for (const [conferenceId, tables] of watches) {
+				if (current.has(conferenceId)) continue;
+				tables.stop();
+				watches.delete(conferenceId);
+				conferences.delete(conferenceId);
+				void releaseConference(conferenceId).catch((error) =>
+					recordError({ linkId: link.id, error })
+				);
+			}
+		};
+
+		const follow = (row: ConferenceRow) => {
+			const change = conferenceChange({ before: conferences.get(row.id), row });
+			conferences.set(row.id, row);
+			const tables = watches.get(row.id);
+			if (!tables) return void watches.set(row.id, watch(row.id));
+			if (change.refresh) tables.refresh();
+			if (change.write) schedule(row.id);
+		};
+
 		let unwatchConferences: (() => void) | undefined;
 		const watchConferences = () => {
 			unwatchConferences?.();
 			const list = handled(remote.liveQuery.conferences(CONFERENCE), failed);
 			unwatchConferences = list.subscribe((rows) => {
 				if (!rows || stopped) return;
-				const current = new Map(
-					Array.from(rows)
-						.filter((row) => row.state !== 'POST')
-						.map((row): [string, ConferenceRow] => [
-							row.id,
-							{
-								id: row.id,
-								title: row.title,
-								location: row.location,
-								startConference: row.startConference,
-								endConference: row.endConference,
-								state: row.state,
-								assignmentReleased: row.assignmentReleased
-							}
-						])
-				);
-				for (const [conferenceId, tables] of watches) {
-					if (current.has(conferenceId)) continue;
-					tables.stop();
-					watches.delete(conferenceId);
-					conferences.delete(conferenceId);
-					void releaseConference(conferenceId).catch((error) =>
-						recordError({ linkId: link.id, error })
-					);
-				}
-				for (const [conferenceId, row] of current) {
-					const before = conferences.get(conferenceId);
-					conferences.set(conferenceId, row);
-					const tables = watches.get(conferenceId);
-					if (!tables) {
-						watches.set(conferenceId, watch(conferenceId));
-						continue;
-					}
-					// what the link may read follows the release, without the tables changing
-					if (before && before.assignmentReleased !== row.assignmentReleased) tables.refresh();
-					if (!before || !sameConference(before, row)) schedule(conferenceId);
-				}
+				const current = openConferences(rows);
+				release(current);
+				for (const row of current.values()) follow(row);
 			});
 		};
 		// A stream that broke takes the subscriptions on it along, so every table is asked again
@@ -252,17 +242,6 @@ function runWorker() {
 	});
 
 	return { stop };
-}
-
-function sameConference(a: ConferenceRow, b: ConferenceRow) {
-	return (
-		a.title === b.title &&
-		(a.location ?? null) === (b.location ?? null) &&
-		a.startConference.getTime() === b.startConference.getTime() &&
-		a.endConference.getTime() === b.endConference.getTime() &&
-		a.state === b.state &&
-		a.assignmentReleased === b.assignmentReleased
-	);
 }
 
 /**

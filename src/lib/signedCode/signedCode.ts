@@ -79,7 +79,7 @@ export type SignedCodeClaims =
 	  }
 	| { kind: 'certificate'; issuedAt: number; certificate: CertificateJWTPayload };
 
-export type SignedCodeKind = SignedCodeClaims['kind'];
+type SignedCodeKind = SignedCodeClaims['kind'];
 
 const KIND_LETTERS: Record<SignedCodeKind, string> = {
 	live: 'l',

@@ -34,3 +34,21 @@ function same(a: unknown, b: unknown) {
 	if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime();
 	return (a ?? null) === (b ?? null);
 }
+
+/**
+ * Local extras (people added in CHASE) with the address of someone DELEGATOR now has: they give
+ * way to the mirrored person.
+ */
+export function displacedExtras({
+	current,
+	mirrored
+}: {
+	current: readonly { id: string; userEmail: string; managedByDelegator: boolean }[];
+	mirrored: readonly { id: string; userEmail: string }[];
+}) {
+	const emails = new Set(mirrored.map((user) => user.userEmail));
+	const ids = new Set(mirrored.map((user) => user.id));
+	const displaced = (user: (typeof current)[number]) =>
+		!user.managedByDelegator && !ids.has(user.id) && emails.has(user.userEmail);
+	return current.filter(displaced).map((user) => user.id);
+}

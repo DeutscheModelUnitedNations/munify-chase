@@ -2,7 +2,7 @@ import { db, schema } from '#api/db/db';
 import { pubsub } from '#api/rumble';
 import { eq, inArray, sql } from 'drizzle-orm';
 import type { Mirror } from './mirror';
-import { rowChanges } from './rowChanges';
+import { displacedExtras, rowChanges } from './rowChanges';
 
 /**
  * Writes one DELEGATOR conference into CHASE (`docs/plans/delegator-link.md`): compares the mirror
@@ -31,6 +31,11 @@ function chunks<T>(rows: readonly T[]) {
 		result.push(rows.slice(start, start + CHUNK));
 	}
 	return result;
+}
+
+/** Writes rows a chunk at a time. */
+async function inChunks<T>(rows: readonly T[], write: (chunk: T[]) => Promise<unknown>) {
+	for (const chunk of chunks(rows)) await write(chunk);
 }
 
 /** `excluded.<column>` for an upsert's `set`, which takes the inserted value. */
@@ -156,23 +161,14 @@ export async function reconcileConference(mirror: Mirror) {
 				]
 			})
 		};
-		// a local extra with the address of someone DELEGATOR now has gives way to them
-		const mirroredEmails = new Set(mirror.conferenceUsers.map((user) => user.userEmail));
-		const mirroredIds = new Set(mirror.conferenceUsers.map((user) => user.id));
-		const replacedExtras = users
-			.filter(
-				(user) =>
-					!user.managedByDelegator &&
-					!mirroredIds.has(user.id) &&
-					mirroredEmails.has(user.userEmail)
-			)
-			.map((user) => user.id);
-		const removedUsers = [...c.users.remove, ...replacedExtras];
+		const removedUsers = [
+			...c.users.remove,
+			...displacedExtras({ current: users, mirrored: mirror.conferenceUsers })
+		];
 
 		// --- removals first, children before parents, so renames and moves do not collide
-		const remove = async (table: RemovableTable, ids: readonly string[]) => {
-			for (const chunk of chunks(ids)) await tx.delete(table).where(inArray(table.id, chunk));
-		};
+		const remove = (table: RemovableTable, ids: readonly string[]) =>
+			inChunks(ids, (chunk) => tx.delete(table).where(inArray(table.id, chunk)));
 		await remove(schema.conferenceUser, removedUsers);
 		await remove(schema.conferenceMember, c.conferenceMembers.remove);
 		await remove(schema.committeeMember, c.committeeMembers.remove);
@@ -197,29 +193,29 @@ export async function reconcileConference(mirror: Mirror) {
 					}
 				});
 		}
-		for (const rows of chunks(c.committees.write)) {
+		await inChunks(c.committees.write, (rows) => {
 			const t = schema.committee;
-			await tx
+			return tx
 				.insert(t)
 				.values(rows.map((row) => ({ ...row, conferenceId, ...MANAGED })))
 				.onConflictDoUpdate({
 					target: t.id,
 					set: { name: excluded(t.name), abbreviation: excluded(t.abbreviation), ...MANAGED }
 				});
-		}
-		for (const rows of chunks(c.agendaItems.write)) {
+		});
+		await inChunks(c.agendaItems.write, (rows) => {
 			const t = schema.agendaItem;
-			await tx
+			return tx
 				.insert(t)
 				.values(rows.map((row) => ({ ...row, ...MANAGED })))
 				.onConflictDoUpdate({
 					target: t.id,
 					set: { title: excluded(t.title), committeeId: excluded(t.committeeId), ...MANAGED }
 				});
-		}
-		for (const rows of chunks(c.representations.write)) {
+		});
+		await inChunks(c.representations.write, (rows) => {
 			const t = schema.representation;
-			await tx
+			return tx
 				.insert(t)
 				.values(rows.map((row) => ({ ...row, conferenceId, ...MANAGED })))
 				.onConflictDoUpdate({
@@ -234,10 +230,10 @@ export async function reconcileConference(mirror: Mirror) {
 						...MANAGED
 					}
 				});
-		}
-		for (const rows of chunks(c.committeeMembers.write)) {
+		});
+		await inChunks(c.committeeMembers.write, (rows) => {
 			const t = schema.committeeMember;
-			await tx
+			return tx
 				.insert(t)
 				.values(rows.map((row) => ({ ...row, ...MANAGED })))
 				.onConflictDoUpdate({
@@ -248,20 +244,20 @@ export async function reconcileConference(mirror: Mirror) {
 						...MANAGED
 					}
 				});
-		}
-		for (const rows of chunks(c.conferenceMembers.write)) {
+		});
+		await inChunks(c.conferenceMembers.write, (rows) => {
 			const t = schema.conferenceMember;
-			await tx
+			return tx
 				.insert(t)
 				.values(rows.map((row) => ({ ...row, conferenceId, ...MANAGED })))
 				.onConflictDoUpdate({
 					target: t.id,
 					set: { representationId: excluded(t.representationId), ...MANAGED }
 				});
-		}
-		for (const rows of chunks(c.users.write)) {
+		});
+		await inChunks(c.users.write, (rows) => {
 			const t = schema.conferenceUser;
-			await tx
+			return tx
 				.insert(t)
 				.values(rows.map((row) => ({ ...row, conferenceId, ...MANAGED })))
 				.onConflictDoUpdate({
@@ -277,7 +273,7 @@ export async function reconcileConference(mirror: Mirror) {
 						...MANAGED
 					}
 				});
-		}
+		});
 
 		return { ...c, users: { ...c.users, remove: removedUsers } };
 	});

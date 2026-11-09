@@ -16,6 +16,7 @@ import { createTogetherAI } from '@ai-sdk/togetherai';
 import { createDeepInfra } from '@ai-sdk/deepinfra';
 import { createCerebras } from '@ai-sdk/cerebras';
 import { generateText } from 'ai';
+import { logger } from '#lib/logger';
 
 let currentProviderIndex = 0;
 
@@ -30,7 +31,7 @@ const providers = AI_PROVIDERS?.map((config) => {
 		}
 		case 'openai-compatible': {
 			if (!config.baseURL) {
-				console.warn('openai-compatible provider requires a baseURL, skipping');
+				logger.warn('An openai-compatible AI provider without a baseURL is skipped');
 				return undefined;
 			}
 			const openaiCompatible = createOpenAICompatible({
@@ -97,7 +98,7 @@ const providers = AI_PROVIDERS?.map((config) => {
 			return { model: cerebras(modelName) };
 		}
 		default:
-			console.warn(`Unknown AI provider: ${providerName}`);
+			logger.warn('Unknown AI provider, skipped', { provider: providerName });
 			return undefined;
 	}
 }).filter(Boolean);
@@ -131,7 +132,7 @@ export async function makeAICall(
 				model: provider.model
 			} as Parameters<typeof generateText>[0]);
 		} catch (error) {
-			console.error(`Attempt ${attempt} failed:`, error);
+			logger.error('Calling the AI provider failed', { attempt, err: error });
 			if (attempt === maxIterations) {
 				throw new Error('All attempts to call AI provider failed', { cause: error });
 			}

@@ -11,6 +11,9 @@ import { openYjsRoom } from './yjs/wss';
 import { nativeToRequestEvent } from './services/auth';
 import { OIDC } from './services/OIDC';
 import { context, type Context } from './context';
+import { logger } from '#lib/logger';
+
+const wsLogger = logger.child({ name: 'wss' });
 
 const gqlWSS = new WebSocketServer({ noServer: true });
 const yjsWSS = new WebSocketServer({ noServer: true });
@@ -69,7 +72,7 @@ createWs(
 				const socket = (req as unknown as Record<string, unknown>)[UPGRADE_SOCKET_FIELD] as Socket;
 				startWSValidityChecker(ctx, socket);
 			} catch (err) {
-				console.error('[wss] failed to validate connection_init Bearer token', err);
+				wsLogger.error('Validating the connection_init Bearer token failed', err);
 				return false;
 			}
 		}
@@ -160,7 +163,7 @@ function startWSValidityChecker(ctx: Context, socket: Socket) {
 		} catch (err) {
 			// A transient failure (e.g. the introspection call itself erroring
 			// out) fails open — only a definitive "not live" result disconnects.
-			console.error('[wss] failed to check websocket session liveness', err);
+			wsLogger.error('Checking the session liveness failed', err);
 		}
 	}, SESSION_LIVENESS_CHECK_INTERVAL_MS);
 	socket.once('close', () => clearInterval(interval));

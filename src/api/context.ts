@@ -5,6 +5,7 @@ import {
 	hasSyntheticSvelteRequestEvent,
 	SYNTHETIC_EVENT_FIELD
 } from './services/syntheticRequestEvent';
+import { OidcProviderUnavailableError } from '@m1212e/oidc';
 import { OIDC } from './services/OIDC';
 import { findLinkCaller, type LinkCaller } from './services/link/linkCaller';
 import { LINK_TOKEN_HEADER } from './services/link/linkTokens';
@@ -21,8 +22,10 @@ export function context(req: RequestEvent) {
 	const OIDCRoleNames: (typeof oidcRoles)[number][] = [];
 	if (OIDC_ROLE_CLAIM) {
 		const rolesRaw =
-			(req.locals.oidc?.accessToken as Record<string, unknown> | undefined)?.[OIDC_ROLE_CLAIM] ??
-			(req.locals.oidc?.idToken as Record<string, unknown> | undefined)?.[OIDC_ROLE_CLAIM];
+			(req.locals.oidc?.accessTokenClaims as Record<string, unknown> | undefined)?.[
+				OIDC_ROLE_CLAIM
+			] ??
+			(req.locals.oidc?.idTokenClaims as Record<string, unknown> | undefined)?.[OIDC_ROLE_CLAIM];
 		if (rolesRaw) {
 			// Support both Logto format (array of role objects/strings) and Zitadel format (object with role keys)
 			const collected: string[] = [];
@@ -61,18 +64,17 @@ export function context(req: RequestEvent) {
 		},
 		isSessionLive: async (): Promise<boolean> => {
 			const oidc = req.locals.oidc;
-			if (!oidc) return false;
+			const accessToken = oidc?.tokens.accessToken;
+			if (!oidc || !accessToken) return false;
 
-			if (oidc.checkSessionLive) {
-				const result = await oidc.checkSessionLive();
-				return result.active === true;
+			try {
+				await OIDC.core.processTokens({ access_token: accessToken, subject: oidc.user.sub });
+				return true;
+			} catch (error) {
+				// An unreachable provider says nothing about the session, callers fail open on throws
+				if (error instanceof OidcProviderUnavailableError) throw error;
+				return false;
 			}
-
-			if (oidc.raw?.accessToken) {
-				return Boolean(await OIDC.validateToken(oidc.raw.accessToken));
-			}
-
-			return false;
 		}
 	};
 }

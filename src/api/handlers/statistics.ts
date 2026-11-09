@@ -3,6 +3,7 @@ import { db, schema } from '#api/db/db';
 import { and, count, eq, isNotNull, or, sql } from 'drizzle-orm';
 import { building } from '$app/env';
 import { refreshMaterializedViewsWithLock } from '#api/db/refreshMaterializedViews';
+import { logger } from '#lib/logger';
 
 // Conference-wide stats are heavy aggregations, not time-critical — refreshed
 // every 5 minutes rather than on every request.
@@ -21,7 +22,7 @@ const STATISTICS_VIEWS = [
 if (!building) {
 	setInterval(() => {
 		refreshMaterializedViewsWithLock('refresh_statistics', STATISTICS_VIEWS).catch((err) =>
-			console.error('Failed to refresh statistics materialized views', err)
+			logger.error('Refreshing the statistics materialized views failed', err)
 		);
 	}, STATISTICS_REFRESH_INTERVAL_MS);
 }

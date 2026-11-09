@@ -7,12 +7,94 @@
 			"schema": "public"
 		},
 		{
-			"columns": ["id"],
-			"entityType": "pks",
-			"name": "agenda_item_pkey",
-			"nameExplicit": false,
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "committee",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "committee_member",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "conference",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "conference_member",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "conference_user",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "representation",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "speaker_on_list",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "speakers_list",
+			"schema": "public"
+		},
+		{
+			"entityType": "tables",
+			"isRlsEnabled": false,
+			"name": "user",
+			"schema": "public"
+		},
+		{
+			"entityType": "enums",
+			"name": "committee_status",
 			"schema": "public",
-			"table": "agenda_item"
+			"values": ["FORMAL", "INFORMAL", "PAUSE", "SUSPENSION"]
+		},
+		{
+			"entityType": "enums",
+			"name": "conference_user_type",
+			"schema": "public",
+			"values": ["ADMIN", "TEAM", "SPECTATOR", "DELEGATE", "NON_STATE_ACTOR"]
+		},
+		{
+			"entityType": "enums",
+			"name": "regional_group",
+			"schema": "public",
+			"values": [
+				"AFRICA",
+				"ASIA_PACIFIC",
+				"EASTERN_EUROPE",
+				"LATIN_AMERICA_CARIBBEAN",
+				"WESTERN_EUROPE_OTHERS"
+			]
+		},
+		{
+			"entityType": "enums",
+			"name": "representation_type",
+			"schema": "public",
+			"values": ["DELEGATION", "NSA", "UN"]
+		},
+		{
+			"entityType": "enums",
+			"name": "speakers_list_category",
+			"schema": "public",
+			"values": ["SPEAKERS_LIST", "COMMENT_LIST"]
 		},
 		{
 			"default": null,
@@ -78,33 +160,6 @@
 			"table": "agenda_item",
 			"type": "text",
 			"typeSchema": null
-		},
-		{
-			"columns": ["committee_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "agenda_item_committee_id_committee_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "agenda_item",
-			"tableTo": "committee"
-		},
-		{
-			"entityType": "tables",
-			"isRlsEnabled": false,
-			"name": "committee",
-			"schema": "public"
-		},
-		{
-			"columns": ["id"],
-			"entityType": "pks",
-			"name": "committee_pkey",
-			"nameExplicit": false,
-			"schema": "public",
-			"table": "committee"
 		},
 		{
 			"default": null,
@@ -328,64 +383,6 @@
 			"typeSchema": null
 		},
 		{
-			"columns": ["conference_id", "name"],
-			"entityType": "uniques",
-			"name": "committee_conferenceId_name_unique",
-			"nameExplicit": true,
-			"nullsNotDistinct": false,
-			"schema": "public",
-			"table": "committee"
-		},
-		{
-			"columns": ["conference_id", "abbreviation"],
-			"entityType": "uniques",
-			"name": "committee_conferenceId_abbreviation_unique",
-			"nameExplicit": true,
-			"nullsNotDistinct": false,
-			"schema": "public",
-			"table": "committee"
-		},
-		{
-			"columns": ["conference_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "committee_conference_id_conference_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "committee",
-			"tableTo": "conference"
-		},
-		{
-			"columns": ["active_agenda_item_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "committee_active_agenda_item_id_agenda_item_id_fk",
-			"nameExplicit": false,
-			"onDelete": "NO ACTION",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "committee",
-			"tableTo": "agenda_item"
-		},
-		{
-			"entityType": "tables",
-			"isRlsEnabled": false,
-			"name": "committee_member",
-			"schema": "public"
-		},
-		{
-			"columns": ["id"],
-			"entityType": "pks",
-			"name": "committee_member_pkey",
-			"nameExplicit": false,
-			"schema": "public",
-			"table": "committee_member"
-		},
-		{
 			"default": null,
 			"dimensions": 0,
 			"entityType": "columns",
@@ -464,46 +461,6 @@
 			"typeSchema": null
 		},
 		{
-			"columns": ["committee_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "committee_member_committee_id_committee_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "committee_member",
-			"tableTo": "committee"
-		},
-		{
-			"columns": ["representation_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "committee_member_representation_id_representation_id_fk",
-			"nameExplicit": false,
-			"onDelete": "NO ACTION",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "committee_member",
-			"tableTo": "representation"
-		},
-		{
-			"entityType": "tables",
-			"isRlsEnabled": false,
-			"name": "conference",
-			"schema": "public"
-		},
-		{
-			"columns": ["id"],
-			"entityType": "pks",
-			"name": "conference_pkey",
-			"nameExplicit": false,
-			"schema": "public",
-			"table": "conference"
-		},
-		{
 			"default": null,
 			"dimensions": 0,
 			"entityType": "columns",
@@ -569,20 +526,6 @@
 			"typeSchema": null
 		},
 		{
-			"entityType": "tables",
-			"isRlsEnabled": false,
-			"name": "conference_member",
-			"schema": "public"
-		},
-		{
-			"columns": ["id"],
-			"entityType": "pks",
-			"name": "conference_member_pkey",
-			"nameExplicit": false,
-			"schema": "public",
-			"table": "conference_member"
-		},
-		{
 			"default": null,
 			"dimensions": 0,
 			"entityType": "columns",
@@ -646,46 +589,6 @@
 			"table": "conference_member",
 			"type": "text",
 			"typeSchema": null
-		},
-		{
-			"columns": ["conference_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "conference_member_conference_id_conference_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "conference_member",
-			"tableTo": "conference"
-		},
-		{
-			"columns": ["representation_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "conference_member_representation_id_representation_id_fk",
-			"nameExplicit": false,
-			"onDelete": "NO ACTION",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "conference_member",
-			"tableTo": "representation"
-		},
-		{
-			"entityType": "tables",
-			"isRlsEnabled": false,
-			"name": "conference_user",
-			"schema": "public"
-		},
-		{
-			"columns": ["id"],
-			"entityType": "pks",
-			"name": "conference_user_pkey",
-			"nameExplicit": false,
-			"schema": "public",
-			"table": "conference_user"
 		},
 		{
 			"default": null,
@@ -790,59 +693,6 @@
 			"table": "conference_user",
 			"type": "text",
 			"typeSchema": null
-		},
-		{
-			"columns": ["conference_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "conference_user_conference_id_conference_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "conference_user",
-			"tableTo": "conference"
-		},
-		{
-			"columns": ["conference_member_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "conference_user_conference_member_id_conference_member_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "conference_user",
-			"tableTo": "conference_member"
-		},
-		{
-			"columns": ["committee_member_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "conference_user_committee_member_id_committee_member_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "conference_user",
-			"tableTo": "committee_member"
-		},
-		{
-			"entityType": "tables",
-			"isRlsEnabled": false,
-			"name": "representation",
-			"schema": "public"
-		},
-		{
-			"columns": ["id"],
-			"entityType": "pks",
-			"name": "representation_pkey",
-			"nameExplicit": false,
-			"schema": "public",
-			"table": "representation"
 		},
 		{
 			"default": null,
@@ -975,51 +825,6 @@
 			"typeSchema": null
 		},
 		{
-			"columns": ["conference_id", "name"],
-			"entityType": "uniques",
-			"name": "representation_conferenceId_name_unique",
-			"nameExplicit": true,
-			"nullsNotDistinct": false,
-			"schema": "public",
-			"table": "representation"
-		},
-		{
-			"columns": ["conference_id", "alpha2_code", "alpha3_code"],
-			"entityType": "uniques",
-			"name": "representation_conferenceId_alpha2Code_alpha3Code_unique",
-			"nameExplicit": true,
-			"nullsNotDistinct": false,
-			"schema": "public",
-			"table": "representation"
-		},
-		{
-			"columns": ["conference_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "representation_conference_id_conference_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "representation",
-			"tableTo": "conference"
-		},
-		{
-			"entityType": "tables",
-			"isRlsEnabled": false,
-			"name": "speaker_on_list",
-			"schema": "public"
-		},
-		{
-			"columns": ["id"],
-			"entityType": "pks",
-			"name": "speaker_on_list_pkey",
-			"nameExplicit": false,
-			"schema": "public",
-			"table": "speaker_on_list"
-		},
-		{
 			"default": null,
 			"dimensions": 0,
 			"entityType": "columns",
@@ -1122,86 +927,6 @@
 			"table": "speaker_on_list",
 			"type": "text",
 			"typeSchema": null
-		},
-		{
-			"columns": ["speakers_list_id", "position"],
-			"entityType": "uniques",
-			"name": "speaker_on_list_speakersListId_position_unique",
-			"nameExplicit": true,
-			"nullsNotDistinct": false,
-			"schema": "public",
-			"table": "speaker_on_list"
-		},
-		{
-			"columns": ["speakers_list_id", "committee_member_id"],
-			"entityType": "uniques",
-			"name": "speaker_on_list_speakersListId_committeeMemberId_unique",
-			"nameExplicit": true,
-			"nullsNotDistinct": false,
-			"schema": "public",
-			"table": "speaker_on_list"
-		},
-		{
-			"columns": ["speakers_list_id", "conference_member_id"],
-			"entityType": "uniques",
-			"name": "speaker_on_list_speakersListId_conferenceMemberId_unique",
-			"nameExplicit": true,
-			"nullsNotDistinct": false,
-			"schema": "public",
-			"table": "speaker_on_list"
-		},
-		{
-			"columns": ["committee_member_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "speaker_on_list_committee_member_id_committee_member_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "speaker_on_list",
-			"tableTo": "committee_member"
-		},
-		{
-			"columns": ["conference_member_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "speaker_on_list_conference_member_id_conference_member_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "speaker_on_list",
-			"tableTo": "conference_member"
-		},
-		{
-			"columns": ["speakers_list_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "speaker_on_list_speakers_list_id_speakers_list_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "speaker_on_list",
-			"tableTo": "speakers_list"
-		},
-		{
-			"entityType": "tables",
-			"isRlsEnabled": false,
-			"name": "speakers_list",
-			"schema": "public"
-		},
-		{
-			"columns": ["id"],
-			"entityType": "pks",
-			"name": "speakers_list_pkey",
-			"nameExplicit": false,
-			"schema": "public",
-			"table": "speakers_list"
 		},
 		{
 			"default": null,
@@ -1321,42 +1046,6 @@
 			"typeSchema": null
 		},
 		{
-			"columns": ["agenda_item_id", "type"],
-			"entityType": "uniques",
-			"name": "speakers_list_agendaItemId_type_unique",
-			"nameExplicit": true,
-			"nullsNotDistinct": false,
-			"schema": "public",
-			"table": "speakers_list"
-		},
-		{
-			"columns": ["agenda_item_id"],
-			"columnsTo": ["id"],
-			"entityType": "fks",
-			"name": "speakers_list_agenda_item_id_agenda_item_id_fk",
-			"nameExplicit": false,
-			"onDelete": "CASCADE",
-			"onUpdate": "NO ACTION",
-			"schema": "public",
-			"schemaTo": "public",
-			"table": "speakers_list",
-			"tableTo": "agenda_item"
-		},
-		{
-			"entityType": "tables",
-			"isRlsEnabled": false,
-			"name": "user",
-			"schema": "public"
-		},
-		{
-			"columns": ["id"],
-			"entityType": "pks",
-			"name": "user_pkey",
-			"nameExplicit": false,
-			"schema": "public",
-			"table": "user"
-		},
-		{
 			"default": null,
 			"dimensions": 0,
 			"entityType": "columns",
@@ -1461,6 +1150,353 @@
 			"typeSchema": null
 		},
 		{
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "agenda_item_committee_id_committee_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "agenda_item",
+			"tableTo": "committee"
+		},
+		{
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_conference_id_conference_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee",
+			"tableTo": "conference"
+		},
+		{
+			"columns": ["active_agenda_item_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_active_agenda_item_id_agenda_item_id_fk",
+			"nameExplicit": false,
+			"onDelete": "NO ACTION",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee",
+			"tableTo": "agenda_item"
+		},
+		{
+			"columns": ["committee_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_member_committee_id_committee_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee_member",
+			"tableTo": "committee"
+		},
+		{
+			"columns": ["representation_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "committee_member_representation_id_representation_id_fk",
+			"nameExplicit": false,
+			"onDelete": "NO ACTION",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "committee_member",
+			"tableTo": "representation"
+		},
+		{
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "conference_member_conference_id_conference_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "conference_member",
+			"tableTo": "conference"
+		},
+		{
+			"columns": ["representation_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "conference_member_representation_id_representation_id_fk",
+			"nameExplicit": false,
+			"onDelete": "NO ACTION",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "conference_member",
+			"tableTo": "representation"
+		},
+		{
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "conference_user_conference_id_conference_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "conference_user",
+			"tableTo": "conference"
+		},
+		{
+			"columns": ["conference_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "conference_user_conference_member_id_conference_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "conference_user",
+			"tableTo": "conference_member"
+		},
+		{
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "conference_user_committee_member_id_committee_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "conference_user",
+			"tableTo": "committee_member"
+		},
+		{
+			"columns": ["conference_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "representation_conference_id_conference_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "representation",
+			"tableTo": "conference"
+		},
+		{
+			"columns": ["committee_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "speaker_on_list_committee_member_id_committee_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "speaker_on_list",
+			"tableTo": "committee_member"
+		},
+		{
+			"columns": ["conference_member_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "speaker_on_list_conference_member_id_conference_member_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "speaker_on_list",
+			"tableTo": "conference_member"
+		},
+		{
+			"columns": ["speakers_list_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "speaker_on_list_speakers_list_id_speakers_list_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "speaker_on_list",
+			"tableTo": "speakers_list"
+		},
+		{
+			"columns": ["agenda_item_id"],
+			"columnsTo": ["id"],
+			"entityType": "fks",
+			"name": "speakers_list_agenda_item_id_agenda_item_id_fk",
+			"nameExplicit": false,
+			"onDelete": "CASCADE",
+			"onUpdate": "NO ACTION",
+			"schema": "public",
+			"schemaTo": "public",
+			"table": "speakers_list",
+			"tableTo": "agenda_item"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "agenda_item_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "agenda_item"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "committee_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "committee"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "committee_member_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "committee_member"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "conference_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "conference"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "conference_member_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "conference_member"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "conference_user_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "conference_user"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "representation_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "representation"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "speaker_on_list_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "speaker_on_list"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "speakers_list_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "speakers_list"
+		},
+		{
+			"columns": ["id"],
+			"entityType": "pks",
+			"name": "user_pkey",
+			"nameExplicit": false,
+			"schema": "public",
+			"table": "user"
+		},
+		{
+			"columns": ["conference_id", "name"],
+			"entityType": "uniques",
+			"name": "committee_conferenceId_name_unique",
+			"nameExplicit": true,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "committee"
+		},
+		{
+			"columns": ["conference_id", "abbreviation"],
+			"entityType": "uniques",
+			"name": "committee_conferenceId_abbreviation_unique",
+			"nameExplicit": true,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "committee"
+		},
+		{
+			"columns": ["conference_id", "name"],
+			"entityType": "uniques",
+			"name": "representation_conferenceId_name_unique",
+			"nameExplicit": true,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "representation"
+		},
+		{
+			"columns": ["conference_id", "alpha2_code", "alpha3_code"],
+			"entityType": "uniques",
+			"name": "representation_conferenceId_alpha2Code_alpha3Code_unique",
+			"nameExplicit": true,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "representation"
+		},
+		{
+			"columns": ["speakers_list_id", "position"],
+			"entityType": "uniques",
+			"name": "speaker_on_list_speakersListId_position_unique",
+			"nameExplicit": true,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "speaker_on_list"
+		},
+		{
+			"columns": ["speakers_list_id", "committee_member_id"],
+			"entityType": "uniques",
+			"name": "speaker_on_list_speakersListId_committeeMemberId_unique",
+			"nameExplicit": true,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "speaker_on_list"
+		},
+		{
+			"columns": ["speakers_list_id", "conference_member_id"],
+			"entityType": "uniques",
+			"name": "speaker_on_list_speakersListId_conferenceMemberId_unique",
+			"nameExplicit": true,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "speaker_on_list"
+		},
+		{
+			"columns": ["agenda_item_id", "type"],
+			"entityType": "uniques",
+			"name": "speakers_list_agendaItemId_type_unique",
+			"nameExplicit": true,
+			"nullsNotDistinct": false,
+			"schema": "public",
+			"table": "speakers_list"
+		},
+		{
 			"columns": ["id"],
 			"entityType": "uniques",
 			"name": "user_id_unique",
@@ -1477,47 +1513,497 @@
 			"nullsNotDistinct": false,
 			"schema": "public",
 			"table": "user"
-		},
-		{
-			"entityType": "enums",
-			"name": "committee_status",
-			"schema": "public",
-			"values": ["FORMAL", "INFORMAL", "PAUSE", "SUSPENSION"]
-		},
-		{
-			"entityType": "enums",
-			"name": "conference_user_type",
-			"schema": "public",
-			"values": ["ADMIN", "TEAM", "SPECTATOR", "DELEGATE", "NON_STATE_ACTOR"]
-		},
-		{
-			"entityType": "enums",
-			"name": "regional_group",
-			"schema": "public",
-			"values": [
-				"AFRICA",
-				"ASIA_PACIFIC",
-				"EASTERN_EUROPE",
-				"LATIN_AMERICA_CARIBBEAN",
-				"WESTERN_EUROPE_OTHERS"
-			]
-		},
-		{
-			"entityType": "enums",
-			"name": "representation_type",
-			"schema": "public",
-			"values": ["DELEGATION", "NSA", "UN"]
-		},
-		{
-			"entityType": "enums",
-			"name": "speakers_list_category",
-			"schema": "public",
-			"values": ["SPEAKERS_LIST", "COMMENT_LIST"]
 		}
 	],
 	"dialect": "postgres",
+	"footprints": [
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["enum", "public", "committee_status"],
+			"statementType": "create_enum",
+			"writes": [
+				"s|enum|public.committee_status",
+				"n|enum|public.committee_status",
+				"e|enum|public.committee_status",
+				"n|type|public.committee_status"
+			]
+		},
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["enum", "public", "conference_user_type"],
+			"statementType": "create_enum",
+			"writes": [
+				"s|enum|public.conference_user_type",
+				"n|enum|public.conference_user_type",
+				"e|enum|public.conference_user_type",
+				"n|type|public.conference_user_type"
+			]
+		},
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["enum", "public", "regional_group"],
+			"statementType": "create_enum",
+			"writes": [
+				"s|enum|public.regional_group",
+				"n|enum|public.regional_group",
+				"e|enum|public.regional_group",
+				"n|type|public.regional_group"
+			]
+		},
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["enum", "public", "representation_type"],
+			"statementType": "create_enum",
+			"writes": [
+				"s|enum|public.representation_type",
+				"n|enum|public.representation_type",
+				"e|enum|public.representation_type",
+				"n|type|public.representation_type"
+			]
+		},
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["enum", "public", "speakers_list_category"],
+			"statementType": "create_enum",
+			"writes": [
+				"s|enum|public.speakers_list_category",
+				"n|enum|public.speakers_list_category",
+				"e|enum|public.speakers_list_category",
+				"n|type|public.speakers_list_category"
+			]
+		},
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["table", "public", "agenda_item"],
+			"statementType": "create_table",
+			"writes": [
+				"s|tbl|public.agenda_item",
+				"n|tbl|public.agenda_item",
+				"e|tbl|public.agenda_item",
+				"n|rel|public.agenda_item",
+				"n|type|public.agenda_item",
+				"n|rel|public.agenda_item_pkey"
+			]
+		},
+		{
+			"reads": ["n|sch|public", "n|enum|public.committee_status"],
+			"statementTarget": ["table", "public", "committee"],
+			"statementType": "create_table",
+			"writes": [
+				"s|tbl|public.committee",
+				"n|tbl|public.committee",
+				"e|tbl|public.committee",
+				"n|rel|public.committee",
+				"n|type|public.committee",
+				"n|rel|public.committee_pkey",
+				"n|rel|public.committee_conferenceId_name_unique",
+				"n|rel|public.committee_conferenceId_abbreviation_unique"
+			]
+		},
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["table", "public", "committee_member"],
+			"statementType": "create_table",
+			"writes": [
+				"s|tbl|public.committee_member",
+				"n|tbl|public.committee_member",
+				"e|tbl|public.committee_member",
+				"n|rel|public.committee_member",
+				"n|type|public.committee_member",
+				"n|rel|public.committee_member_pkey"
+			]
+		},
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["table", "public", "conference"],
+			"statementType": "create_table",
+			"writes": [
+				"s|tbl|public.conference",
+				"n|tbl|public.conference",
+				"e|tbl|public.conference",
+				"n|rel|public.conference",
+				"n|type|public.conference",
+				"n|rel|public.conference_pkey"
+			]
+		},
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["table", "public", "conference_member"],
+			"statementType": "create_table",
+			"writes": [
+				"s|tbl|public.conference_member",
+				"n|tbl|public.conference_member",
+				"e|tbl|public.conference_member",
+				"n|rel|public.conference_member",
+				"n|type|public.conference_member",
+				"n|rel|public.conference_member_pkey"
+			]
+		},
+		{
+			"reads": ["n|sch|public", "n|enum|public.conference_user_type"],
+			"statementTarget": ["table", "public", "conference_user"],
+			"statementType": "create_table",
+			"writes": [
+				"s|tbl|public.conference_user",
+				"n|tbl|public.conference_user",
+				"e|tbl|public.conference_user",
+				"n|rel|public.conference_user",
+				"n|type|public.conference_user",
+				"n|rel|public.conference_user_pkey"
+			]
+		},
+		{
+			"reads": [
+				"n|sch|public",
+				"n|enum|public.representation_type",
+				"n|enum|public.regional_group"
+			],
+			"statementTarget": ["table", "public", "representation"],
+			"statementType": "create_table",
+			"writes": [
+				"s|tbl|public.representation",
+				"n|tbl|public.representation",
+				"e|tbl|public.representation",
+				"n|rel|public.representation",
+				"n|type|public.representation",
+				"n|rel|public.representation_pkey",
+				"n|rel|public.representation_conferenceId_name_unique",
+				"n|rel|public.representation_conferenceId_alpha2Code_alpha3Code_unique"
+			]
+		},
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["table", "public", "speaker_on_list"],
+			"statementType": "create_table",
+			"writes": [
+				"s|tbl|public.speaker_on_list",
+				"n|tbl|public.speaker_on_list",
+				"e|tbl|public.speaker_on_list",
+				"n|rel|public.speaker_on_list",
+				"n|type|public.speaker_on_list",
+				"n|rel|public.speaker_on_list_pkey",
+				"n|rel|public.speaker_on_list_speakersListId_position_unique",
+				"n|rel|public.speaker_on_list_speakersListId_committeeMemberId_unique",
+				"n|rel|public.speaker_on_list_speakersListId_conferenceMemberId_unique"
+			]
+		},
+		{
+			"reads": ["n|sch|public", "n|enum|public.speakers_list_category"],
+			"statementTarget": ["table", "public", "speakers_list"],
+			"statementType": "create_table",
+			"writes": [
+				"s|tbl|public.speakers_list",
+				"n|tbl|public.speakers_list",
+				"e|tbl|public.speakers_list",
+				"n|rel|public.speakers_list",
+				"n|type|public.speakers_list",
+				"n|rel|public.speakers_list_pkey",
+				"n|rel|public.speakers_list_agendaItemId_type_unique"
+			]
+		},
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["table", "public", "user"],
+			"statementType": "create_table",
+			"writes": [
+				"s|tbl|public.user",
+				"n|tbl|public.user",
+				"e|tbl|public.user",
+				"n|rel|public.user",
+				"n|type|public.user",
+				"n|rel|public.user_pkey",
+				"n|rel|public.user_id_unique",
+				"n|rel|public.user_email_unique"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.agenda_item",
+				"n|sch|public",
+				"n|tbl|public.committee",
+				"n|sch|public",
+				"n|col|public.agenda_item.committee_id",
+				"n|col|public.committee.id",
+				"e|uniqueness|public.committee.id"
+			],
+			"statementTarget": ["table", "public", "agenda_item"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.agenda_item.agenda_item_committee_id_committee_id_fk",
+				"n|fk|public.agenda_item.agenda_item_committee_id_committee_id_fk",
+				"e|fk|public.agenda_item.agenda_item_committee_id_committee_id_fk",
+				"n|con|public.agenda_item.agenda_item_committee_id_committee_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.committee",
+				"n|sch|public",
+				"n|tbl|public.conference",
+				"n|sch|public",
+				"n|col|public.committee.conference_id",
+				"n|col|public.conference.id",
+				"e|uniqueness|public.conference.id"
+			],
+			"statementTarget": ["table", "public", "committee"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.committee.committee_conference_id_conference_id_fk",
+				"n|fk|public.committee.committee_conference_id_conference_id_fk",
+				"e|fk|public.committee.committee_conference_id_conference_id_fk",
+				"n|con|public.committee.committee_conference_id_conference_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.committee",
+				"n|sch|public",
+				"n|tbl|public.agenda_item",
+				"n|sch|public",
+				"n|col|public.committee.active_agenda_item_id",
+				"n|col|public.agenda_item.id",
+				"e|uniqueness|public.agenda_item.id"
+			],
+			"statementTarget": ["table", "public", "committee"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.committee.committee_active_agenda_item_id_agenda_item_id_fk",
+				"n|fk|public.committee.committee_active_agenda_item_id_agenda_item_id_fk",
+				"e|fk|public.committee.committee_active_agenda_item_id_agenda_item_id_fk",
+				"n|con|public.committee.committee_active_agenda_item_id_agenda_item_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.committee_member",
+				"n|sch|public",
+				"n|tbl|public.committee",
+				"n|sch|public",
+				"n|col|public.committee_member.committee_id",
+				"n|col|public.committee.id",
+				"e|uniqueness|public.committee.id"
+			],
+			"statementTarget": ["table", "public", "committee_member"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.committee_member.committee_member_committee_id_committee_id_fk",
+				"n|fk|public.committee_member.committee_member_committee_id_committee_id_fk",
+				"e|fk|public.committee_member.committee_member_committee_id_committee_id_fk",
+				"n|con|public.committee_member.committee_member_committee_id_committee_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.committee_member",
+				"n|sch|public",
+				"n|tbl|public.representation",
+				"n|sch|public",
+				"n|col|public.committee_member.representation_id",
+				"n|col|public.representation.id",
+				"e|uniqueness|public.representation.id"
+			],
+			"statementTarget": ["table", "public", "committee_member"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.committee_member.committee_member_representation_id_representation_id_fk",
+				"n|fk|public.committee_member.committee_member_representation_id_representation_id_fk",
+				"e|fk|public.committee_member.committee_member_representation_id_representation_id_fk",
+				"n|con|public.committee_member.committee_member_representation_id_representation_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.conference_member",
+				"n|sch|public",
+				"n|tbl|public.conference",
+				"n|sch|public",
+				"n|col|public.conference_member.conference_id",
+				"n|col|public.conference.id",
+				"e|uniqueness|public.conference.id"
+			],
+			"statementTarget": ["table", "public", "conference_member"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.conference_member.conference_member_conference_id_conference_id_fk",
+				"n|fk|public.conference_member.conference_member_conference_id_conference_id_fk",
+				"e|fk|public.conference_member.conference_member_conference_id_conference_id_fk",
+				"n|con|public.conference_member.conference_member_conference_id_conference_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.conference_member",
+				"n|sch|public",
+				"n|tbl|public.representation",
+				"n|sch|public",
+				"n|col|public.conference_member.representation_id",
+				"n|col|public.representation.id",
+				"e|uniqueness|public.representation.id"
+			],
+			"statementTarget": ["table", "public", "conference_member"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.conference_member.conference_member_representation_id_representation_id_fk",
+				"n|fk|public.conference_member.conference_member_representation_id_representation_id_fk",
+				"e|fk|public.conference_member.conference_member_representation_id_representation_id_fk",
+				"n|con|public.conference_member.conference_member_representation_id_representation_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.conference_user",
+				"n|sch|public",
+				"n|tbl|public.conference",
+				"n|sch|public",
+				"n|col|public.conference_user.conference_id",
+				"n|col|public.conference.id",
+				"e|uniqueness|public.conference.id"
+			],
+			"statementTarget": ["table", "public", "conference_user"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.conference_user.conference_user_conference_id_conference_id_fk",
+				"n|fk|public.conference_user.conference_user_conference_id_conference_id_fk",
+				"e|fk|public.conference_user.conference_user_conference_id_conference_id_fk",
+				"n|con|public.conference_user.conference_user_conference_id_conference_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.conference_user",
+				"n|sch|public",
+				"n|tbl|public.conference_member",
+				"n|sch|public",
+				"n|col|public.conference_user.conference_member_id",
+				"n|col|public.conference_member.id",
+				"e|uniqueness|public.conference_member.id"
+			],
+			"statementTarget": ["table", "public", "conference_user"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.conference_user.conference_user_conference_member_id_conference_member_id_fk",
+				"n|fk|public.conference_user.conference_user_conference_member_id_conference_member_id_fk",
+				"e|fk|public.conference_user.conference_user_conference_member_id_conference_member_id_fk",
+				"n|con|public.conference_user.conference_user_conference_member_id_conference_member_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.conference_user",
+				"n|sch|public",
+				"n|tbl|public.committee_member",
+				"n|sch|public",
+				"n|col|public.conference_user.committee_member_id",
+				"n|col|public.committee_member.id",
+				"e|uniqueness|public.committee_member.id"
+			],
+			"statementTarget": ["table", "public", "conference_user"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.conference_user.conference_user_committee_member_id_committee_member_id_fk",
+				"n|fk|public.conference_user.conference_user_committee_member_id_committee_member_id_fk",
+				"e|fk|public.conference_user.conference_user_committee_member_id_committee_member_id_fk",
+				"n|con|public.conference_user.conference_user_committee_member_id_committee_member_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.representation",
+				"n|sch|public",
+				"n|tbl|public.conference",
+				"n|sch|public",
+				"n|col|public.representation.conference_id",
+				"n|col|public.conference.id",
+				"e|uniqueness|public.conference.id"
+			],
+			"statementTarget": ["table", "public", "representation"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.representation.representation_conference_id_conference_id_fk",
+				"n|fk|public.representation.representation_conference_id_conference_id_fk",
+				"e|fk|public.representation.representation_conference_id_conference_id_fk",
+				"n|con|public.representation.representation_conference_id_conference_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.speaker_on_list",
+				"n|sch|public",
+				"n|tbl|public.committee_member",
+				"n|sch|public",
+				"n|col|public.speaker_on_list.committee_member_id",
+				"n|col|public.committee_member.id",
+				"e|uniqueness|public.committee_member.id"
+			],
+			"statementTarget": ["table", "public", "speaker_on_list"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.speaker_on_list.speaker_on_list_committee_member_id_committee_member_id_fk",
+				"n|fk|public.speaker_on_list.speaker_on_list_committee_member_id_committee_member_id_fk",
+				"e|fk|public.speaker_on_list.speaker_on_list_committee_member_id_committee_member_id_fk",
+				"n|con|public.speaker_on_list.speaker_on_list_committee_member_id_committee_member_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.speaker_on_list",
+				"n|sch|public",
+				"n|tbl|public.conference_member",
+				"n|sch|public",
+				"n|col|public.speaker_on_list.conference_member_id",
+				"n|col|public.conference_member.id",
+				"e|uniqueness|public.conference_member.id"
+			],
+			"statementTarget": ["table", "public", "speaker_on_list"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.speaker_on_list.speaker_on_list_conference_member_id_conference_member_id_fk",
+				"n|fk|public.speaker_on_list.speaker_on_list_conference_member_id_conference_member_id_fk",
+				"e|fk|public.speaker_on_list.speaker_on_list_conference_member_id_conference_member_id_fk",
+				"n|con|public.speaker_on_list.speaker_on_list_conference_member_id_conference_member_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.speaker_on_list",
+				"n|sch|public",
+				"n|tbl|public.speakers_list",
+				"n|sch|public",
+				"n|col|public.speaker_on_list.speakers_list_id",
+				"n|col|public.speakers_list.id",
+				"e|uniqueness|public.speakers_list.id"
+			],
+			"statementTarget": ["table", "public", "speaker_on_list"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.speaker_on_list.speaker_on_list_speakers_list_id_speakers_list_id_fk",
+				"n|fk|public.speaker_on_list.speaker_on_list_speakers_list_id_speakers_list_id_fk",
+				"e|fk|public.speaker_on_list.speaker_on_list_speakers_list_id_speakers_list_id_fk",
+				"n|con|public.speaker_on_list.speaker_on_list_speakers_list_id_speakers_list_id_fk"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.speakers_list",
+				"n|sch|public",
+				"n|tbl|public.agenda_item",
+				"n|sch|public",
+				"n|col|public.speakers_list.agenda_item_id",
+				"n|col|public.agenda_item.id",
+				"e|uniqueness|public.agenda_item.id"
+			],
+			"statementTarget": ["table", "public", "speakers_list"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.speakers_list.speakers_list_agenda_item_id_agenda_item_id_fk",
+				"n|fk|public.speakers_list.speakers_list_agenda_item_id_agenda_item_id_fk",
+				"e|fk|public.speakers_list.speakers_list_agenda_item_id_agenda_item_id_fk",
+				"n|con|public.speakers_list.speakers_list_agenda_item_id_agenda_item_id_fk"
+			]
+		}
+	],
 	"id": "0e3e5cc6-5d6b-4457-948c-a37dafb1da1a",
 	"prevIds": ["00000000-0000-0000-0000-000000000000"],
-	"renames": [],
-	"version": "8"
+	"type": "base",
+	"version": "9"
 }

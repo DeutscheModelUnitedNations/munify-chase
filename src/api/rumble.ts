@@ -4,8 +4,15 @@ import { context } from './context';
 import { dev } from '$app/env';
 import { Redis } from 'ioredis';
 import { createRedisEventTarget } from '@graphql-yoga/redis-event-target';
-import { REDIS_URL } from '$app/env/private';
+import {
+	OTEL_ENDPOINT_URL,
+	OTEL_SERVICE_NAME,
+	OTEL_SERVICE_VERSION,
+	REDIS_URL
+} from '$app/env/private';
 import ValidationPlugin from '@pothos/plugin-validation';
+import { trace } from '@opentelemetry/api';
+import { graphqlLogger } from '#lib/logger';
 
 let eventTarget: ReturnType<typeof createRedisEventTarget> | undefined;
 if (REDIS_URL) {
@@ -44,6 +51,15 @@ export const {
 	context,
 	defaultLimit: 1000,
 	subscriptions: [{ eventTarget }],
+	// A span per operation and root field, over HTTP and WebSocket (`src/instrumentation.server.ts`).
+	// Variables carry personal data, so they stay out of spans and log lines.
+	otel: {
+		enabled: !!OTEL_ENDPOINT_URL,
+		tracer: trace.getTracer(OTEL_SERVICE_NAME, OTEL_SERVICE_VERSION),
+		includeVariables: false
+	},
+	// The trace ids come from the logger itself, on every line (`#lib/logger`)
+	logger: { enabled: true, logger: graphqlLogger, includeVariables: false, injectTraceId: false },
 	pothosConfig: {
 		plugins: [ValidationPlugin]
 	}

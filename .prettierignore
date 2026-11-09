@@ -11,3 +11,7 @@ src-tauri
 # Generated, git-ignored through their own nested .gitignore files
 src/lib/paraglide/**
 project.inlang/cache/**
+# Written by the inlang SDK on every load
+project.inlang/.lix/**
+project.inlang/.meta.json
+project.inlang/README.md

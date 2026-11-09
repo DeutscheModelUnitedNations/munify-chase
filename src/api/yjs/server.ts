@@ -23,6 +23,10 @@ import { nativeToRequestEvent } from '#api/services/auth';
 import { OIDC } from '#api/services/OIDC';
 import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from '#lib/api/yjs/statelessMessages';
 import { detachFromDelegator } from '#api/services/link/detach';
+import { logger } from '#lib/logger';
+
+/** The Yjs backend's lines, under `name: yjs` */
+export const yjsLogger = logger.child({ name: 'yjs' });
 
 const PERSIST_DEBOUNCE_MS = 1500;
 
@@ -126,7 +130,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 				try {
 					Y.applyUpdate(new Y.Doc(), existing.state);
 				} catch (err) {
-					console.error('[yjs] corrupt paper_yjs_doc.state — hard failing', {
+					yjsLogger.error('Corrupt paper_yjs_doc.state, failing hard', {
 						paperId,
 						byteLength: existing.state.byteLength,
 						err
@@ -200,7 +204,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 			ctx.mustBeLoggedIn();
 			connContext.ctx = ctx;
 		} catch (err) {
-			console.error('[yjs] in-band authentication failed', err);
+			yjsLogger.error('In-band authentication failed', err);
 			throw { code: 4401, reason: 'unauthorized' };
 		}
 
@@ -251,7 +255,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 					return;
 				}
 			} catch (err) {
-				console.error('[yjs] session liveness check failed', { paperId, err });
+				yjsLogger.error('Checking the session liveness failed', { paperId, err });
 				return;
 			}
 
@@ -259,7 +263,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 			try {
 				next = await authorize(paperId, ctx);
 			} catch (err) {
-				console.error('[yjs] re-authorize failed', { paperId, err });
+				yjsLogger.error('Re-authorizing failed', { paperId, err });
 				return;
 			}
 			if (!next.allowed) {
@@ -280,7 +284,10 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 				try {
 					connection.sendStateless(READ_ONLY_DOWNGRADE_STATELESS_MESSAGE);
 				} catch (err) {
-					console.error('[yjs] failed to notify client of read-only downgrade', { paperId, err });
+					yjsLogger.error('Notifying the client of the read-only downgrade failed', {
+						paperId,
+						err
+					});
 				}
 			}
 			connection.readOnly = !next.canWrite;

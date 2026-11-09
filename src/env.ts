@@ -50,20 +50,35 @@ export const variables = defineEnvVars({
 		schema: z.string().optional()
 	},
 	OTEL_SERVICE_NAME: {
-		description: 'OpenTelemetry service name. Not wired up yet',
+		description:
+			'OpenTelemetry service name of the traces (the Dokploy appName, to match the logs)',
 		schema: z.string().default('MUNIFY-CHASE')
 	},
 	OTEL_SERVICE_VERSION: {
-		description: 'OpenTelemetry service version. Not wired up yet',
+		description: 'OpenTelemetry service version of the traces',
 		schema: z.string().optional()
 	},
 	OTEL_ENDPOINT_URL: {
-		description: 'OpenTelemetry collector endpoint. Not wired up yet',
+		description:
+			'OTLP/HTTP trace endpoint, the full URL, e.g. http://otel-collector:4318/v1/traces. Unset, tracing is off',
 		schema: z.string().optional()
 	},
 	OTEL_AUTHORIZATION_HEADER: {
-		description: 'Authorization header sent to the OpenTelemetry collector. Not wired up yet',
+		description: 'Authorization header sent to the OpenTelemetry collector',
 		schema: z.string().optional()
+	},
+	OTEL_TRACES_SAMPLER_ARG: {
+		description: 'Share of traces kept, 0 to 1 (default 1, every trace)',
+		schema: z
+			.string()
+			.optional()
+			.transform((value) => (value === undefined || value === '' ? 1 : Number(value)))
+			.pipe(z.number().min(0).max(1))
+	},
+	LOG_LEVEL: {
+		description:
+			'debug, info, warn, error or silent (default: debug in development, warn otherwise)',
+		schema: z.enum(['debug', 'info', 'warn', 'error', 'silent']).optional()
 	},
 	ADMIN_EMAIL_WHITELIST: {
 		description: 'Comma-separated emails that are global admins',

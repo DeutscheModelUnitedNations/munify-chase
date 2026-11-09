@@ -95,7 +95,15 @@ jobs:
             fi
           fi
 
-          git checkout HEAD -- "${fork_owned[@]}"
+          # Restore the fork's version. A fork-owned file the fork deleted
+          # stays deleted (checking out a path missing from HEAD would fail).
+          for file in "${fork_owned[@]}"; do
+            if git cat-file -e "HEAD:$file" 2>/dev/null; then
+              git checkout HEAD -- "$file"
+            else
+              git rm -qf --ignore-unmatch -- "$file"
+            fi
+          done
 
           # Fork policy: the native client has no server. Drop server-only
           # paths main may have added since the last sync.

@@ -1,18 +1,8 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
 	import { registerCommands } from '#lib/commands/registry.svelte';
-	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
-	import {
-		buildConferenceNavItems,
-		roleBadgeClassFor,
-		roleLabelFor
-	} from '#lib/components/navbar/conferenceNavItems';
-	import GeneralTab from './GeneralTab.svelte';
-	import UsersTab from './UsersTab.svelte';
-	import CommitteesTab from './CommitteesTab.svelte';
-	import DelegationsTab from './DelegationsTab.svelte';
-	import NsaTab from './NsaTab.svelte';
-	import RequestTypesTab from './RequestTypesTab.svelte';
+	import ConferenceMenu from '../../ConferenceMenu.svelte';
+	import ConfigTabPanel, { type ConfigTab } from './ConfigTabPanel.svelte';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
@@ -128,17 +118,9 @@
 	let isAdmin = $derived(isGlobalAdmin || currentUserRole?.conferenceUserType === 'ADMIN');
 	let role = $derived(currentUserRole?.conferenceUserType);
 	let currentUserEmail = currentUser?.email ?? undefined;
-	const userDisplayName =
-		[currentUser?.givenName, currentUser?.familyName].filter(Boolean).join(' ').trim() ||
-		currentUser?.preferredUsername ||
-		currentUser?.email ||
-		'';
 
-	let activeTab = $state<
-		'general' | 'users' | 'committees' | 'delegations' | 'nsa' | 'requestTypes'
-	>('general');
+	let activeTab = $state<ConfigTab>('general');
 
-	type ConfigTab = typeof activeTab;
 	const configTabs: { id: ConfigTab; title: () => string; icon: string }[] = [
 		{ id: 'general', title: m.general, icon: 'sliders-horizontal' },
 		{ id: 'users', title: m.users, icon: 'users' },
@@ -165,16 +147,6 @@
 			run: () => (activeTab = tab.id)
 		}))
 	);
-
-	let menubarItems = $derived(
-		buildConferenceNavItems({
-			role,
-			conferenceId: page.params.conferenceId!,
-			activeRouteId: page.route.id,
-			activePathname: page.url.pathname,
-			isGlobalAdmin: !!isGlobalAdmin
-		})
-	);
 </script>
 
 <svelte:head>
@@ -184,21 +156,13 @@
 <div class="navbar bg-base-100 shadow-sm">
 	<h1 class="ml-4 flex-1 text-3xl font-bold">{m.configuration()}</h1>
 	<div class="flex-none">
-		<NavbarBurgerMenu
-			items={menubarItems}
-			user={{
-				name: userDisplayName,
-				email: currentUserEmail,
-				givenName: currentUser?.givenName ?? undefined,
-				familyName: currentUser?.familyName ?? undefined
-			}}
-			roleLabel={roleLabelFor(role)}
-			roleBadgeClass={roleBadgeClassFor(role)}
+		<ConferenceMenu
+			{role}
+			conferenceId={page.params.conferenceId!}
 			conferenceTitle={conference?.title}
-			conferenceId={page.params.conferenceId}
-			committees={role === 'ADMIN' || role === 'TEAM' ? (conference?.committees ?? []) : []}
-			dashboardHref="/app"
-			signOutHref="/logout"
+			committees={conference?.committees}
+			isGlobalAdmin={!!isGlobalAdmin}
+			user={currentUser}
 		/>
 	</div>
 </div>
@@ -214,80 +178,19 @@
 			<h2 class="text-xl font-semibold">{conference.title}</h2>
 
 			<div role="tablist" class="tabs tabs-border">
-				<button
-					role="tab"
-					class="tab"
-					class:tab-active={activeTab === 'general'}
-					onclick={() => (activeTab = 'general')}
-				>
-					{m.general()}
-				</button>
-				{#if isTabAvailable('users')}
+				{#each configTabs.filter((tab) => isTabAvailable(tab.id)) as tab (tab.id)}
 					<button
 						role="tab"
 						class="tab"
-						class:tab-active={activeTab === 'users'}
-						onclick={() => (activeTab = 'users')}
+						class:tab-active={activeTab === tab.id}
+						onclick={() => (activeTab = tab.id)}
 					>
-						{m.users()}
+						{tab.title()}
 					</button>
-				{/if}
-				<button
-					role="tab"
-					class="tab"
-					class:tab-active={activeTab === 'committees'}
-					onclick={() => (activeTab = 'committees')}
-				>
-					{m.committees()}
-				</button>
-				<button
-					role="tab"
-					class="tab"
-					class:tab-active={activeTab === 'delegations'}
-					onclick={() => (activeTab = 'delegations')}
-				>
-					{m.delegations()}
-				</button>
-				<button
-					role="tab"
-					class="tab"
-					class:tab-active={activeTab === 'nsa'}
-					onclick={() => (activeTab = 'nsa')}
-				>
-					{m.nonStateActors()}
-				</button>
-				{#if isTabAvailable('requestTypes')}
-					<button
-						role="tab"
-						class="tab"
-						class:tab-active={activeTab === 'requestTypes'}
-						onclick={() => (activeTab = 'requestTypes')}
-					>
-						{m.requestTypes()}
-					</button>
-				{/if}
+				{/each}
 			</div>
 
-			{#if activeTab === 'general'}
-				<GeneralTab {conference} />
-			{:else if activeTab === 'users' && isTabAvailable('users')}
-				<UsersTab {conference} {currentUserEmail} />
-			{:else if activeTab === 'committees'}
-				<CommitteesTab conferenceId={conference.id} committees={conference.committees ?? []} />
-			{:else if activeTab === 'delegations'}
-				<DelegationsTab
-					conferenceId={conference.id}
-					representations={conference.representations ?? []}
-					committees={conference.committees ?? []}
-				/>
-			{:else if activeTab === 'nsa'}
-				<NsaTab conferenceId={conference.id} representations={conference.representations ?? []} />
-			{:else if activeTab === 'requestTypes' && isTabAvailable('requestTypes')}
-				<RequestTypesTab
-					conferenceId={conference.id}
-					requestTypes={conference.requestTypes ?? []}
-				/>
-			{/if}
+			<ConfigTabPanel tab={isTabAvailable(activeTab) ? activeTab : undefined} {conference} {currentUserEmail} />
 		{:else}
 			<div class="flex items-center justify-center">
 				<span class="loading loading-spinner loading-lg"></span>

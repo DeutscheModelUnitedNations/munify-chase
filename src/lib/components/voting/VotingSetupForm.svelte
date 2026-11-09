@@ -2,7 +2,7 @@
 	import type { VotingMajority } from './votingModal';
 	import { m } from '#lib/paraglide/messages';
 	import Tabs from '../Tabs.svelte';
-	import Combobox from '../Combobox.svelte';
+	import TemplateCombobox from '../committee/TemplateCombobox.svelte';
 	import votingNameTemplates from '#lib/data/votingNameTemplates';
 	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
 
@@ -56,10 +56,6 @@
 		{ id: false, label: m.withoutAbstentions() },
 		{ id: true, label: m.withAbstentions() }
 	];
-
-	const voteNamePresets = votingNameTemplates.map((preset) => ({
-		label: preset
-	}));
 </script>
 
 <div class="flex flex-col gap-2">
@@ -101,32 +97,12 @@
 		data-tour={tourAnchor('title')}
 	>
 		<legend class="fieldset-legend">{m.voteTitel()}</legend>
-		<Combobox
+		<TemplateCombobox
 			bind:value={voteName}
-			options={voteNamePresets}
-			side="top"
+			templates={votingNameTemplates}
 			placeholder={m.voting()}
-			getStringValue={({ label }) => label}
-			filter={(options, v) =>
-				options.filter(({ label }) => label.toLowerCase().includes(v.toLowerCase()))}
-		>
-			{#snippet ListItem(option)}
-				<div class="flex items-center gap-2">
-					<i aria-hidden="true" class="ph-fill ph-box-arrow-down"></i>
-					<span>{option.label}</span>
-				</div>
-			{/snippet}
-
-			{#snippet AdditionalButtons()}
-				<button
-					class="btn btn-square input-lg join-item"
-					aria-label="Clear selection"
-					onclick={() => (voteName = '')}
-				>
-					<i aria-hidden="true" class="ph-fill ph-trash"></i>
-				</button>
-			{/snippet}
-		</Combobox>
+			icon="box-arrow-down"
+		/>
 		<p class="label whitespace-normal">{m.voteTitleDescription()}</p>
 	</fieldset>
 

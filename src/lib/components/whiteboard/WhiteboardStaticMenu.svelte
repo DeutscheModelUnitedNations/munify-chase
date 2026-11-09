@@ -1,4 +1,5 @@
 <script lang="ts">
+	import WhiteboardButtonGroups, { type WhiteboardButton } from './WhiteboardButtonGroups.svelte';
 	import { m } from '#lib/paraglide/messages';
 	import type { Editor } from 'svelte-tiptap';
 	import UploadImage from './UploadImage.svelte';
@@ -29,12 +30,7 @@
 		});
 	}
 
-	let buttonGroups: {
-		label: string;
-		icon?: string;
-		command: () => void;
-		active?: () => boolean;
-	}[][] = [
+	let buttonGroups: WhiteboardButton[][] = [
 		[
 			{
 				label: m.h1(),
@@ -119,23 +115,7 @@
 	];
 </script>
 
-<div class="card bg-base-300 sticky top-0 z-10 flex flex-row flex-nowrap gap-2 p-2 shadow-sm">
-	{#each buttonGroups as group, groupIdx (groupIdx)}
-		<div class="join">
-			{#each group as button (button.label)}
-				<div class="tooltip tooltip-bottom" data-tip={button.label}>
-					<button
-						class="btn btn-sm join-item {button.active && button.active() ? 'btn-active' : ''}"
-						aria-label={button.label}
-						onclick={() => button.command()}
-					>
-						<i aria-hidden="true" class={`ph-duotone ph-${button.icon}`}></i>
-					</button>
-				</div>
-			{/each}
-		</div>
-	{/each}
-</div>
+<WhiteboardButtonGroups {buttonGroups} class="sticky top-0 z-10" tooltipClass="tooltip-bottom" />
 
 <UploadImage
 	showModal={showImageModal}

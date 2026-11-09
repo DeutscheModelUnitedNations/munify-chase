@@ -2,18 +2,24 @@ let presentationWindow: Window | null = null;
 let isOpen = $state(false);
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 
+function stopPolling() {
+	if (!pollInterval) return;
+	clearInterval(pollInterval);
+	pollInterval = null;
+}
+
+/** Notices the chair closing the popup, which sends no event to its opener */
+function checkClosed() {
+	if (presentationWindow?.closed) {
+		presentationWindow = null;
+		isOpen = false;
+	}
+	if (!presentationWindow) stopPolling();
+}
+
 function startPolling() {
 	if (pollInterval) return;
-	pollInterval = setInterval(() => {
-		if (presentationWindow?.closed) {
-			presentationWindow = null;
-			isOpen = false;
-		}
-		if (!presentationWindow && pollInterval) {
-			clearInterval(pollInterval);
-			pollInterval = null;
-		}
-	}, 1000);
+	pollInterval = setInterval(checkClosed, 1000);
 }
 
 export function presentationOpen(): boolean {

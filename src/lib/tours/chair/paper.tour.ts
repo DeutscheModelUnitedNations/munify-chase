@@ -6,7 +6,7 @@ import type { Tour } from '#lib/tours/types';
  * and are only rendered for chairs, so the participant paper tour can't pick them up.
  * Vote, share and decide steps are skipped when the paper's stage hides them.
  */
-export const tour: Tour = {
+export const chairPaperTour: Tour = {
 	id: 'chair.paper',
 	steps: [
 		{

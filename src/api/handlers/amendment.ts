@@ -22,11 +22,9 @@ import {
 	yDocToJson,
 	replaceResolution
 } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
-import { parseClauseFragment } from '@deutschemodelunitednations/munify-resolution-editor/res-markup';
-import type {
-	OperativeClause,
-	Resolution
-} from '@deutschemodelunitednations/munify-resolution-editor/schema';
+import { paperWithAbility, type ResolverContext } from './helpers/paperAccess';
+import { acceptedStatus, amendmentTargets, applyAmendment } from './helpers/amendmentRules';
+import { requiredSponsors } from './helpers/paperRules';
 
 abilityBuilder.amendment.allow('read').when((ctx) => {
 	return {
@@ -59,12 +57,139 @@ const reviewItemPubsub = rumblePubsub({ table: 'amendmentReviewItem' });
 const typeEnum = enum_({ tsName: 'amendmentType' });
 const statusEnum = enum_({ tsName: 'amendmentStatus' });
 
-function parseFragmentOrThrow(text: string): OperativeClause {
-	const result = parseClauseFragment(text);
-	if (!result.valid) {
-		throw new GraphQLError(`Invalid RES-Markup: ${result.errors.map((e) => e.code).join(', ')}`);
+type AmendmentRow = typeof schema.amendment.$inferSelect;
+
+/** The amendment as the caller may read it, for a resolver to hand back. */
+async function readableAmendment(ctx: ResolverContext, id: string) {
+	return (await ctx.abilities.amendment.filter('read')).merge({ where: { id } }).query.single;
+}
+
+/** Sets the status as far as the caller may update the amendment. */
+async function setStatus({
+	ctx,
+	id,
+	status
+}: {
+	ctx: ResolverContext;
+	id: string;
+	status: AmendmentRow['status'];
+}) {
+	await db
+		.update(schema.amendment)
+		.set({ status })
+		.where((await ctx.abilities.amendment.filter('update')).merge({ where: { id } }).sql.where);
+	pubsub.updated(id);
+}
+
+/** The proposer and status of a new amendment: the chair names them, a member is the proposer. */
+async function newAmendmentProposal({
+	ctx,
+	args
+}: {
+	ctx: ResolverContext;
+	args: {
+		paperId: string;
+		proposerCommitteeMemberId?: string | null;
+		status?: AmendmentRow['status'] | null;
+	};
+}): Promise<{ proposerCommitteeMemberId: string; status: AmendmentRow['status'] }> {
+	const isChair = await db.query.resolutionPaper.findFirst({
+		where: { id: args.paperId, committee: isTeamInConference(ctx) }
+	});
+	if (isChair) {
+		if (!args.proposerCommitteeMemberId) {
+			throw new GraphQLError('proposerCommitteeMemberId is required when creating as chair');
+		}
+		return {
+			proposerCommitteeMemberId: args.proposerCommitteeMemberId,
+			status: args.status ?? 'SUBMITTED'
+		};
 	}
-	return result.clause;
+	const cu = await db.query.conferenceUser
+		.findFirst({
+			where: committeeMemberForPaper(ctx, args.paperId, { amendmentSubmissionOpen: true }),
+			with: { committeeMember: true }
+		})
+		.then(assertFindFirstExists);
+	return { proposerCommitteeMemberId: cu.committeeMember!.id, status: 'PENDING' };
+}
+
+/** Refuses to submit an amendment without enough sponsors for its committee. */
+async function assertEnoughSponsors({ id, committeeId }: { id: string; committeeId: string }) {
+	const sponsors = await db.query.amendmentSponsor.findMany({ where: { amendmentId: id } });
+	const committee = await db.query.committee
+		.findFirst({ where: { id: committeeId } })
+		.then(assertFindFirstExists);
+	const presentDelegations = await db
+		.select({ count: count() })
+		.from(schema.committeeMember)
+		.innerJoin(
+			schema.representation,
+			eq(schema.committeeMember.representationId, schema.representation.id)
+		)
+		.where(
+			and(
+				eq(schema.committeeMember.committeeId, committeeId),
+				eq(schema.committeeMember.present, true),
+				eq(schema.representation.type, 'DELEGATION')
+			)
+		)
+		.then(([r]) => r?.count ?? 0);
+	const required = requiredSponsors({
+		presentDelegations,
+		thresholdPercent: committee.paperSupportThreshold
+	});
+	if (sponsors.length < required) {
+		throw new GraphQLError(
+			`Amendment needs at least ${required} sponsor(s) to be submitted (has ${sponsors.length})`
+		);
+	}
+}
+
+/**
+ * Applies the amendment to the paper's Y.Doc and answers the replaced clause's old content. The
+ * yjs layer has its own persistence, so this cannot share the DB transaction.
+ */
+async function applyToPaper(amendment: AmendmentRow) {
+	let oldContent: string | null = null;
+	await applyServerMutation(amendment.paperId, (doc) => {
+		const applied = applyAmendment(yDocToJson(doc), amendment);
+		oldContent = applied.oldContent;
+		if (applied.next) replaceResolution(doc, applied.next);
+	});
+	return oldContent;
+}
+
+/**
+ * For ALTER_TEXT: the remaining SUBMITTED ALTER_TEXT amendments on the same clause get
+ * OBSOLESCENCE-phase review items, so the chair can assess which are now obsolete or need
+ * rewording.
+ * TODO: also check amendments targeting later clauses — disabled for now.
+ */
+async function reviewSiblingsOf(amendment: AmendmentRow) {
+	if (amendment.type !== 'ALTER_TEXT' || !amendment.targetClauseId) return;
+	const siblings = await db
+		.select({ id: schema.amendment.id })
+		.from(schema.amendment)
+		.where(
+			and(
+				eq(schema.amendment.paperId, amendment.paperId),
+				eq(schema.amendment.status, 'SUBMITTED'),
+				eq(schema.amendment.type, 'ALTER_TEXT'),
+				eq(schema.amendment.targetClauseId, amendment.targetClauseId)
+			)
+		);
+	if (siblings.length === 0) return;
+	await db.insert(schema.amendmentReviewItem).values(
+		siblings.map((s) => ({
+			id: nanoid(),
+			paperId: amendment.paperId,
+			triggerAmendmentId: amendment.id,
+			subjectAmendmentId: s.id,
+			phase: 'OBSOLESCENCE' as const
+		}))
+	);
+	reviewItemPubsub.created();
 }
 
 schemaBuilder.mutationFields((t) => ({
@@ -86,34 +211,7 @@ schemaBuilder.mutationFields((t) => ({
 			targetPosition: t.arg.int()
 		},
 		resolve: async (query, _root, args, ctx) => {
-			const isChair = await db.query.resolutionPaper.findFirst({
-				where: {
-					id: args.paperId,
-					committee: isTeamInConference(ctx)
-				}
-			});
-
-			let proposerCommitteeMemberId: string;
-			let status: typeof schema.amendment.$inferSelect.status;
-
-			if (isChair) {
-				if (!args.proposerCommitteeMemberId) {
-					throw new GraphQLError('proposerCommitteeMemberId is required when creating as chair');
-				}
-				proposerCommitteeMemberId = args.proposerCommitteeMemberId;
-				status = args.status ?? 'SUBMITTED';
-			} else {
-				const cu = await db.query.conferenceUser
-					.findFirst({
-						where: committeeMemberForPaper(ctx, args.paperId, {
-							amendmentSubmissionOpen: true
-						}),
-						with: { committeeMember: true }
-					})
-					.then(assertFindFirstExists);
-				proposerCommitteeMemberId = cu.committeeMember!.id;
-				status = 'PENDING';
-			}
+			const { proposerCommitteeMemberId, status } = await newAmendmentProposal({ ctx, args });
 
 			await db.transaction(async (tx) => {
 				await tx.insert(schema.amendment).values({
@@ -122,10 +220,7 @@ schemaBuilder.mutationFields((t) => ({
 					proposerCommitteeMemberId,
 					type: args.type,
 					status,
-					targetClauseId: args.targetClauseId ?? null,
-					targetOperativeIndex: args.targetOperativeIndex ?? null,
-					newContent: args.newContent ?? null,
-					targetPosition: args.targetPosition ?? null
+					...amendmentTargets(args)
 				});
 				await tx.insert(schema.amendmentSponsor).values({
 					id: nanoid(),
@@ -137,12 +232,7 @@ schemaBuilder.mutationFields((t) => ({
 			pubsub.created();
 
 			return db.query.amendment
-				.findFirst(
-					query(
-						(await ctx.abilities.amendment.filter('read')).merge({ where: { id: args.id } }).query
-							.single
-					)
-				)
+				.findFirst(query(await readableAmendment(ctx, args.id)))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -161,53 +251,11 @@ schemaBuilder.mutationFields((t) => ({
 			if (amendment.status !== 'PENDING') {
 				throw new GraphQLError('Only pending amendments can be submitted');
 			}
+			await assertEnoughSponsors({ id: args.id, committeeId: amendment.paper.committeeId });
 
-			const sponsors = await db.query.amendmentSponsor.findMany({
-				where: { amendmentId: args.id }
-			});
-
-			const committee = await db.query.committee
-				.findFirst({ where: { id: amendment.paper.committeeId } })
-				.then(assertFindFirstExists);
-
-			const presentCount = await db
-				.select({ count: count() })
-				.from(schema.committeeMember)
-				.innerJoin(
-					schema.representation,
-					eq(schema.committeeMember.representationId, schema.representation.id)
-				)
-				.where(
-					and(
-						eq(schema.committeeMember.committeeId, amendment.paper.committeeId),
-						eq(schema.committeeMember.present, true),
-						eq(schema.representation.type, 'DELEGATION')
-					)
-				)
-				.then(([r]) => r?.count ?? 0);
-			const required = Math.ceil(presentCount * (committee.paperSupportThreshold / 100));
-
-			if (sponsors.length < required) {
-				throw new GraphQLError(
-					`Amendment needs at least ${required} sponsor(s) to be submitted (has ${sponsors.length})`
-				);
-			}
-
-			await db
-				.update(schema.amendment)
-				.set({ status: 'SUBMITTED' })
-				.where(
-					(await ctx.abilities.amendment.filter('update')).merge({ where: { id: args.id } }).sql
-						.where
-				);
-			pubsub.updated(args.id);
+			await setStatus({ ctx, id: args.id, status: 'SUBMITTED' });
 			return db.query.amendment
-				.findFirst(
-					query(
-						(await ctx.abilities.amendment.filter('read')).merge({ where: { id: args.id } }).query
-							.single
-					)
-				)
+				.findFirst(query(await readableAmendment(ctx, args.id)))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -220,87 +268,22 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (query, _root, args, ctx) => {
 			const amendment = await db.query.amendment
-				.findFirst(
-					(await ctx.abilities.amendment.filter('read')).merge({ where: { id: args.id } }).query
-						.single
-				)
+				.findFirst(await readableAmendment(ctx, args.id))
 				.then(assertFindFirstExists);
 
 			// Accepting an amendment modifies the paper, not the amendment as such.
 			// Gate accordingly on the caller's ability to update the paper.
-			await db.query.resolutionPaper
-				.findFirst(
-					(await ctx.abilities.resolutionPaper.filter('update')).merge({
-						where: { id: amendment.paperId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
+			await paperWithAbility({ ctx, paperId: amendment.paperId, action: 'update' });
 
-			const newStatus = args.consensus ? 'CONSENSUS_ADOPTED' : 'ACCEPTED';
-
-			let triggerClauseOldContent: string | null = null;
-
-			// Apply the amendment to the paper's Y.Doc first; the yjs layer has
-			// its own persistence so it can't share the DB transaction. Doing it
-			// before the status flip means the amendment is only marked accepted
-			// if the paper change actually landed.
-			await applyServerMutation(amendment.paperId, (doc) => {
-				const current = yDocToJson(doc);
-				const next: Resolution = JSON.parse(JSON.stringify(current));
-
-				if (amendment.type === 'ALTER_TEXT' && amendment.targetClauseId) {
-					const old = current.operative.find((c) => c.id === amendment.targetClauseId);
-					if (old) triggerClauseOldContent = JSON.stringify(old);
-				}
-
-				switch (amendment.type) {
-					case 'DELETE': {
-						if (!amendment.targetClauseId) return;
-						next.operative = next.operative.filter((c) => c.id !== amendment.targetClauseId);
-						break;
-					}
-					case 'ADD': {
-						if (!amendment.newContent) return;
-						const clause = parseFragmentOrThrow(amendment.newContent);
-						const pos = Math.max(
-							0,
-							Math.min(amendment.targetPosition ?? next.operative.length, next.operative.length)
-						);
-						next.operative.splice(pos, 0, clause);
-						break;
-					}
-					case 'ALTER_TEXT': {
-						if (!amendment.targetClauseId || !amendment.newContent) return;
-						const fresh = parseFragmentOrThrow(amendment.newContent);
-						const idx = next.operative.findIndex((c) => c.id === amendment.targetClauseId);
-						if (idx < 0) return;
-						// Preserve clause id to keep cursors stable; replace blocks.
-						next.operative[idx] = { ...fresh, id: amendment.targetClauseId };
-						break;
-					}
-					case 'ALTER_POSITION': {
-						if (!amendment.targetClauseId || amendment.targetPosition == null) return;
-						const idx = next.operative.findIndex((c) => c.id === amendment.targetClauseId);
-						if (idx < 0) return;
-						const [clause] = next.operative.splice(idx, 1);
-						const target = Math.max(0, Math.min(amendment.targetPosition, next.operative.length));
-						next.operative.splice(target, 0, clause);
-						break;
-					}
-				}
-
-				replaceResolution(doc, next);
-			});
-
+			// Before the status flip, so the amendment is only marked accepted if the paper
+			// change actually landed.
+			const oldContent = await applyToPaper(amendment);
 			const content = await readPaperJson(amendment.paperId);
 
 			await db.transaction(async (tx) => {
 				await tx
 					.update(schema.amendment)
-					.set({
-						status: newStatus,
-						...(triggerClauseOldContent ? { oldContent: triggerClauseOldContent } : {})
-					})
+					.set({ status: acceptedStatus(args.consensus), ...(oldContent ? { oldContent } : {}) })
 					.where(eq(schema.amendment.id, args.id));
 				await tx.insert(schema.paperContentSnapshot).values({
 					paperId: amendment.paperId,
@@ -309,47 +292,13 @@ schemaBuilder.mutationFields((t) => ({
 				});
 			});
 
-			// For ALTER_TEXT: find remaining SUBMITTED ALTER_TEXT amendments on the
-			// same clause and create OBSOLESCENCE-phase review items so the chair
-			// can assess which are now obsolete or need rewording.
-			// TODO: also check amendments targeting later clauses — disabled for now.
-			if (amendment.type === 'ALTER_TEXT' && amendment.targetClauseId) {
-				const siblings = await db
-					.select({ id: schema.amendment.id })
-					.from(schema.amendment)
-					.where(
-						and(
-							eq(schema.amendment.paperId, amendment.paperId),
-							eq(schema.amendment.status, 'SUBMITTED'),
-							eq(schema.amendment.type, 'ALTER_TEXT'),
-							eq(schema.amendment.targetClauseId, amendment.targetClauseId)
-						)
-					);
-
-				if (siblings.length > 0) {
-					await db.insert(schema.amendmentReviewItem).values(
-						siblings.map((s) => ({
-							id: nanoid(),
-							paperId: amendment.paperId,
-							triggerAmendmentId: args.id,
-							subjectAmendmentId: s.id,
-							phase: 'OBSOLESCENCE' as const
-						}))
-					);
-					reviewItemPubsub.created();
-				}
-			}
+			await reviewSiblingsOf(amendment);
 
 			snapshotPubsub.created();
 			pubsub.updated(args.id);
 
 			return db.query.amendment
-				.findFirst(
-					query(
-						(await ctx.abilities.amendment.filter('read')).merge({ where: { id: args.id } }).query
-							.single
-					)
-				)
+				.findFirst(query(await readableAmendment(ctx, args.id)))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -358,21 +307,9 @@ schemaBuilder.mutationFields((t) => ({
 		type: ref,
 		args: { id: t.arg.id({ required: true }) },
 		resolve: async (query, _root, args, ctx) => {
-			await db
-				.update(schema.amendment)
-				.set({ status: 'REJECTED' })
-				.where(
-					(await ctx.abilities.amendment.filter('update')).merge({ where: { id: args.id } }).sql
-						.where
-				);
-			pubsub.updated(args.id);
+			await setStatus({ ctx, id: args.id, status: 'REJECTED' });
 			return db.query.amendment
-				.findFirst(
-					query(
-						(await ctx.abilities.amendment.filter('read')).merge({ where: { id: args.id } }).query
-							.single
-					)
-				)
+				.findFirst(query(await readableAmendment(ctx, args.id)))
 				.then(assertFindFirstExists);
 		}
 	}),

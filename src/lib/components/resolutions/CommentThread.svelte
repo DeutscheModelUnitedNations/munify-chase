@@ -4,10 +4,10 @@
 	import { client } from '#lib/api/rumbleClient/client';
 	import { nanoid } from '#lib/helpers/nanoid';
 	import toast from 'svelte-french-toast';
-	import type { ResolutionViewer } from './paperContext';
-	import { isTeam } from './paperContext';
-	import Flag from '#lib/components/Flag.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import { isTeam, type ResolutionViewer } from './paperContext';
+	import { commentAuthorDisplay, newCommentArgs, sendsOnKey } from './commentThread';
+	import { errorMessage } from './sponsors';
+	import CommentItem from './CommentItem.svelte';
 
 	interface Props {
 		paperId: string;
@@ -57,43 +57,10 @@
 		}
 	});
 
-	type Author = NonNullable<(typeof comments)[number]['author']>;
+	type Author = (typeof comments)[number]['author'];
 
-	function authorRepresentation(author: Author | null | undefined) {
-		return (
-			author?.committeeMember?.representation ?? author?.conferenceMember?.representation ?? null
-		);
-	}
-
-	function authorDisplay(author: Author | null | undefined): {
-		name: string;
-		representation: ReturnType<typeof authorRepresentation>;
-	} {
-		if (!author) return { name: '?', representation: null };
-
-		const isParticipantAuthor =
-			author.conferenceUserType === 'DELEGATE' || author.conferenceUserType === 'NON_STATE_ACTOR';
-
-		if (isParticipantAuthor) {
-			const rep = authorRepresentation(author);
-			const name =
-				rep?.name ??
-				(rep?.alpha3Code ? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code) : null) ??
-				'?';
-			return { name, representation: rep };
-		}
-
-		if (isTeam(viewer)) {
-			const oidcName =
-				[author.user?.givenName, author.user?.familyName].filter(Boolean).join(' ').trim() || null;
-			return {
-				name: author.name ?? oidcName ?? author.user?.preferredUsername ?? author.userEmail ?? '?',
-				representation: null
-			};
-		}
-
-		return { name: m.roleTeam(), representation: null };
-	}
+	const authorDisplay = (author: Author | null | undefined) =>
+		commentAuthorDisplay({ author, viewerIsTeam: isTeam(viewer) });
 
 	// Comments scoped to the current selection (clause-level vs document-level).
 	const scoped = $derived(
@@ -112,7 +79,7 @@
 	let replyTo = $state<string | null>(null);
 	let sending = $state(false);
 
-	const canTeamOnly = $derived(viewer.type === 'ADMIN' || viewer.type === 'TEAM');
+	const canTeamOnly = $derived(isTeam(viewer));
 	const replyToComment = $derived((comments ?? []).find((c) => c.id === replyTo) ?? null);
 	const replyForcesTeamOnly = $derived(replyToComment?.visibility === 'TEAM_ONLY');
 	const effectiveTeamOnly = $derived(replyForcesTeamOnly || teamOnly);
@@ -123,20 +90,20 @@
 		sending = true;
 		try {
 			await client.mutate.createResolutionComment({
-				__args: {
+				__args: newCommentArgs({
 					id: nanoid(),
 					paperId,
 					content,
-					clauseId: selectedClauseId ?? undefined,
-					parentCommentId: replyTo ?? undefined,
-					visibility: effectiveTeamOnly && canTeamOnly ? 'TEAM_ONLY' : 'PUBLIC'
-				},
+					clauseId: selectedClauseId,
+					replyTo,
+					teamOnly: effectiveTeamOnly && canTeamOnly
+				}),
 				id: true
 			});
 			draft = '';
 			replyTo = null;
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed to comment');
+			toast.error(errorMessage(err, 'Failed to comment'));
 		} finally {
 			sending = false;
 		}
@@ -146,97 +113,22 @@
 		try {
 			await client.mutate.deleteResolutionComment({ __args: { id } });
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed to delete');
+			toast.error(errorMessage(err, 'Failed to delete'));
 		}
 	}
 
-	function canDelete(authorId: string) {
-		return canTeamOnly || authorId === viewer.conferenceUserId;
+	function canDelete(authorId: string | undefined) {
+		return canTeamOnly || (authorId ?? '') === viewer.conferenceUserId;
+	}
+
+	function onDraftKey(e: KeyboardEvent) {
+		if (!sendsOnKey({ key: e.key, shiftKey: e.shiftKey, sending, draft })) return;
+		e.preventDefault();
+		send();
 	}
 </script>
 
-<div class="flex h-full flex-col gap-3">
-	<p class="text-base-content/60 text-xs">
-		{selectedClauseId ? m.comments() : m.documentComments()}
-	</p>
-
-	<div class="flex-1 space-y-4 overflow-y-auto">
-		{#if !roots.length}
-			<p class="text-base-content/50 py-6 text-center text-sm">{m.noCommentsYet()}</p>
-		{:else}
-			{#each roots as comment (comment.id)}
-				{@const display = authorDisplay(comment.author)}
-				<div
-					class="bg-base-100 rounded-lg border-l-2 p-4"
-					class:border-warning={comment.visibility === 'TEAM_ONLY'}
-					class:border-transparent={comment.visibility !== 'TEAM_ONLY'}
-				>
-					<div class="flex items-start justify-between gap-2">
-						<div class="flex items-center gap-2.5">
-							{#if display.representation}
-								<Flag size="xs" representation={display.representation} />
-							{/if}
-							<span class="text-sm font-semibold">{display.name}</span>
-						</div>
-						<div class="flex items-center gap-1">
-							{#if comment.visibility === 'TEAM_ONLY'}
-								<span class="badge badge-xs badge-warning" title={m.teamOnly()}>
-									<i aria-hidden="true" class="ph-fill ph-shield-star"></i>
-								</span>
-							{/if}
-							{#if canDelete(comment.author?.id ?? '')}
-								<button
-									class="btn btn-ghost btn-xs"
-									aria-label={m.delete()}
-									onclick={() => remove(comment.id)}
-								>
-									<i aria-hidden="true" class="ph-fill ph-trash text-error"></i>
-								</button>
-							{/if}
-						</div>
-					</div>
-					<p class="mt-2 text-sm whitespace-pre-wrap">{comment.content}</p>
-
-					{#each repliesOf(comment.id) as reply (reply.id)}
-						{@const replyDisplay = authorDisplay(reply.author)}
-						<div
-							class="mt-2 ml-4 border-l-2 pl-2"
-							class:border-warning={reply.visibility === 'TEAM_ONLY'}
-							class:border-base-300={reply.visibility !== 'TEAM_ONLY'}
-						>
-							<div class="flex items-start justify-between gap-2">
-								<div class="flex items-center gap-2.5">
-									{#if replyDisplay.representation}
-										<Flag size="xs" representation={replyDisplay.representation} />
-									{/if}
-									<span class="text-xs font-semibold">{replyDisplay.name}</span>
-								</div>
-								{#if canDelete(reply.author?.id ?? '')}
-									<button
-										class="btn btn-ghost btn-xs"
-										aria-label={m.delete()}
-										onclick={() => remove(reply.id)}
-									>
-										<i aria-hidden="true" class="ph-fill ph-trash text-error"></i>
-									</button>
-								{/if}
-							</div>
-							<p class="mt-1.5 text-xs whitespace-pre-wrap">{reply.content}</p>
-						</div>
-					{/each}
-
-					<button
-						class="btn btn-ghost btn-xs mt-1"
-						onclick={() => (replyTo = replyTo === comment.id ? null : comment.id)}
-					>
-						<i aria-hidden="true" class="ph-fill ph-arrow-bend-up-left"></i>
-						{m.reply()}
-					</button>
-				</div>
-			{/each}
-		{/if}
-	</div>
-
+{#snippet composer()}
 	<div class="border-base-300 flex flex-col gap-2 border-t pt-2">
 		{#if replyTo}
 			<div class="text-base-content/60 flex items-center justify-between text-xs">
@@ -257,12 +149,7 @@
 			rows="2"
 			placeholder={m.writeAComment()}
 			bind:value={draft}
-			onkeydown={(e) => {
-				if (e.key === 'Enter' && !e.shiftKey && !sending && draft.trim()) {
-					e.preventDefault();
-					send();
-				}
-			}}></textarea>
+			onkeydown={onDraftKey}></textarea>
 		<div class="flex items-center justify-between gap-2">
 			{#if canTeamOnly}
 				<label
@@ -294,4 +181,51 @@
 			</button>
 		</div>
 	</div>
+{/snippet}
+
+<div class="flex h-full flex-col gap-3">
+	<p class="text-base-content/60 text-xs">
+		{selectedClauseId ? m.comments() : m.documentComments()}
+	</p>
+
+	<div class="flex-1 space-y-4 overflow-y-auto">
+		{#if !roots.length}
+			<p class="text-base-content/50 py-6 text-center text-sm">{m.noCommentsYet()}</p>
+		{:else}
+			{#each roots as comment (comment.id)}
+				{@const display = authorDisplay(comment.author)}
+				<CommentItem
+					name={display.name}
+					representation={display.representation}
+					content={comment.content}
+					teamOnly={comment.visibility === 'TEAM_ONLY'}
+					canDelete={canDelete(comment.author?.id)}
+					ondelete={() => remove(comment.id)}
+				>
+					{#each repliesOf(comment.id) as reply (reply.id)}
+						{@const replyDisplay = authorDisplay(reply.author)}
+						<CommentItem
+							reply
+							name={replyDisplay.name}
+							representation={replyDisplay.representation}
+							content={reply.content}
+							teamOnly={reply.visibility === 'TEAM_ONLY'}
+							canDelete={canDelete(reply.author?.id)}
+							ondelete={() => remove(reply.id)}
+						/>
+					{/each}
+
+					<button
+						class="btn btn-ghost btn-xs mt-1"
+						onclick={() => (replyTo = replyTo === comment.id ? null : comment.id)}
+					>
+						<i aria-hidden="true" class="ph-fill ph-arrow-bend-up-left"></i>
+						{m.reply()}
+					</button>
+				</CommentItem>
+			{/each}
+		{/if}
+	</div>
+
+	{@render composer()}
 </div>

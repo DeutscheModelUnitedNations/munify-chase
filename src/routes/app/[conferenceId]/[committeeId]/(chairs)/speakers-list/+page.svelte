@@ -12,6 +12,7 @@
 	import StatusWidget from '../StatusWidget.svelte';
 	import Majorities from '#lib/components/Majorities.svelte';
 	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
+	import { editableSpeakersListSelection } from '../../../selections';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -26,51 +27,7 @@
 		activeAgendaItem: {
 			id: true,
 			title: true,
-			speakersList: {
-				id: true,
-				type: true,
-				isClosed: true,
-				speakingTime: true,
-				startTimestamp: true,
-				timeLeft: true,
-				phase: true,
-				agendaItem: {
-					id: true,
-					committee: {
-						id: true,
-						allowDelegationsToAddThemselvesToSpeakersList: true,
-						conferenceId: true
-					}
-				},
-				speakers: {
-					id: true,
-					position: true,
-					speakersListId: true,
-					overwriteName: true,
-					committeeMember: {
-						id: true,
-						representation: {
-							id: true,
-							name: true,
-							alpha2Code: true,
-							alpha3Code: true,
-							icon: true,
-							type: true
-						}
-					},
-					conferenceMember: {
-						id: true,
-						representation: {
-							id: true,
-							name: true,
-							alpha2Code: true,
-							alpha3Code: true,
-							icon: true,
-							type: true
-						}
-					}
-				}
-			}
+			speakersList: editableSpeakersListSelection
 		},
 		members: {
 			id: true,

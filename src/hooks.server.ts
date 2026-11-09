@@ -12,6 +12,7 @@ import { building } from '$app/env';
 import { resumeLinkWorker } from '#api/services/link/linkWorker';
 import { LINK_TOKEN_HEADER } from '#api/services/link/linkAuth';
 import { isLinkCall } from '#api/services/link/linkCaller';
+import { localePrefix } from '#api/services/localePrefix';
 
 /** Picks the DELEGATOR link up again (`docs/plans/delegator-link.md`). */
 export const init: ServerInit = async () => {
@@ -60,20 +61,16 @@ const nonBaseLocales = locales.filter((l) => l !== baseLocale);
 
 /** Redirect locale-prefixed URLs to bare paths, setting the cookie instead. */
 const localeRedirect: Handle = ({ event, resolve }) => {
-	const { pathname } = event.url;
-	for (const locale of nonBaseLocales) {
-		if (pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)) {
-			const bare = pathname.slice(`/${locale}`.length) || '/';
-			const domain = event.url.hostname;
-			event.cookies.set(cookieName, locale, {
-				path: '/',
-				maxAge: cookieMaxAge,
-				domain,
-				httpOnly: false,
-				sameSite: 'lax'
-			});
-			redirect(302, bare + event.url.search);
-		}
+	const prefixed = localePrefix({ pathname: event.url.pathname, locales: nonBaseLocales });
+	if (prefixed) {
+		event.cookies.set(cookieName, prefixed.locale, {
+			path: '/',
+			maxAge: cookieMaxAge,
+			domain: event.url.hostname,
+			httpOnly: false,
+			sameSite: 'lax'
+		});
+		redirect(302, prefixed.bare + event.url.search);
 	}
 	return resolve(event);
 };

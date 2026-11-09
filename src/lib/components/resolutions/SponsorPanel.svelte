@@ -2,13 +2,12 @@
 	import { m } from '#lib/paraglide/messages';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { nanoid } from '#lib/helpers/nanoid';
-	import toast from 'svelte-french-toast';
 	import { isTeam, type PaperStatus, type ResolutionViewer } from './paperContext';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
-	import Flag from '#lib/components/Flag.svelte';
-	import SponsorPicker from './SponsorPicker.svelte';
-	import Fuse, { type IFuseOptions } from 'fuse.js';
 	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { fetchCommitteeMembers, representationSelection } from './committeeMembers';
+	import { createSponsorActions } from './sponsorActions.svelte';
+	import { canSponsorPaper, ownSponsorship } from './sponsors';
+	import SponsorEditor from './SponsorEditor.svelte';
 
 	interface Props {
 		paperId: string;
@@ -22,101 +21,27 @@
 	const sponsors = await client.liveQuery.paperSponsors({
 		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
-		committeeMember: {
-			id: true,
-			representation: { name: true, alpha2Code: true, alpha3Code: true, icon: true, type: true }
-		}
+		committeeMember: { id: true, representation: representationSelection }
 	});
 
 	const team = $derived(isTeam(viewer));
 	const myMemberId = $derived(viewer.committeeMemberId ?? null);
-
-	const sortedSponsors = $derived(
-		[...(sponsors ?? [])].sort((a, b) => {
-			const nameA =
-				getTranslatedCountryNameFromAlpha3Code(a.committeeMember?.representation?.alpha3Code) ??
-				a.committeeMember?.representation?.name ??
-				'';
-			const nameB =
-				getTranslatedCountryNameFromAlpha3Code(b.committeeMember?.representation?.alpha3Code) ??
-				b.committeeMember?.representation?.name ??
-				'';
-			return nameA.localeCompare(nameB);
-		})
-	);
-
-	const iSponsor = $derived((sponsors ?? []).find((s) => s.committeeMember?.id === myMemberId));
-	const sponsoringAllowed = $derived(
-		paperStatus === 'WORKING_PAPER' || paperStatus === 'SUBMITTED'
+	const iSponsor = $derived(ownSponsorship(sponsors, myMemberId));
+	const canSelfSponsor = $derived(
+		canSponsorPaper({ team, myMemberId, sponsoring: !!iSponsor, paperStatus })
 	);
 
 	// Chair-only member picker (queried always; shown only to team).
-	const members = await client.liveQuery.committeeMembers({
-		__args: { where: { committee: { id: { eq: committeeId } } } },
-		id: true,
-		representation: { name: true, alpha2Code: true, alpha3Code: true, icon: true, type: true }
-	});
+	const members = await fetchCommitteeMembers(committeeId);
 
-	const getName = (member: (typeof members)[number] | undefined) =>
-		getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code) ??
-		member?.representation?.name ??
-		'';
-
-	type FuseItem = (typeof members)[number] & { label: string };
-
-	const fuseOptions: IFuseOptions<FuseItem> = {
-		keys: ['label'],
-		ignoreFieldNorm: true,
-		ignoreDiacritics: true,
-		shouldSort: true
-	};
-
-	const fuse = new Fuse<FuseItem>([], fuseOptions);
-
-	const filterMembers = (allMembers: (typeof members)[number][], search: string) => {
-		const notYetSponsor = (mem: (typeof members)[number]) =>
-			!(sponsors ?? []).some((s) => s.committeeMember?.id === mem.id);
-
-		if (search.length > 0) {
-			fuse.setCollection(
-				allMembers.filter(notYetSponsor).map((x) => ({ ...x, label: getName(x) }))
-			);
-			return fuse.search(search).map((r) => r.item);
-		}
-		return allMembers.filter(notYetSponsor).sort((a, b) => getName(a).localeCompare(getName(b)));
-	};
-
-	let pickValue = $state('');
-
-	let busy = $state(false);
-	async function add(committeeMemberId?: string) {
-		busy = true;
-		try {
-			await client.mutate.addPaperSponsor({
+	const actions = createSponsorActions({
+		addSponsor: (committeeMemberId) =>
+			client.mutate.addPaperSponsor({
 				__args: { id: nanoid(), paperId, committeeMemberId },
 				id: true
-			});
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed');
-		} finally {
-			busy = false;
-		}
-	}
-
-	async function addByName() {
-		const member = members.find((mem) => getName(mem) === pickValue);
-		if (!member) return;
-		await add(member.id);
-		pickValue = '';
-	}
-
-	async function remove(id: string) {
-		try {
-			await client.mutate.removePaperSponsor({ __args: { id } });
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed');
-		}
-	}
+			}),
+		removeSponsor: (id) => client.mutate.removePaperSponsor({ __args: { id } })
+	});
 
 	// A participant's own sponsorship, while the sponsors dialog is open
 	registerCommands(() => [
@@ -125,9 +50,9 @@
 			title: m.sponsorThisPaper,
 			group: 'page',
 			icon: 'handshake',
-			visible: () => !team && !!myMemberId && !iSponsor && sponsoringAllowed,
-			enabled: () => !busy,
-			run: () => add()
+			visible: () => canSelfSponsor,
+			enabled: () => !actions.busy,
+			run: () => actions.add()
 		},
 		{
 			id: 'paper.participant.unsponsor',
@@ -135,57 +60,20 @@
 			group: 'page',
 			icon: 'x',
 			visible: () => !team && !!iSponsor,
-			run: () => remove(iSponsor!.id)
+			run: () => actions.remove(iSponsor!.id)
 		}
 	]);
 </script>
 
 <div class="flex flex-col gap-3">
-	{#if !sponsors?.length}
-		<p class="text-base-content/50 text-sm">{m.noSponsorsYet()}</p>
-	{:else}
-		<ul class="space-y-2.5">
-			{#each sortedSponsors as s (s.id)}
-				<li class="flex items-center justify-between gap-2 text-sm">
-					<div class="flex items-center gap-2">
-						<Flag representation={s.committeeMember?.representation} size="xs" />
-						<span
-							>{getTranslatedCountryNameFromAlpha3Code(
-								s.committeeMember?.representation?.alpha3Code
-							) ??
-								s.committeeMember?.representation?.name ??
-								'?'}</span
-						>
-					</div>
-					{#if team || s.committeeMember?.id === myMemberId}
-						<button
-							class="btn btn-ghost btn-xs"
-							aria-label={m.delete()}
-							onclick={() => remove(s.id)}
-						>
-							<i aria-hidden="true" class="ph-fill ph-x text-error"></i>
-						</button>
-					{/if}
-				</li>
-			{/each}
-		</ul>
-	{/if}
-
-	{#if !team && myMemberId && !iSponsor && sponsoringAllowed}
-		<button class="btn btn-primary btn-sm" disabled={busy} onclick={() => add()}>
-			<i aria-hidden="true" class="ph-fill ph-handshake"></i>
-			{m.sponsorThisPaper()}
-		</button>
-	{/if}
-
-	{#if team}
-		<SponsorPicker
-			bind:value={pickValue}
-			{members}
-			filter={filterMembers}
-			{getName}
-			{busy}
-			add={addByName}
-		/>
-	{/if}
+	<SponsorEditor
+		{sponsors}
+		{members}
+		{team}
+		{myMemberId}
+		{actions}
+		{canSelfSponsor}
+		selfSponsorLabel={m.sponsorThisPaper()}
+		selfSponsorClass="btn btn-primary btn-sm"
+	/>
 </div>

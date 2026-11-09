@@ -6,12 +6,7 @@
 	import type { InsightPulse } from '#lib/components/missionControl/insights';
 	import CurrentTime from '#lib/components/CurrentTime.svelte';
 	import * as m from '#lib/paraglide/messages';
-	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
-	import {
-		buildConferenceNavItems,
-		roleBadgeClassFor,
-		roleLabelFor
-	} from '#lib/components/navbar/conferenceNavItems';
+	import ConferenceMenu from '../ConferenceMenu.svelte';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 	import AdoptionConfetti from '#lib/components/AdoptionConfetti.svelte';
@@ -19,11 +14,9 @@
 	import { resolve } from '$app/paths';
 
 	import { getCurrentUser, getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
-	import { displayNameOf } from '#lib/helpers/displayName';
 
 	const currentUser = await getCurrentUser();
 	const userId = currentUser.id ?? '';
-	const userDisplayName = displayNameOf(currentUser);
 
 	// Role check first — redirect participants before making the heavy conference query.
 	const [conferenceUsersEarly, isGlobalAdmin] = await Promise.all([
@@ -230,16 +223,6 @@
 
 	let currentUserRole = $derived(conferenceUsers?.[0]);
 	let role = $derived(currentUserRole?.conferenceUserType);
-
-	let menubarItems = $derived(
-		buildConferenceNavItems({
-			role,
-			conferenceId: page.params.conferenceId!,
-			activeRouteId: page.route.id,
-			activePathname: page.url.pathname,
-			isGlobalAdmin: !!isGlobalAdmin
-		})
-	);
 </script>
 
 <svelte:head>
@@ -252,21 +235,13 @@
 		<CurrentTime />
 	</div>
 	<div class="flex-none">
-		<NavbarBurgerMenu
-			items={menubarItems}
-			user={{
-				name: userDisplayName,
-				email: currentUser.email ?? undefined,
-				givenName: currentUser.givenName ?? undefined,
-				familyName: currentUser.familyName ?? undefined
-			}}
-			roleLabel={roleLabelFor(role)}
-			roleBadgeClass={roleBadgeClassFor(role)}
+		<ConferenceMenu
+			{role}
+			conferenceId={page.params.conferenceId!}
 			conferenceTitle={conference?.title}
-			conferenceId={page.params.conferenceId}
-			committees={role === 'ADMIN' || role === 'TEAM' ? (conference?.committees ?? []) : []}
-			dashboardHref="/app"
-			signOutHref="/logout"
+			committees={conference?.committees}
+			isGlobalAdmin={!!isGlobalAdmin}
+			user={currentUser}
 		/>
 	</div>
 </div>

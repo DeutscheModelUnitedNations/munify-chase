@@ -31,3 +31,4 @@ src-tauri
 # Playwright
 /test-results
 /playwright-report
+/coverage

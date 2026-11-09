@@ -1,8 +1,9 @@
 import { db, schema } from '#api/db/db';
 import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '#api/rumble';
-import { isParticipantInConference, isTeamInConference } from '#api/services/authHelper';
+import { isParticipantInConference } from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import { paperTeamOrCreator, paperWithAbility } from './helpers/paperAccess';
 
 abilityBuilder.paperEditor.allow('read').when((ctx) => {
 	return {
@@ -12,17 +13,10 @@ abilityBuilder.paperEditor.allow('read').when((ctx) => {
 	};
 });
 
+// the paper's team and creator, and editors themselves
 abilityBuilder.paperEditor.allow('delete').when((ctx) => {
-	const user = ctx.mustBeLoggedIn();
-	return {
-		where: {
-			OR: [
-				{ paper: { committee: isTeamInConference(ctx) } }, // team members can delete
-				{ paper: { creatorCommitteeMember: { users: { user: { id: user.sub } } } } }, // owner of the paper can delete
-				{ conferenceUser: { user: { id: user.sub } } } // self delete
-			]
-		}
-	};
+	const { user, rules } = paperTeamOrCreator(ctx);
+	return { where: { OR: [...rules, { conferenceUser: { user: { id: user.sub } } }] } };
 });
 
 const ref = object({ table: 'paperEditor' });
@@ -38,13 +32,7 @@ schemaBuilder.mutationFields((t) => ({
 			conferenceUserId: t.arg.id({ required: true })
 		},
 		resolve: async (query, _root, args, ctx) => {
-			await db.query.resolutionPaper
-				.findFirst(
-					(await ctx.abilities.resolutionPaper.filter('update')).merge({
-						where: { id: args.paperId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
+			await paperWithAbility({ ctx, paperId: args.paperId, action: 'update' });
 
 			await db
 				.insert(schema.paperEditor)

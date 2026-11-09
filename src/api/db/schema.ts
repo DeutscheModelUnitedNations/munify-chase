@@ -244,17 +244,22 @@ export const speakersList = snakeCase.table(
 	(t) => [unique().on(t.agendaItemId, t.type)]
 );
 
+/** Who spoke on which list: a committee member or a conference member (non-state actor) */
+const speakerOnListColumns = () => ({
+	committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
+	conferenceMemberId: text().references(() => conferenceMember.id, {
+		onDelete: 'cascade'
+	}),
+	speakersListId: text()
+		.references(() => speakersList.id, { onDelete: 'cascade' })
+		.notNull()
+});
+
 export const speakerOnList = snakeCase.table(
 	'speaker_on_list',
 	{
 		...defaultIdAndTimestamps,
-		committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
-		conferenceMemberId: text().references(() => conferenceMember.id, {
-			onDelete: 'cascade'
-		}),
-		speakersListId: text()
-			.references(() => speakersList.id, { onDelete: 'cascade' })
-			.notNull(),
+		...speakerOnListColumns(),
 		position: smallint().notNull(),
 		overwriteName: text()
 	},
@@ -267,13 +272,7 @@ export const speakerOnList = snakeCase.table(
 
 export const spokenTimePeriod = snakeCase.table('spoken_time_period', {
 	...defaultIdAndTimestamps,
-	committeeMemberId: text().references(() => committeeMember.id, { onDelete: 'cascade' }),
-	conferenceMemberId: text().references(() => conferenceMember.id, {
-		onDelete: 'cascade'
-	}),
-	speakersListId: text()
-		.references(() => speakersList.id, { onDelete: 'cascade' })
-		.notNull(),
+	...speakerOnListColumns(),
 	startTimestamp: timestamp().notNull(),
 	endTimestamp: timestamp().notNull(),
 	queuedAt: timestamp().notNull(),
@@ -287,14 +286,19 @@ export const committeeTopicChangedTimestamp = snakeCase.table('committee_topic_c
 	timestamp: timestamp().notNull()
 });
 
-export const rollCallSession = snakeCase.table('roll_call_session', {
-	...defaultIdAndTimestamps,
+/** The committee a roll call or voting session runs in, and who started it */
+const sessionColumns = () => ({
 	committeeId: text()
 		.notNull()
 		.references(() => committee.id, { onDelete: 'cascade' }),
 	startedByConferenceUserId: text().references(() => conferenceUser.id, {
 		onDelete: 'set null'
-	}),
+	})
+});
+
+export const rollCallSession = snakeCase.table('roll_call_session', {
+	...defaultIdAndTimestamps,
+	...sessionColumns(),
 	currentMemberIndex: integer().notNull().default(0),
 	completedAt: timestamp()
 });
@@ -343,12 +347,7 @@ export const voteChoice = pgEnum('vote_choice', ['PRO', 'CON', 'ABSTAIN']);
 
 export const votingSession = snakeCase.table('voting_session', {
 	...defaultIdAndTimestamps,
-	committeeId: text()
-		.notNull()
-		.references(() => committee.id, { onDelete: 'cascade' }),
-	startedByConferenceUserId: text().references(() => conferenceUser.id, {
-		onDelete: 'set null'
-	}),
+	...sessionColumns(),
 	mode: votingMode().notNull(),
 	voteName: text(),
 	majority: votingMajorityType().notNull(),
@@ -471,6 +470,12 @@ export const paperContentSnapshot = snakeCase.table('paper_content_snapshot', {
 	trigger: snapshotTrigger().notNull()
 });
 
+/** The committee member sponsoring a paper or an amendment */
+const sponsorColumn = () =>
+	text()
+		.notNull()
+		.references(() => committeeMember.id, { onDelete: 'cascade' });
+
 export const paperSponsor = snakeCase.table(
 	'paper_sponsor',
 	{
@@ -478,9 +483,7 @@ export const paperSponsor = snakeCase.table(
 		paperId: text()
 			.notNull()
 			.references(() => resolutionPaper.id, { onDelete: 'cascade' }),
-		committeeMemberId: text()
-			.notNull()
-			.references(() => committeeMember.id, { onDelete: 'cascade' })
+		committeeMemberId: sponsorColumn()
 	},
 	(t) => [unique().on(t.paperId, t.committeeMemberId)]
 );
@@ -562,9 +565,7 @@ export const amendmentSponsor = snakeCase.table(
 		amendmentId: text()
 			.notNull()
 			.references(() => amendment.id, { onDelete: 'cascade' }),
-		committeeMemberId: text()
-			.notNull()
-			.references(() => committeeMember.id, { onDelete: 'cascade' })
+		committeeMemberId: sponsorColumn()
 	},
 	(t) => [unique().on(t.amendmentId, t.committeeMemberId)]
 );

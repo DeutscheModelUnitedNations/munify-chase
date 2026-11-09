@@ -9,6 +9,7 @@
 	import { client } from '#lib/api/rumbleClient/client';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { nanoid } from '#lib/helpers/nanoid';
+	import { wrapIndex } from './wrapIndex';
 
 	interface Props {
 		active: boolean;
@@ -95,92 +96,92 @@
 	// navigates away), otherwise every 'all' shortcut stays dead until a reload
 	$effect(() => () => hotkeys.deleteScope('rollCall'));
 
-	$effect(() => {
-		if (active) {
-			(document.activeElement as HTMLElement | null)?.blur();
-			// `single: true` unbinds any prior handler in the rollCall scope before
-			// registering a fresh one. Without it, if this effect re-runs while
-			// `active` stays true, hotkeys-js stacks duplicate handlers in the
-			// scope and every keypress fires setPresence twice — visibly skipping
-			// a row per press because currentIndex has already advanced by the
-			// time the second handler reads `members[currentIndex]`.
-			hotkeys('up, down, j, l, esc', { scope: 'rollCall', single: true }, (event, handler) => {
-				event.preventDefault();
-				// Also ignore key-repeat events from a held key — same skip
-				// symptom from a different cause, same dedupe blind spot.
-				if (event.repeat) return;
-				switch (handler.key) {
-					case 'up': {
-						const newIndex = (currentIndex - 1 + members.length) % members.length;
-						currentIndex = newIndex;
-						syncIndex(newIndex);
-						break;
-					}
-					case 'down': {
-						const newIndex = (currentIndex + 1) % members.length;
-						currentIndex = newIndex;
-						syncIndex(newIndex);
-						break;
-					}
-					case 'j':
-						setPresence(false);
-						break;
-					case 'l':
-						setPresence(true);
-						break;
-					case 'esc':
-						active = false;
-				}
-			});
-			hotkeys.setScope('rollCall');
+	const moveBy = (delta: number) => {
+		const newIndex = wrapIndex(currentIndex + delta, members.length);
+		currentIndex = newIndex;
+		syncIndex(newIndex);
+	};
 
-			// Set the session id synchronously so the chair can act before — and even
-			// without — a server confirmation: subsequent setPresenceForCommitteeMembers
-			// / setRollCallSessionIndex calls need a `rollCallSessionId` that the queued
-			// startRollCallSession mutation will create on the server. Resume an existing
-			// session if the parent already sees one in the cache, otherwise mint a
-			// client-side id and pass it through so the optimistic write and the eventual
-			// server insert land on the same row. Read externalActiveSessionId untracked
-			// so a subscription update later doesn't restart the session.
-			// Start a session once per opening. The effect can re-run while the modal stays
-			// open (e.g. when the page state behind the committeeId prop updates), and a
-			// second start would create another session that is never completed.
-			if (!untrack(() => sessionId)) {
-				const id = untrack(() => externalActiveSessionId) ?? nanoid();
-				sessionId = id;
+	const keyActions: Record<string, () => void> = {
+		up: () => moveBy(-1),
+		down: () => moveBy(1),
+		j: () => setPresence(false),
+		l: () => setPresence(true),
+		esc: () => (active = false)
+	};
 
-				client.mutate
-					.startRollCallSession({
-						__args: { committeeId, id },
-						id: true,
-						currentMemberIndex: true
-					})
-					.then((result) => {
-						// Server may return an existing session with a different id if one was
-						// already running and the parent query hadn't surfaced it yet. Adopt
-						// whatever the server returned so subsequent mutations target the right
-						// row. For the index, only jump forward (resume case) — if the user has
-						// already advanced locally while the round trip was in flight, snapping
-						// back to the server-stored value would reset their progress and feel
-						// like the modal lost their input.
-						sessionId = result.id;
-						if (result.currentMemberIndex > currentIndex) {
-							currentIndex = result.currentMemberIndex;
-						}
-					})
-					.catch(() => {});
-			}
-		} else {
-			hotkeys.deleteScope('rollCall');
+	const onRollCallKey = (event: KeyboardEvent, handler: { key: string }) => {
+		event.preventDefault();
+		// Also ignore key-repeat events from a held key — same skip
+		// symptom from a different cause, same dedupe blind spot.
+		if (event.repeat) return;
+		keyActions[handler.key]?.();
+	};
 
-			if (sessionId) {
-				client.mutate.completeRollCallSession({ __args: { id: sessionId } }).catch(() => {});
-				sessionId = null;
-			}
+	// Set the session id synchronously so the chair can act before — and even
+	// without — a server confirmation: subsequent setPresenceForCommitteeMembers
+	// / setRollCallSessionIndex calls need a `rollCallSessionId` that the queued
+	// startRollCallSession mutation will create on the server. Resume an existing
+	// session if the parent already sees one in the cache, otherwise mint a
+	// client-side id and pass it through so the optimistic write and the eventual
+	// server insert land on the same row. Read externalActiveSessionId untracked
+	// so a subscription update later doesn't restart the session.
+	const startSession = () => {
+		const id = untrack(() => externalActiveSessionId) ?? nanoid();
+		sessionId = id;
 
-			currentIndex = 0;
-			inFlight.clear();
+		client.mutate
+			.startRollCallSession({
+				__args: { committeeId, id },
+				id: true,
+				currentMemberIndex: true
+			})
+			.then((result) => {
+				// Server may return an existing session with a different id if one was
+				// already running and the parent query hadn't surfaced it yet. Adopt
+				// whatever the server returned so subsequent mutations target the right
+				// row. For the index, only jump forward (resume case) — if the user has
+				// already advanced locally while the round trip was in flight, snapping
+				// back to the server-stored value would reset their progress and feel
+				// like the modal lost their input.
+				sessionId = result.id;
+				currentIndex = Math.max(currentIndex, result.currentMemberIndex);
+			})
+			.catch(() => {});
+	};
+
+	const openRollCall = () => {
+		(document.activeElement as HTMLElement | null)?.blur();
+		// `single: true` unbinds any prior handler in the rollCall scope before
+		// registering a fresh one. Without it, if this effect re-runs while
+		// `active` stays true, hotkeys-js stacks duplicate handlers in the
+		// scope and every keypress fires setPresence twice — visibly skipping
+		// a row per press because currentIndex has already advanced by the
+		// time the second handler reads `members[currentIndex]`.
+		hotkeys('up, down, j, l, esc', { scope: 'rollCall', single: true }, onRollCallKey);
+		hotkeys.setScope('rollCall');
+
+		// Start a session once per opening. The effect can re-run while the modal stays
+		// open (e.g. when the page state behind the committeeId prop updates), and a
+		// second start would create another session that is never completed.
+		if (!untrack(() => sessionId)) startSession();
+	};
+
+	const closeRollCall = () => {
+		hotkeys.deleteScope('rollCall');
+
+		if (sessionId) {
+			client.mutate.completeRollCallSession({ __args: { id: sessionId } }).catch(() => {});
+			sessionId = null;
 		}
+
+		currentIndex = 0;
+		inFlight.clear();
+	};
+
+	$effect(() => {
+		if (active) openRollCall();
+		else closeRollCall();
 	});
 
 	// Track whether the server subscription has confirmed our session at least once.

@@ -14,13 +14,22 @@ import {
 	linkedDelegator,
 	SYNCED_CONFERENCE
 } from '#api/services/authHelper';
-import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
+import {
+	assertFindFirstExists,
+	assertFirstEntryExists,
+	mapNullFieldsToUndefined
+} from '@m1212e/rumble';
 import { and, count, eq, isNull, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '#lib/utils/majorities';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 import { assertNotManagedByDelegator } from '#api/services/link/managedRows';
+import {
+	findCommittee,
+	findUpdatableConference,
+	type HandlerContext
+} from './helpers/scopedLookups';
 
 // The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
 abilityBuilder.committee.allow('read').when(
@@ -123,6 +132,81 @@ query({
 	table: 'committee'
 });
 
+async function readableCommittee(ctx: HandlerContext, id: string) {
+	return (await ctx.abilities.committee.filter('read')).merge({ where: { id } }).query.single;
+}
+
+/** Writes to a committee the caller may change and announces it. */
+async function updateCommittee({
+	ctx,
+	committeeId,
+	set
+}: {
+	ctx: HandlerContext;
+	committeeId: string;
+	set: Partial<typeof schema.committee.$inferInsert>;
+}) {
+	await db
+		.update(schema.committee)
+		.set(set)
+		.where(
+			(await ctx.abilities.committee.filter('update')).merge({ where: { id: committeeId } }).sql
+				.where
+		);
+	pubsub.updated(committeeId);
+	return readableCommittee(ctx, committeeId);
+}
+
+/** Only a submitted paper of the active agenda item can go on the beamer. */
+async function assertMayPresentPaper({
+	paperId,
+	committeeId
+}: {
+	paperId: string;
+	committeeId: string;
+}) {
+	const paper = await db.query.resolutionPaper
+		.findFirst({ where: { id: paperId, committeeId } })
+		.then(assertFindFirstExists);
+	const committee = await findCommittee(committeeId);
+
+	if (paper.status === 'WORKING_PAPER') {
+		throw new GraphQLError(
+			'Working papers cannot be set as active, the paper must be submitted or promoted first'
+		);
+	}
+	if (committee.activeAgendaItemId && paper.agendaItemId !== committee.activeAgendaItemId) {
+		throw new GraphQLError(
+			'Only papers belonging to the currently active agenda item may be set as active'
+		);
+	}
+}
+
+/**
+ * An amendment goes on the beamer only for the committee's selected draft resolution; the first
+ * time it does is stamped as presentedAt.
+ */
+async function presentAmendment({
+	amendmentId,
+	committeeId
+}: {
+	amendmentId: string;
+	committeeId: string;
+}) {
+	const committee = await findCommittee(committeeId);
+	if (!committee.activeDraftResolutionId) {
+		throw new GraphQLError('No active draft resolution selected');
+	}
+	await db.query.amendment
+		.findFirst({ where: { id: amendmentId, paperId: committee.activeDraftResolutionId } })
+		.then(assertFindFirstExists);
+
+	await db
+		.update(schema.amendment)
+		.set({ presentedAt: new Date() })
+		.where(and(eq(schema.amendment.id, amendmentId), isNull(schema.amendment.presentedAt)));
+}
+
 schemaBuilder.mutationFields((t) => {
 	return {
 		createCommittee: t.drizzleField({
@@ -134,13 +218,7 @@ schemaBuilder.mutationFields((t) => {
 				abbreviation: t.arg.string({ required: true })
 			},
 			resolve: async (query, _root, args, ctx) => {
-				await db.query.conference
-					.findFirst(
-						(await ctx.abilities.conference.filter('update')).merge({
-							where: { id: args.conferenceId }
-						}).query.single
-					)
-					.then(assertFindFirstExists);
+				await findUpdatableConference(ctx, args.conferenceId);
 
 				const result = await db
 					.insert(schema.committee)
@@ -156,13 +234,7 @@ schemaBuilder.mutationFields((t) => {
 				pubsub.updated(result.id);
 
 				return db.query.committee
-					.findFirst(
-						query(
-							(await ctx.abilities.committee.filter('read')).merge({
-								where: { id: result.id }
-							}).query.single
-						)
-					)
+					.findFirst(query(await readableCommittee(ctx, result.id)))
 					.then(assertFindFirstExists);
 			}
 		}),
@@ -219,54 +291,28 @@ schemaBuilder.mutationFields((t) => {
 					managed: row?.managedByDelegator,
 					touchesDelegatorFields: args.name != null || args.abbreviation != null
 				});
+				const { id, ...fields } = mapNullFieldsToUndefined(args);
 				await db.transaction(async (tx) => {
 					await tx
 						.update(schema.committee)
-						.set({
-							name: args.name ?? undefined,
-							abbreviation: args.abbreviation ?? undefined,
-							whiteboardContent: args.whiteboardContent ?? undefined,
-							showWhiteboard: args.showWhiteboard ?? undefined,
-							status: args.status ?? undefined,
-							statusHeadline: args.statusHeadline ?? undefined,
-							statusUntil: args.statusUntil ?? undefined,
-							stateOfDebate: args.stateOfDebate ?? undefined,
-							activeAgendaItemId: args.activeAgendaItemId ?? undefined,
-							allowDelegationsToAddThemselvesToSpeakersList:
-								args.allowDelegationsToAddThemselvesToSpeakersList ?? undefined,
-							allowRequests: args.allowRequests ?? undefined,
-							presentationLayout: args.presentationLayout ?? undefined,
-							presentationRootFontSize: args.presentationRootFontSize ?? undefined,
-							presentationResolutionFontSize: args.presentationResolutionFontSize ?? undefined,
-							displayRegionalGroups: args.displayRegionalGroups ?? undefined,
-							presentationShowRequests: args.presentationShowRequests ?? undefined
-						})
+						.set(fields)
 						.where(
-							(await ctx.abilities.committee.filter('update')).merge({ where: { id: args.id } }).sql
-								.where
+							(await ctx.abilities.committee.filter('update')).merge({ where: { id } }).sql.where
 						);
 
 					if (args.activeAgendaItemId) {
 						await tx.insert(schema.committeeTopicChangedTimestamp).values({
-							committeeId: args.id,
+							committeeId: id,
 							agendaItemId: args.activeAgendaItemId,
 							timestamp: new Date()
 						});
 					}
 				});
 
-				pubsub.updated(args.id);
+				pubsub.updated(id);
 
 				return db.query.committee
-					.findFirst(
-						query(
-							(await ctx.abilities.committee.filter('read')).merge({
-								where: {
-									id: args.id
-								}
-							}).query.single
-						)
-					)
+					.findFirst(query(await readableCommittee(ctx, id)))
 					.then(assertFindFirstExists);
 			}
 		}),
@@ -278,47 +324,14 @@ schemaBuilder.mutationFields((t) => {
 			},
 			resolve: async (query, _root, args, ctx) => {
 				if (args.paperId) {
-					const paper = await db.query.resolutionPaper
-						.findFirst({ where: { id: args.paperId, committeeId: args.committeeId } })
-						.then(assertFindFirstExists);
-
-					const committee = await db.query.committee
-						.findFirst({ where: { id: args.committeeId } })
-						.then(assertFindFirstExists);
-
-					if (paper.status === 'WORKING_PAPER') {
-						throw new GraphQLError(
-							'Working papers cannot be set as active, the paper must be submitted or promoted first'
-						);
-					}
-
-					if (committee.activeAgendaItemId && paper.agendaItemId !== committee.activeAgendaItemId) {
-						throw new GraphQLError(
-							'Only papers belonging to the currently active agenda item may be set as active'
-						);
-					}
+					await assertMayPresentPaper({ paperId: args.paperId, committeeId: args.committeeId });
 				}
-				await db
-					.update(schema.committee)
-					.set({
-						activeDraftResolutionId: args.paperId ?? null,
-						activeAmendmentId: null
-					})
-					.where(
-						(await ctx.abilities.committee.filter('update')).merge({
-							where: { id: args.committeeId }
-						}).sql.where
-					);
-				pubsub.updated(args.committeeId);
-				return db.query.committee
-					.findFirst(
-						query(
-							(await ctx.abilities.committee.filter('read')).merge({
-								where: { id: args.committeeId }
-							}).query.single
-						)
-					)
-					.then(assertFindFirstExists);
+				const filter = await updateCommittee({
+					ctx,
+					committeeId: args.committeeId,
+					set: { activeDraftResolutionId: args.paperId ?? null, activeAmendmentId: null }
+				});
+				return db.query.committee.findFirst(query(filter)).then(assertFindFirstExists);
 			}
 		}),
 		setActiveAmendment: t.drizzleField({
@@ -329,45 +342,14 @@ schemaBuilder.mutationFields((t) => {
 			},
 			resolve: async (query, _root, args, ctx) => {
 				if (args.amendmentId) {
-					// the amendment must belong to the committee's currently selected draft resolution
-					const committee = await db.query.committee
-						.findFirst({ where: { id: args.committeeId } })
-						.then(assertFindFirstExists);
-					if (!committee.activeDraftResolutionId) {
-						throw new GraphQLError('No active draft resolution selected');
-					}
-					await db.query.amendment
-						.findFirst({
-							where: { id: args.amendmentId, paperId: committee.activeDraftResolutionId }
-						})
-						.then(assertFindFirstExists);
-
-					// Stamp presentedAt the first time an amendment hits the beamer
-					await db
-						.update(schema.amendment)
-						.set({ presentedAt: new Date() })
-						.where(
-							and(eq(schema.amendment.id, args.amendmentId), isNull(schema.amendment.presentedAt))
-						);
+					await presentAmendment({ amendmentId: args.amendmentId, committeeId: args.committeeId });
 				}
-				await db
-					.update(schema.committee)
-					.set({ activeAmendmentId: args.amendmentId ?? null })
-					.where(
-						(await ctx.abilities.committee.filter('update')).merge({
-							where: { id: args.committeeId }
-						}).sql.where
-					);
-				pubsub.updated(args.committeeId);
-				return db.query.committee
-					.findFirst(
-						query(
-							(await ctx.abilities.committee.filter('read')).merge({
-								where: { id: args.committeeId }
-							}).query.single
-						)
-					)
-					.then(assertFindFirstExists);
+				const filter = await updateCommittee({
+					ctx,
+					committeeId: args.committeeId,
+					set: { activeAmendmentId: args.amendmentId ?? null }
+				});
+				return db.query.committee.findFirst(query(filter)).then(assertFindFirstExists);
 			}
 		}),
 		setCommitteeResolutionToggles: t.drizzleField({
@@ -380,29 +362,9 @@ schemaBuilder.mutationFields((t) => {
 				currentOperativeIndex: t.arg.int()
 			},
 			resolve: async (query, _root, args, ctx) => {
-				await db
-					.update(schema.committee)
-					.set({
-						supportReevaluationOpen: args.supportReevaluationOpen ?? undefined,
-						amendmentSubmissionOpen: args.amendmentSubmissionOpen ?? undefined,
-						amendmentSponsoringOpen: args.amendmentSponsoringOpen ?? undefined,
-						currentOperativeIndex: args.currentOperativeIndex ?? undefined
-					})
-					.where(
-						(await ctx.abilities.committee.filter('update')).merge({
-							where: { id: args.committeeId }
-						}).sql.where
-					);
-				pubsub.updated(args.committeeId);
-				return db.query.committee
-					.findFirst(
-						query(
-							(await ctx.abilities.committee.filter('read')).merge({
-								where: { id: args.committeeId }
-							}).query.single
-						)
-					)
-					.then(assertFindFirstExists);
+				const { committeeId, ...toggles } = mapNullFieldsToUndefined(args);
+				const filter = await updateCommittee({ ctx, committeeId, set: toggles });
+				return db.query.committee.findFirst(query(filter)).then(assertFindFirstExists);
 			}
 		})
 	};

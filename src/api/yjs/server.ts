@@ -13,14 +13,13 @@ import { Redis } from 'ioredis';
 import * as Y from 'yjs';
 import { db, schema } from '../db/db';
 import { REDIS_URL } from '$app/env/private';
-import { context, type Context } from '#api/context';
+import type { Context } from '#api/context';
 import {
 	isParticipantInConference,
 	isPaperEditor,
 	isTeamInConference
 } from '#api/services/authHelper';
-import { nativeToRequestEvent } from '#api/services/auth';
-import { OIDC } from '#api/services/OIDC';
+import { authenticatedEvent } from '#api/services/auth';
 import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from '#lib/api/yjs/statelessMessages';
 import { detachFromDelegator } from '#api/services/link/detach';
 import { logger } from '#lib/logger';
@@ -40,7 +39,7 @@ export interface YjsConnectionContext {
 	ctx: Context | undefined;
 }
 
-export class CorruptYjsStateError extends Error {
+class CorruptYjsStateError extends Error {
 	/**
 	 * Sent verbatim to the client in the permission-denied message, so the UI
 	 * can distinguish a corrupt doc from a plain authorization failure.
@@ -61,12 +60,19 @@ interface AuthResult {
 	canWrite: boolean;
 }
 
-async function authorize(paperId: string, ctx: Context): Promise<AuthResult> {
+const denied = (): AuthResult => ({ allowed: false, canWrite: false });
+
+function isLoggedIn(ctx: Context) {
 	try {
 		ctx.mustBeLoggedIn();
+		return true;
 	} catch {
-		return { allowed: false, canWrite: false };
+		return false;
 	}
+}
+
+async function authorize(paperId: string, ctx: Context): Promise<AuthResult> {
+	if (!isLoggedIn(ctx)) return denied();
 
 	// Read access to paper and paper existence
 	const paper = await db.query.resolutionPaper.findFirst({
@@ -75,29 +81,141 @@ async function authorize(paperId: string, ctx: Context): Promise<AuthResult> {
 			committee: isParticipantInConference(ctx)
 		}
 	});
-	if (!paper) {
-		return { allowed: false, canWrite: false };
-	}
+	if (!paper) return denied();
 
-	// is team
-	if (
-		await db.query.resolutionPaper.findFirst({
-			where: { id: paperId, committee: isTeamInConference(ctx) }
-		})
-	) {
-		return { allowed: true, canWrite: true };
-	}
+	return { allowed: true, canWrite: await canWritePaper({ paperId, ctx, status: paper.status }) };
+}
 
-	if (paper.status === 'WORKING_PAPER') {
-		if (
-			await db.query.paperEditor.findFirst({
-				where: isPaperEditor(ctx, paperId)
-			})
-		)
-			return { allowed: true, canWrite: true };
-	}
+/** The team writes, a paper's editors while it is a working paper. */
+async function canWritePaper({
+	paperId,
+	ctx,
+	status
+}: {
+	paperId: string;
+	ctx: Context;
+	status: string;
+}): Promise<boolean> {
+	const asTeam = await db.query.resolutionPaper.findFirst({
+		where: { id: paperId, committee: isTeamInConference(ctx) }
+	});
+	if (asTeam) return true;
+	if (status !== 'WORKING_PAPER') return false;
+	return !!(await db.query.paperEditor.findFirst({ where: isPaperEditor(ctx, paperId) }));
+}
 
-	return { allowed: true, canWrite: false };
+/**
+ * The stored state Hocuspocus starts the doc from: none yet for a freshly created paper (the first
+ * store inserts it). Validated before handing the bytes over: a decode failure must surface as a
+ * distinct, non-retryable error to the client instead of an opaque load failure.
+ */
+function storedState({
+	paperId,
+	state
+}: {
+	paperId: string;
+	state: Uint8Array | undefined;
+}): Uint8Array | null {
+	if (!state || state.byteLength === 0) return null;
+	try {
+		Y.applyUpdate(new Y.Doc(), state);
+	} catch (err) {
+		yjsLogger.error('Corrupt paper_yjs_doc.state, failing hard', {
+			paperId,
+			byteLength: state.byteLength,
+			err
+		});
+		throw new CorruptYjsStateError(paperId, err);
+	}
+	return state;
+}
+
+type YjsConnection = connectedPayload<YjsConnectionContext>['connection'];
+
+/**
+ * Whether the session is still live. 4408 isn't a terminal code on the client, so browser clients
+ * reconnect with their refreshed session; native clients must re-authenticate. A transient check
+ * failure fails open: only a definitive "not live" result closes the connection.
+ */
+async function sessionStillLive({
+	paperId,
+	ctx,
+	connection
+}: {
+	paperId: string;
+	ctx: Context;
+	connection: YjsConnection;
+}): Promise<boolean> {
+	let live: boolean;
+	try {
+		live = await ctx.isSessionLive();
+	} catch (err) {
+		yjsLogger.error('Checking the session liveness failed', { paperId, err });
+		return false;
+	}
+	if (!live) connection.webSocket.close(4408, 'Session expired');
+	return live;
+}
+
+/** The connection's permissions now, closing it when they are gone; undefined when unknown. */
+async function permissionsStillHeld({
+	paperId,
+	ctx,
+	connection
+}: {
+	paperId: string;
+	ctx: Context;
+	connection: YjsConnection;
+}): Promise<AuthResult | undefined> {
+	let next: AuthResult;
+	try {
+		next = await authorize(paperId, ctx);
+	} catch (err) {
+		yjsLogger.error('Re-authorizing failed', { paperId, err });
+		return undefined;
+	}
+	if (next.allowed) return next;
+	try {
+		connection.webSocket.close(4403, 'Permission revoked');
+	} catch {
+		/* noop */
+	}
+	return undefined;
+}
+
+/**
+ * Write access lost but read access remains: unlike a full revocation, don't drop the connection
+ * (the user should keep seeing live updates). The client can't observe `connection.readOnly`
+ * flipping on an open socket by itself, so tell it explicitly: it reloads to pick up the new state
+ * consistently across the whole page, not just the doc.
+ */
+function applyWriteAccess({
+	paperId,
+	connection,
+	canWrite
+}: {
+	paperId: string;
+	connection: YjsConnection;
+	canWrite: boolean;
+}) {
+	if (!connection.readOnly && !canWrite) {
+		try {
+			connection.sendStateless(READ_ONLY_DOWNGRADE_STATELESS_MESSAGE);
+		} catch (err) {
+			yjsLogger.error('Notifying the client of the read-only downgrade failed', { paperId, err });
+		}
+	}
+	connection.readOnly = !canWrite;
+}
+
+async function recheckConnection(args: {
+	paperId: string;
+	ctx: Context;
+	connection: YjsConnection;
+}) {
+	if (!(await sessionStillLive(args))) return;
+	const next = await permissionsStillHeld(args);
+	if (next) applyWriteAccess({ ...args, canWrite: next.canWrite });
 }
 
 async function authorizeConnection(
@@ -119,25 +237,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 		new Database({
 			fetch: async ({ documentName: paperId }) => {
 				const existing = await db.query.paperYjsDoc.findFirst({ where: { paperId } });
-				if (!existing?.state || existing.state.byteLength === 0) {
-					// No row yet — the doc starts empty and the first store will
-					// insert. This is the expected path for a freshly-created paper.
-					return null;
-				}
-				// Validate before handing the bytes to Hocuspocus: a decode failure
-				// must surface as a distinct, non-retryable error to the client
-				// instead of an opaque load failure.
-				try {
-					Y.applyUpdate(new Y.Doc(), existing.state);
-				} catch (err) {
-					yjsLogger.error('Corrupt paper_yjs_doc.state, failing hard', {
-						paperId,
-						byteLength: existing.state.byteLength,
-						err
-					});
-					throw new CorruptYjsStateError(paperId, err);
-				}
-				return existing.state;
+				return storedState({ paperId, state: existing?.state });
 			},
 			store: async ({ documentName: paperId, state }) => {
 				await db
@@ -187,21 +287,11 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 		}
 
 		// Reuse the same OIDC validation path as HTTP requests.
-		const fakeReq = {
-			headers: { authorization: `Bearer ${token}` },
-			url: '/'
-		} as Parameters<typeof nativeToRequestEvent>[0];
-		let syntheticEvent = nativeToRequestEvent(fakeReq);
 		try {
-			await OIDC.handle({
-				event: syntheticEvent,
-				resolve: (event) => {
-					syntheticEvent = event;
-					return Promise.resolve(new Response());
-				}
+			const { ctx } = await authenticatedEvent({
+				headers: { authorization: `Bearer ${token}` },
+				url: '/'
 			});
-			const ctx = context(syntheticEvent);
-			ctx.mustBeLoggedIn();
 			connContext.ctx = ctx;
 		} catch (err) {
 			yjsLogger.error('In-band authentication failed', err);
@@ -244,54 +334,10 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 		if (!context.ctx) return;
 		const ctx = context.ctx;
 
-		const reauthTimer = setInterval(async () => {
-			// 4408 isn't a terminal code on the client, so browser clients
-			// reconnect with their refreshed session; native clients must
-			// re-authenticate. A transient check failure fails open — only a
-			// definitive "not live" result closes the connection.
-			try {
-				if (!(await ctx.isSessionLive())) {
-					connection.webSocket.close(4408, 'Session expired');
-					return;
-				}
-			} catch (err) {
-				yjsLogger.error('Checking the session liveness failed', { paperId, err });
-				return;
-			}
-
-			let next: AuthResult;
-			try {
-				next = await authorize(paperId, ctx);
-			} catch (err) {
-				yjsLogger.error('Re-authorizing failed', { paperId, err });
-				return;
-			}
-			if (!next.allowed) {
-				try {
-					connection.webSocket.close(4403, 'Permission revoked');
-				} catch {
-					/* noop */
-				}
-				return;
-			}
-			// Write access lost but read access remains: unlike a full revocation,
-			// don't drop the connection (the user should keep seeing live
-			// updates). The client can't observe `connection.readOnly` flipping
-			// on an open socket by itself, so tell it explicitly — it reloads to
-			// pick up the new state consistently across the whole page, not just
-			// the doc.
-			if (!connection.readOnly && !next.canWrite) {
-				try {
-					connection.sendStateless(READ_ONLY_DOWNGRADE_STATELESS_MESSAGE);
-				} catch (err) {
-					yjsLogger.error('Notifying the client of the read-only downgrade failed', {
-						paperId,
-						err
-					});
-				}
-			}
-			connection.readOnly = !next.canWrite;
-		}, REAUTH_INTERVAL_MS);
+		const reauthTimer = setInterval(
+			() => void recheckConnection({ paperId, ctx, connection }),
+			REAUTH_INTERVAL_MS
+		);
 		connection.onClose(() => clearInterval(reauthTimer));
 	}
 });

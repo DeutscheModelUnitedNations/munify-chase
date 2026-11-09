@@ -12,6 +12,7 @@
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import { getLocale, locales, setLocale } from '#lib/paraglide/runtime';
 	import { toggleTheme } from '#lib/utils/theme.svelte';
+	import { userInitials } from './initials';
 
 	interface CommitteeLink {
 		id: string;
@@ -64,15 +65,7 @@
 	const toolsSnippet = $derived(tools ?? CustomListItems);
 	const displayName = $derived(user?.name?.trim() || user?.email?.trim() || '');
 
-	const initials = $derived.by(() => {
-		const first = user?.givenName?.trim()?.[0] ?? '';
-		const last = user?.familyName?.trim()?.[0] ?? '';
-		const both = `${first}${last}`.toUpperCase();
-		if (both) return both;
-		const fromName = user?.name?.trim()?.[0]?.toUpperCase();
-		if (fromName) return fromName;
-		return user?.email?.trim()?.[0]?.toUpperCase() ?? '?';
-	});
+	const initials = $derived(userInitials(user ?? {}));
 
 	// The menu's links and switches, also reachable from the command palette. The theme and
 	// language switchers only mount while the menu is open, so their commands live here.
@@ -149,6 +142,138 @@
 	]);
 </script>
 
+{#snippet userHeader()}
+	<div class="flex flex-col gap-1 px-4 pt-4 pb-3">
+		<span class="sr-only">{m.signedInAs()}</span>
+		<span class="text-base font-semibold leading-tight">{displayName}</span>
+		<div class="flex flex-wrap items-center gap-2">
+			{#if roleLabel}
+				<span class="badge badge-sm {roleBadgeClass}">{roleLabel}</span>
+			{/if}
+			{#if conferenceTitle}
+				<span class="text-base-content/70 truncate text-xs">{conferenceTitle}</span>
+			{/if}
+		</div>
+	</div>
+	<div class="divider my-0"></div>
+{/snippet}
+
+{#snippet navItem(item: Item)}
+	<li>
+		<!-- eslint-disable svelte/no-navigation-without-resolve -->
+		<a
+			href={item.href}
+			class={item.active ? 'menu-active font-semibold' : ''}
+			aria-current={item.active ? 'page' : undefined}
+		>
+			<i
+				aria-hidden="true"
+				class="{item.active ? 'ph-fill' : 'ph-duotone'} w-6 text-center ph-{item.icon}"
+			></i>
+			<span class="flex-1">{item.title}</span>
+			{#if item.active}
+				<i class="ph-fill ph-circle text-primary text-[0.5rem]" aria-hidden="true"></i>
+			{/if}
+		</a>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
+	</li>
+{/snippet}
+
+{#snippet committeeLinks(conferenceId: string)}
+	<li class="menu-title mt-2">{m.committees()}</li>
+	<li>
+		<div class="flex flex-wrap gap-1 p-0 hover:bg-transparent justify-center">
+			{#each sortedCommittees as committee (committee.id)}
+				<a
+					href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
+						conferenceId,
+						committeeId: committee.id
+					})}
+					class="btn btn-sm btn-soft"
+					title={committee.name}
+				>
+					{committee.abbreviation}
+				</a>
+			{/each}
+		</div>
+	</li>
+{/snippet}
+
+{#snippet dashboardLink(href: string)}
+	{#if items.length > 0 || toolsSnippet}
+		<div class="divider my-2"></div>
+	{/if}
+	<li>
+		<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route -->
+		<a {href}>
+			<i aria-hidden="true" class="ph-duotone ph-squares-four w-6 text-center"></i>
+			<span class="flex-1">{m.dashboard()}</span>
+			<i class="ph-duotone ph-arrow-up-right text-base-content/50" aria-hidden="true"></i>
+		</a>
+	</li>
+{/snippet}
+
+{#snippet signOut(href: string)}
+	<div class="divider my-0"></div>
+	<ul class="menu w-full p-2">
+		<li>
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route -->
+			<a {href} class="btn btn-sm btn-soft btn-error justify-start">
+				<i aria-hidden="true" class="ph-fill ph-sign-out w-6 text-center"></i>
+				{m.launcherSignOut()}
+			</a>
+		</li>
+	</ul>
+{/snippet}
+
+{#snippet menuContent()}
+	{#if displayName}
+		{@render userHeader()}
+	{/if}
+
+	<ul class="menu w-full p-2">
+		{#if items.length > 0}
+			<li class="menu-title">{m.navigation()}</li>
+			{#each items as item (item.key ?? item.href)}
+				{@render navItem(item)}
+			{/each}
+		{/if}
+
+		{#if conferenceId && sortedCommittees.length > 0}
+			{@render committeeLinks(conferenceId)}
+		{/if}
+
+		{#if toolsSnippet}
+			<li class="menu-title mt-2">{m.tools()}</li>
+			{@render toolsSnippet()}
+		{/if}
+
+		{#if dashboardHref}
+			{@render dashboardLink(dashboardHref)}
+		{/if}
+
+		<li>
+			<a href="https://delegator.munify.cloud/my-account" target="_blank" rel="noopener noreferrer">
+				<i aria-hidden="true" class="ph-duotone ph-user w-6 text-center"></i>
+				<span class="flex-1">{m.myDelegatorAccount()}</span>
+				<i class="ph-fill ph-arrow-up-right text-base-content/50 text-xs" aria-hidden="true"></i>
+			</a>
+		</li>
+	</ul>
+
+	<div class="divider my-0"></div>
+
+	<div class="flex w-full gap-1 px-2 py-2">
+		<ThemeSwitcher />
+		<ContrastToggle />
+		<LanguageSwitcher />
+	</div>
+
+	{#if signOutHref}
+		{@render signOut(signOutHref)}
+	{/if}
+{/snippet}
+
 <div class="flex items-center gap-2">
 	<HelpButton />
 	{#if user}
@@ -183,119 +308,7 @@
 		in:fly={{ y: -10 }}
 		out:fly={{ y: -10 }}
 	>
-		{#if displayName}
-			<div class="flex flex-col gap-1 px-4 pt-4 pb-3">
-				<span class="sr-only">{m.signedInAs()}</span>
-				<span class="text-base font-semibold leading-tight">{displayName}</span>
-				<div class="flex flex-wrap items-center gap-2">
-					{#if roleLabel}
-						<span class="badge badge-sm {roleBadgeClass}">{roleLabel}</span>
-					{/if}
-					{#if conferenceTitle}
-						<span class="text-base-content/70 truncate text-xs">{conferenceTitle}</span>
-					{/if}
-				</div>
-			</div>
-			<div class="divider my-0"></div>
-		{/if}
-
-		<ul class="menu w-full p-2">
-			{#if items.length > 0}
-				<li class="menu-title">{m.navigation()}</li>
-				{#each items as item (item.key ?? item.href)}
-					<li>
-						<!-- eslint-disable svelte/no-navigation-without-resolve -->
-						<a
-							href={item.href}
-							class={item.active ? 'menu-active font-semibold' : ''}
-							aria-current={item.active ? 'page' : undefined}
-						>
-							<i
-								aria-hidden="true"
-								class="{item.active ? 'ph-fill' : 'ph-duotone'} w-6 text-center ph-{item.icon}"
-							></i>
-							<span class="flex-1">{item.title}</span>
-							{#if item.active}
-								<i class="ph-fill ph-circle text-primary text-[0.5rem]" aria-hidden="true"></i>
-							{/if}
-						</a>
-						<!-- eslint-enable svelte/no-navigation-without-resolve -->
-					</li>
-				{/each}
-			{/if}
-
-			{#if conferenceId && sortedCommittees.length > 0}
-				<li class="menu-title mt-2">{m.committees()}</li>
-				<li>
-					<div class="flex flex-wrap gap-1 p-0 hover:bg-transparent justify-center">
-						{#each sortedCommittees as committee (committee.id)}
-							<a
-								href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
-									conferenceId,
-									committeeId: committee.id
-								})}
-								class="btn btn-sm btn-soft"
-								title={committee.name}
-							>
-								{committee.abbreviation}
-							</a>
-						{/each}
-					</div>
-				</li>
-			{/if}
-
-			{#if toolsSnippet}
-				<li class="menu-title mt-2">{m.tools()}</li>
-				{@render toolsSnippet()}
-			{/if}
-
-			{#if dashboardHref}
-				{#if items.length > 0 || toolsSnippet}
-					<div class="divider my-2"></div>
-				{/if}
-				<li>
-					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route -->
-					<a href={dashboardHref}>
-						<i aria-hidden="true" class="ph-duotone ph-squares-four w-6 text-center"></i>
-						<span class="flex-1">{m.dashboard()}</span>
-						<i class="ph-duotone ph-arrow-up-right text-base-content/50" aria-hidden="true"></i>
-					</a>
-				</li>
-			{/if}
-
-			<li>
-				<a
-					href="https://delegator.munify.cloud/my-account"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					<i aria-hidden="true" class="ph-duotone ph-user w-6 text-center"></i>
-					<span class="flex-1">{m.myDelegatorAccount()}</span>
-					<i class="ph-fill ph-arrow-up-right text-base-content/50 text-xs" aria-hidden="true"></i>
-				</a>
-			</li>
-		</ul>
-
-		<div class="divider my-0"></div>
-
-		<div class="flex w-full gap-1 px-2 py-2">
-			<ThemeSwitcher />
-			<ContrastToggle />
-			<LanguageSwitcher />
-		</div>
-
-		{#if signOutHref}
-			<div class="divider my-0"></div>
-			<ul class="menu w-full p-2">
-				<li>
-					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route -->
-					<a href={signOutHref} class="btn btn-sm btn-soft btn-error justify-start">
-						<i aria-hidden="true" class="ph-fill ph-sign-out w-6 text-center"></i>
-						{m.launcherSignOut()}
-					</a>
-				</li>
-			</ul>
-		{/if}
+		{@render menuContent()}
 	</div>
 {/if}
 

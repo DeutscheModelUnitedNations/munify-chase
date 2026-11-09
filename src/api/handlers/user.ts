@@ -1,5 +1,6 @@
 import { abilityBuilder, schemaBuilder, object, query } from '#api/rumble';
 import { isAdmin, isGlobalAdmin, isTeamInConference } from '#api/services/authHelper';
+import { userClaims } from './helpers/userClaims';
 
 abilityBuilder.user.allow('read').when(({ oidc }) => {
 	if (oidc?.user) {
@@ -71,16 +72,6 @@ schemaBuilder.queryFields((t) => ({
 	}),
 	currentUserClaims: t.field({
 		type: UserClaims,
-		resolve: (_root, _args, ctx) => {
-			const u = ctx.mustBeLoggedIn();
-			return {
-				id: u.sub,
-				givenName: u.given_name ?? null,
-				familyName: u.family_name ?? null,
-				email: u.email ?? null,
-				preferredUsername: u.preferred_username ?? null,
-				locale: u.locale ?? null
-			};
-		}
+		resolve: (_root, _args, ctx) => userClaims(ctx.mustBeLoggedIn())
 	})
 }));

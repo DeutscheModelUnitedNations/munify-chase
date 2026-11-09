@@ -12,6 +12,7 @@
 	import MyAttendanceTab from './MyAttendanceTab.svelte';
 	import NametagLink from '#lib/components/delegatorLink/NametagLink.svelte';
 	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { participantSelection } from '../selections';
 
 	const currentUser = await getCurrentUser();
 	const [conferenceUser] =
@@ -22,31 +23,7 @@
 					user: { id: { eq: currentUser?.id ?? '' } }
 				}
 			},
-			id: true,
-			conferenceUserType: true,
-			committeeMember: {
-				id: true,
-				committeeId: true,
-				representation: {
-					id: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true,
-					type: true,
-					icon: true
-				}
-			},
-			conferenceMember: {
-				id: true,
-				representation: {
-					id: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true,
-					type: true,
-					icon: true
-				}
-			}
+			...participantSelection
 		})) ?? [];
 
 	const conference = await client.liveQuery.conference({

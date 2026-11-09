@@ -4,7 +4,15 @@
 	import Flag from '#lib/components/Flag.svelte';
 	import { m } from '#lib/paraglide/messages';
 	import { getServerTime } from '#lib/state/serverTime.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import {
+		formatTimeLeft,
+		showsQuestioner,
+		speakerDisplayName,
+		widgetAction,
+		widgetButton,
+		widgetStateFor,
+		type WidgetAction
+	} from './speakersWidget';
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import Kbd from '#lib/components/Kbd.svelte';
 	import { compareSpeakers } from '#lib/helpers/speakerSort';
@@ -70,87 +78,19 @@
 	let hasSpeaker = $derived(currentSpeaker != null);
 	let hasQuestioner = $derived(currentQuestioner != null);
 
-	type WidgetState =
-		| 'speech_idle'
-		| 'speech_running'
-		| 'speech_stopped'
-		| 'question_idle'
-		| 'question_running'
-		| 'answer_idle'
-		| 'answer_running'
-		| 'answer_stopped';
-
-	let widgetState = $derived.by((): WidgetState => {
-		const phase = speakersList?.phase ?? 'SPEECH';
-		if (phase === 'SPEECH_DONE') return 'speech_stopped';
-		if (phase === 'ANSWER_DONE') return 'answer_stopped';
-		if (phase === 'SPEECH') return speechRunning ? 'speech_running' : 'speech_idle';
-		if (phase === 'QUESTION') return questionRunning ? 'question_running' : 'question_idle';
-		if (phase === 'ANSWER') return speechRunning ? 'answer_running' : 'answer_idle';
-		return 'speech_idle';
-	});
-
-	// The message itself, so the command palette can also search the English label
-	let buttonMessage = $derived.by(() => {
-		switch (widgetState) {
-			case 'speech_running':
-				return m.stopSpeech;
-			case 'speech_stopped':
-				return hasQuestioner ? m.startQuestion : m.nextSpeaker;
-			case 'question_idle':
-				return m.startQuestion;
-			case 'question_running':
-				return m.stopQuestion;
-			case 'answer_idle':
-				return m.startAnswer;
-			case 'answer_running':
-				return m.stopAnswer;
-			case 'answer_stopped':
-				return (commentList?.speakers.length ?? 0) > 1 ? m.nextQuestion : m.nextSpeaker;
-			case 'speech_idle':
-			default:
-				return m.startSpeech;
-		}
-	});
-	let buttonLabel = $derived(buttonMessage());
-
-	let buttonIcon = $derived.by(() => {
-		switch (widgetState) {
-			case 'speech_running':
-			case 'question_running':
-			case 'answer_running':
-				return 'pause';
-			case 'speech_stopped':
-			case 'answer_stopped':
-				return 'steps';
-			default:
-				return 'play';
-		}
-	});
-
-	let buttonClass = $derived.by(() => {
-		switch (widgetState) {
-			case 'speech_running':
-			case 'question_running':
-			case 'answer_running':
-				return 'btn-error';
-			case 'speech_stopped':
-			case 'answer_stopped':
-				return 'btn-info';
-			default:
-				return 'btn-success';
-		}
-	});
-
-	let showQuestioner = $derived(
-		hasQuestioner &&
-			(widgetState === 'speech_stopped' ||
-				widgetState === 'question_idle' ||
-				widgetState === 'question_running' ||
-				widgetState === 'answer_idle' ||
-				widgetState === 'answer_running' ||
-				widgetState === 'answer_stopped')
+	let widgetState = $derived(
+		widgetStateFor({ phase: speakersList?.phase, speechRunning, questionRunning })
 	);
+	const commentCount = $derived(commentList?.speakers.length ?? 0);
+
+	let button = $derived(widgetButton({ state: widgetState, hasQuestioner, commentCount }));
+	// The message itself, so the command palette can also search the English label
+	let buttonMessage = $derived(button.message);
+	let buttonLabel = $derived(buttonMessage());
+	let buttonIcon = $derived(button.icon);
+	let buttonClass = $derived(button.class);
+
+	let showQuestioner = $derived(hasQuestioner && showsQuestioner(widgetState));
 
 	let activeTimerList = $derived(
 		speechRunning ? speakersList : questionRunning ? commentList : speakersList
@@ -165,13 +105,7 @@
 		return list.timeLeft;
 	});
 
-	let timeFormatted = $derived.by(() => {
-		if (timeLeft === null) return '-:--';
-		const abs = Math.abs(timeLeft);
-		const d = dayjs.duration(abs, 'seconds');
-		const prefix = timeLeft < 0 ? '+' : '';
-		return `${prefix}${d.hours() ? d.format('H:mm:ss') : d.format('m:ss')}`;
-	});
+	let timeFormatted = $derived(formatTimeLeft(timeLeft));
 
 	let overtime = $derived((timeLeft ?? 0) < 0);
 
@@ -325,64 +259,34 @@
 		]);
 	};
 
-	const handleButton = async () => {
-		switch (widgetState) {
-			case 'speech_idle':
-				await startSpeakersListTimer();
-				break;
-			case 'speech_running':
-				await stopSpeakersListTimer();
-				break;
-			case 'speech_stopped':
-				if ((commentList?.speakers.length ?? 0) > 0) {
-					await startCommentListTimer();
-				} else {
-					await advanceToNextSpeaker();
-				}
-				break;
-			case 'question_idle':
-				await startCommentListTimer();
-				break;
-			case 'question_running':
-				await stopCommentListTimer();
-				break;
-			case 'answer_idle':
-				await startAnswerTimer();
-				break;
-			case 'answer_running':
-				await client.mutate.updateSpeakersList({
-					__args: {
-						id: speakersList!.id,
-						timeLeft: speakersList!.speakingTime,
-						stopTimer: true,
-						phase: 'ANSWER_DONE'
-					},
-					id: true,
-					timeLeft: true,
-					startTimestamp: true,
-					phase: true
-				});
-				break;
-			case 'answer_stopped':
-				if ((commentList?.speakers.length ?? 0) > 1) {
-					await advanceQuestioner();
-				} else {
-					await advanceToNextSpeaker();
-				}
-				break;
-		}
+	const stopAnswerTimer = async () => {
+		if (!speakersList) return;
+		await client.mutate.updateSpeakersList({
+			__args: {
+				id: speakersList.id,
+				timeLeft: speakersList.speakingTime,
+				stopTimer: true,
+				phase: 'ANSWER_DONE'
+			},
+			id: true,
+			timeLeft: true,
+			startTimestamp: true,
+			phase: true
+		});
 	};
 
-	const speakerName = (speaker: typeof currentSpeaker) => {
-		if (!speaker) return '';
-		const rep = speaker.committeeMember?.representation ?? speaker.conferenceMember?.representation;
-		return (
-			speaker.overwriteName ||
-			rep?.name ||
-			getTranslatedCountryNameFromAlpha3Code(rep?.alpha3Code) ||
-			''
-		);
+	const actionHandlers: Record<WidgetAction, () => Promise<void>> = {
+		startSpeech: startSpeakersListTimer,
+		stopSpeech: stopSpeakersListTimer,
+		startQuestion: startCommentListTimer,
+		stopQuestion: stopCommentListTimer,
+		startAnswer: startAnswerTimer,
+		stopAnswer: stopAnswerTimer,
+		nextQuestioner: advanceQuestioner,
+		nextSpeaker: advanceToNextSpeaker
 	};
+
+	const handleButton = () => actionHandlers[widgetAction({ state: widgetState, commentCount })]();
 
 	registerCommands(() => [
 		{
@@ -408,7 +312,7 @@
 				: ''}"
 		>
 			<span class="hidden min-w-0 truncate text-right text-sm font-medium lg:block">
-				{speakerName(currentSpeaker)}
+				{speakerDisplayName(currentSpeaker)}
 			</span>
 			<Flag representation={speakerRepresentation} size="xs" />
 		</div>
@@ -433,7 +337,7 @@
 		>
 			<Flag representation={questionerRepresentation} size="xs" />
 			<span class="hidden min-w-0 truncate text-sm font-medium lg:block">
-				{speakerName(currentQuestioner)}
+				{speakerDisplayName(currentQuestioner)}
 			</span>
 		</div>
 	</div>

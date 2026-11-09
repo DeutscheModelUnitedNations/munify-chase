@@ -3,6 +3,7 @@ import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } 
 import { isParticipantInConference, isTeamInConference } from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import { assertChairsPaper } from './helpers/paperAccess';
 
 abilityBuilder.operativeClauseVote.allow('read').when((ctx) => {
 	return { where: { paper: { committee: isParticipantInConference(ctx) } } };
@@ -26,12 +27,7 @@ schemaBuilder.mutationFields((t) => ({
 			votingSessionId: t.arg.id({ required: true })
 		},
 		resolve: async (query, _root, args, ctx) => {
-			await db.query.resolutionPaper
-				.findFirst({
-					where: { id: args.paperId, committee: isTeamInConference(ctx) },
-					columns: { id: true }
-				})
-				.then(assertFindFirstExists);
+			await assertChairsPaper({ ctx, paperId: args.paperId });
 
 			await db
 				.insert(schema.operativeClauseVote)

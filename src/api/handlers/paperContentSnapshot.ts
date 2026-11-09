@@ -7,6 +7,7 @@ import { GraphQLError } from 'graphql';
 import { applyServerMutation, readPaperJson } from '#api/yjs/server';
 import { replaceResolution } from '@deutschemodelunitednations/munify-resolution-editor/yjs';
 import type { Resolution } from '@deutschemodelunitednations/munify-resolution-editor/schema';
+import { paperWithAbility } from './helpers/paperAccess';
 
 // Snapshots are immutable: read-only at the ability level. The create/
 // restore mutations gate authorization on `resolutionPaper.update` (chair).
@@ -41,13 +42,7 @@ schemaBuilder.mutationFields((t) => ({
 			paperId: t.arg.id({ required: true })
 		},
 		resolve: async (query, _root, args, ctx) => {
-			await db.query.resolutionPaper
-				.findFirst(
-					(await ctx.abilities.resolutionPaper.filter('update')).merge({
-						where: { id: args.paperId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
+			await paperWithAbility({ ctx, paperId: args.paperId, action: 'update' });
 
 			const content = await readPaperJson(args.paperId);
 			await db.insert(schema.paperContentSnapshot).values({
@@ -85,13 +80,7 @@ schemaBuilder.mutationFields((t) => ({
 				)
 				.then(assertFindFirstExists);
 
-			await db.query.resolutionPaper
-				.findFirst(
-					(await ctx.abilities.resolutionPaper.filter('update')).merge({
-						where: { id: snapshot.paperId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
+			await paperWithAbility({ ctx, paperId: snapshot.paperId, action: 'update' });
 
 			const currentContent = await readPaperJson(snapshot.paperId);
 			await db.insert(schema.paperContentSnapshot).values({

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { createOverflowCheck } from './overflowCheck.svelte';
 
 	interface Props {
 		text: string;
@@ -8,20 +8,7 @@
 
 	let { text, abbreviation }: Props = $props();
 
-	let textElement = $state<HTMLParagraphElement>();
-	let isOverflowing = $state(false);
-
-	function checkOverflow() {
-		if (textElement) {
-			isOverflowing = textElement.scrollWidth > textElement.clientWidth;
-		}
-	}
-
-	onMount(() => {
-		checkOverflow();
-		window.addEventListener('resize', checkOverflow);
-		return () => window.removeEventListener('resize', checkOverflow);
-	});
+	const overflow = createOverflowCheck();
 </script>
 
 <div class="alert py-0 block h-full w-full justify-center text-lg shadow-sm">
@@ -32,9 +19,9 @@
 			<div class="flex-none text-center text-4xl font-bold">{abbreviation}</div>
 		{/if}
 
-		{#if !isOverflowing}
+		{#if !overflow.overflowing}
 			<div class="flex w-full flex-1 flex-col overflow-hidden">
-				<h3 bind:this={textElement} class="w-full text-nowrap">
+				<h3 bind:this={overflow.element} class="w-full text-nowrap">
 					{text}
 				</h3>
 			</div>

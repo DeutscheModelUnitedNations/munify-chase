@@ -68,43 +68,31 @@
 
 	type Trigger = 'SUBMITTED' | 'AMENDMENT_APPLIED' | 'VOTE_CONCLUDED' | 'MANUAL';
 
+	const TRIGGERS: Record<Trigger, { label: () => string; icon: string; badge: string }> = {
+		SUBMITTED: { label: m.snapshotTriggerSubmitted, icon: 'paper-plane-tilt', badge: 'badge-info' },
+		AMENDMENT_APPLIED: {
+			label: m.snapshotTriggerAmendmentApplied,
+			icon: 'pencil-simple',
+			badge: 'badge-warning'
+		},
+		VOTE_CONCLUDED: {
+			label: m.snapshotTriggerVoteConcluded,
+			icon: 'check-circle',
+			badge: 'badge-success'
+		},
+		MANUAL: { label: m.snapshotTriggerManual, icon: 'bookmark-simple', badge: 'badge-ghost' }
+	};
+
 	function triggerLabel(t: Trigger): string {
-		switch (t) {
-			case 'SUBMITTED':
-				return m.snapshotTriggerSubmitted();
-			case 'AMENDMENT_APPLIED':
-				return m.snapshotTriggerAmendmentApplied();
-			case 'VOTE_CONCLUDED':
-				return m.snapshotTriggerVoteConcluded();
-			case 'MANUAL':
-				return m.snapshotTriggerManual();
-		}
+		return TRIGGERS[t].label();
 	}
 
 	function triggerIcon(t: Trigger): string {
-		switch (t) {
-			case 'SUBMITTED':
-				return 'paper-plane-tilt';
-			case 'AMENDMENT_APPLIED':
-				return 'pencil-simple';
-			case 'VOTE_CONCLUDED':
-				return 'check-circle';
-			case 'MANUAL':
-				return 'bookmark-simple';
-		}
+		return TRIGGERS[t].icon;
 	}
 
 	function triggerBadgeClass(t: Trigger): string {
-		switch (t) {
-			case 'SUBMITTED':
-				return 'badge-info';
-			case 'AMENDMENT_APPLIED':
-				return 'badge-warning';
-			case 'VOTE_CONCLUDED':
-				return 'badge-success';
-			case 'MANUAL':
-				return 'badge-ghost';
-		}
+		return TRIGGERS[t].badge;
 	}
 
 	function formatTimestamp(d: Date): string {

@@ -4,7 +4,7 @@ import { schemaBuilder } from '#api/rumble';
 import { isGlobalAdmin } from '#api/services/authHelper';
 import { GraphQLError } from 'graphql';
 import z from 'zod';
-import { jsonSchema, Output } from 'ai';
+import { aiOutput } from './helpers/aiOutput';
 import type { Context } from '#api/context';
 import { AI_PROVIDERS } from '$app/env/private';
 
@@ -31,14 +31,12 @@ function checkRateLimit(userId: string): void {
 	entry.count++;
 }
 
-async function requireChairAccess(ctx: Context): Promise<void> {
-	if (isGlobalAdmin(ctx)) return;
-	const user = ctx.mustBeLoggedIn();
-	if (!user.email) throw new GraphQLError('User email required');
+/** Whether the address belongs to the team of a conference that is running now. */
+async function chairsActiveConference(email: string) {
 	const now = new Date();
 	const member = await db.query.conferenceUser.findFirst({
 		where: {
-			userEmail: user.email,
+			userEmail: email,
 			OR: [{ conferenceUserType: 'ADMIN' }, { conferenceUserType: 'TEAM' }]
 		},
 		with: {
@@ -53,9 +51,23 @@ async function requireChairAccess(ctx: Context): Promise<void> {
 			}
 		}
 	});
-	if (!member?.conference) {
+	return !!member?.conference;
+}
+
+async function requireChairAccess(ctx: Context): Promise<void> {
+	if (isGlobalAdmin(ctx)) return;
+	const user = ctx.mustBeLoggedIn();
+	if (!user.email) throw new GraphQLError('User email required');
+	if (!(await chairsActiveConference(user.email))) {
 		throw new GraphQLError('Only chairs of an active conference can use AI features');
 	}
+}
+
+/** Global admins call without a limit; everybody else per address. */
+function limitRate(ctx: Context) {
+	if (isGlobalAdmin(ctx)) return;
+	const user = ctx.mustBeLoggedIn();
+	if (user.email) checkRateLimit(user.email);
 }
 
 const AiMessageInput = schemaBuilder
@@ -94,10 +106,7 @@ schemaBuilder.queryFields((t) => ({
 		},
 		resolve: async (_root, args, ctx) => {
 			await requireChairAccess(ctx);
-			if (!isGlobalAdmin(ctx)) {
-				const user = ctx.mustBeLoggedIn();
-				if (user.email) checkRateLimit(user.email);
-			}
+			limitRate(ctx);
 
 			const result = await makeAICall({
 				messages: args.messages.map((m) => ({
@@ -111,17 +120,7 @@ schemaBuilder.queryFields((t) => ({
 				allowSystemInMessages: true,
 				temperature: args.temperature,
 				maxOutputTokens: args.maxTokens,
-				output:
-					args.responseType === 'json'
-						? args.responseJSONSchema
-							? Output.object({
-									// The client sends the schema as a JSON string (WebLLM's local
-									// grammar-constrained format requires a string), so it must be
-									// parsed back into an object before reaching the ai SDK's jsonSchema().
-									schema: jsonSchema(JSON.parse(args.responseJSONSchema))
-								})
-							: Output.json()
-						: Output.text()
+				output: aiOutput(args)
 			});
 			return result?.text ?? null;
 		}

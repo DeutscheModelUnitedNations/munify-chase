@@ -3,15 +3,9 @@
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import { page } from '$app/state';
 	import Tabs from '#lib/components/Tabs.svelte';
-	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
-	import {
-		buildConferenceNavItems,
-		roleBadgeClassFor,
-		roleLabelFor
-	} from '#lib/components/navbar/conferenceNavItems';
+	import ConferenceMenu from '../ConferenceMenu.svelte';
 	import { getCurrentUser } from '#lib/state/currentUser.svelte';
 	import { loadConferenceViewer } from '#lib/state/conferenceViewer';
-	import { displayNameOf } from '#lib/helpers/displayName';
 	import ByCommitteeTab from './ByCommitteeTab.svelte';
 	import ByNsaTab from './ByNsaTab.svelte';
 	import NotCheckedInTab from './NotCheckedInTab.svelte';
@@ -20,7 +14,6 @@
 	const conferenceId = page.params.conferenceId!;
 	const currentUser = await getCurrentUser();
 	const userId = currentUser.id ?? '';
-	const userDisplayName = displayNameOf(currentUser);
 
 	const { conferenceMeta, conferenceUsers, isGlobalAdmin } = await loadConferenceViewer(
 		conferenceId,
@@ -58,16 +51,6 @@
 			run: () => (activeTab = tab.id)
 		}))
 	);
-
-	let menubarItems = $derived(
-		buildConferenceNavItems({
-			role,
-			conferenceId,
-			activeRouteId: page.route.id,
-			activePathname: page.url.pathname,
-			isGlobalAdmin: !!isGlobalAdmin
-		})
-	);
 </script>
 
 <svelte:head>
@@ -79,21 +62,13 @@
 		<div class="navbar bg-base-100 shadow-sm">
 			<h1 class="ml-4 flex-1 text-3xl font-bold">{m.attendance()}</h1>
 			<div class="flex-none">
-				<NavbarBurgerMenu
-					items={menubarItems}
-					user={{
-						name: userDisplayName,
-						email: currentUser.email ?? undefined,
-						givenName: currentUser.givenName ?? undefined,
-						familyName: currentUser.familyName ?? undefined
-					}}
-					roleLabel={roleLabelFor(role)}
-					roleBadgeClass={roleBadgeClassFor(role)}
-					conferenceTitle={conferenceMeta?.title}
+				<ConferenceMenu
+					{role}
 					{conferenceId}
-					committees={role === 'ADMIN' || role === 'TEAM' ? (conferenceMeta?.committees ?? []) : []}
-					dashboardHref="/app"
-					signOutHref="/logout"
+					conferenceTitle={conferenceMeta?.title}
+					committees={conferenceMeta?.committees}
+					isGlobalAdmin={!!isGlobalAdmin}
+					user={currentUser}
 				/>
 			</div>
 		</div>

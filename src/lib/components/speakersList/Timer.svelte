@@ -2,7 +2,7 @@
 	import dayjs from 'dayjs';
 	import Hourglass, { type HourglassStatus } from './Hourglass.svelte';
 	import { getServerTime } from '#lib/state/serverTime.svelte';
-	import type { Duration } from 'dayjs/plugin/duration';
+	import { countdownSeconds, formatDuration, secondsLeft, timerStatus } from './timerMath';
 
 	interface Props {
 		noSpeaker?: boolean;
@@ -13,44 +13,21 @@
 
 	let { noSpeaker = true, speakingTime, startTimestamp, timeLeft }: Props = $props();
 
-	let calculatedTimeLeft = $derived.by(() => {
-		if (startTimestamp && timeLeft !== null && timeLeft !== undefined) {
-			return Math.round(dayjs(startTimestamp).diff(getServerTime()) / 1000) + timeLeft;
-		}
-		if (timeLeft !== null && timeLeft !== undefined) {
-			return timeLeft;
-		}
-		return undefined;
-	});
-	let countdownDelta = $derived.by(() => {
-		if (noSpeaker) {
-			return dayjs.duration(speakingTime ?? 0, 'seconds');
-		}
-		if (!startTimestamp || calculatedTimeLeft === undefined) {
-			return dayjs.duration(timeLeft ? Math.abs(timeLeft) : (speakingTime ?? 0), 'seconds');
-		}
-		return dayjs.duration(Math.abs(calculatedTimeLeft), 'seconds');
-	});
+	let calculatedTimeLeft = $derived(
+		secondsLeft({ startTimestamp, timeLeft, now: getServerTime() })
+	);
+	let countdownDelta = $derived(
+		dayjs.duration(
+			countdownSeconds({ noSpeaker, startTimestamp, timeLeft, speakingTime, calculatedTimeLeft }),
+			'seconds'
+		)
+	);
 
 	let speakingTimeDelta = $derived(dayjs.duration(speakingTime ?? 0, 'seconds'));
 
 	let overtime = $derived((calculatedTimeLeft ?? 0) < 0);
 
-	let status: HourglassStatus = $derived.by(() => {
-		if (startTimestamp && (calculatedTimeLeft ?? 0) < 0) {
-			return 'overtime';
-		}
-		if (startTimestamp && (calculatedTimeLeft ?? 0) >= 0) {
-			return 'active';
-		}
-		return 'paused';
-	});
-
-	let countdownDeltaFormatted = (delta: Duration) => {
-		return `${delta.hours() !== 0 ? delta.format('H:') : ''}${
-			delta.hours() !== 0 ? delta.format('mm:') : delta.format('m:')
-		}${delta.format('ss')}`;
-	};
+	let status: HourglassStatus = $derived(timerStatus({ startTimestamp, calculatedTimeLeft }));
 </script>
 
 <div class="flex items-center gap-2">
@@ -67,9 +44,9 @@
 				aria-hidden={!overtime}>+</span
 			>
 			<span class="transition-all duration-1000 {!overtime ? '-translate-x-3' : 'translate-x-0'}"
-				>{countdownDeltaFormatted(countdownDelta)}
+				>{formatDuration(countdownDelta)}
 				<span class="font-mono text-lg opacity-50">
-					/{countdownDeltaFormatted(speakingTimeDelta)}
+					/{formatDuration(speakingTimeDelta)}
 				</span>
 			</span>
 		</div>

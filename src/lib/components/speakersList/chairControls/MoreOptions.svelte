@@ -9,8 +9,14 @@
 	import { alertDialog } from '#lib/components/Alert/alert';
 	import Modal from '#lib/components/Modal.svelte';
 	import dayjs from 'dayjs';
-	import { compareSpeakers } from '#lib/helpers/speakerSort';
 	import { listCommandScope } from './listCommands';
+	import {
+		firstSpeaker,
+		hasSpeakers,
+		listLabel,
+		renameTarget,
+		toggleClosedCommand
+	} from './listOptions';
 
 	interface Props {
 		type: SpeakerslistcategoryEnum;
@@ -56,10 +62,7 @@
 				id: true,
 				isClosed: true
 			}),
-			promiseToastStrings(
-				speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
-				'update'
-			)
+			promiseToastStrings(listLabel(speakersList.type), 'update')
 		);
 	};
 
@@ -81,33 +84,25 @@
 					id: true,
 					speakers: { id: true }
 				}),
-				promiseToastStrings(
-					speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
-					'delete'
-				)
+				promiseToastStrings(listLabel(speakersList.type), 'delete')
 			);
 		}
 	};
 
 	const changeSpeakersName = async () => {
-		if (!speakersList?.id || !changeSpeakersNameValue) return;
-
-		const existingSpeakerId = speakersList.speakers.toSorted(compareSpeakers).at(0)?.id;
-
-		if (!existingSpeakerId) {
+		const target = renameTarget({ list: speakersList, name: changeSpeakersNameValue });
+		if (target === 'skip') return;
+		if (target === 'noSpeaker') {
 			toast.error(m.noCurrentSpeaker());
 			return;
 		}
 		await toast.promise(
 			client.mutate.updateSpeakerOnList({
-				__args: { id: existingSpeakerId, overwriteName: changeSpeakersNameValue },
+				__args: { id: target.speakerId, overwriteName: changeSpeakersNameValue },
 				id: true,
 				overwriteName: true
 			}),
-			promiseToastStrings(
-				speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
-				'update'
-			)
+			promiseToastStrings(listLabel(target.listType), 'update')
 		);
 		changeSpeakersNameModalOpen = false;
 	};
@@ -126,16 +121,13 @@
 				speakingTime: true,
 				timeLeft: true
 			}),
-			promiseToastStrings(
-				speakersList.type === 'COMMENT_LIST' ? m.commentList() : m.speakersList(),
-				'update'
-			)
+			promiseToastStrings(listLabel(speakersList.type), 'update')
 		);
 		changeSpeakingTimeModalOpen = false;
 	};
 
 	const openChangeSpeakersNameModal = () => {
-		if (!speakersList?.speakers?.length) return;
+		if (!hasSpeakers(speakersList)) return;
 		changeSpeakersNameModalOpen = true;
 		isOpen = false;
 	};
@@ -149,16 +141,15 @@
 
 	registerCommands(() => {
 		const { idPrefix, context, keywords } = listCommandScope(type);
+		const toggleClosed = toggleClosedCommand(!!speakersList?.isClosed);
 		return [
 			{
 				id: `${idPrefix}.toggle-closed`,
-				title: speakersList?.isClosed
-					? m.commandSpeakersListOpenList
-					: m.commandSpeakersListCloseList,
+				title: toggleClosed.title,
 				context,
 				keywords,
 				group: 'page',
-				icon: speakersList?.isClosed ? 'lock-open' : 'lock',
+				icon: toggleClosed.icon,
 				run: toggleListClosed
 			},
 			{
@@ -168,7 +159,7 @@
 				keywords,
 				group: 'page',
 				icon: 'pencil-simple',
-				enabled: () => !!speakersList?.speakers?.length,
+				enabled: () => hasSpeakers(speakersList),
 				run: openChangeSpeakersNameModal
 			},
 			{
@@ -199,9 +190,8 @@
 	});
 
 	$effect(() => {
-		if (speakersList && speakersList?.speakers.length > 0) {
-			const overwriteName = speakersList.speakers.toSorted(compareSpeakers).at(0)?.overwriteName;
-			changeSpeakersNameValue = overwriteName || '';
+		if (hasSpeakers(speakersList)) {
+			changeSpeakersNameValue = firstSpeaker(speakersList)?.overwriteName || '';
 		}
 	});
 </script>

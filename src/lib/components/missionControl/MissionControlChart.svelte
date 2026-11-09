@@ -7,6 +7,7 @@
 
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { chartConfig, type MissionControlChartKind } from './chartConfig';
 
 	export interface ChartSlice {
 		key: string;
@@ -14,8 +15,6 @@
 		value: number;
 		valueLabel?: string;
 	}
-
-	export type MissionControlChartKind = 'doughnut' | 'pie' | 'polarArea' | 'bar';
 
 	interface Props {
 		slices: ChartSlice[];
@@ -83,88 +82,19 @@
 			if (destroyed) return;
 			const { labels, data, colors, valueLabels } = untrack(chartData);
 
-			const baseContent = resolveClass('text-base-content', 'color');
-			const base100 = resolveClass('bg-base-100', 'backgroundColor');
-			const gridColor = resolveClass('border-base-content/10', 'borderColor');
+			const theme = {
+				baseContent: resolveClass('text-base-content', 'color'),
+				base100: resolveClass('bg-base-100', 'backgroundColor'),
+				gridColor: resolveClass('border-base-content/10', 'borderColor')
+			};
 			currentValueLabels = valueLabels;
 			const tooltipLabel = (item: { dataIndex: number }) =>
 				` ${currentValueLabels[item.dataIndex] ?? ''}`;
 
-			if (currentKind === 'bar') {
-				localChart = new Chart(target, {
-					type: 'bar',
-					data: {
-						labels,
-						datasets: [
-							{
-								data,
-								backgroundColor: colors,
-								borderRadius: 4
-							}
-						]
-					},
-					options: {
-						indexAxis: 'y',
-						animation: false,
-						responsive: true,
-						maintainAspectRatio: false,
-						plugins: {
-							legend: { display: false },
-							tooltip: { callbacks: { label: tooltipLabel } }
-						},
-						scales: {
-							x: {
-								beginAtZero: true,
-								ticks: { color: baseContent, font: { size: 13 } },
-								grid: { color: gridColor }
-							},
-							y: {
-								ticks: { color: baseContent, font: { size: 15, weight: 'bold' } },
-								grid: { display: false }
-							}
-						}
-					}
-				});
-			} else {
-				localChart = new Chart(target, {
-					type: currentKind,
-					data: {
-						labels,
-						datasets: [
-							{
-								data,
-								backgroundColor: colors,
-								borderColor: base100,
-								borderWidth: 3,
-								hoverOffset: 6
-							}
-						]
-					},
-					options: {
-						animation: false,
-						responsive: true,
-						maintainAspectRatio: false,
-						cutout: currentKind === 'doughnut' ? '60%' : 0,
-						scales:
-							currentKind === 'polarArea'
-								? {
-										r: {
-											ticks: { display: false },
-											grid: { color: gridColor },
-											angleLines: { color: gridColor }
-										}
-									}
-								: undefined,
-						plugins: {
-							legend: {
-								position: 'bottom',
-								labels: { color: baseContent, boxWidth: 14, padding: 10, font: { size: 15 } }
-							},
-							tooltip: { callbacks: { label: tooltipLabel } }
-						}
-					}
-				});
-			}
+			localChart = new Chart(
+				target,
+				chartConfig({ kind: currentKind, labels, data, colors, theme, tooltipLabel })
+			);
 			chart = localChart;
 		});
 

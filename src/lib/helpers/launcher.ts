@@ -16,19 +16,15 @@ export function deriveStatus(
 	return 'active';
 }
 
+const BADGES: Partial<Record<ConferenceusertypeEnum, LauncherBadge>> = {
+	ADMIN: 'ADMIN',
+	TEAM: 'CHAIR',
+	SPECTATOR: 'SPECTATOR'
+};
+
+/** Delegates and non-state actors, and any type a newer server adds, launch as delegates */
 export function badgeFor(type: ConferenceusertypeEnum): LauncherBadge {
-	switch (type) {
-		case 'ADMIN':
-			return 'ADMIN';
-		case 'TEAM':
-			return 'CHAIR';
-		case 'SPECTATOR':
-			return 'SPECTATOR';
-		case 'DELEGATE':
-		case 'NON_STATE_ACTOR':
-		default:
-			return 'DELEGATE';
-	}
+	return BADGES[type] ?? 'DELEGATE';
 }
 
 function pad2(n: number): string {

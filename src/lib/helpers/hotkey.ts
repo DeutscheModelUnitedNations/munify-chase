@@ -24,16 +24,19 @@ const nonMacModifiers: Record<string, string> = {
 	esc: 'Esc'
 };
 
+const keySymbols = isMac ? macModifiers : nonMacModifiers;
+
+function formatKey(part: string) {
+	const key = part.trim().toLowerCase();
+	// Single letters read better uppercase, like on the keyboard
+	const fallback = key.length === 1 ? key.toUpperCase() : part.trim();
+	return keySymbols[key] ?? fallback;
+}
+
 /** Formats a hotkeys-js key string like `alt+shift+n` for display on the current platform */
 export function formatHotkey(hotkey: string) {
 	return hotkey
 		.split('+')
-		.map((part) => {
-			const key = part.trim().toLowerCase();
-			// Single letters read better uppercase, like on the keyboard
-			const fallback = key.length === 1 ? key.toUpperCase() : part.trim();
-			if (isMac) return macModifiers[key] ?? fallback;
-			return nonMacModifiers[key] ?? fallback;
-		})
+		.map(formatKey)
 		.join(isMac ? '' : '+');
 }

@@ -12,19 +12,17 @@ import { assertFindFirstExists } from '@m1212e/rumble';
 import { nanoid, nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 import { customAlphabet } from 'nanoid';
+import { paperTeamOrCreator } from './helpers/paperAccess';
 
 const SHARE_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const shareCodeGenerator = customAlphabet(SHARE_CODE_ALPHABET, 6);
 
+// the paper's team, creator and editors
 abilityBuilder.paperShareCode.allow('read').when((ctx) => {
-	const user = ctx.mustBeLoggedIn();
+	const { user, rules } = paperTeamOrCreator(ctx);
 	return {
 		where: {
-			OR: [
-				{ paper: { committee: isTeamInConference(ctx) } },
-				{ paper: { creatorCommitteeMember: { users: { user: { id: user.sub } } } } },
-				{ paper: { editors: { conferenceUser: { user: { id: user.sub } } } } }
-			]
+			OR: [...rules, { paper: { editors: { conferenceUser: { user: { id: user.sub } } } } }]
 		}
 	};
 });

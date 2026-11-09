@@ -18,6 +18,8 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import { findCommittee } from './helpers/scopedLookups';
+import { givenFields, hasFields } from './helpers/givenFields';
 
 // The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
 abilityBuilder.presenceEvent.allow('read').when(
@@ -42,7 +44,7 @@ abilityBuilder.presenceEvent.allow(['update', 'delete']).when((ctx) => ({
 	where: { committee: isAdminInConference(ctx) }
 }));
 
-export const PresenceEventRef = object({ table: 'presenceEvent' });
+const PresenceEventRef = object({ table: 'presenceEvent' });
 
 const pubsub = rumblePubsub({ table: 'presenceEvent' });
 query({ table: 'presenceEvent' });
@@ -50,6 +52,15 @@ query({ table: 'presenceEvent' });
 type ResolverContext = (typeof schemaBuilder)['$inferSchemaTypes']['Context'];
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/** An event stays in its conference: it may only move to another committee of it. */
+async function assertSameConference({ from, to }: { from: string; to: string }) {
+	const target = await findCommittee(to);
+	const current = await findCommittee(from);
+	if (target.conferenceId !== current.conferenceId) {
+		throw new GraphQLError('Cannot move an event to a committee in a different conference');
+	}
+}
 
 interface NsaScanRecord {
 	tx: Tx;
@@ -311,30 +322,15 @@ schemaBuilder.mutationFields((t) => {
 					.then(assertFindFirstExists);
 
 				if (args.committeeId && args.committeeId !== event.committeeId) {
-					const newCommittee = await db.query.committee
-						.findFirst({
-							where: { id: args.committeeId }
-						})
-						.then(assertFindFirstExists);
-
-					const currentCommittee = await db.query.committee
-						.findFirst({ where: { id: event.committeeId } })
-						.then(assertFindFirstExists);
-
-					if (newCommittee.conferenceId !== currentCommittee.conferenceId) {
-						throw new GraphQLError('Cannot move an event to a committee in a different conference');
-					}
+					await assertSameConference({ from: event.committeeId, to: args.committeeId });
 				}
 
-				const updateSet: Record<string, unknown> = {};
-				if (args.timestamp !== undefined && args.timestamp !== null)
-					updateSet.timestamp = args.timestamp;
-				if (args.present !== undefined && args.present !== null) updateSet.present = args.present;
-				if (args.committeeId !== undefined && args.committeeId !== null)
-					updateSet.committeeId = args.committeeId;
-				if (args.note !== undefined) updateSet.note = args.note;
-
-				if (Object.keys(updateSet).length > 0) {
+				const updateSet = givenFields({
+					args,
+					keys: ['timestamp', 'present', 'committeeId'],
+					clearable: ['note']
+				});
+				if (hasFields(updateSet)) {
 					await db
 						.update(schema.presenceEvent)
 						.set(updateSet)

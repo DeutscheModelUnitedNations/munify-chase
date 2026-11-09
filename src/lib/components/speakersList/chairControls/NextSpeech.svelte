@@ -7,8 +7,9 @@
 	import { promiseToastStrings } from '#lib/utils/toast';
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import toast from 'svelte-french-toast';
-	import { compareSpeakers } from '#lib/helpers/speakerSort';
 	import { listCommandScope } from './listCommands';
+	import { firstSpeaker, hasSpeakers } from './listOptions';
+	import { phaseFor } from './timerArgs';
 
 	type SpeakersList = {
 		id: string;
@@ -26,94 +27,103 @@
 
 	let { speakersList, type, childList, parentList }: Props = $props();
 
-	const nextSpeaker = async () => {
-		if (speakersList && speakersList?.speakers.length > 0) {
-			const speaker = speakersList.speakers.toSorted(compareSpeakers)[0];
-			if (childList) {
-				if (
-					await alertDialog({
-						title: m.nextSpeaker(),
-						description: m.nextSpeakerDescription(),
-						confirmText: m.nextSpeaker(),
-						cancelText: m.abort(),
-						confirmColor: 'error'
-					})
-				)
-					toast.promise(
-						Promise.all([
-							client.mutate.removeSpeakerOnList({
-								__args: { speakerOnListId: speaker.id },
-								id: true,
-								speakers: { id: true, position: true }
-							}),
-							client.mutate.updateSpeakersList({
-								__args: {
-									id: speakersList.id,
-									timeLeft: speakersList.speakingTime,
-									stopTimer: true,
-									// Moving to a new speaker resets the phase for the next speech
-									phase: 'SPEECH'
-								},
-								id: true,
-								timeLeft: true,
-								startTimestamp: true,
-								phase: true
-							}),
-							client.mutate.updateSpeakersList({
-								__args: {
-									id: childList.id,
-									timeLeft: childList.speakingTime,
-									stopTimer: true,
-									isClosed: false
-								},
-								id: true,
-								timeLeft: true,
-								startTimestamp: true,
-								isClosed: true,
-								phase: true
-							}),
-							client.mutate.clearSpeakersList({
-								__args: { id: childList.id },
-								id: true,
-								speakers: { id: true, position: true }
-							})
-						]),
-						promiseToastStrings(m.nextSpeaker(), 'update')
-					);
-			} else {
-				const ops: Promise<unknown>[] = [
-					client.mutate.removeSpeakerOnList({
-						__args: { speakerOnListId: speaker.id },
-						id: true,
-						speakers: { id: true, position: true }
-					}),
-					client.mutate.updateSpeakersList({
-						__args: {
-							id: speakersList.id,
-							timeLeft: speakersList.speakingTime,
-							stopTimer: true,
-							// Advancing to a new main-list speaker resets the phase for the next speech
-							...(type === 'SPEAKERS_LIST' ? { phase: 'SPEECH' } : {})
-						},
-						id: true,
-						timeLeft: true,
-						startTimestamp: true,
-						phase: true
-					})
-				];
-				// When advancing a questioner, put the speakers list back into question phase
-				if (type === 'COMMENT_LIST' && parentList) {
-					ops.push(
-						client.mutate.updateSpeakersList({
-							__args: { id: parentList.id, phase: 'QUESTION' },
-							id: true,
-							phase: true
-						})
-					);
-				}
-				toast.promise(Promise.all(ops), promiseToastStrings(m.nextSpeaker(), 'update'));
-			}
+	type Speaker = { id: string };
+	type List = NonNullable<SpeakersList>;
+
+	// Moving on also empties the speaker's comment list, which the chair confirms first
+	const advanceClearingComments = async (speaker: Speaker, list: List, comments: List) => {
+		if (
+			!(await alertDialog({
+				title: m.nextSpeaker(),
+				description: m.nextSpeakerDescription(),
+				confirmText: m.nextSpeaker(),
+				cancelText: m.abort(),
+				confirmColor: 'error'
+			}))
+		)
+			return;
+		toast.promise(
+			Promise.all([
+				client.mutate.removeSpeakerOnList({
+					__args: { speakerOnListId: speaker.id },
+					id: true,
+					speakers: { id: true, position: true }
+				}),
+				client.mutate.updateSpeakersList({
+					__args: {
+						id: list.id,
+						timeLeft: list.speakingTime,
+						stopTimer: true,
+						// Moving to a new speaker resets the phase for the next speech
+						phase: 'SPEECH'
+					},
+					id: true,
+					timeLeft: true,
+					startTimestamp: true,
+					phase: true
+				}),
+				client.mutate.updateSpeakersList({
+					__args: {
+						id: comments.id,
+						timeLeft: comments.speakingTime,
+						stopTimer: true,
+						isClosed: false
+					},
+					id: true,
+					timeLeft: true,
+					startTimestamp: true,
+					isClosed: true,
+					phase: true
+				}),
+				client.mutate.clearSpeakersList({
+					__args: { id: comments.id },
+					id: true,
+					speakers: { id: true, position: true }
+				})
+			]),
+			promiseToastStrings(m.nextSpeaker(), 'update')
+		);
+	};
+
+	const advance = (speaker: Speaker, list: List) => {
+		const ops: Promise<unknown>[] = [
+			client.mutate.removeSpeakerOnList({
+				__args: { speakerOnListId: speaker.id },
+				id: true,
+				speakers: { id: true, position: true }
+			}),
+			client.mutate.updateSpeakersList({
+				__args: {
+					id: list.id,
+					timeLeft: list.speakingTime,
+					stopTimer: true,
+					// Advancing to a new main-list speaker resets the phase for the next speech
+					...phaseFor({ type, when: 'SPEAKERS_LIST', phase: 'SPEECH' })
+				},
+				id: true,
+				timeLeft: true,
+				startTimestamp: true,
+				phase: true
+			})
+		];
+		// When advancing a questioner, put the speakers list back into question phase
+		if (type === 'COMMENT_LIST' && parentList) {
+			ops.push(
+				client.mutate.updateSpeakersList({
+					__args: { id: parentList.id, phase: 'QUESTION' },
+					id: true,
+					phase: true
+				})
+			);
 		}
+		toast.promise(Promise.all(ops), promiseToastStrings(m.nextSpeaker(), 'update'));
+	};
+
+	const nextSpeaker = async () => {
+		const speaker = firstSpeaker(speakersList);
+		if (!speakersList || !speaker) return;
+		if (childList) await advanceClearingComments(speaker, speakersList, childList);
+		else advance(speaker, speakersList);
 	};
 
 	const shortcut = $derived(type === 'COMMENT_LIST' ? 'alt+shift+n' : 'alt+n');
@@ -129,7 +139,7 @@
 				group: 'page',
 				icon: 'steps',
 				shortcut,
-				enabled: () => !!speakersList?.speakers?.length,
+				enabled: () => hasSpeakers(speakersList),
 				run: nextSpeaker
 			}
 		];

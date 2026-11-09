@@ -13,9 +13,14 @@ import {
 	linkedDelegator,
 	SYNCED_CONFERENCE
 } from '#api/services/authHelper';
-import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
+import {
+	assertFindFirstExists,
+	assertFirstEntryExists,
+	mapNullFieldsToUndefined
+} from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import { findUpdatableConference, type Transaction } from './helpers/scopedLookups';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 
 // The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
@@ -54,6 +59,23 @@ const representationTypeEnum = enum_({
 const pubsub = rumblePubsub({ table: 'representation' });
 query({ table: 'representation' });
 
+/** A delegation gets a seat in every committee of its conference. */
+async function seatInEveryCommittee({
+	tx,
+	conferenceId,
+	representationId
+}: {
+	tx: Transaction;
+	conferenceId: string;
+	representationId: string;
+}) {
+	const committees = await tx.query.committee.findMany({ where: { conferenceId } });
+	if (committees.length === 0) return;
+	await tx
+		.insert(schema.committeeMember)
+		.values(committees.map((c) => ({ committeeId: c.id, representationId })));
+}
+
 schemaBuilder.mutationFields((t) => ({
 	createRepresentation: t.drizzleField({
 		type: ref,
@@ -67,43 +89,19 @@ schemaBuilder.mutationFields((t) => ({
 			icon: t.arg.string()
 		},
 		resolve: async (query, _root, args, ctx) => {
-			await db.query.conference
-				.findFirst(
-					(await ctx.abilities.conference.filter('update')).merge({
-						where: { id: args.conferenceId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
+			await findUpdatableConference(ctx, args.conferenceId);
 
+			const { conferenceId, type, name, alpha2Code, alpha3Code, icon } =
+				mapNullFieldsToUndefined(args);
 			const result = await db.transaction(async (tx) => {
 				const rep = await tx
 					.insert(schema.representation)
-					.values({
-						id: args.id,
-						conferenceId: args.conferenceId,
-						type: args.type,
-						name: args.name ?? undefined,
-						alpha2Code: args.alpha2Code ?? undefined,
-						alpha3Code: args.alpha3Code ?? undefined,
-						icon: args.icon ?? undefined
-					})
+					.values({ id: args.id, conferenceId, type, name, alpha2Code, alpha3Code, icon })
 					.returning()
 					.then(assertFirstEntryExists);
 
-				// For DELEGATION type, auto-create committee members for all committees
 				if (args.type === 'DELEGATION') {
-					const committees = await tx.query.committee.findMany({
-						where: { conferenceId: args.conferenceId }
-					});
-
-					if (committees.length > 0) {
-						await tx.insert(schema.committeeMember).values(
-							committees.map((c) => ({
-								committeeId: c.id,
-								representationId: rep.id
-							}))
-						);
-					}
+					await seatInEveryCommittee({ tx, conferenceId, representationId: rep.id });
 				}
 
 				return rep;

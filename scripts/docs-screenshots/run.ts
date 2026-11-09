@@ -53,14 +53,19 @@ function run(cmd: string[]) {
 	});
 }
 
+async function serverResponds() {
+	try {
+		return (await fetch(BASE_URL)).ok;
+	} catch {
+		// not up yet
+		return false;
+	}
+}
+
 async function waitForServer(server: ChildProcess) {
 	for (let i = 0; i < 120; i++) {
 		if (server.exitCode !== null) throw new Error('Dev server exited');
-		try {
-			if ((await fetch(BASE_URL)).ok) return;
-		} catch {
-			// not up yet
-		}
+		if (await serverResponds()) return;
 		await sleep(1000);
 	}
 	throw new Error('Dev server did not start');

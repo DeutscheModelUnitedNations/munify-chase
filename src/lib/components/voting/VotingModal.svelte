@@ -7,28 +7,19 @@
 	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
 	import RollCallVotingChair from './RollCallVotingChair.svelte';
 	import DeviceBasedVotingChair from './DeviceBasedVotingChair.svelte';
-	import { votingModalStore, closeVotingModal, type VotingResult } from './votingModal';
+	import {
+		votingModalStore,
+		closeVotingModal,
+		type VotingConfig,
+		type VotingResult
+	} from './votingModal';
+	import { votingConfigWithDefaults, type VotingCommittee } from './votingMath';
 
 	interface Props {
-		committee: {
-			id: string;
-			totalPresent: number;
-			simpleMajority: number;
-			twoThirdsMajority: number;
+		committee: VotingCommittee & {
 			status: string;
 			statusHeadline: string;
 			statusUntil: Date;
-			members: Array<{
-				id: string;
-				present: boolean;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					icon?: string | null;
-					type?: string | null;
-				} | null;
-			}>;
 		};
 	}
 
@@ -46,23 +37,23 @@
 
 	let currentOnComplete: ((result: VotingResult) => void) | undefined = $state(undefined);
 
+	const applyConfig = (config: VotingConfig) => {
+		const filled = votingConfigWithDefaults(config);
+		voteType = filled.voteType;
+		voteName = filled.voteName;
+		majority = filled.majority;
+		withAbstentions = filled.withAbstentions;
+		deviceVotingWindowSeconds = filled.deviceVotingWindowSeconds;
+	};
+
 	votingModalStore.subscribe((state) => {
 		if (state) {
-			voteType = state.config.voteType ?? 'SHOW_OF_HANDS';
-			voteName = state.config.voteName ?? '';
-			majority = state.config.majority ?? 'SIMPLE';
-			withAbstentions = state.config.withAbstentions ?? false;
-			deviceVotingWindowSeconds = state.config.deviceVotingWindowSeconds ?? 20;
+			applyConfig(state.config);
 			currentOnComplete = state.onComplete;
-			if (state.resume) {
-				phase = 'EXECUTING';
-				setupOpen = false;
-				executingOpen = true;
-			} else {
-				phase = 'SETUP';
-				setupOpen = true;
-				executingOpen = false;
-			}
+			const resume = !!state.resume;
+			phase = resume ? 'EXECUTING' : 'SETUP';
+			setupOpen = !resume;
+			executingOpen = resume;
 		} else {
 			setupOpen = false;
 			executingOpen = false;
@@ -96,11 +87,7 @@
 		} else {
 			phase = 'SETUP';
 			setupOpen = true;
-			voteType = 'SHOW_OF_HANDS';
-			voteName = '';
-			majority = 'SIMPLE';
-			withAbstentions = false;
-			deviceVotingWindowSeconds = 20;
+			applyConfig({});
 			currentOnComplete = undefined;
 		}
 	};

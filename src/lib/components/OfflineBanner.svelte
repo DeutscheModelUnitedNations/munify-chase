@@ -4,6 +4,7 @@
 	import { page } from '$app/state';
 	import toast from 'svelte-french-toast';
 	import { fly } from 'svelte/transition';
+	import { dodgeOnHover } from './dodgeOnHover';
 
 	// Presentation view sits at /app/{conferenceId}/{committeeId} with no further segments.
 	let isPresentation = $derived(/^\/app\/[^/]+\/[^/]+\/?$/.test(page.url.pathname));
@@ -22,28 +23,11 @@
 			toast.success(m.backOnline(), { duration: 4000 });
 		}
 	});
-
-	function dodgeOnHover(node: HTMLElement) {
-		const onMove = (e: MouseEvent) => {
-			const r = node.getBoundingClientRect();
-			const pad = 24;
-			dodging =
-				e.clientX >= r.left - pad &&
-				e.clientX <= r.right + pad &&
-				e.clientY >= r.top - pad &&
-				e.clientY <= r.bottom + pad;
-		};
-		window.addEventListener('mousemove', onMove);
-		return () => {
-			window.removeEventListener('mousemove', onMove);
-			dodging = false;
-		};
-	}
 </script>
 
 {#if showBanner}
 	<div
-		{@attach dodgeOnHover}
+		{@attach dodgeOnHover((near) => (dodging = near))}
 		class="pointer-events-none fixed right-4 bottom-2 z-50 transition-all duration-300 ease-out {dodging
 			? 'translate-y-2 scale-95 opacity-0'
 			: 'translate-y-0 scale-100 opacity-100'}"

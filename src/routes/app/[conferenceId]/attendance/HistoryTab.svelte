@@ -3,6 +3,7 @@
 	import { m } from '#lib/paraglide/messages';
 	import BasicCard from '#lib/components/BasicCard.svelte';
 	import EditPresenceEventModal from './EditPresenceEventModal.svelte';
+	import HistoryEventRow from './HistoryEventRow.svelte';
 
 	interface Props {
 		conferenceId: string;
@@ -72,11 +73,6 @@
 		editorOpen = false;
 		editTarget = null;
 	}
-
-	function formatDateTime(ts: string | Date) {
-		const d = ts instanceof Date ? ts : new Date(ts);
-		return d.toLocaleString();
-	}
 </script>
 
 <BasicCard>
@@ -102,31 +98,7 @@
 	{:else}
 		<ul class="flex flex-col gap-1">
 			{#each visibleEvents as ev (ev.id)}
-				{@const rep = ev.conferenceUser?.conferenceMember?.representation}
-				<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
-					<i
-						aria-hidden="true"
-						class="ph-fill {ev.present
-							? 'ph-sign-in text-success'
-							: 'ph-sign-out text-warning'} text-lg"
-					></i>
-					<span class="font-medium">
-						{ev.conferenceUser?.name ?? ev.conferenceUser?.userEmail ?? m.unknown()}
-					</span>
-					{#if rep?.name}
-						<span class="text-base-content/60 text-sm">{rep.name}</span>
-					{/if}
-					<span class="text-base-content/70">
-						{ev.committee?.abbreviation ?? ev.committee?.name ?? '?'}
-					</span>
-					{#if ev.note}
-						<span class="badge badge-outline badge-sm">{ev.note}</span>
-					{/if}
-					<span class="ml-auto text-sm">{formatDateTime(ev.timestamp)}</span>
-					<button class="btn btn-ghost btn-sm" onclick={() => openEdit(ev)} aria-label={m.edit()}>
-						<i aria-hidden="true" class="ph-fill ph-pen"></i>
-					</button>
-				</li>
+				<HistoryEventRow event={ev} onEdit={() => openEdit(ev)} />
 			{/each}
 		</ul>
 	{/if}

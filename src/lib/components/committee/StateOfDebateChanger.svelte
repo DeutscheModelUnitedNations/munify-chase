@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
-	import Combobox from '../Combobox.svelte';
+	import TemplateCombobox from './TemplateCombobox.svelte';
+	import ChangerActions from './ChangerActions.svelte';
 	import { client } from '#lib/api/rumbleClient/client';
 	import stateOfDebateTemplates from '#lib/data/stateOfDebateTemplates';
 	import { promiseToastStrings } from '#lib/utils/toast';
@@ -20,10 +21,6 @@
 		value = oldStateOfDebate ?? '';
 	});
 
-	const presets = stateOfDebateTemplates.map((preset) => ({
-		label: preset
-	}));
-
 	const submitState = async () => {
 		await toast.promise(
 			client.mutate.updateCommittee({
@@ -37,55 +34,11 @@
 </script>
 
 <div class="flex flex-col gap-4">
-	<Combobox
+	<TemplateCombobox
 		bind:value
-		options={presets}
-		side="top"
+		templates={stateOfDebateTemplates}
 		placeholder={m.stateOfDebate()}
-		getStringValue={({ label }) => label}
-		filter={(options, v) =>
-			options.filter(({ label }) => label.toLowerCase().includes(v.toLowerCase()))}
-	>
-		{#snippet ListItem(option)}
-			<div class="flex items-center gap-2">
-				<i aria-hidden="true" class="ph-fill ph-file-text"></i>
-				<span>{option.label}</span>
-			</div>
-		{/snippet}
-
-		{#snippet AdditionalButtons()}
-			<button
-				class="btn btn-square input-lg join-item"
-				aria-label="Clear selection"
-				onclick={() => (value = '')}
-			>
-				<i aria-hidden="true" class="ph-fill ph-trash"></i>
-			</button>
-		{/snippet}
-	</Combobox>
-	<div class="flex w-full gap-2">
-		{#if abort}
-			<button
-				class="btn btn-error btn-lg"
-				onclick={() => {
-					abort();
-				}}
-			>
-				<i aria-hidden="true" class="ph-fill ph-x mr-2"></i>
-				{m.abort()}
-			</button>
-		{/if}
-		<button
-			class="btn btn-primary btn-lg w-full flex-1"
-			onclick={() => {
-				submitState();
-				if (abort) {
-					abort();
-				}
-			}}
-		>
-			<i aria-hidden="true" class="ph-fill ph-floppy-disk mr-2"></i>
-			{m.submitStateOfDebate()}
-		</button>
-	</div>
+		icon="file-text"
+	/>
+	<ChangerActions {abort} onsubmit={submitState} submitLabel={m.submitStateOfDebate()} />
 </div>

@@ -1,20 +1,13 @@
 <script lang="ts">
 	import { client } from '#lib/api/rumbleClient/client';
 	import { m } from '#lib/paraglide/messages';
-	import { resolve } from '$app/paths';
-	import BasicCard from '#lib/components/BasicCard.svelte';
-	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-	import { getServerTime } from '#lib/state/serverTime.svelte';
+	import CommitteePresenceCard from './CommitteePresenceCard.svelte';
+	import { delegateTotals, presentEventsByCommittee } from './attendance';
 
 	interface Props {
 		conferenceId: string;
 	}
 	let { conferenceId }: Props = $props();
-
-	// Default warning threshold: highlight check-ins older than 4 h. Surfaces
-	// likely-forgotten checkouts without auto-acting on them.
-	const WARNING_HOURS = 4;
-	const WARNING_MS = WARNING_HOURS * 60 * 60 * 1000;
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: conferenceId },
@@ -32,32 +25,7 @@
 		}
 	});
 
-	type CommitteeForStat = NonNullable<NonNullable<typeof conference>['committees']>[number];
-
-	function delegateStat(c: CommitteeForStat) {
-		const total = (c.members ?? []).filter(
-			(mem) => mem.representation?.type === 'DELEGATION'
-		).length;
-		const present = c.totalPresent ?? 0;
-		return { present, total };
-	}
-
-	function badgeClass(present: number, total: number) {
-		if (total === 0 || present === 0) return 'badge-ghost';
-		if (present === total) return 'badge-success';
-		return 'badge-warning';
-	}
-
-	let conferenceTotals = $derived.by(() => {
-		let present = 0;
-		let total = 0;
-		for (const c of conference?.committees ?? []) {
-			const s = delegateStat(c);
-			present += s.present;
-			total += s.total;
-		}
-		return { present, total };
-	});
+	let conferenceTotals = $derived(delegateTotals(conference?.committees ?? []));
 
 	const allEvents = await client.liveQuery.presenceEvents({
 		__args: {
@@ -78,39 +46,7 @@
 		}
 	});
 
-	let now = $derived(getServerTime().valueOf());
-
-	type LatestEvent = NonNullable<typeof allEvents>[number];
-
-	let byCommittee = $derived.by(() => {
-		const map = new SvelteMap<string, LatestEvent[]>();
-		const seen = new SvelteSet<string>();
-		// allEvents is ordered timestamp DESC, so the first event per user is the latest.
-		for (const event of allEvents ?? []) {
-			const uid = event.conferenceUser?.id;
-			if (!uid || seen.has(uid)) continue;
-			seen.add(uid);
-			if (!event.present) continue;
-			const list = map.get(event.committeeId) ?? [];
-			list.push(event);
-			map.set(event.committeeId, list);
-		}
-		return map;
-	});
-
-	function durationLabel(ts: string | Date) {
-		const start = ts instanceof Date ? ts.getTime() : new Date(ts).getTime();
-		const minutes = Math.floor((now - start) / 60_000);
-		if (minutes < 60) return m.minutesShort({ count: minutes });
-		const hours = Math.floor(minutes / 60);
-		const rem = minutes % 60;
-		return m.hoursMinutesShort({ hours, minutes: rem });
-	}
-
-	function isStale(ts: string | Date) {
-		const start = ts instanceof Date ? ts.getTime() : new Date(ts).getTime();
-		return now - start > WARNING_MS;
-	}
+	let byCommittee = $derived(presentEventsByCommittee(allEvents));
 </script>
 
 <div class="flex flex-col gap-4">
@@ -127,67 +63,10 @@
 		</div>
 	{/if}
 	{#each conference?.committees ?? [] as committee (committee.id)}
-		{@const list = byCommittee.get(committee.id) ?? []}
-		{@const stat = delegateStat(committee)}
-		<BasicCard>
-			<div class="mb-4">
-				<h2 class="text-2xl font-bold">
-					<a
-						href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
-							conferenceId,
-							committeeId: committee.id
-						})}
-						class="hover:underline"
-					>
-						{committee.name} (<span style="view-transition-name: committee-abbr-{committee.id};"
-							>{committee.abbreviation ?? ''}</span
-						>)
-					</a>
-				</h2>
-			</div>
-			<div class="-mt-3 mb-3 flex flex-wrap items-center gap-2">
-				<span
-					class="badge badge-sm {badgeClass(stat.present, stat.total)} tabular-nums"
-					title={m.delegatePresence()}
-				>
-					{m.delegatesPresentOfTotal({ present: stat.present, total: stat.total })}
-				</span>
-			</div>
-			{#if list.length === 0}
-				<p class="text-base-content/50 py-2 text-sm">{m.noNsasInCommittee()}</p>
-			{:else}
-				<ul class="flex flex-col gap-1">
-					{#each list as event (event.id)}
-						{@const rep = event.conferenceUser?.conferenceMember?.representation}
-						<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
-							{#if rep?.icon}
-								<i aria-hidden="true" class="ph-fill ph-{rep.icon} text-lg"></i>
-							{:else}
-								<i aria-hidden="true" class="ph-fill ph-identification-badge text-lg"></i>
-							{/if}
-							<span class="flex-1">
-								{event.conferenceUser?.name ?? event.conferenceUser?.userEmail ?? m.unknown()}
-							</span>
-							{#if rep?.name}
-								<span class="text-base-content/60 text-sm">{rep.name}</span>
-							{/if}
-							<span class="text-base-content/60 text-sm">
-								{durationLabel(event.timestamp)}
-							</span>
-							{#if isStale(event.timestamp)}
-								<span
-									class="badge badge-warning"
-									title={m.forgottenCheckoutWarning({ hours: WARNING_HOURS })}
-								>
-									<i aria-hidden="true" class="ph-fill ph-warning"></i>
-									<span class="sr-only">{m.forgottenCheckoutWarning({ hours: WARNING_HOURS })}</span
-									>
-								</span>
-							{/if}
-						</li>
-					{/each}
-				</ul>
-			{/if}
-		</BasicCard>
+		<CommitteePresenceCard
+			{conferenceId}
+			{committee}
+			events={byCommittee.get(committee.id) ?? []}
+		/>
 	{/each}
 </div>

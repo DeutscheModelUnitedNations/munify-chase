@@ -5,7 +5,6 @@
 		ResolutionPreview,
 		OperativeParagraphPreview,
 		serializeClause,
-		type ResolutionHeaderData,
 		type OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import { englishLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
@@ -15,8 +14,10 @@
 	} from '@deutschemodelunitednations/munify-resolution-editor/phrases';
 	import { createPaperYjsClient, type PaperYjsClient } from '#lib/api/yjs/createPaperYjs.svelte';
 	import { toAmendmentOverlays } from './paperContext';
-	import { svgToDataUrl } from '#lib/utils/svgToDataUrl';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import { rejectedClauseIdsOf } from './paperPageState';
+	import { fetchClauseVoteOutcomes, fetchOverlayAmendments } from './paperOverlays';
+	import { delegationName, resolutionHeaderData } from './resolutionHeader';
+	import { amendmentClauseIndex, presentationAmendmentType } from './presentationAmendment';
 	import Flag from '#lib/components/Flag.svelte';
 	import { m } from '#lib/paraglide/messages';
 
@@ -102,52 +103,14 @@
 	const paper = $derived(papers?.[0]);
 
 	// ---- Amendment overlays + rejected clauses ------------------------------
-	const amendmentRows = await client.liveQuery.amendments({
-		__args: { where: { paper: { id: { eq: paperId } } } },
-		id: true,
-		type: true,
-		status: true,
-		targetClauseId: true,
-		targetOperativeIndex: true,
-		targetPosition: true,
-		newContent: true,
-		proposer: { id: true, representation: { id: true, name: true, alpha2Code: true } },
-		sponsors: { id: true }
-	});
-	const clauseVotes = await client.liveQuery.operativeClauseVotes({
-		__args: { where: { paper: { id: { eq: paperId } } } },
-		id: true,
-		clauseId: true,
-		vote: { id: true, outcome: true }
-	});
+	const amendmentRows = await fetchOverlayAmendments(paperId);
+	const clauseVotes = await fetchClauseVoteOutcomes(paperId);
 
 	const overlays = $derived(showAmendments ? toAmendmentOverlays(amendmentRows) : undefined);
-	const rejectedClauseIds = $derived(
-		(clauseVotes ?? []).filter((v) => v.vote?.outcome === 'REJECTED').map((v) => v.clauseId)
-	);
+	const rejectedClauseIds = $derived(rejectedClauseIdsOf(clauseVotes ?? []));
 
-	// ---- Header data (mirrors PaperPage.svelte) -----------------------------
-	const headerData = $derived<ResolutionHeaderData>({
-		conferenceTitle: committee?.conference?.title ?? undefined,
-		conferenceEmblem: svgToDataUrl(committee?.conference?.logoSvg),
-		committeeAbbreviation: committee?.abbreviation ?? undefined,
-		committeeFullName: committee?.name ?? undefined,
-		documentNumber: paper?.documentNumber ?? undefined,
-		topic: paper?.agendaItem?.title ?? undefined,
-		authoringDelegation:
-			getTranslatedCountryNameFromAlpha3Code(
-				paper?.creatorCommitteeMember?.representation?.alpha3Code
-			) ??
-			paper?.creatorCommitteeMember?.representation?.name ??
-			undefined,
-		sponsoringDelegations: (paper?.sponsors ?? []).map(
-			(s) =>
-				getTranslatedCountryNameFromAlpha3Code(s.committeeMember?.representation?.alpha3Code) ??
-				s.committeeMember?.representation?.name ??
-				''
-		),
-		lastEdited: paper?.updatedAt ?? undefined
-	});
+	// ---- Header data (shared with PaperPage.svelte) ------------------------
+	const headerData = $derived(resolutionHeaderData({ committee, paper }));
 
 	// ---- Active clause for gavel marker + auto-scroll ----------------------
 	const activeClauseId = $derived(
@@ -162,56 +125,12 @@
 	}
 
 	// ---- Active amendment helpers ------------------------------------------
-	const resolvedActiveAmendIdx = $derived.by(() => {
-		if (!activeAmendment || !resolution) return -1;
-		if (activeAmendment.targetClauseId) {
-			const idx = resolution.operative.findIndex((c) => c.id === activeAmendment.targetClauseId);
-			if (idx !== -1) return idx;
-		}
-		return activeAmendment.targetOperativeIndex ?? -1;
-	});
-
-	function getAmendmentTypeLabel(type: string): string {
-		switch (type) {
-			case 'DELETE':
-				return m.deleteClausePresentation();
-			case 'ALTER_TEXT':
-				return m.alterClausePresentation();
-			case 'ADD':
-				return m.addClausePresentation();
-			case 'ALTER_POSITION':
-				return m.moveClausePresentation();
-			default:
-				return type;
-		}
-	}
-
-	function getAmendmentTypeBadge(type: string): string {
-		switch (type) {
-			case 'DELETE':
-				return 'badge-error';
-			case 'ALTER_TEXT':
-				return 'badge-warning';
-			case 'ADD':
-				return 'bg-green-700 text-white border-0';
-			case 'ALTER_POSITION':
-				return 'badge-info';
-			default:
-				return 'badge-ghost';
-		}
-	}
+	const resolvedActiveAmendIdx = $derived(
+		amendmentClauseIndex({ amendment: activeAmendment, operative: resolution?.operative })
+	);
 
 	function singleClauseResolution(clause: OperativeClause) {
 		return { committeeName: committee?.name ?? '', preamble: [], operative: [clause] };
-	}
-
-	function getProposerName(proposer: ActiveAmendment['proposer']): string {
-		if (!proposer?.representation) return '';
-		return (
-			getTranslatedCountryNameFromAlpha3Code(proposer.representation.alpha3Code) ??
-			proposer.representation.name ??
-			''
-		);
 	}
 </script>
 
@@ -222,141 +141,8 @@
 			class="resolution-font-size-wrapper flex h-full w-full flex-col gap-5 overflow-hidden p-4"
 			style="--resolution-font-size: {resolutionFontSize}px"
 		>
-			<!-- Header row -->
-			<div class="flex flex-wrap items-center gap-3 border-b-2 border-base-300 pb-3">
-				<div class="flex flex-col">
-					<span
-						class="badge badge-lg {getAmendmentTypeBadge(
-							activeAmendment.type
-						)} h-auto px-4 py-2 text-xl font-bold"
-					>
-						{getAmendmentTypeLabel(activeAmendment.type)}
-					</span>
-					{#if activeAmendment.documentNumber}
-						<span class="font-mono text-base-content/60 text-lg"
-							>{activeAmendment.documentNumber}</span
-						>
-					{/if}
-				</div>
-				<span class="flex-1 text-center text-2xl font-semibold"
-					>{m.proposedAmendmentPresentation()}</span
-				>
-				{#if activeAmendment.proposer?.representation}
-					<div
-						class="ml-auto flex items-center gap-2 rounded-box bg-base-200 py-1 pl-1 pr-3 text-base"
-					>
-						<Flag representation={activeAmendment.proposer.representation} size="sm" />
-						<span class="font-medium">{getProposerName(activeAmendment.proposer)}</span>
-					</div>
-				{/if}
-			</div>
-
-			{#if activeAmendment.type === 'DELETE' && resolvedActiveAmendIdx >= 0}
-				{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
-				<div
-					class="mx-auto flex w-fit items-center gap-2 rounded-full bg-error px-4 py-2 text-error-content"
-				>
-					<i aria-hidden="true" class="ph-fill ph-trash text-lg"></i>
-					<span class="text-lg font-semibold"
-						>{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span
-					>
-				</div>
-				{#if targetClause}
-					<div
-						class="flex-1 overflow-auto rounded-lg border-2 border-error/30 border-l-4 border-l-error bg-white p-4 opacity-70 line-through decoration-error decoration-4"
-					>
-						<ResolutionPreview
-							resolution={singleClauseResolution(targetClause)}
-							labels={englishLabels}
-							preamblePhrases={englishPreamblePhrases}
-							operativePhrases={englishOperativePhrases}
-						>
-							{#snippet previewHeader()}{/snippet}
-						</ResolutionPreview>
-					</div>
-				{/if}
-			{:else if activeAmendment.type === 'ALTER_TEXT' && resolvedActiveAmendIdx >= 0}
-				{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
-				<div
-					class="mx-auto flex w-fit items-center gap-2 rounded-full bg-warning px-4 py-2 text-warning-content"
-				>
-					<i aria-hidden="true" class="ph-fill ph-note-pencil text-lg"></i>
-					<span class="text-lg font-semibold"
-						>{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span
-					>
-				</div>
-				<div class="flex-1 overflow-auto p-4">
-					{#if activeAmendment.newContent}
-						<div
-							class="rounded-lg border-2 border-warning/30 border-l-4 border-l-warning bg-white p-4 pt-6"
-						>
-							<OperativeParagraphPreview
-								markup={activeAmendment.newContent}
-								oldMarkup={targetClause ? serializeClause(targetClause) : undefined}
-								showDiff
-								operativeNumber={resolvedActiveAmendIdx + 1}
-								labels={englishLabels}
-							/>
-						</div>
-					{/if}
-				</div>
-			{:else if activeAmendment.type === 'ADD'}
-				<div
-					class="mx-auto flex w-fit items-center gap-2 rounded-full bg-green-700 px-4 py-2 text-white"
-				>
-					<i aria-hidden="true" class="ph-fill ph-plus text-lg"></i>
-					<span class="text-lg font-semibold"
-						>{m.insertAfterPresentation({ index: (activeAmendment.targetPosition ?? 0) + 1 })}</span
-					>
-				</div>
-				<div class="flex-1 overflow-auto p-4">
-					{#if activeAmendment.newContent}
-						<div
-							class="rounded-lg border-2 border-green-700/40 border-l-4 border-l-green-700 bg-white p-4 pt-6"
-						>
-							<OperativeParagraphPreview
-								markup={activeAmendment.newContent}
-								operativeNumber={(activeAmendment.targetPosition ?? 0) + 2}
-								labels={englishLabels}
-							/>
-						</div>
-					{/if}
-				</div>
-			{:else if activeAmendment.type === 'ALTER_POSITION' && resolvedActiveAmendIdx >= 0}
-				{@const targetClause = resolution.operative[resolvedActiveAmendIdx]}
-				<div class="flex flex-1 flex-col items-center justify-center gap-6 overflow-auto p-4">
-					<div
-						class="flex w-fit items-center gap-2 rounded-full bg-info px-4 py-2 text-info-content"
-					>
-						<i aria-hidden="true" class="ph-fill ph-arrows-down-up text-lg"></i>
-						<span class="text-lg font-semibold"
-							>{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span
-						>
-					</div>
-					{#if targetClause}
-						<div
-							class="w-full rounded-lg border-2 border-info/30 border-l-4 border-l-info bg-white p-4"
-						>
-							<ResolutionPreview
-								resolution={singleClauseResolution(targetClause)}
-								labels={englishLabels}
-								preamblePhrases={englishPreamblePhrases}
-								operativePhrases={englishOperativePhrases}
-							>
-								{#snippet previewHeader()}{/snippet}
-							</ResolutionPreview>
-						</div>
-					{/if}
-					<div class="flex items-center gap-3 rounded-full bg-info px-6 py-3 text-info-content">
-						<i aria-hidden="true" class="ph-fill ph-arrow-down text-2xl"></i>
-						<span class="text-xl font-semibold"
-							>{m.moveToPositionPresentation({
-								position: (activeAmendment.targetPosition ?? 0) + 1
-							})}</span
-						>
-					</div>
-				</div>
-			{/if}
+			{@render amendmentHeader(activeAmendment)}
+			{@render amendmentBody(activeAmendment, resolution.operative[resolvedActiveAmendIdx])}
 		</div>
 	{:else}
 		<!-- Normal full resolution preview with amendment overlays -->
@@ -385,6 +171,135 @@
 		</div>
 	{/if}
 {/if}
+
+{#snippet amendmentHeader(amendment: ActiveAmendment)}
+	{@const type = presentationAmendmentType(amendment.type)}
+	<div class="flex flex-wrap items-center gap-3 border-b-2 border-base-300 pb-3">
+		<div class="flex flex-col">
+			<span class="badge badge-lg {type.badge} h-auto px-4 py-2 text-xl font-bold">
+				{type.label}
+			</span>
+			{#if amendment.documentNumber}
+				<span class="font-mono text-base-content/60 text-lg">{amendment.documentNumber}</span>
+			{/if}
+		</div>
+		<span class="flex-1 text-center text-2xl font-semibold"
+			>{m.proposedAmendmentPresentation()}</span
+		>
+		{#if amendment.proposer?.representation}
+			<div class="ml-auto flex items-center gap-2 rounded-box bg-base-200 py-1 pl-1 pr-3 text-base">
+				<Flag representation={amendment.proposer.representation} size="sm" />
+				<span class="font-medium">{delegationName(amendment.proposer.representation) ?? ''}</span>
+			</div>
+		{/if}
+	</div>
+{/snippet}
+
+{#snippet amendmentBody(amendment: ActiveAmendment, targetClause: OperativeClause | undefined)}
+	{#if amendment.type === 'ADD'}
+		{@render addedClause(amendment)}
+	{:else if resolvedActiveAmendIdx < 0}
+		<!-- the target clause is gone: only the header is shown -->
+	{:else if amendment.type === 'DELETE'}
+		{@render clausePill('bg-error text-error-content', 'trash')}
+		{#if targetClause}
+			<div
+				class="flex-1 overflow-auto rounded-lg border-2 border-error/30 border-l-4 border-l-error bg-white p-4 opacity-70 line-through decoration-error decoration-4"
+			>
+				{@render clausePreview(targetClause)}
+			</div>
+		{/if}
+	{:else if amendment.type === 'ALTER_TEXT'}
+		{@render alteredClause(amendment, targetClause)}
+	{:else if amendment.type === 'ALTER_POSITION'}
+		{@render movedClause(amendment, targetClause)}
+	{/if}
+{/snippet}
+
+{#snippet clausePill(colors: string, icon: string)}
+	<div class="mx-auto flex w-fit items-center gap-2 rounded-full {colors} px-4 py-2">
+		<i aria-hidden="true" class="ph-fill ph-{icon} text-lg"></i>
+		<span class="text-lg font-semibold"
+			>{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span
+		>
+	</div>
+{/snippet}
+
+{#snippet clausePreview(clause: OperativeClause)}
+	<ResolutionPreview
+		resolution={singleClauseResolution(clause)}
+		labels={englishLabels}
+		preamblePhrases={englishPreamblePhrases}
+		operativePhrases={englishOperativePhrases}
+	>
+		{#snippet previewHeader()}{/snippet}
+	</ResolutionPreview>
+{/snippet}
+
+{#snippet alteredClause(amendment: ActiveAmendment, targetClause: OperativeClause | undefined)}
+	{@render clausePill('bg-warning text-warning-content', 'note-pencil')}
+	<div class="flex-1 overflow-auto p-4">
+		{#if amendment.newContent}
+			<div
+				class="rounded-lg border-2 border-warning/30 border-l-4 border-l-warning bg-white p-4 pt-6"
+			>
+				<OperativeParagraphPreview
+					markup={amendment.newContent}
+					oldMarkup={targetClause ? serializeClause(targetClause) : undefined}
+					showDiff
+					operativeNumber={resolvedActiveAmendIdx + 1}
+					labels={englishLabels}
+				/>
+			</div>
+		{/if}
+	</div>
+{/snippet}
+
+{#snippet addedClause(amendment: ActiveAmendment)}
+	<div class="mx-auto flex w-fit items-center gap-2 rounded-full bg-green-700 px-4 py-2 text-white">
+		<i aria-hidden="true" class="ph-fill ph-plus text-lg"></i>
+		<span class="text-lg font-semibold"
+			>{m.insertAfterPresentation({ index: (amendment.targetPosition ?? 0) + 1 })}</span
+		>
+	</div>
+	<div class="flex-1 overflow-auto p-4">
+		{#if amendment.newContent}
+			<div
+				class="rounded-lg border-2 border-green-700/40 border-l-4 border-l-green-700 bg-white p-4 pt-6"
+			>
+				<OperativeParagraphPreview
+					markup={amendment.newContent}
+					operativeNumber={(amendment.targetPosition ?? 0) + 2}
+					labels={englishLabels}
+				/>
+			</div>
+		{/if}
+	</div>
+{/snippet}
+
+{#snippet movedClause(amendment: ActiveAmendment, targetClause: OperativeClause | undefined)}
+	<div class="flex flex-1 flex-col items-center justify-center gap-6 overflow-auto p-4">
+		<div class="flex w-fit items-center gap-2 rounded-full bg-info px-4 py-2 text-info-content">
+			<i aria-hidden="true" class="ph-fill ph-arrows-down-up text-lg"></i>
+			<span class="text-lg font-semibold"
+				>{m.operativeClausePresentation()} {resolvedActiveAmendIdx + 1}</span
+			>
+		</div>
+		{#if targetClause}
+			<div class="w-full rounded-lg border-2 border-info/30 border-l-4 border-l-info bg-white p-4">
+				{@render clausePreview(targetClause)}
+			</div>
+		{/if}
+		<div class="flex items-center gap-3 rounded-full bg-info px-6 py-3 text-info-content">
+			<i aria-hidden="true" class="ph-fill ph-arrow-down text-2xl"></i>
+			<span class="text-xl font-semibold"
+				>{m.moveToPositionPresentation({
+					position: (amendment.targetPosition ?? 0) + 1
+				})}</span
+			>
+		</div>
+	</div>
+{/snippet}
 
 <style>
 	.resolution-font-size-wrapper :global(.resolution-preview),

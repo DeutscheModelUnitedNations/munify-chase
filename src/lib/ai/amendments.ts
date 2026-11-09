@@ -1,6 +1,12 @@
 import { serializeClause } from '@deutschemodelunitednations/munify-resolution-editor';
 import { callAI, type AiMode } from './call';
 import { getAiPreference, preferenceToMode } from './aiPreference.svelte';
+import {
+	extractTrailingBoolean,
+	robustJsonParse,
+	safeTextParse,
+	sanitizeRankedIndices
+} from './llmOutput';
 
 function defaultMode(): AiMode {
 	return preferenceToMode(getAiPreference());
@@ -29,128 +35,9 @@ function toText(raw: string | null | undefined): string {
 	}
 }
 
-function extractJson(raw: string): string {
-	const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)(?:```|$)/);
-	if (fenced) return fenced[1].trim();
-
-	const start = raw.search(/[{[]/);
-	if (start < 0) return raw.trim();
-
-	// Walk forward to find the matching close bracket, so trailing model
-	// commentary after the JSON object doesn't break JSON.parse.
-	const openChar = raw[start];
-	const closeChar = openChar === '{' ? '}' : ']';
-	let depth = 0;
-	let inString = false;
-	let escape = false;
-	for (let i = start; i < raw.length; i++) {
-		const c = raw[i];
-		if (escape) {
-			escape = false;
-			continue;
-		}
-		if (c === '\\' && inString) {
-			escape = true;
-			continue;
-		}
-		if (c === '"') {
-			inString = !inString;
-			continue;
-		}
-		if (inString) continue;
-		if (c === openChar) depth++;
-		else if (c === closeChar && --depth === 0) return raw.slice(start, i + 1);
-	}
-
-	// Truncated — return from start to end for closeJson to complete.
-	return raw.slice(start);
-}
-
-/**
- * Attempts to close a truncated JSON string by tracking open strings and
- * unclosed braces/brackets, then appending the minimum suffix to make it valid.
- */
-function closeJson(s: string): string {
-	let inString = false;
-	let escape = false;
-	const stack: string[] = [];
-	for (let i = 0; i < s.length; i++) {
-		const c = s[i];
-		if (escape) {
-			escape = false;
-			continue;
-		}
-		if (c === '\\' && inString) {
-			escape = true;
-			continue;
-		}
-		if (c === '"') {
-			inString = !inString;
-			continue;
-		}
-		if (inString) continue;
-		if (c === '{') stack.push('}');
-		else if (c === '[') stack.push(']');
-		else if (c === '}' || c === ']') stack.pop();
-	}
-	return s + (inString ? '"' : '') + stack.reverse().join('');
-}
-
-function safeTextParse(raw: string): string {
-	return raw
-		.replace(/<think>[\s\S]*?<\/think>/g, '')
-		.replace(/<think>[\s\S]*/g, '')
-		.trim()
-		.replace(/^["']|["']$/g, '');
-}
-
-function robustJsonParse(raw: string): unknown {
-	const stripped = safeTextParse(raw);
-	// LLMs sometimes emit literal newlines/tabs inside JSON string values, which is invalid.
-	const sanitize = (s: string) => s.replace(/[\r\n\t]+/g, ' ');
-
-	const cleaned = sanitize(extractJson(stripped));
-	try {
-		return JSON.parse(cleaned);
-	} catch {
-		/* continue */
-	}
-
-	try {
-		return JSON.parse(closeJson(cleaned));
-	} catch {
-		/* continue */
-	}
-
-	throw new SyntaxError(`Could not parse LLM output: ${raw.slice(0, 120)}`);
-}
-
 export interface ObsolescenceResult {
 	id: string;
 	obsolete: boolean;
-}
-
-/**
- * Tallies standalone "true"/"false" tokens across the full model output (think blocks
- * already stripped by safeTextParse) and returns whichever occurs more often. Used to
- * trust a single online call's own verdict instead of spending a second call to re-extract
- * it. Counting across the whole response is more robust than only checking the final line,
- * since the reasoning tends to consistently reference the eventual verdict throughout.
- */
-function extractTrailingBoolean(raw: string): boolean | null {
-	// Strip markdown emphasis/code markers and collapse whitespace so tokens like
-	// "**true**" or a stray "true\n\n" still match cleanly.
-	const cleaned = safeTextParse(raw).replace(/[*_`]/g, '').replace(/\s+/g, ' ').trim();
-	const matches = cleaned.match(/\btrue\b|\bfalse\b/gi);
-	if (!matches || matches.length === 0) return null;
-	let trueCount = 0;
-	let falseCount = 0;
-	for (const m of matches) {
-		if (m.toLowerCase() === 'true') trueCount++;
-		else falseCount++;
-	}
-	if (trueCount === falseCount) return null;
-	return trueCount > falseCount;
 }
 
 export async function classifyObsolescence(
@@ -198,20 +85,15 @@ Reason step by step, explicitly stating A and B. Finish your response with one b
 	});
 
 	if (reasoning === null) return null;
+	const verdictOf = (obsolete: boolean | null) =>
+		obsolete === null ? null : { id: subject.id ?? '', obsolete };
 
-	// Remote models are trusted to follow the trailing true/false instruction in one call. We also dont wanna waste another paid call here if not running locally.
+	// Remote models are trusted to follow the trailing true/false instruction in one call. We
+	// also dont wanna waste another paid call here if not running locally. Local models are
+	// weaker at instruction-following, so they only fall back to a second grammar-constrained
+	// call (re-extracting from the same reasoning, no re-prompting) when that parse failed.
 	const extracted = extractTrailingBoolean(reasoning);
-	if (mode === 'online') {
-		if (extracted === null) return null;
-		return { id: subject.id ?? '', obsolete: extracted };
-	}
-
-	// Local models are weaker at instruction-following; only fall back to a second
-	// grammar-constrained call (re-extracting from the same reasoning, no re-prompting)
-	// when the trailing true/false parse failed.
-	if (extracted !== null) {
-		return { id: subject.id ?? '', obsolete: extracted };
-	}
+	if (extracted !== null || mode === 'online') return verdictOf(extracted);
 
 	const verdict = await callAI({
 		messages: [
@@ -230,46 +112,42 @@ Reason step by step, explicitly stating A and B. Finish your response with one b
 	});
 
 	if (verdict === null) return null;
-
-	return {
-		id: subject.id ?? '',
-		obsolete: safeTextParse(verdict).toLowerCase() === 'true'
-	};
+	return verdictOf(safeTextParse(verdict).toLowerCase() === 'true');
 }
 
-function sanitizeRankedIndices(ranked: unknown, count: number): number[] | null {
-	if (!Array.isArray(ranked)) return null;
-	if (ranked.length !== count) return null;
-	const seen = new Set<number>();
-	for (const item of ranked) {
-		const n = typeof item === 'number' ? item : parseInt(String(item), 10);
-		if (!Number.isInteger(n) || n < 1 || n > count || seen.has(n)) return null;
-		seen.add(n);
+type RankedAmendment = {
+	id: string;
+	documentNumber?: string | null;
+	newContent?: string | null;
+	targetOperativeIndex?: number | null;
+};
+
+// 1-based numeric keys in the prompt so the model never has to reproduce 30-char nanoids
+function amendmentLine(amendment: RankedAmendment, i: number) {
+	const clause = amendment.targetOperativeIndex != null ? amendment.targetOperativeIndex + 1 : '?';
+	return `${i + 1}. (${amendment.documentNumber ?? 'amendment'} – clause ${clause}): "${toText(amendment.newContent)}"`;
+}
+
+/** The ids in the order a model's `{"ranked":[…]}` answer puts them, null if it is unusable */
+function rankingFrom({ raw, ids }: { raw: string; ids: string[] }): string[] | null {
+	try {
+		const parsed = robustJsonParse(raw);
+		const ranked =
+			typeof parsed === 'object' && parsed !== null ? Reflect.get(parsed, 'ranked') : undefined;
+		return sanitizeRankedIndices(ranked, ids.length)?.map((n) => ids[n - 1]) ?? null;
+	} catch {
+		return null;
 	}
-	return ranked.map((item) => (typeof item === 'number' ? item : parseInt(String(item), 10)));
 }
 
 export async function rankAmendmentsByImpact(
-	amendments: Array<{
-		id: string;
-		documentNumber?: string | null;
-		newContent?: string | null;
-		targetOperativeIndex?: number | null;
-	}>,
+	amendments: RankedAmendment[],
 	mode: AiMode = defaultMode()
 ): Promise<string[]> {
-	if (amendments.length < 2) return amendments.map((a) => a.id);
+	const ids = amendments.map((a) => a.id);
+	if (amendments.length < 2) return ids;
 
-	const inputIds = amendments.map((a) => a.id);
-	const fallback = inputIds;
-
-	// Use 1-based numeric keys in the prompt so the model never has to reproduce 30-char nanoids.
-	const list = amendments
-		.map(
-			(a, i) =>
-				`${i + 1}. (${a.documentNumber ?? 'amendment'} – clause ${a.targetOperativeIndex != null ? a.targetOperativeIndex + 1 : '?'}): "${toText(a.newContent)}"`
-		)
-		.join('\n');
+	const list = amendments.map(amendmentLine).join('\n');
 
 	const systemPrompt = `You are a Model UN resolution expert.
 
@@ -280,38 +158,7 @@ Low: synonyms, adjectives, punctuation, minor rephrasing.`;
 
 	const userPrompt = `Rank these amendments from most to least impactful:\n${list}\n\nOutput ONLY raw JSON (no markdown, no code fences): {"ranked":[3,2,1,4]} using the amendment numbers above — include every number exactly once.`;
 
-	const resolveIndices = (parsed: unknown): string[] | null => {
-		const ranked =
-			typeof parsed === 'object' && parsed !== null
-				? (parsed as Record<string, unknown>).ranked
-				: undefined;
-		const indices = sanitizeRankedIndices(ranked, amendments.length);
-		if (!indices) return null;
-		return indices.map((n) => inputIds[n - 1]);
-	};
-
-	if (mode === 'online') {
-		const raw = await callAI({
-			messages: [
-				{ role: 'system', content: systemPrompt },
-				{ role: 'user', content: userPrompt }
-			],
-			temperature: 0.1,
-			responseType: 'text',
-			enableThinking: true,
-			mode
-		});
-
-		if (!raw) return fallback;
-
-		try {
-			return resolveIndices(robustJsonParse(raw)) ?? fallback;
-		} catch {
-			return fallback;
-		}
-	}
-
-	// Local: free reasoning call first (enables thinking), then constrained extraction if needed.
+	// A free reasoning call first (enables thinking)
 	const reasoning = await callAI({
 		messages: [
 			{ role: 'system', content: systemPrompt },
@@ -323,14 +170,10 @@ Low: synonyms, adjectives, punctuation, minor rephrasing.`;
 		mode
 	});
 
-	if (!reasoning) return fallback;
-
-	try {
-		const result = resolveIndices(robustJsonParse(reasoning));
-		if (result) return result;
-	} catch {
-		/* fall through to extraction call */
-	}
+	if (!reasoning) return ids;
+	const ranking = rankingFrom({ raw: reasoning, ids });
+	// Remote models get one call; local ones a constrained extraction when that failed
+	if (ranking || mode === 'online') return ranking ?? ids;
 
 	// Second call: schema-constrained extraction from the reasoning output.
 	const extracted = await callAI({
@@ -351,13 +194,8 @@ Low: synonyms, adjectives, punctuation, minor rephrasing.`;
 		mode
 	});
 
-	if (!extracted) return fallback;
-
-	try {
-		return resolveIndices(robustJsonParse(extracted)) ?? fallback;
-	} catch {
-		return fallback;
-	}
+	if (!extracted) return ids;
+	return rankingFrom({ raw: extracted, ids }) ?? ids;
 }
 
 export async function evaluateAndSuggestRewrite(

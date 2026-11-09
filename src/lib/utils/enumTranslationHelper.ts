@@ -1,18 +1,15 @@
-import { type RegionalgroupEnum } from '#lib/api/rumbleClient/client';
+import type { RegionalgroupEnum } from '#lib/api/rumbleClient/client';
 import { m } from '#lib/paraglide/messages';
+
+const REGIONAL_GROUP_NAMES: Record<RegionalgroupEnum, () => string> = {
+	AFRICA: () => m.regionalGroup_africa(),
+	ASIA_PACIFIC: () => m.regionalGroup_asiaPacific(),
+	EASTERN_EUROPE: () => m.regionalGroup_easternEurope(),
+	LATIN_AMERICA_CARIBBEAN: () => m.regionalGroup_latinAmericaCaribbean(),
+	WESTERN_EUROPE_OTHERS: () => m.regionalGroup_westernEuropeOthers()
+};
 
 export function translateRegionalGroupEnum(regionalGroup?: RegionalgroupEnum) {
 	if (!regionalGroup) return '';
-	switch (regionalGroup) {
-		case 'AFRICA':
-			return m.regionalGroup_africa();
-		case 'ASIA_PACIFIC':
-			return m.regionalGroup_asiaPacific();
-		case 'EASTERN_EUROPE':
-			return m.regionalGroup_easternEurope();
-		case 'LATIN_AMERICA_CARIBBEAN':
-			return m.regionalGroup_latinAmericaCaribbean();
-		case 'WESTERN_EUROPE_OTHERS':
-			return m.regionalGroup_westernEuropeOthers();
-	}
+	return REGIONAL_GROUP_NAMES[regionalGroup]?.();
 }

@@ -2,7 +2,7 @@ import { m } from '#lib/paraglide/messages';
 import type { Tour } from '#lib/tours/types';
 
 /** Chair presence page. Anchors live in the presence +page.svelte and NsaAttendanceCard. */
-export const tour: Tour = {
+export const chairPresenceTour: Tour = {
 	id: 'chair.presence',
 	steps: [
 		{

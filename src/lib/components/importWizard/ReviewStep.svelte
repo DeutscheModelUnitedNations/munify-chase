@@ -2,11 +2,10 @@
 	import { m } from '#lib/paraglide/messages';
 	import type { z } from 'zod/v4';
 	import type { importDataSchema } from '#lib/utils/import';
-	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { countDelegations, flaggedMembersOf, reviewValidations } from './reviewValidations';
 	import StepHeader from './StepHeader.svelte';
 
 	type ImportData = z.infer<typeof importDataSchema>;
-	type Validation = { severity: 'error' | 'warning'; step: number; msg: string };
 
 	interface Props {
 		data: ImportData;
@@ -19,13 +18,7 @@
 
 	let { data, isAdmin, loading = false, onApply, onDownload, onJump }: Props = $props();
 
-	const totalDelegations = $derived(
-		new SvelteSet(
-			(data.committeeMembers ?? [])
-				.map((cm) => data.representations.find((r) => r.id === cm.representationId)?.alpha2Code)
-				.filter(Boolean)
-		).size
-	);
+	const totalDelegations = $derived(countDelegations(data));
 
 	const totalNsas = $derived(
 		data.representations.filter((r) => r.representationType === 'NSA').length
@@ -35,72 +28,84 @@
 	);
 	const totalRequestTypes = $derived((data.requestTypes ?? []).length);
 
-	const validations = $derived.by<Validation[]>(() => {
-		const v: Validation[] = [];
-		if (!data.title) v.push({ severity: 'error', step: 1, msg: m.missingConferenceTitle() });
-		if (data.committees.length === 0)
-			v.push({ severity: 'error', step: 2, msg: m.noCommitteesCreated() });
-		const nameCounts = new SvelteMap<string, number>();
-		const abbrCounts = new SvelteMap<string, number>();
-		for (const c of data.committees) {
-			if (!c.abbreviation || !c.name) {
-				v.push({
-					severity: 'error',
-					step: 2,
-					msg: m.committeeIncomplete({ name: c.abbreviation || c.name || m.unbenamedCommittee() })
-				});
-			}
-			if (c.name) nameCounts.set(c.name, (nameCounts.get(c.name) ?? 0) + 1);
-			if (c.abbreviation) abbrCounts.set(c.abbreviation, (abbrCounts.get(c.abbreviation) ?? 0) + 1);
-			const memberCount = (data.committeeMembers ?? []).filter(
-				(cm) => cm.committeeId === c.id
-			).length;
-			if (memberCount === 0) {
-				v.push({
-					severity: 'warning',
-					step: 3,
-					msg: m.committeeNoDelegations({
-						name: c.abbreviation || c.name || m.unbenamedCommittee()
-					})
-				});
-			}
-		}
-		for (const [name, count] of nameCounts) {
-			if (count > 1) {
-				v.push({ severity: 'error', step: 2, msg: m.duplicateCommitteeName({ name }) });
-			}
-		}
-		for (const [abbreviation, count] of abbrCounts) {
-			if (count > 1) {
-				v.push({
-					severity: 'error',
-					step: 2,
-					msg: m.duplicateCommitteeAbbreviation({ abbreviation })
-				});
-			}
-		}
-		return v;
-	});
+	const validations = $derived(reviewValidations(data));
 
 	const hasErrors = $derived(validations.some((x) => x.severity === 'error'));
-
-	function membersOfCommittee(committeeId: string) {
-		const seen = new SvelteSet<string>();
-		return (data.committeeMembers ?? [])
-			.filter((cm) => cm.committeeId === committeeId)
-			.map((cm) => data.representations.find((r) => r.id === cm.representationId))
-			.filter((r): r is NonNullable<typeof r> => !!r && !!r.alpha2Code)
-			.filter((r) => {
-				if (seen.has(r.id)) return false;
-				seen.add(r.id);
-				return true;
-			});
-	}
 
 	function agendaCountOf(committeeId: string) {
 		return data.agendaItems.filter((a) => a.committeeId === committeeId).length;
 	}
 </script>
+
+{#snippet statCard({
+	icon,
+	value,
+	label,
+	iconClass = 'bg-primary/15 text-primary'
+}: {
+	icon: string;
+	value: number;
+	label: string;
+	iconClass?: string;
+})}
+	<div class="card bg-base-100 border-base-content/10 flex-row items-center gap-3 border p-4">
+		<div class="{iconClass} grid h-11 w-11 place-items-center rounded-lg text-xl">
+			<i aria-hidden="true" class="ph-fill ph-{icon}"></i>
+		</div>
+		<div>
+			<div class="font-mono text-2xl leading-none font-bold">{value}</div>
+			<div class="text-base-content/60 text-xs">{label}</div>
+		</div>
+	</div>
+{/snippet}
+
+{#snippet committeeRow(c: ImportData['committees'][number])}
+	{@const members = flaggedMembersOf(data, c.id)}
+	<div
+		class="border-base-content/10 flex items-start gap-4 border-b pb-3 last:border-b-0 last:pb-0"
+	>
+		<div
+			class="bg-primary/15 text-primary grid h-14 w-14 shrink-0 place-items-center rounded-lg font-mono text-sm font-bold"
+		>
+			{c.abbreviation}
+		</div>
+		<div class="flex-1">
+			<div class="text-base font-semibold">{c.name}</div>
+			<div class="text-base-content/60 mb-1.5 text-sm">
+				{m.committeeMembersShort({ members: members.length, agenda: agendaCountOf(c.id) })}
+			</div>
+			{#if members.length > 0}
+				<div class="flex flex-wrap gap-1">
+					{#each members.slice(0, 18) as rep (rep.id)}
+						<div class="h-5 w-7 overflow-hidden rounded-box shadow-sm">
+							<span
+								class="fi fi-{rep.alpha2Code}"
+								style="display:block;width:100%;height:100%;background-size:cover;background-position:center;"
+							></span>
+						</div>
+					{/each}
+					{#if members.length > 18}
+						<div class="text-base-content/60 ml-1 self-center text-xs">
+							+{members.length - 18}
+						</div>
+					{/if}
+				</div>
+			{/if}
+		</div>
+		<button class="btn btn-ghost btn-sm" onclick={() => onJump(2)}>{m.editStep()}</button>
+	</div>
+{/snippet}
+
+{#snippet adminActions()}
+	<button class="btn btn-primary btn-lg" onclick={onApply} disabled={loading || hasErrors}>
+		{#if loading}
+			<span class="loading loading-spinner"></span>
+		{:else}
+			<i aria-hidden="true" class="ph-fill ph-paper-plane-tilt"></i>
+			{m.createConference()}
+		{/if}
+	</button>
+{/snippet}
 
 <div class="flex flex-col gap-7">
 	<StepHeader
@@ -111,53 +116,16 @@
 	/>
 
 	<div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-		<div class="card bg-base-100 border-base-content/10 flex-row items-center gap-3 border p-4">
-			<div class="bg-primary/15 text-primary grid h-11 w-11 place-items-center rounded-lg text-xl">
-				<i aria-hidden="true" class="ph-fill ph-bank"></i>
-			</div>
-			<div>
-				<div class="font-mono text-2xl leading-none font-bold">{data.committees.length}</div>
-				<div class="text-base-content/60 text-xs">{m.statCommittees()}</div>
-			</div>
-		</div>
-		<div class="card bg-base-100 border-base-content/10 flex-row items-center gap-3 border p-4">
-			<div class="bg-primary/15 text-primary grid h-11 w-11 place-items-center rounded-lg text-xl">
-				<i aria-hidden="true" class="ph-fill ph-flag"></i>
-			</div>
-			<div>
-				<div class="font-mono text-2xl leading-none font-bold">{totalDelegations}</div>
-				<div class="text-base-content/60 text-xs">{m.statDelegations()}</div>
-			</div>
-		</div>
-		<div class="card bg-base-100 border-base-content/10 flex-row items-center gap-3 border p-4">
-			<div class="bg-primary/15 text-primary grid h-11 w-11 place-items-center rounded-lg text-xl">
-				<i aria-hidden="true" class="ph-fill ph-megaphone"></i>
-			</div>
-			<div>
-				<div class="font-mono text-2xl leading-none font-bold">{totalNsas}</div>
-				<div class="text-base-content/60 text-xs">{m.statNsas()}</div>
-			</div>
-		</div>
-		<div class="card bg-base-100 border-base-content/10 flex-row items-center gap-3 border p-4">
-			<div
-				class="bg-accent/25 text-accent-content grid h-11 w-11 place-items-center rounded-lg text-xl"
-			>
-				<i aria-hidden="true" class="ph-fill ph-bank"></i>
-			</div>
-			<div>
-				<div class="font-mono text-2xl leading-none font-bold">{totalUn}</div>
-				<div class="text-base-content/60 text-xs">{m.statUnActors()}</div>
-			</div>
-		</div>
-		<div class="card bg-base-100 border-base-content/10 flex-row items-center gap-3 border p-4">
-			<div class="bg-primary/15 text-primary grid h-11 w-11 place-items-center rounded-lg text-xl">
-				<i aria-hidden="true" class="ph-fill ph-hand"></i>
-			</div>
-			<div>
-				<div class="font-mono text-2xl leading-none font-bold">{totalRequestTypes}</div>
-				<div class="text-base-content/60 text-xs">{m.requestTypes()}</div>
-			</div>
-		</div>
+		{@render statCard({ icon: 'bank', value: data.committees.length, label: m.statCommittees() })}
+		{@render statCard({ icon: 'flag', value: totalDelegations, label: m.statDelegations() })}
+		{@render statCard({ icon: 'megaphone', value: totalNsas, label: m.statNsas() })}
+		{@render statCard({
+			icon: 'bank',
+			value: totalUn,
+			label: m.statUnActors(),
+			iconClass: 'bg-accent/25 text-accent-content'
+		})}
+		{@render statCard({ icon: 'hand', value: totalRequestTypes, label: m.requestTypes() })}
 	</div>
 
 	{#if validations.length > 0}
@@ -191,40 +159,7 @@
 			</h3>
 			<div class="flex flex-col gap-3">
 				{#each data.committees as c (c.id)}
-					{@const members = membersOfCommittee(c.id)}
-					<div
-						class="border-base-content/10 flex items-start gap-4 border-b pb-3 last:border-b-0 last:pb-0"
-					>
-						<div
-							class="bg-primary/15 text-primary grid h-14 w-14 shrink-0 place-items-center rounded-lg font-mono text-sm font-bold"
-						>
-							{c.abbreviation}
-						</div>
-						<div class="flex-1">
-							<div class="text-base font-semibold">{c.name}</div>
-							<div class="text-base-content/60 mb-1.5 text-sm">
-								{m.committeeMembersShort({ members: members.length, agenda: agendaCountOf(c.id) })}
-							</div>
-							{#if members.length > 0}
-								<div class="flex flex-wrap gap-1">
-									{#each members.slice(0, 18) as rep (rep.id)}
-										<div class="h-5 w-7 overflow-hidden rounded-box shadow-sm">
-											<span
-												class="fi fi-{rep.alpha2Code}"
-												style="display:block;width:100%;height:100%;background-size:cover;background-position:center;"
-											></span>
-										</div>
-									{/each}
-									{#if members.length > 18}
-										<div class="text-base-content/60 ml-1 self-center text-xs">
-											+{members.length - 18}
-										</div>
-									{/if}
-								</div>
-							{/if}
-						</div>
-						<button class="btn btn-ghost btn-sm" onclick={() => onJump(2)}>{m.editStep()}</button>
-					</div>
+					{@render committeeRow(c)}
 				{/each}
 			</div>
 		</div>
@@ -242,14 +177,7 @@
 		</div>
 		<div class="flex flex-wrap items-center gap-3">
 			{#if isAdmin}
-				<button class="btn btn-primary btn-lg" onclick={onApply} disabled={loading || hasErrors}>
-					{#if loading}
-						<span class="loading loading-spinner"></span>
-					{:else}
-						<i aria-hidden="true" class="ph-fill ph-paper-plane-tilt"></i>
-						{m.createConference()}
-					{/if}
-				</button>
+				{@render adminActions()}
 			{/if}
 			<button class="btn btn-outline btn-primary btn-lg" onclick={onDownload}>
 				<i aria-hidden="true" class="ph-fill ph-download-simple"></i>

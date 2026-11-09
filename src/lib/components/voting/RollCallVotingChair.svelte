@@ -10,29 +10,25 @@
 	import { type VotingMajority, type VotingOptions } from './votingModal';
 	import ScrollingCountryList from '../rollCall/ScrollingCountryList.svelte';
 	import ResultChart from './ResultChart.svelte';
-	import { sortTranslatedCountries } from '#lib/utils/nationTranslationHelper.svelte';
-	import { calculateMajority } from '#lib/utils/majorities';
+	import CloseCornerButton from './CloseCornerButton.svelte';
+	import CloseVoteButton from './CloseVoteButton.svelte';
+	import { completeVotingSession } from './votingSession';
+	import {
+		committeeMajorityAmount,
+		finishVote,
+		voteSetupArgs,
+		idsByVote,
+		presentDelegations,
+		rollCallIcon,
+		rollCallKeyVote,
+		withVote,
+		type VotingCommittee
+	} from './votingMath';
 	import type { VotingResult } from './votingModal';
 
 	interface Props {
 		active: boolean;
-		committee: {
-			id: string;
-			totalPresent: number;
-			simpleMajority: number;
-			twoThirdsMajority: number;
-			members: Array<{
-				id: string;
-				present: boolean;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					icon?: string | null;
-					type?: string | null;
-				} | null;
-			}>;
-		};
+		committee: VotingCommittee;
 		voteName?: string;
 		majority?: VotingMajority;
 		withAbstentions?: boolean;
@@ -48,72 +44,26 @@
 		oncomplete
 	}: Props = $props();
 
+	const noVotes = (): Record<VotingOptions, string[]> => ({ PRO: [], CON: [], ABSTAIN: [] });
+
 	let currentIndex = $state(0);
 	let stage = $state<'ROLL_CALL' | 'EVALUATION'>('ROLL_CALL');
 	let sessionId = $state<string | null>(null);
-	let rollCallVotingPro = $state<string[]>([]);
-	let rollCallVotingCon = $state<string[]>([]);
-	let rollCallVotingAbstain = $state<string[]>([]);
+	let votes = $state(noVotes());
 
-	let members = $derived(
-		committee?.members
-			.filter((member) => member.present && member.representation?.type === 'DELEGATION')
-			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
+	let members = $derived(presentDelegations(committee?.members ?? []));
+
+	let majorityAmount = $derived(
+		committeeMajorityAmount({ majority, committee, abstainCount: votes.ABSTAIN.length })
 	);
 
-	let majorityAmount = $derived.by(() => {
-		switch (majority) {
-			case 'SIMPLE':
-				return calculateMajority(
-					(committee?.totalPresent ?? 0) - (rollCallVotingAbstain?.length ?? 0),
-					'simple'
-				);
-			case 'ABSOLUTE':
-				return committee?.simpleMajority ?? 0;
-			case 'TWO_THIRDS':
-				return committee?.twoThirdsMajority ?? 0;
-			default:
-				return 0;
-		}
-	});
-
-	let scrollingListIcons = $derived.by(() => {
-		return members.map((member) => {
-			let icon: string;
-			let color: 'info' | 'success' | 'error';
-			if (rollCallVotingAbstain?.includes(member.id)) {
-				icon = 'circle';
-				color = 'info';
-			} else if (rollCallVotingPro?.includes(member.id)) {
-				icon = 'plus-circle';
-				color = 'success';
-			} else if (rollCallVotingCon?.includes(member.id)) {
-				icon = 'minus-circle';
-				color = 'error';
-			} else {
-				icon = 'question';
-				color = 'info';
-			}
-			return { id: member.id, icon, color };
-		});
-	});
+	let scrollingListIcons = $derived(
+		members.map((member) => ({ id: member.id, ...rollCallIcon({ memberId: member.id, votes }) }))
+	);
 
 	const changeVote = (member: (typeof members)[number], vote: VotingOptions) => {
 		if (!sessionId) return;
-		rollCallVotingPro = rollCallVotingPro.filter((id) => id !== member.id);
-		rollCallVotingCon = rollCallVotingCon.filter((id) => id !== member.id);
-		rollCallVotingAbstain = rollCallVotingAbstain.filter((id) => id !== member.id);
-		switch (vote) {
-			case 'PRO':
-				rollCallVotingPro = [...rollCallVotingPro, member.id];
-				break;
-			case 'CON':
-				rollCallVotingCon = [...rollCallVotingCon, member.id];
-				break;
-			case 'ABSTAIN':
-				rollCallVotingAbstain = [...rollCallVotingAbstain, member.id];
-				break;
-		}
+		votes = withVote({ votes, memberId: member.id, vote });
 		// Select committeeMemberId + vote so they persist in the cache offline (graphcache
 		// only writes an optimistic mutation's selected fields). The presentation popup
 		// categorises votes by these fields, so a bare `{ id }` selection would leave every
@@ -138,6 +88,11 @@
 			.catch(() => {});
 	};
 
+	const moveTo = (index: number) => {
+		currentIndex = index;
+		syncIndex(index);
+	};
+
 	const setVote = (vote: VotingOptions) => {
 		const member = members[currentIndex];
 		if (!member) {
@@ -148,43 +103,82 @@
 		if (currentIndex === members.length - 1) {
 			stage = 'EVALUATION';
 		}
-		const nextIdx = (currentIndex + 1) % members.length;
-		currentIndex = nextIdx;
-		syncIndex(nextIdx);
+		moveTo((currentIndex + 1) % members.length);
 	};
 
-	const exit = (completed: boolean = false) => {
-		const proCount = rollCallVotingPro.length;
-		const outcome: 'ADOPTED' | 'REJECTED' | null = completed
-			? proCount >= majorityAmount
-				? 'ADOPTED'
-				: 'REJECTED'
-			: null;
+	const closeSession = (outcome: 'ADOPTED' | 'REJECTED' | null) => {
+		completeVotingSession({ id: sessionId, outcome });
+		sessionId = null;
+	};
 
-		if (sessionId) {
-			const id = sessionId;
-			sessionId = null;
-			client.mutate.completeVotingSession({ __args: { id, outcome } }).catch(() => {});
-		}
-
-		if (oncomplete) {
-			if (completed) {
-				oncomplete({
-					outcome: outcome!,
-					votesFor: rollCallVotingPro.length,
-					votesAgainst: rollCallVotingCon.length,
-					votesAbstain: rollCallVotingAbstain.length,
-					cancelled: false
-				});
-			} else {
-				oncomplete({ votesFor: 0, votesAgainst: 0, votesAbstain: 0, cancelled: true });
-			}
-		}
-
-		rollCallVotingPro = [];
-		rollCallVotingCon = [];
-		rollCallVotingAbstain = [];
+	const exit = (completed: boolean) => {
+		const { outcome, result } = finishVote({
+			completed,
+			majorityAmount,
+			votesFor: votes.PRO.length,
+			votesAgainst: votes.CON.length,
+			votesAbstain: votes.ABSTAIN.length
+		});
+		closeSession(outcome);
+		oncomplete?.(result);
+		votes = noVotes();
 		active = false;
+	};
+
+	const reset = () => {
+		stage = 'ROLL_CALL';
+		currentIndex = 0;
+		votes = noVotes();
+	};
+
+	const onHotkey = (key: string) => {
+		if (key === 'esc') {
+			exit(stage === 'EVALUATION');
+			return;
+		}
+		const vote = rollCallKeyVote({ key, stage, withAbstentions });
+		if (vote) setVote(vote);
+	};
+
+	const startSession = () => {
+		if (!committee) return;
+		reset();
+
+		// Mint the session id client-side and adopt it synchronously so the chair can
+		// drive (and complete) the vote without waiting for a server response — offline
+		// the mutation promise never resolves, so relying on `.then()` to set
+		// `sessionId` would leave every follow-up mutation a no-op. Passing the id
+		// through also keeps the optimistic entity key identical in the chair and the
+		// presentation popup, so the committee's activeVotingSession FK resolves to one
+		// shared row. Mirrors the roll-call chair.
+		const id = nanoid();
+		sessionId = id;
+		client.mutate
+			.startVotingSession({
+				__args: {
+					id,
+					committeeId: committee.id,
+					mode: 'ROLL_CALL',
+					...voteSetupArgs({ majority, withAbstentions, voteName })
+				},
+				id: true,
+				currentMemberIndex: true,
+				votes: { id: true, committeeMemberId: true, vote: true }
+			})
+			.then((result) => {
+				if (!active) {
+					completeVotingSession({ id: result.id });
+					return;
+				}
+				// Server may resume an existing session under a different id; adopt it.
+				sessionId = result.id;
+				currentIndex = result.currentMemberIndex;
+				votes = idsByVote(result.votes);
+			})
+			.catch(() => {
+				toast.error(m.rollCallError());
+				active = false;
+			});
 	};
 
 	$effect(() => {
@@ -192,102 +186,19 @@
 			(document.activeElement as HTMLElement | null)?.blur();
 			hotkeys('j, k, l, esc', 'rollCallVote', (event, handler) => {
 				event.preventDefault();
-				switch (handler.key) {
-					case 'k':
-						if (stage === 'ROLL_CALL' && withAbstentions) {
-							setVote('ABSTAIN');
-						}
-						break;
-					case 'l':
-						if (stage === 'ROLL_CALL') {
-							setVote('PRO');
-						}
-						break;
-					case 'j':
-						if (stage === 'ROLL_CALL') {
-							setVote('CON');
-						}
-						break;
-					case 'esc':
-						exit(stage === 'EVALUATION');
-						break;
-				}
+				onHotkey(handler.key);
 			});
 			hotkeys.setScope('rollCallVote');
 
-			untrack(() => {
-				if (!committee) return;
-				stage = 'ROLL_CALL';
-				currentIndex = 0;
-				rollCallVotingPro = [];
-				rollCallVotingCon = [];
-				rollCallVotingAbstain = [];
-
-				// Mint the session id client-side and adopt it synchronously so the chair can
-				// drive (and complete) the vote without waiting for a server response — offline
-				// the mutation promise never resolves, so relying on `.then()` to set
-				// `sessionId` would leave every follow-up mutation a no-op. Passing the id
-				// through also keeps the optimistic entity key identical in the chair and the
-				// presentation popup, so the committee's activeVotingSession FK resolves to one
-				// shared row. Mirrors the roll-call chair.
-				const id = nanoid();
-				sessionId = id;
-				client.mutate
-					.startVotingSession({
-						__args: {
-							id,
-							committeeId: committee.id,
-							mode: 'ROLL_CALL',
-							majority: majority ?? 'SIMPLE',
-							majorityAmount: 0,
-							withAbstentions: withAbstentions ?? false,
-							voteName: voteName ?? null
-						},
-						id: true,
-						currentMemberIndex: true,
-						votes: { id: true, committeeMemberId: true, vote: true }
-					})
-					.then((result) => {
-						if (!active) {
-							client.mutate
-								.completeVotingSession({ __args: { id: result.id, outcome: null } })
-								.catch(() => {});
-							return;
-						}
-						// Server may resume an existing session under a different id; adopt it.
-						sessionId = result.id;
-						currentIndex = result.currentMemberIndex;
-						rollCallVotingPro = result.votes
-							.filter((v: { vote: string }) => v.vote === 'PRO')
-							.map((v: { committeeMemberId: string }) => v.committeeMemberId);
-						rollCallVotingCon = result.votes
-							.filter((v: { vote: string }) => v.vote === 'CON')
-							.map((v: { committeeMemberId: string }) => v.committeeMemberId);
-						rollCallVotingAbstain = result.votes
-							.filter((v: { vote: string }) => v.vote === 'ABSTAIN')
-							.map((v: { committeeMemberId: string }) => v.committeeMemberId);
-					})
-					.catch(() => {
-						toast.error(m.rollCallError());
-						active = false;
-					});
-			});
+			untrack(startSession);
 
 			return () => {
 				hotkeys.deleteScope('rollCallVote');
 			};
 		} else {
 			untrack(() => {
-				if (sessionId) {
-					const id = sessionId;
-					sessionId = null;
-					client.mutate.completeVotingSession({ __args: { id, outcome: null } }).catch(() => {});
-				}
-				rollCallVotingPro = [];
-				rollCallVotingCon = [];
-				rollCallVotingAbstain = [];
-				currentIndex = 0;
-				stage = 'ROLL_CALL';
+				closeSession(null);
+				reset();
 			});
 		}
 	});
@@ -298,9 +209,9 @@
 
 	<ResultChart
 		{majorityAmount}
-		votesAbstain={rollCallVotingAbstain?.length}
-		votesCon={rollCallVotingCon?.length}
-		votesPro={rollCallVotingPro?.length}
+		votesAbstain={votes.ABSTAIN.length}
+		votesCon={votes.CON.length}
+		votesPro={votes.PRO.length}
 		total={members.length}
 		showNumbers
 	/>
@@ -315,11 +226,7 @@
 				<button
 					class="btn btn-outline btn-lg join-item"
 					aria-label="Move up"
-					onclick={() => {
-						const newIdx = (currentIndex - 1 + members.length) % members.length;
-						currentIndex = newIdx;
-						syncIndex(newIdx);
-					}}
+					onclick={() => moveTo((currentIndex - 1 + members.length) % members.length)}
 				>
 					<i aria-hidden="true" class="ph-fill ph-caret-up"></i>
 				</button>
@@ -360,29 +267,8 @@
 			</div>
 		</div>
 	{:else}
-		<div class="modal-action">
-			<button
-				class="btn btn-lg flex gap-2"
-				onclick={() => {
-					exit(true);
-				}}
-			>
-				<i aria-hidden="true" class="ph-fill ph-x"></i>
-				{m.close()}
-				<Kbd hotkey="esc" />
-			</button>
-		</div>
+		<CloseVoteButton onclick={() => exit(true)} />
 	{/if}
 
-	<div class="absolute top-3 right-3">
-		<button
-			aria-label="Close modal"
-			class="btn btn-ghost btn-circle btn-sm"
-			onclick={() => {
-				exit(stage === 'EVALUATION');
-			}}
-		>
-			<i aria-hidden="true" class="ph-duotone ph-x"></i>
-		</button>
-	</div>
+	<CloseCornerButton onclick={() => exit(stage === 'EVALUATION')} />
 </Modal>

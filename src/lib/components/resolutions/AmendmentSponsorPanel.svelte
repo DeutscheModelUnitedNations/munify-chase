@@ -2,12 +2,11 @@
 	import { m } from '#lib/paraglide/messages';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { nanoid } from '#lib/helpers/nanoid';
-	import toast from 'svelte-french-toast';
 	import { isTeam, type ResolutionViewer } from './paperContext';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
-	import Flag from '#lib/components/Flag.svelte';
-	import SponsorPicker from './SponsorPicker.svelte';
-	import Fuse, { type IFuseOptions } from 'fuse.js';
+	import { fetchCommitteeMembers, representationSelection } from './committeeMembers';
+	import { createSponsorActions } from './sponsorActions.svelte';
+	import { canSponsorAmendment, ownSponsorship } from './sponsors';
+	import SponsorEditor from './SponsorEditor.svelte';
 
 	interface Props {
 		amendmentId: string;
@@ -27,162 +26,52 @@
 		amendmentStatus
 	}: Props = $props();
 
-	const sponsors = await client.liveQuery.amendmentSponsors({
-		__args: { where: { amendment: { id: { eq: amendmentId } } } },
+	const sponsorSelection = {
 		id: true,
 		amendmentId: true,
-		committeeMember: {
-			id: true,
-			representation: { name: true, alpha2Code: true, alpha3Code: true, icon: true, type: true }
-		}
+		committeeMember: { id: true, representation: representationSelection }
+	} as const;
+
+	const sponsors = await client.liveQuery.amendmentSponsors({
+		__args: { where: { amendment: { id: { eq: amendmentId } } } },
+		...sponsorSelection
 	});
 
 	const team = $derived(isTeam(viewer));
 	const myMemberId = $derived(viewer.committeeMemberId ?? null);
-	const isProposer = $derived(myMemberId != null && myMemberId === proposerMemberId);
-	const iSponsor = $derived((sponsors ?? []).find((s) => s.committeeMember?.id === myMemberId));
-	const sponsoringActive = $derived(
-		amendmentStatus !== 'REJECTED' && amendmentStatus !== 'WITHDRAWN'
-	);
-
-	const sortedSponsors = $derived(
-		[...(sponsors ?? [])].sort((a, b) => {
-			const nameA =
-				getTranslatedCountryNameFromAlpha3Code(a.committeeMember?.representation?.alpha3Code) ??
-				a.committeeMember?.representation?.name ??
-				'';
-			const nameB =
-				getTranslatedCountryNameFromAlpha3Code(b.committeeMember?.representation?.alpha3Code) ??
-				b.committeeMember?.representation?.name ??
-				'';
-			return nameA.localeCompare(nameB);
+	const canSelfSponsor = $derived(
+		canSponsorAmendment({
+			team,
+			myMemberId,
+			proposerMemberId,
+			sponsoring: !!ownSponsorship(sponsors, myMemberId),
+			sponsoringOpen,
+			amendmentStatus
 		})
 	);
 
-	const members = await client.liveQuery.committeeMembers({
-		__args: { where: { committee: { id: { eq: committeeId } } } },
-		id: true,
-		representation: { name: true, alpha2Code: true, alpha3Code: true, icon: true, type: true }
-	});
+	const members = await fetchCommitteeMembers(committeeId);
 
-	const getName = (member: (typeof members)[number] | undefined) =>
-		getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code) ??
-		member?.representation?.name ??
-		'';
-
-	type FuseItem = (typeof members)[number] & { label: string };
-
-	const fuseOptions: IFuseOptions<FuseItem> = {
-		keys: ['label'],
-		ignoreFieldNorm: true,
-		ignoreDiacritics: true,
-		shouldSort: true
-	};
-
-	const fuse = new Fuse<FuseItem>([], fuseOptions);
-
-	const filterMembers = (allMembers: (typeof members)[number][], search: string) => {
-		const notYetSponsor = (mem: (typeof members)[number]) =>
-			!(sponsors ?? []).some((s) => s.committeeMember?.id === mem.id);
-		if (search.length > 0) {
-			fuse.setCollection(
-				allMembers.filter(notYetSponsor).map((x) => ({ ...x, label: getName(x) }))
-			);
-			return fuse.search(search).map((r) => r.item);
-		}
-		return allMembers.filter(notYetSponsor).sort((a, b) => getName(a).localeCompare(getName(b)));
-	};
-
-	let pickValue = $state('');
-	let busy = $state(false);
-
-	async function add(committeeMemberId?: string) {
-		busy = true;
-		try {
-			await client.mutate.addAmendmentSponsor({
+	const actions = createSponsorActions({
+		addSponsor: (committeeMemberId) =>
+			client.mutate.addAmendmentSponsor({
 				__args: { id: nanoid(), amendmentId, committeeMemberId },
-				id: true,
-				amendmentId: true,
-				committeeMember: {
-					id: true,
-					representation: {
-						name: true,
-						alpha2Code: true,
-						alpha3Code: true,
-						icon: true,
-						type: true
-					}
-				}
-			});
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed');
-		} finally {
-			busy = false;
-		}
-	}
-
-	async function addByName() {
-		const member = members.find((mem) => getName(mem) === pickValue);
-		if (!member) return;
-		await add(member.id);
-		pickValue = '';
-	}
-
-	async function remove(id: string) {
-		try {
-			await client.mutate.removeAmendmentSponsor({ __args: { id } });
-		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed');
-		}
-	}
+				...sponsorSelection
+			}),
+		removeSponsor: (id) => client.mutate.removeAmendmentSponsor({ __args: { id } })
+	});
 </script>
 
 <div class="border-base-200 mt-2 flex flex-col gap-2 border-t pt-2">
-	{#if !sponsors?.length}
-		<p class="text-base-content/50 text-xs">{m.noSponsorsYet()}</p>
-	{:else}
-		<ul class="space-y-1.5">
-			{#each sortedSponsors as s (s.id)}
-				<li class="flex items-center justify-between gap-2 text-xs">
-					<div class="flex items-center gap-1.5">
-						<Flag representation={s.committeeMember?.representation} size="xs" />
-						<span>
-							{getTranslatedCountryNameFromAlpha3Code(
-								s.committeeMember?.representation?.alpha3Code
-							) ??
-								s.committeeMember?.representation?.name ??
-								'?'}
-						</span>
-					</div>
-					{#if team || s.committeeMember?.id === myMemberId}
-						<button
-							class="btn btn-ghost btn-xs"
-							aria-label={m.delete()}
-							onclick={() => remove(s.id)}
-						>
-							<i aria-hidden="true" class="ph-fill ph-x text-error"></i>
-						</button>
-					{/if}
-				</li>
-			{/each}
-		</ul>
-	{/if}
-
-	{#if !team && !isProposer && myMemberId && sponsoringOpen && sponsoringActive && !iSponsor}
-		<button class="btn btn-outline btn-xs self-start" disabled={busy} onclick={() => add()}>
-			<i aria-hidden="true" class="ph-fill ph-handshake"></i>
-			{m.sponsorAmendment()}
-		</button>
-	{/if}
-
-	{#if team}
-		<SponsorPicker
-			bind:value={pickValue}
-			{members}
-			filter={filterMembers}
-			{getName}
-			{busy}
-			add={addByName}
-		/>
-	{/if}
+	<SponsorEditor
+		{sponsors}
+		{members}
+		{team}
+		{myMemberId}
+		{actions}
+		{canSelfSponsor}
+		selfSponsorLabel={m.sponsorAmendment()}
+		selfSponsorClass="btn btn-outline btn-xs self-start"
+		compact
+	/>
 </div>

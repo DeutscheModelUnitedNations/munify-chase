@@ -20,6 +20,12 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { emailValidation } from '#api/services/emailValidation';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
+import {
+	findUpdatableConference,
+	type HandlerContext,
+	type Transaction
+} from './helpers/scopedLookups';
+import { assertNotDemotingSelf, conferenceUserUpdate } from './helpers/conferenceUserRules';
 
 // The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
 abilityBuilder.conferenceUser.allow('read').when(
@@ -171,6 +177,61 @@ const ConferenceUserRef = object({
 const pubsub = rumblePubsub({ table: 'conferenceUser' });
 query({ table: 'conferenceUser' });
 
+async function readableConferenceUser(ctx: HandlerContext, id: string) {
+	return (await ctx.abilities.conferenceUser.filter('read')).merge({ where: { id } }).query.single;
+}
+
+/**
+ * A conference keeps at least one admin. Checked inside the transaction of the change, so two
+ * concurrent changes cannot both pass the count.
+ */
+async function assertOtherAdminRemains({
+	tx,
+	conferenceUser,
+	message
+}: {
+	tx: Transaction;
+	conferenceUser: { id: string; conferenceId: string };
+	message: string;
+}) {
+	const otherAdmin = await tx.query.conferenceUser.findFirst({
+		where: {
+			conferenceId: conferenceUser.conferenceId,
+			conferenceUserType: 'ADMIN',
+			id: { ne: conferenceUser.id }
+		}
+	});
+	if (!otherAdmin) throw new GraphQLError(message);
+}
+
+/** The seats a conference user is given must be of their own conference. */
+async function assertSeatsInConference({
+	conferenceId,
+	committeeMemberId,
+	conferenceMemberId
+}: {
+	conferenceId: string;
+	committeeMemberId?: string | null;
+	conferenceMemberId?: string | null;
+}) {
+	const committeeMember = committeeMemberId
+		? await db.query.committeeMember.findFirst({
+				where: { id: committeeMemberId },
+				with: { committee: true }
+			})
+		: undefined;
+	if (committeeMemberId && committeeMember?.committee.conferenceId !== conferenceId) {
+		throw new GraphQLError('Committee member does not belong to this conference');
+	}
+
+	const conferenceMember = conferenceMemberId
+		? await db.query.conferenceMember.findFirst({ where: { id: conferenceMemberId } })
+		: undefined;
+	if (conferenceMemberId && conferenceMember?.conferenceId !== conferenceId) {
+		throw new GraphQLError('Conference member does not belong to this conference');
+	}
+}
+
 schemaBuilder.mutationFields((t) => ({
 	createConferenceUser: t.drizzleField({
 		type: ConferenceUserRef,
@@ -185,13 +246,7 @@ schemaBuilder.mutationFields((t) => ({
 			})
 		},
 		resolve: async (query, _root, args, ctx) => {
-			await db.query.conference
-				.findFirst(
-					(await ctx.abilities.conference.filter('update')).merge({
-						where: { id: args.conferenceId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
+			await findUpdatableConference(ctx, args.conferenceId);
 
 			// Check if user already exists in this conference
 			const existing = await db.query.conferenceUser.findFirst({
@@ -220,13 +275,7 @@ schemaBuilder.mutationFields((t) => ({
 			pubsub.updated(result.id);
 
 			return db.query.conferenceUser
-				.findFirst(
-					query(
-						(await ctx.abilities.conferenceUser.filter('read')).merge({
-							where: { id: result.id }
-						}).query.single
-					)
-				)
+				.findFirst(query(await readableConferenceUser(ctx, result.id)))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -252,24 +301,13 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			await db.transaction(async (tx) => {
-				// Prevent deleting the last ADMIN — re-checked inside the transaction to
-				// avoid a race where two concurrent deletes both pass the count check.
 				if (conferenceUser.conferenceUserType === 'ADMIN') {
-					const remainingAdmins = await tx.query.conferenceUser.findMany({
-						where: {
-							conferenceId: conferenceUser.conferenceId,
-							conferenceUserType: 'ADMIN',
-							id: { ne: args.id }
-						}
+					await assertOtherAdminRemains({
+						tx,
+						conferenceUser,
+						message: 'Cannot delete the last ADMIN. Promote another user to ADMIN first.'
 					});
-
-					if (remainingAdmins.length === 0) {
-						throw new GraphQLError(
-							'Cannot delete the last ADMIN. Promote another user to ADMIN first.'
-						);
-					}
 				}
-
 				await tx.delete(schema.conferenceUser).where(eq(schema.conferenceUser.id, args.id));
 			});
 
@@ -299,101 +337,33 @@ schemaBuilder.mutationFields((t) => ({
 				)
 				.then(assertFindFirstExists);
 
-			const currentUser = ctx.mustBeLoggedIn();
+			assertNotDemotingSelf({
+				conferenceUser,
+				callerEmail: ctx.mustBeLoggedIn().email,
+				newType: args.conferenceUserType
+			});
+			await assertSeatsInConference({ conferenceId: conferenceUser.conferenceId, ...args });
 
-			// Prevent self-demotion from ADMIN
-			if (
-				conferenceUser.userEmail === currentUser.email &&
-				conferenceUser.conferenceUserType === 'ADMIN' &&
-				args.conferenceUserType !== 'ADMIN'
-			) {
-				throw new GraphQLError('You cannot demote yourself from ADMIN');
-			}
-
-			// Validate committeeMemberId belongs to a committee in the same conference
-			if (args.committeeMemberId) {
-				const committeeMember = await db.query.committeeMember.findFirst({
-					where: { id: args.committeeMemberId },
-					with: { committee: true }
-				});
-				if (
-					!committeeMember ||
-					committeeMember.committee.conferenceId !== conferenceUser.conferenceId
-				) {
-					throw new GraphQLError('Committee member does not belong to this conference');
-				}
-			}
-
-			// Validate conferenceMemberId belongs to the same conference
-			if (args.conferenceMemberId) {
-				const conferenceMember = await db.query.conferenceMember.findFirst({
-					where: { id: args.conferenceMemberId }
-				});
-				if (!conferenceMember || conferenceMember.conferenceId !== conferenceUser.conferenceId) {
-					throw new GraphQLError('Conference member does not belong to this conference');
-				}
-			}
-
-			// Build the update set
-			const updateSet: Record<string, unknown> = {
-				conferenceUserType: args.conferenceUserType
-			};
-
-			// Empty string clears the name (back to email fallback in UI). undefined
-			// means "don't touch".
-			if (args.name !== undefined && args.name !== null) {
-				updateSet.name = args.name.trim() || null;
-			}
-
-			// Auto-clear: when role changes away from DELEGATE, clear committeeMemberId
-			if (args.conferenceUserType !== 'DELEGATE') {
-				updateSet.committeeMemberId = null;
-			} else if (args.committeeMemberId !== undefined) {
-				updateSet.committeeMemberId = args.committeeMemberId;
-			}
-
-			// Auto-clear: when role changes away from NON_STATE_ACTOR, clear conferenceMemberId
-			if (args.conferenceUserType !== 'NON_STATE_ACTOR') {
-				updateSet.conferenceMemberId = null;
-			} else if (args.conferenceMemberId !== undefined) {
-				updateSet.conferenceMemberId = args.conferenceMemberId;
-			}
-
+			const demotesAdmin =
+				conferenceUser.conferenceUserType === 'ADMIN' && args.conferenceUserType !== 'ADMIN';
 			await db.transaction(async (tx) => {
-				// Prevent orphaning the conference — re-checked inside the transaction to
-				// avoid a race where two concurrent demotions both pass the count check.
-				if (conferenceUser.conferenceUserType === 'ADMIN' && args.conferenceUserType !== 'ADMIN') {
-					const remainingAdmins = await tx.query.conferenceUser.findMany({
-						where: {
-							conferenceId: conferenceUser.conferenceId,
-							conferenceUserType: 'ADMIN',
-							id: { ne: args.id }
-						}
+				if (demotesAdmin) {
+					await assertOtherAdminRemains({
+						tx,
+						conferenceUser,
+						message: 'Cannot demote the last ADMIN. Promote another user to ADMIN first.'
 					});
-
-					if (remainingAdmins.length === 0) {
-						throw new GraphQLError(
-							'Cannot demote the last ADMIN. Promote another user to ADMIN first.'
-						);
-					}
 				}
-
 				await tx
 					.update(schema.conferenceUser)
-					.set(updateSet)
+					.set(conferenceUserUpdate(args))
 					.where(eq(schema.conferenceUser.id, args.id));
 			});
 
 			pubsub.updated(args.id);
 
 			return db.query.conferenceUser
-				.findFirst(
-					query(
-						(await ctx.abilities.conferenceUser.filter('read')).merge({
-							where: { id: args.id }
-						}).query.single
-					)
-				)
+				.findFirst(query(await readableConferenceUser(ctx, args.id)))
 				.then(assertFindFirstExists);
 		}
 	})

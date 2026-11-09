@@ -4,16 +4,14 @@
 	import { page } from '$app/state';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { nanoid } from '#lib/helpers/nanoid';
-	import { workingPaperName } from '#lib/helpers/paperName';
 	import { m } from '#lib/paraglide/messages';
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import BasicCard from '#lib/components/BasicCard.svelte';
-	import Flag from '#lib/components/Flag.svelte';
 	import CommitteePhaseToggles from '#lib/components/resolutions/CommitteePhaseToggles.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import ChairPaperCard from './ChairPaperCard.svelte';
+	import { chairPaperList, errorMessage, paperListSelection } from '../../../papers';
 	import {
 		statusLabel,
-		statusBadgeClass,
 		PAPER_STATUS_ORDER,
 		type PaperStatus
 	} from '#lib/components/resolutions/paperContext';
@@ -35,16 +33,17 @@
 
 	let settingActiveId = $state<string | null>(null);
 	async function setActive(paperId: string) {
-		const unset = committee?.activeDraftResolutionId === paperId;
+		// Setting the active paper again unsets it
+		const nextActive = committee?.activeDraftResolutionId === paperId ? undefined : paperId;
 		settingActiveId = paperId;
 		try {
 			await client.mutate.setActiveDraftResolution({
-				__args: { committeeId, paperId: unset ? undefined : paperId },
+				__args: { committeeId, paperId: nextActive },
 				id: true,
 				activeDraftResolutionId: true
 			});
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed');
+			toast.error(errorMessage({ err, fallback: 'Failed' }));
 		} finally {
 			settingActiveId = null;
 		}
@@ -52,23 +51,8 @@
 
 	const papers = await client.liveQuery.resolutionPapers({
 		__args: { where: { committee: { id: { eq: committeeId } } } },
-		id: true,
-		title: true,
-		status: true,
-		documentNumber: true,
+		...paperListSelection,
 		createdAt: true,
-		creatorCommitteeMember: {
-			id: true,
-			representation: {
-				id: true,
-				name: true,
-				type: true,
-				alpha2Code: true,
-				alpha3Code: true,
-				icon: true
-			}
-		},
-		sponsors: { id: true },
 		agendaItem: { id: true, title: true }
 	});
 
@@ -78,14 +62,13 @@
 	];
 	let activeFilter = $state<PaperStatus | 'ALL'>('ALL');
 
-	const filteredPapers = $derived.by(() => {
-		const activeAgendaItemId = committee?.activeAgendaItem?.id;
-		const list = (papers ?? []).filter(
-			(p) => !activeAgendaItemId || p.agendaItem?.id === activeAgendaItemId
-		);
-		const filtered = activeFilter === 'ALL' ? list : list.filter((p) => p.status === activeFilter);
-		return [...filtered].sort((a, b) => (b.sponsors?.length ?? 0) - (a.sponsors?.length ?? 0));
-	});
+	const filteredPapers = $derived(
+		chairPaperList({
+			papers,
+			activeAgendaItemId: committee?.activeAgendaItem?.id,
+			status: activeFilter
+		})
+	);
 
 	function paperHref(paperId: string) {
 		return resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
@@ -96,35 +79,39 @@
 	}
 
 	let creating = $state(false);
+
+	/** A new working paper on the active agenda item, credited to the committee's first seat. */
+	async function createWorkingPaper(agendaItemId: string) {
+		const members = await client.query.committeeMembers({
+			__args: { where: { committee: { id: { eq: committeeId } } } },
+			id: true
+		});
+		const creatorCommitteeMemberId = members?.[0]?.id;
+		if (!creatorCommitteeMemberId) throw new Error(m.noCommitteeMembers());
+		return client.mutate.createResolutionPaper({
+			__args: {
+				id: nanoid(),
+				committeeId,
+				agendaItemId,
+				creatorCommitteeMemberId,
+				status: 'WORKING_PAPER'
+			},
+			id: true
+		});
+	}
+
 	async function createPaper() {
-		if (!committee?.activeAgendaItem) {
+		const agendaItemId = committee?.activeAgendaItem?.id;
+		if (!agendaItemId) {
 			toast.error(m.selectActiveAgendaItemFirst());
 			return;
 		}
 		creating = true;
 		try {
-			const members = await client.query.committeeMembers({
-				__args: { where: { committee: { id: { eq: committeeId } } } },
-				id: true
-			});
-			if (!members?.length) {
-				toast.error(m.noCommitteeMembers());
-				return;
-			}
-			const newId = nanoid();
-			const created = await client.mutate.createResolutionPaper({
-				__args: {
-					id: newId,
-					committeeId,
-					agendaItemId: committee.activeAgendaItem.id,
-					creatorCommitteeMemberId: members[0].id,
-					status: 'WORKING_PAPER'
-				},
-				id: true
-			});
+			const created = await createWorkingPaper(agendaItemId);
 			if (created) await goto(paperHref(created.id));
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed to create paper');
+			toast.error(errorMessage({ err, fallback: 'Failed to create paper' }));
 		} finally {
 			creating = false;
 		}
@@ -154,7 +141,7 @@
 			});
 			toast.success(m.promotedToDr());
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed to promote');
+			toast.error(errorMessage({ err, fallback: 'Failed to promote' }));
 		} finally {
 			promotingId = null;
 		}
@@ -214,69 +201,15 @@
 		{:else}
 			<div class="grid gap-3" data-tour="resolutions.list">
 				{#each filteredPapers as paper (paper.id)}
-					{@const isActive = committee?.activeDraftResolutionId === paper.id}
-					{@const isSubmitted = paper.status === 'SUBMITTED'}
-					<div class="card bg-base-100 hover:bg-base-200 transition">
-						<div class="card-body flex-row flex-wrap items-center gap-4 p-4">
-							<a href={paperHref(paper.id)} class="flex min-w-0 flex-1 flex-col">
-								<div class="flex flex-wrap items-center gap-2">
-									<span class="font-semibold">
-										{paper.documentNumber || paper.title || workingPaperName(paper.id)}
-									</span>
-									<span class="badge badge-sm {statusBadgeClass(paper.status as PaperStatus)}">
-										{statusLabel(paper.status as PaperStatus)}
-									</span>
-								</div>
-								<div class="text-base-content/60 flex flex-wrap items-center gap-x-2 text-sm">
-									{#if paper.creatorCommitteeMember?.representation}
-										{@const rep = paper.creatorCommitteeMember.representation}
-										<div class="my-2 flex items-center gap-1">
-											<Flag size="xs" representation={rep} />
-											<span>
-												{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code)}
-											</span>
-										</div>
-										·
-									{/if}
-									{paper.sponsors.length}
-									{paper.sponsors.length === 1 ? m.sponsor() : m.sponsors()}
-								</div>
-							</a>
-							{#if isSubmitted}
-								<button
-									class="btn btn-primary btn-sm"
-									data-tour="resolutions.promote"
-									disabled={promotingId === paper.id}
-									onclick={() => promote(paper.id)}
-								>
-									{#if promotingId === paper.id}<i
-											aria-hidden="true"
-											class="ph-fill ph-spinner-gap animate-spin"
-										></i>{/if}
-									{m.promoteToDraftResolution()}
-								</button>
-							{/if}
-							<button
-								class="btn btn-sm btn-circle"
-								data-tour="resolutions.set-active"
-								class:btn-secondary={isActive}
-								class:btn-ghost={!isActive}
-								disabled={settingActiveId === paper.id}
-								title={isActive ? m.activeDraftResolution() : m.setActiveDr()}
-								aria-label={m.setActiveDr()}
-								onclick={() => setActive(paper.id)}
-							>
-								{#if settingActiveId === paper.id}
-									<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>
-								{:else}
-									<i aria-hidden="true" class="ph-fill ph-star"></i>
-								{/if}
-							</button>
-							<a href={paperHref(paper.id)} aria-label={m.open()}>
-								<i aria-hidden="true" class="ph-fill ph-caret-right opacity-50"></i>
-							</a>
-						</div>
-					</div>
+					<ChairPaperCard
+						{paper}
+						href={paperHref(paper.id)}
+						isActive={committee?.activeDraftResolutionId === paper.id}
+						promoting={promotingId === paper.id}
+						settingActive={settingActiveId === paper.id}
+						onPromote={() => promote(paper.id)}
+						onSetActive={() => setActive(paper.id)}
+					/>
 				{/each}
 			</div>
 		{/if}

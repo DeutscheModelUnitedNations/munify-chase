@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { m } from '#lib/paraglide/messages';
+	import { userInitials } from '#lib/components/initials';
 
 	interface Props {
 		givenName?: string | null;
@@ -10,13 +11,7 @@
 
 	let { givenName = null, familyName = null, email = null }: Props = $props();
 
-	const initials = $derived.by(() => {
-		const first = givenName?.trim()?.[0] ?? '';
-		const last = familyName?.trim()?.[0] ?? '';
-		const both = `${first}${last}`.toUpperCase();
-		if (both) return both;
-		return email?.trim()?.[0]?.toUpperCase() ?? '?';
-	});
+	const initials = $derived(userInitials({ givenName, familyName, email }));
 
 	const fullName = $derived(
 		[givenName, familyName].filter(Boolean).join(' ').trim() || (email ?? '')

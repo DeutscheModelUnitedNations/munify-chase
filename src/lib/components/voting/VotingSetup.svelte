@@ -6,25 +6,10 @@
 	import ShowOfHandsVotingChair from './ShowOfHandsVotingChair.svelte';
 	import DeviceBasedVotingChair from './DeviceBasedVotingChair.svelte';
 	import VotingSetupForm from './VotingSetupForm.svelte';
+	import { resumeVotingConfig, type VoteType, type VotingCommittee } from './votingMath';
 
 	interface Props {
-		committee: {
-			id: string;
-			totalPresent: number;
-			simpleMajority: number;
-			twoThirdsMajority: number;
-			members: Array<{
-				id: string;
-				present: boolean;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					icon?: string | null;
-					type?: string | null;
-				} | null;
-			}>;
-		};
+		committee: VotingCommittee;
 		activeVotingSession?: {
 			id: string;
 			mode: string;
@@ -47,14 +32,14 @@
 	let rollCallModalOpen: boolean = $state(false);
 	let deviceBasedModalOpen: boolean = $state(false);
 
+	const openModal: Record<VoteType, () => void> = {
+		SHOW_OF_HANDS: () => (showOfHandModalOpen = true),
+		ROLL_CALL: () => (rollCallModalOpen = true),
+		DEVICE_BASED: () => (deviceBasedModalOpen = true)
+	};
+
 	function startVote() {
-		if (voteType === 'SHOW_OF_HANDS') {
-			showOfHandModalOpen = true;
-		} else if (voteType === 'ROLL_CALL') {
-			rollCallModalOpen = true;
-		} else {
-			deviceBasedModalOpen = true;
-		}
+		openModal[voteType]();
 	}
 
 	registerCommands(() => [
@@ -78,19 +63,13 @@
 
 	function openResume() {
 		if (!activeVotingSession) return;
-		const mode = activeVotingSession.mode as 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED';
-		voteType = mode;
-		voteName = activeVotingSession.voteName ?? '';
-		majority = (activeVotingSession.majority ?? 'SIMPLE') as VotingMajority;
-		withAbstentions = activeVotingSession.withAbstentions ?? false;
-		deviceVotingWindowSeconds = activeVotingSession.deviceVotingWindowSeconds ?? 20;
-		if (mode === 'SHOW_OF_HANDS') {
-			showOfHandModalOpen = true;
-		} else if (mode === 'ROLL_CALL') {
-			rollCallModalOpen = true;
-		} else {
-			deviceBasedModalOpen = true;
-		}
+		const config = resumeVotingConfig(activeVotingSession);
+		voteType = config.voteType;
+		voteName = config.voteName;
+		majority = config.majority;
+		withAbstentions = config.withAbstentions;
+		deviceVotingWindowSeconds = config.deviceVotingWindowSeconds;
+		startVote();
 	}
 </script>
 

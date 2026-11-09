@@ -11,6 +11,13 @@ import { eq } from 'drizzle-orm';
 import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { isTeamInConference, isParticipantInConference } from '#api/services/authHelper';
+import type { HandlerContext, Transaction } from './helpers/scopedLookups';
+import {
+	derivePhase,
+	remainingSeconds,
+	timerStart,
+	type SpeakersListPhase
+} from './helpers/speakersListTimer';
 
 abilityBuilder.speakersList.allow('read').when((ctx) => {
 	return {
@@ -43,6 +50,86 @@ query({
 	table: 'speakersList'
 });
 
+async function readableList(ctx: HandlerContext, id: string) {
+	return (await ctx.abilities.speakersList.filter('read')).merge({ where: { id } }).query.single;
+}
+
+async function findUpdatableList({
+	tx,
+	ctx,
+	id
+}: {
+	tx: Transaction;
+	ctx: HandlerContext;
+	id: string;
+}) {
+	return tx.query.speakersList
+		.findFirst({
+			...(await ctx.abilities.speakersList.filter('update')).merge({ where: { id } }).query.single,
+			with: { speakers: { orderBy: { position: 'asc' }, limit: 1 } }
+		})
+		.then(assertFindFirstExists);
+}
+
+/**
+ * Pausing a running timer: records the period the first speaker spoke, and computes the time left
+ * from the server clock instead of trusting the client, so every client converges on one value.
+ */
+async function stopRunningTimer({
+	tx,
+	ctx,
+	id,
+	now
+}: {
+	tx: Transaction;
+	ctx: HandlerContext;
+	id: string;
+	now: Date;
+}) {
+	const speakersList = await findUpdatableList({ tx, ctx, id });
+	const currentPhase: SpeakersListPhase | undefined = speakersList.phase ?? undefined;
+	if (!speakersList.startTimestamp) return { currentPhase, computedTimeLeft: undefined };
+
+	const [speaker] = speakersList.speakers;
+	await tx.insert(schema.spokenTimePeriod).values({
+		endTimestamp: now,
+		startTimestamp: speakersList.startTimestamp,
+		speakersListId: speakersList.id,
+		committeeMemberId: speaker.committeeMemberId,
+		conferenceMemberId: speaker.conferenceMemberId,
+		queuedAt: speaker.createdAt,
+		phase: currentPhase ?? 'SPEECH'
+	});
+	return {
+		currentPhase,
+		computedTimeLeft: remainingSeconds({
+			timeLeft: speakersList.timeLeft,
+			startedAt: speakersList.startTimestamp,
+			now
+		})
+	};
+}
+
+/** The current phase, when starting the timer needs it to derive the next one. */
+async function phaseToResume({
+	tx,
+	ctx,
+	args
+}: {
+	tx: Transaction;
+	ctx: HandlerContext;
+	args: { id: string; phase?: SpeakersListPhase; startTimestamp?: Date };
+}) {
+	if (args.phase !== undefined || !args.startTimestamp) return undefined;
+	const record = await tx.query.speakersList
+		.findFirst(
+			(await ctx.abilities.speakersList.filter('update')).merge({ where: { id: args.id } }).query
+				.single
+		)
+		.then(assertFindFirstExists);
+	return record.phase ?? undefined;
+}
+
 schemaBuilder.mutationFields((t) => {
 	return {
 		updateSpeakersList: t.drizzleField({
@@ -68,80 +155,14 @@ schemaBuilder.mutationFields((t) => {
 
 				// Single authoritative server timestamp for the whole mutation.
 				const now = new Date();
-				// Set when pausing a running timer: the remaining time is computed from the server
-				// clock here instead of trusting the client, so every client converges on the same value.
-				let computedTimeLeft: number | undefined;
-
 				const mappedArgs = mapNullFieldsToUndefined(args);
+				const stopTimer = !!args.stopTimer;
+				const starting = !!mappedArgs.startTimestamp;
 
 				await db.transaction(async (tx) => {
-					let currentPhase: string | undefined;
-
-					if (args.stopTimer) {
-						const speakersList = await tx.query.speakersList
-							.findFirst({
-								...(await ctx.abilities.speakersList.filter('update')).merge({
-									where: {
-										id: args.id
-									}
-								}).query.single,
-								with: {
-									speakers: {
-										orderBy: {
-											position: 'asc'
-										},
-										limit: 1
-									}
-								}
-							})
-							.then(assertFindFirstExists);
-
-						currentPhase = speakersList.phase ?? undefined;
-
-						if (speakersList.startTimestamp) {
-							const elapsedSeconds = (now.getTime() - speakersList.startTimestamp.getTime()) / 1000;
-							computedTimeLeft = Math.round(speakersList.timeLeft - elapsedSeconds);
-
-							await tx.insert(schema.spokenTimePeriod).values({
-								endTimestamp: now,
-								startTimestamp: speakersList.startTimestamp,
-								speakersListId: speakersList.id,
-								committeeMemberId: speakersList.speakers[0].committeeMemberId,
-								conferenceMemberId: speakersList.speakers[0].conferenceMemberId,
-								queuedAt: speakersList.speakers[0].createdAt,
-								phase: (currentPhase ?? 'SPEECH') as
-									'SPEECH' | 'SPEECH_DONE' | 'QUESTION' | 'ANSWER' | 'ANSWER_DONE'
-							});
-						}
-					} else if (mappedArgs.phase === undefined && mappedArgs.startTimestamp) {
-						// Need current phase to auto-derive next phase on timer start
-						const record = await tx.query.speakersList
-							.findFirst(
-								(await ctx.abilities.speakersList.filter('update')).merge({
-									where: { id: args.id }
-								}).query.single
-							)
-							.then(assertFindFirstExists);
-						currentPhase = record.phase ?? undefined;
-					}
-
-					// Auto-derive phase when caller didn't provide one explicitly.
-					// Explicit phase from the client always wins (widget direct transitions).
-					let effectivePhase = mappedArgs.phase as
-						'SPEECH' | 'SPEECH_DONE' | 'QUESTION' | 'ANSWER' | 'ANSWER_DONE' | undefined;
-
-					if (effectivePhase === undefined && currentPhase !== undefined) {
-						if (args.stopTimer && mappedArgs.timeLeft !== undefined) {
-							// stopTimer + explicit timeLeft = next-speaker / reset pattern → fresh SPEECH
-							effectivePhase = 'SPEECH';
-						} else if (args.stopTimer) {
-							if (currentPhase === 'SPEECH') effectivePhase = 'SPEECH_DONE';
-							else if (currentPhase === 'ANSWER') effectivePhase = 'ANSWER_DONE';
-						} else if (mappedArgs.startTimestamp) {
-							if (currentPhase === 'SPEECH_DONE') effectivePhase = 'SPEECH';
-							else if (currentPhase === 'ANSWER_DONE') effectivePhase = 'ANSWER';
-						}
-					}
+					const { currentPhase, computedTimeLeft } = stopTimer
+						? await stopRunningTimer({ tx, ctx, id: args.id, now })
+						: { currentPhase: await phaseToResume({ tx, ctx, args: mappedArgs }) };
 
 					await tx
 						.update(schema.speakersList)
@@ -150,9 +171,15 @@ schemaBuilder.mutationFields((t) => {
 							// server-computed remaining time wins when pausing a running timer
 							timeLeft: computedTimeLeft ?? mappedArgs.timeLeft,
 							// server stamps the authoritative start time so all clients share one anchor
-							startTimestamp: args.stopTimer ? null : mappedArgs.startTimestamp ? now : undefined,
+							startTimestamp: timerStart({ stopTimer, starting, now }),
 							isClosed: mappedArgs.isClosed,
-							phase: effectivePhase
+							phase: derivePhase({
+								explicit: mappedArgs.phase,
+								current: currentPhase,
+								stopTimer,
+								timeLeftGiven: mappedArgs.timeLeft !== undefined,
+								starting
+							})
 						})
 						.where(
 							(await ctx.abilities.speakersList.filter('update')).merge({ where: { id: args.id } })
@@ -163,12 +190,7 @@ schemaBuilder.mutationFields((t) => {
 				pubsub.updated(args.id);
 
 				return db.query.speakersList
-					.findFirst(
-						query(
-							(await ctx.abilities.speakersList.filter('read')).merge({ where: { id: args.id } })
-								.query.single
-						)
-					)
+					.findFirst(query(await readableList(ctx, args.id)))
 					.then(assertFindFirstExists);
 			}
 		}),
@@ -197,12 +219,7 @@ schemaBuilder.mutationFields((t) => {
 				pubsub.updated(args.id);
 
 				return db.query.speakersList
-					.findFirst(
-						query(
-							(await ctx.abilities.speakersList.filter('read')).merge({ where: { id: args.id } })
-								.query.single
-						)
-					)
+					.findFirst(query(await readableList(ctx, args.id)))
 					.then(assertFindFirstExists);
 			}
 		})

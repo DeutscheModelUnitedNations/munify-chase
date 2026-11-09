@@ -17,6 +17,20 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import {
+	findOwnConferenceUser,
+	findUpdatableCommittee,
+	type HandlerContext,
+	type Transaction
+} from './helpers/scopedLookups';
+import { setActiveSession } from './helpers/committeeSessions';
+import { givenFields, hasFields } from './helpers/givenFields';
+import {
+	assertActiveSession,
+	assertDeviceWindowOpen,
+	deviceVoterSeat,
+	votingSessionStart
+} from './helpers/votingRules';
 
 abilityBuilder.votingSession.allow('read').when((ctx) => ({
 	where: { committee: isParticipantInConference(ctx) }
@@ -60,6 +74,76 @@ const stageEnum = enum_({ tsName: 'votingStage' });
 const outcomeEnum = enum_({ tsName: 'votingOutcome' });
 const voteChoiceEnum = enum_({ tsName: 'voteChoice' });
 
+async function readableSession(ctx: HandlerContext, id: string) {
+	return (await ctx.abilities.votingSession.filter('read')).merge({ where: { id } }).query.single;
+}
+
+async function readableVote(ctx: HandlerContext, id: string) {
+	return (await ctx.abilities.votingVote.filter('read')).merge({ where: { id } }).query.single;
+}
+
+/** A session still open and the one its committee is running; anything else takes no votes. */
+async function findActiveSession(tx: Transaction, sessionId: string) {
+	const session = await tx.query.votingSession.findFirst({
+		where: { id: sessionId, completedAt: { isNull: true } }
+	});
+	if (!session) throw new GraphQLError('Voting session not found or already completed');
+	const committee = await tx.query.committee.findFirst({ where: { id: session.committeeId } });
+	assertActiveSession({ activeVotingSessionId: committee?.activeVotingSessionId, sessionId });
+	return session;
+}
+
+/** Records a seat's vote, replacing the one it cast before. Returns the vote's id. */
+async function upsertVote({
+	tx,
+	id,
+	sessionId,
+	committeeMemberId,
+	vote
+}: {
+	tx: Transaction;
+	id: string | undefined;
+	sessionId: string;
+	committeeMemberId: string;
+	vote: typeof schema.votingVote.$inferInsert.vote;
+}) {
+	const existing = await tx.query.votingVote.findFirst({
+		where: { votingSessionId: sessionId, committeeMemberId }
+	});
+	if (existing) {
+		await tx.update(schema.votingVote).set({ vote }).where(eq(schema.votingVote.id, existing.id));
+		return existing.id;
+	}
+	const inserted = await tx
+		.insert(schema.votingVote)
+		.values({ id, votingSessionId: sessionId, committeeMemberId, vote })
+		.returning({ id: schema.votingVote.id })
+		.then(assertFirstEntryExists);
+	return inserted.id;
+}
+
+/** The caller's own seat, the only one a device vote may be cast for. */
+async function ownDeviceSeat({
+	tx,
+	email,
+	committeeId
+}: {
+	tx: Transaction;
+	email: string;
+	committeeId: string;
+}) {
+	// Never trust a client-supplied committeeMemberId here: resolve the caller's own seat
+	// server-side so a delegate can only vote for themselves. Mirrors selfAddToSpeakersList's
+	// conferenceUser lookup.
+	const conferenceUser = await tx.query.conferenceUser
+		.findFirst({
+			where: { userEmail: email, conference: { committees: { id: committeeId } } },
+			with: { committeeMember: true }
+		})
+		.then(assertFindFirstExists);
+	return deviceVoterSeat({ conferenceUser, committeeId });
+}
+
 schemaBuilder.mutationFields((t) => ({
 	startVotingSession: t.drizzleField({
 		type: sessionRef,
@@ -75,34 +159,17 @@ schemaBuilder.mutationFields((t) => ({
 			deviceVotingWindowSeconds: t.arg.int()
 		},
 		resolve: async (q, _root, args, ctx) => {
-			const committee = await db.query.committee
-				.findFirst(
-					(await ctx.abilities.committee.filter('update')).merge({
-						where: { id: args.committeeId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
+			const committee = await findUpdatableCommittee(ctx, args.committeeId);
 
-			// Resume existing active session if one is already running, identified by
-			// the committee's `activeVotingSessionId` (the single source of truth).
+			// Resume the session the committee is already running (its `activeVotingSessionId` is
+			// the single source of truth).
 			if (committee.activeVotingSessionId) {
 				return db.query.votingSession
-					.findFirst(
-						q(
-							(await ctx.abilities.votingSession.filter('read')).merge({
-								where: { id: committee.activeVotingSessionId }
-							}).query.single
-						)
-					)
+					.findFirst(q(await readableSession(ctx, committee.activeVotingSessionId)))
 					.then(assertFindFirstExists);
 			}
 
-			const startedBy = await db.query.conferenceUser.findFirst({
-				where: {
-					userEmail: ctx.mustBeLoggedIn().email!,
-					conferenceId: committee.conferenceId
-				}
-			});
+			const startedBy = await findOwnConferenceUser(ctx, committee.conferenceId);
 
 			const result = await db.transaction(async (tx) => {
 				const inserted = await tx
@@ -116,17 +183,15 @@ schemaBuilder.mutationFields((t) => ({
 						majorityAmount: args.majorityAmount,
 						withAbstentions: args.withAbstentions,
 						voteName: args.voteName ?? null,
-						currentStage: args.currentStage ?? (args.mode === 'SHOW_OF_HANDS' ? 'PRO' : null),
-						deviceVotingWindowSeconds:
-							args.mode === 'DEVICE_BASED' ? (args.deviceVotingWindowSeconds ?? 20) : null,
-						deviceVotingStartedAt: args.mode === 'DEVICE_BASED' ? new Date() : null
+						...votingSessionStart({ ...args, now: new Date() })
 					})
 					.returning()
 					.then(assertFirstEntryExists);
-				await tx
-					.update(schema.committee)
-					.set({ activeVotingSessionId: inserted.id })
-					.where(eq(schema.committee.id, args.committeeId));
+				await setActiveSession({
+					tx,
+					committeeId: args.committeeId,
+					active: { activeVotingSessionId: inserted.id }
+				});
 				return inserted;
 			});
 
@@ -135,12 +200,7 @@ schemaBuilder.mutationFields((t) => ({
 			committeePubsub.updated(args.committeeId);
 
 			return db.query.votingSession
-				.findFirst(
-					q(
-						(await ctx.abilities.votingSession.filter('read')).merge({ where: { id: result.id } })
-							.query.single
-					)
-				)
+				.findFirst(q(await readableSession(ctx, result.id)))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -156,14 +216,12 @@ schemaBuilder.mutationFields((t) => ({
 			currentMemberIndex: t.arg.int()
 		},
 		resolve: async (q, _root, args, ctx) => {
-			const updateSet: Record<string, unknown> = {};
-			if (args.currentStage != null) updateSet.currentStage = args.currentStage;
-			if (args.votesPro != null) updateSet.votesPro = args.votesPro;
-			if (args.votesCon != null) updateSet.votesCon = args.votesCon;
-			if (args.votesAbstain != null) updateSet.votesAbstain = args.votesAbstain;
-			if (args.currentMemberIndex != null) updateSet.currentMemberIndex = args.currentMemberIndex;
+			const updateSet = givenFields({
+				args,
+				keys: ['currentStage', 'votesPro', 'votesCon', 'votesAbstain', 'currentMemberIndex']
+			});
 
-			if (Object.keys(updateSet).length > 0) {
+			if (hasFields(updateSet)) {
 				await db
 					.update(schema.votingSession)
 					.set(updateSet)
@@ -176,12 +234,7 @@ schemaBuilder.mutationFields((t) => ({
 			sessionPubsub.updated(args.id);
 
 			return db.query.votingSession
-				.findFirst(
-					q(
-						(await ctx.abilities.votingSession.filter('read')).merge({ where: { id: args.id } })
-							.query.single
-					)
-				)
+				.findFirst(q(await readableSession(ctx, args.id)))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -196,60 +249,17 @@ schemaBuilder.mutationFields((t) => ({
 		},
 		resolve: async (q, _root, args, ctx) => {
 			const resultId = await db.transaction(async (tx) => {
-				const session = await tx.query.votingSession.findFirst({
-					where: { id: args.sessionId, completedAt: { isNull: true } }
-				});
-				if (!session) throw new GraphQLError('Voting session not found or already completed');
-				// Defense in depth: only accept votes for the session the committee is
-				// currently actively running. Prevents stale clients from writing votes
-				// against a session that's been superseded.
-				const committee = await tx.query.committee.findFirst({
-					where: { id: session.committeeId }
-				});
-				if (committee?.activeVotingSessionId !== args.sessionId) {
-					throw new GraphQLError('Voting session is not the active session for this committee');
-				}
-
-				// Upsert: update if exists, insert if not
-				const existing = await tx.query.votingVote.findFirst({
-					where: {
-						votingSessionId: args.sessionId,
-						committeeMemberId: args.committeeMemberId
-					}
-				});
-
-				if (existing) {
-					await tx
-						.update(schema.votingVote)
-						.set({ vote: args.vote })
-						.where(eq(schema.votingVote.id, existing.id));
-					return existing.id;
-				}
-
-				const inserted = await tx
-					.insert(schema.votingVote)
-					.values({
-						id: args.id,
-						votingSessionId: args.sessionId,
-						committeeMemberId: args.committeeMemberId,
-						vote: args.vote
-					})
-					.returning({ id: schema.votingVote.id })
-					.then(assertFirstEntryExists);
-
-				return inserted.id;
+				// Defense in depth: only accept votes for the session the committee is currently
+				// running, so stale clients cannot write votes into a superseded session.
+				await findActiveSession(tx, args.sessionId);
+				return upsertVote({ tx, ...args });
 			});
 
 			sessionPubsub.updated(args.sessionId);
 			votePubsub.updated(resultId);
 
 			return db.query.votingVote
-				.findFirst(
-					q(
-						(await ctx.abilities.votingVote.filter('read')).merge({ where: { id: resultId } }).query
-							.single
-					)
-				)
+				.findFirst(q(await readableVote(ctx, resultId)))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -272,110 +282,30 @@ schemaBuilder.mutationFields((t) => ({
 			if (!user.email) {
 				throw new GraphQLError('User email is required');
 			}
-
-			// Grace period so an in-flight tap sent right before expiry isn't
-			// rejected just because of network latency.
-			const DEVICE_VOTE_GRACE_MS = 3000;
+			const email = user.email;
 
 			const resultId = await db.transaction(async (tx) => {
-				const session = await tx.query.votingSession.findFirst({
-					where: { id: args.sessionId, completedAt: { isNull: true } }
+				const session = await findActiveSession(tx, args.sessionId);
+				assertDeviceWindowOpen({ session, now: Date.now() });
+				const committeeMemberId = await ownDeviceSeat({
+					tx,
+					email,
+					committeeId: session.committeeId
 				});
-				if (!session) throw new GraphQLError('Voting session not found or already completed');
-				if (session.mode !== 'DEVICE_BASED') {
-					throw new GraphQLError('Voting session is not a device-based vote');
-				}
-
-				const committee = await tx.query.committee.findFirst({
-					where: { id: session.committeeId }
+				return upsertVote({
+					tx,
+					id: args.id,
+					sessionId: args.sessionId,
+					committeeMemberId,
+					vote: args.vote
 				});
-				if (committee?.activeVotingSessionId !== args.sessionId) {
-					throw new GraphQLError('Voting session is not the active session for this committee');
-				}
-
-				if (!session.deviceVotingStartedAt || !session.deviceVotingWindowSeconds) {
-					throw new GraphQLError('Voting window has not been opened');
-				}
-				const windowEndsAt =
-					session.deviceVotingStartedAt.getTime() +
-					session.deviceVotingWindowSeconds * 1000 +
-					DEVICE_VOTE_GRACE_MS;
-				if (Date.now() > windowEndsAt) {
-					throw new GraphQLError('Voting window has closed');
-				}
-
-				// Never trust a client-supplied committeeMemberId here — resolve the
-				// caller's own seat server-side so a delegate can only vote for
-				// themselves. Mirrors selfAddToSpeakersList's conferenceUser lookup.
-				const conferenceUser = await tx.query.conferenceUser
-					.findFirst({
-						where: {
-							userEmail: user.email!,
-							conference: { committees: { id: session.committeeId } }
-						},
-						with: { committeeMember: true }
-					})
-					.then(assertFindFirstExists);
-
-				if (conferenceUser.conferenceUserType !== 'DELEGATE') {
-					throw new GraphQLError('Only delegates can cast a device-based vote');
-				}
-				if (!conferenceUser.committeeMember) {
-					throw new GraphQLError('Delegate is not assigned to a committee seat');
-				}
-				if (!conferenceUser.committeeMember.present) {
-					// Otherwise an absent delegate's vote lands in the votingVote table and
-					// inflates votesPro/Con/Abstain, while the chair/presentation "who hasn't
-					// voted" list — scoped to present members only, matching the roll-call
-					// chair's own member filter — never lists (or clears) them, so the tally
-					// silently drifts out of sync with what's displayed.
-					throw new GraphQLError('Delegate must be marked as present to vote');
-				}
-				if (conferenceUser.committeeMember.committeeId !== session.committeeId) {
-					throw new GraphQLError('Delegate is not a member of this committee');
-				}
-				const committeeMemberId = conferenceUser.committeeMember.id;
-
-				// Upsert: update if exists, insert if not
-				const existing = await tx.query.votingVote.findFirst({
-					where: {
-						votingSessionId: args.sessionId,
-						committeeMemberId
-					}
-				});
-
-				if (existing) {
-					await tx
-						.update(schema.votingVote)
-						.set({ vote: args.vote })
-						.where(eq(schema.votingVote.id, existing.id));
-					return existing.id;
-				}
-
-				const inserted = await tx
-					.insert(schema.votingVote)
-					.values({
-						id: args.id,
-						votingSessionId: args.sessionId,
-						committeeMemberId,
-						vote: args.vote
-					})
-					.returning({ id: schema.votingVote.id })
-					.then(assertFirstEntryExists);
-
-				return inserted.id;
 			});
 
 			sessionPubsub.updated(args.sessionId);
 			votePubsub.updated(resultId);
 
 			return db.query.votingVote
-				.findFirst(
-					q(
-						(await ctx.abilities.votingVote.filter('read')).merge({ where: { id: resultId } }).query
-							.single
-					)
-				)
+				.findFirst(q(await readableVote(ctx, resultId)))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -390,25 +320,23 @@ schemaBuilder.mutationFields((t) => ({
 			// Locate the committee so we can clear its `activeVotingSessionId` in
 			// the same transaction. Reading through the session row preserves the
 			// ability scope check.
+			const sessionFilter = (await ctx.abilities.votingSession.filter('update')).merge({
+				where: { id: args.id }
+			});
 			const session = await db.query.votingSession
-				.findFirst(
-					(await ctx.abilities.votingSession.filter('update')).merge({ where: { id: args.id } })
-						.query.single
-				)
+				.findFirst(sessionFilter.query.single)
 				.then(assertFindFirstExists);
 
 			await db.transaction(async (tx) => {
 				await tx
 					.update(schema.votingSession)
 					.set({ completedAt: new Date(), outcome: args.outcome ?? null })
-					.where(
-						(await ctx.abilities.votingSession.filter('update')).merge({ where: { id: args.id } })
-							.sql.where
-					);
-				await tx
-					.update(schema.committee)
-					.set({ activeVotingSessionId: null })
-					.where(eq(schema.committee.id, session.committeeId));
+					.where(sessionFilter.sql.where);
+				await setActiveSession({
+					tx,
+					committeeId: session.committeeId,
+					active: { activeVotingSessionId: null }
+				});
 			});
 
 			sessionPubsub.updated(args.id);

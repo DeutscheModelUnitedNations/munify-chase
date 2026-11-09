@@ -1,6 +1,6 @@
 import { db, schema } from '#api/db/db';
 import { eq } from 'drizzle-orm';
-import { linkConfig } from './linkAuth';
+import { linkConfig, type LinkConfig } from './linkAuth';
 import { instanceLinkPubsub } from './linkPubsub';
 
 /** The tables whose rows the sync writes, marked `managedByDelegator`. */
@@ -26,13 +26,11 @@ export async function syncLinkRow() {
 		const existing = await tx.query.instanceLink.findFirst({
 			columns: { id: true, remoteUrl: true }
 		});
-		if (config && existing?.remoteUrl === config.remoteUrl) return false;
+		if (isCurrent({ config, existing })) return false;
 		// again on every start while unlinked, which finds nothing left after the first
 		const released = await releaseManagedRows(tx);
 		if (!config) return released;
-		if (existing)
-			await tx.delete(schema.instanceLink).where(eq(schema.instanceLink.id, existing.id));
-		await tx.insert(schema.instanceLink).values({ remoteUrl: config.remoteUrl });
+		await replaceLinkRow({ tx, existing, remoteUrl: config.remoteUrl });
 		return true;
 	});
 	if (changed) {
@@ -43,6 +41,32 @@ export async function syncLinkRow() {
 }
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+type LinkRow = { id: string; remoteUrl: string };
+
+/** Whether the stored link row already points where the configuration does. */
+function isCurrent({
+	config,
+	existing
+}: {
+	config: LinkConfig | undefined;
+	existing: LinkRow | undefined;
+}) {
+	return !!config && existing?.remoteUrl === config.remoteUrl;
+}
+
+async function replaceLinkRow({
+	tx,
+	existing,
+	remoteUrl
+}: {
+	tx: Transaction;
+	existing: LinkRow | undefined;
+	remoteUrl: string;
+}) {
+	if (existing) await tx.delete(schema.instanceLink).where(eq(schema.instanceLink.id, existing.id));
+	await tx.insert(schema.instanceLink).values({ remoteUrl });
+}
 
 async function releaseManagedRows(tx: Transaction) {
 	let released = false;

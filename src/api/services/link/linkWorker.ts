@@ -45,11 +45,11 @@ const CONFERENCE = {
 
 let running: { stop: () => void } | undefined;
 
-export function startLinkWorker() {
+function startLinkWorker() {
 	running ??= runWorker();
 }
 
-export function stopLinkWorker() {
+function stopLinkWorker() {
 	running?.stop();
 	running = undefined;
 }
@@ -68,21 +68,11 @@ function runWorker() {
 	};
 
 	(async () => {
-		// a string under `drizzle.mock()`, which only `vite build` uses
-		if (typeof db.$client === 'string') return;
-		const leadership = await db.$client.connect();
-		cleanups.push(() => {
-			leadership
-				.query('select pg_advisory_unlock($1)', [LEADER_LOCK_KEY])
-				.finally(() => leadership.release());
-		});
-		// waits for the instance holding the worker to stop or die
-		await leadership.query('select pg_advisory_lock($1)', [LEADER_LOCK_KEY]);
-		if (stopped) return;
+		if (!(await awaitLeadership(cleanups)) || stopped) return;
 
-		const config = linkConfig();
-		const link = await db.query.instanceLink.findFirst({ columns: { id: true } });
-		if (!config || !link) return stop();
+		const active = await activeLink();
+		if (!active) return stop();
+		const { config, link } = active;
 
 		const conferences = new Map<string, ConferenceRow>();
 		const watches = new Map<string, ConferenceTables>();
@@ -240,6 +230,30 @@ function runWorker() {
 	});
 
 	return { stop };
+}
+
+/**
+ * Waits until this process holds the worker's lock, which the instance holding it now gives up
+ * when it stops or dies. False where there is no database to hold it on.
+ */
+async function awaitLeadership(cleanups: (() => void)[]) {
+	// a string under `drizzle.mock()`, which only `vite build` uses
+	if (typeof db.$client === 'string') return false;
+	const leadership = await db.$client.connect();
+	cleanups.push(() => {
+		leadership
+			.query('select pg_advisory_unlock($1)', [LEADER_LOCK_KEY])
+			.finally(() => leadership.release());
+	});
+	await leadership.query('select pg_advisory_lock($1)', [LEADER_LOCK_KEY]);
+	return true;
+}
+
+/** The configured link and its row, or undefined while there is none. */
+async function activeLink() {
+	const config = linkConfig();
+	const link = await db.query.instanceLink.findFirst({ columns: { id: true } });
+	return config && link ? { config, link } : undefined;
 }
 
 /**

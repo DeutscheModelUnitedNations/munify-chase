@@ -1,5 +1,10 @@
 import { gql } from '@urql/core';
-import type { Cache, OptimisticMutationConfig, UpdatesConfig } from '@urql/exchange-graphcache';
+import type {
+	Cache,
+	FieldArgs,
+	OptimisticMutationConfig,
+	UpdatesConfig
+} from '@urql/exchange-graphcache';
 import { nanoid } from '#lib/helpers/nanoid';
 import { getServerTime } from '#lib/state/serverClock.svelte';
 import { calculateMajority } from '#lib/utils/majorities';
@@ -35,16 +40,105 @@ function addToList(cache: Cache, parent: Entity, fieldName: string, child: Entit
 	}
 }
 
+type Parent = Entity | 'Query' | 'Subscription';
+
+/** Every cached variant of a list field on a parent, with the keys it holds */
+function listVariants(cache: Cache, parent: Parent, fieldName: string) {
+	return cache
+		.inspectFields(parent)
+		.filter((f) => f.fieldName === fieldName)
+		.flatMap((f) => {
+			const keys = cache.resolve(parent, fieldName, f.arguments);
+			return Array.isArray(keys) ? [{ args: f.arguments, keys: keys as string[] }] : [];
+		});
+}
+
 /** Remove an entity reference from every variant of a list field on a parent. */
-function removeFromList(cache: Cache, parent: Entity, fieldName: string, childKey: string) {
-	const fields = cache.inspectFields(parent).filter((f) => f.fieldName === fieldName);
-	for (const f of fields) {
-		const current = cache.resolve(parent, fieldName, f.arguments) as string[] | null | undefined;
-		if (!Array.isArray(current)) continue;
-		const next = current.filter((k) => k !== childKey);
-		if (next.length === current.length) continue;
-		cache.link(parent, fieldName, f.arguments, next);
+function removeFromList(cache: Cache, parent: Parent, fieldName: string, childKey: string) {
+	for (const { args, keys } of listVariants(cache, parent, fieldName)) {
+		const next = keys.filter((k) => k !== childKey);
+		if (next.length !== keys.length) cache.link(parent, fieldName, args, next);
 	}
+}
+
+/** A member's representation, as speaker entries and sponsors show it */
+const REPRESENTATION_FIELDS = `
+	representation {
+		id
+		name
+		alpha2Code
+		alpha3Code
+		icon
+		type
+	}
+`;
+
+type WhereArgs = { where?: { paper?: { id?: string }; amendment?: { id?: string } } } | null;
+const wherePaperId = (args: FieldArgs) => (args as WhereArgs)?.where?.paper?.id;
+const whereAmendmentId = (args: FieldArgs) => (args as WhereArgs)?.where?.amendment?.id;
+
+/**
+ * Appends `key` to every root list `fieldName` whose arguments `matches` accepts, so lists a
+ * page queries directly (liveQuery reads both Query and Subscription) update immediately.
+ */
+function appendToRootLists({
+	cache,
+	rootTypes = ['Query'],
+	fieldName,
+	matches,
+	key
+}: {
+	cache: Cache;
+	rootTypes?: ('Query' | 'Subscription')[];
+	fieldName: string;
+	matches: (args: FieldArgs) => boolean;
+	key: string;
+}) {
+	for (const root of rootTypes) {
+		for (const { args, keys } of listVariants(cache, root, fieldName)) {
+			if (matches(args) && !keys.includes(key)) cache.link(root, fieldName, args, [...keys, key]);
+		}
+	}
+}
+
+/** Keys of every `typename` entity a root Query field links to directly */
+function rootEntityKeys(cache: Cache, typename: string): Set<string> {
+	const prefix = `${typename}:`;
+	const keys = new Set<string>();
+	for (const f of cache.inspectFields('Query')) {
+		const value = cache.resolve('Query', f.fieldName, f.arguments);
+		for (const v of Array.isArray(value) ? value : [value]) {
+			if (typeof v === 'string' && v.startsWith(prefix)) keys.add(v);
+		}
+	}
+	return keys;
+}
+
+/** Ids of the `typename` entities among `keys`, other keys skipped */
+function idsOfType(keys: Iterable<unknown>, typename: string): string[] {
+	const prefix = `${typename}:`;
+	return [...keys].flatMap((k) =>
+		typeof k === 'string' && k.startsWith(prefix) ? [k.slice(prefix.length)] : []
+	);
+}
+
+/** The given fields of a partial update's args, left-out and null ones skipped */
+function nonNullFields(args: Record<string, unknown>, fields: readonly string[]) {
+	return Object.fromEntries(
+		fields.filter((field) => args[field] != null).map((field) => [field, args[field]])
+	);
+}
+
+/** `{ __typename, id }`, or null without an id */
+function refOrNull(__typename: string, id: unknown) {
+	return id ? { __typename, id: id as string } : null;
+}
+
+/** The given fields of a partial update's args, left-out ones skipped */
+function definedFields(args: Record<string, unknown>, fields: readonly string[]) {
+	return Object.fromEntries(
+		fields.filter((field) => args[field] !== undefined).map((field) => [field, args[field]])
+	);
 }
 
 /** Every cached variant of the args-filtered Query.requests, see the request updates */
@@ -265,15 +359,207 @@ function findOwnSpeakerEntry(cache: Cache, speakersListId: string): SpeakerEntry
 	const conferenceId = list.agendaItem.committee.conferenceId ?? null;
 	const self = findSelfConferenceUser(cache, conferenceId);
 	if (!self) return null;
-	const speakers = list.speakers ?? [];
-	return (
-		speakers.find(
-			(s) =>
-				(self.committeeMemberId && s.committeeMemberId === self.committeeMemberId) ||
-				(self.conferenceMemberId && s.conferenceMemberId === self.conferenceMemberId)
-		) ?? null
+	return (list.speakers ?? []).find((s) => isEntryOf(s, self)) ?? null;
+}
+
+/** A speakers list's entries as graphcache writes them, ids and positions only */
+function speakerListData(list: { id: string; speakers: SpeakerEntry[] }) {
+	return {
+		__typename: 'Speakerslist',
+		id: list.id,
+		speakers: list.speakers.map((s) => ({
+			__typename: 'Speakeronlist',
+			id: s.id,
+			position: s.position
+		}))
+	};
+}
+
+/** The list and position of a speaker entry */
+function readSpeakerSource(cache: Cache, id: string) {
+	return readEntity<{ id: string; speakersListId: string; position: number }>(
+		cache,
+		gql`
+			fragment SpeakerSource on Speakeronlist {
+				id
+				speakersListId
+				position
+			}
+		`,
+		{ __typename: 'Speakeronlist', id }
 	);
 }
+
+/** The entry's list without it, see removeSpeakerFromList */
+function listWithoutSpeaker(cache: Cache, speakerOnListId: string) {
+	const target = readSpeakerSource(cache, speakerOnListId);
+	if (!target?.speakersListId) return null;
+	return removeSpeakerFromList(cache, target.speakersListId, speakerOnListId, target.position);
+}
+
+/** The list without the caller's own entry, see findOwnSpeakerEntry */
+function listWithoutOwnEntry(cache: Cache, speakersListId: string) {
+	const own = findOwnSpeakerEntry(cache, speakersListId);
+	return own && removeSpeakerFromList(cache, speakersListId, own.id, own.position);
+}
+
+type MemberIds = { committeeMemberId?: string | null; conferenceMemberId?: string | null };
+
+/** Whether a speaker entry is for the member `ids` names */
+function isEntryOf(entry: SpeakerEntry, ids: MemberIds) {
+	const byCommitteeMember =
+		!!ids.committeeMemberId && entry.committeeMemberId === ids.committeeMemberId;
+	const byConferenceMember =
+		!!ids.conferenceMemberId && entry.conferenceMemberId === ids.conferenceMemberId;
+	return byCommitteeMember || byConferenceMember;
+}
+
+/** The member ids the caller adds themselves to `list` with, null where they may not */
+function selfSpeakerIds(
+	cache: Cache,
+	list: SpeakersListSnapshot | null
+): { committeeMemberId: string | null; conferenceMemberId: string | null } | null {
+	const committee = list?.agendaItem?.committee;
+	if (!committee?.allowDelegationsToAddThemselvesToSpeakersList || list?.isClosed) return null;
+	const self = findSelfConferenceUser(cache, committee.conferenceId ?? null);
+	if (self?.conferenceUserType === 'DELEGATE' && self.committeeMemberId) {
+		return { committeeMemberId: self.committeeMemberId, conferenceMemberId: null };
+	}
+	if (self?.conferenceUserType === 'NON_STATE_ACTOR' && self.conferenceMemberId) {
+		return { committeeMemberId: null, conferenceMemberId: self.conferenceMemberId };
+	}
+	return null;
+}
+
+/**
+ * Inserts a new entry like the server does: every entry at or after an explicit
+ * `position` shifts up by one, otherwise it is appended. Densifies, so the cache stays a
+ * dense 0..n-1 sequence even when a prior offline edit left it drifted, and answers where
+ * the entry landed.
+ */
+function insertSpeaker({
+	cache,
+	list,
+	newId,
+	memberIds,
+	position: requested
+}: {
+	cache: Cache;
+	list: { id: string; speakers: SpeakerEntry[] } | null;
+	newId: string;
+	memberIds: MemberIds;
+	position: unknown;
+}): number {
+	const speakers = list?.speakers ?? [];
+	const explicit = typeof requested === 'number' ? requested : null;
+	const position = explicit ?? speakers.length;
+	const shifted =
+		explicit === null
+			? speakers
+			: speakers.map((s) => (s.position >= explicit ? { ...s, position: s.position + 1 } : s));
+	const updatedSpeakers = densifySpeakers([
+		...shifted,
+		{ __typename: 'Speakeronlist', id: newId, position, ...memberIds }
+	]);
+
+	// Write the parent list with the recomputed positions so the cache sees the new
+	// ordering immediately without waiting for `updates` to fire.
+	if (list) {
+		cache.writeFragment(SPEAKER_LIST_WITH_SPEAKERS, {
+			__typename: 'Speakerslist',
+			id: list.id,
+			speakers: updatedSpeakers.map((s) => ({
+				__typename: 'Speakeronlist',
+				id: s.id,
+				position: s.position,
+				committeeMemberId: s.committeeMemberId ?? null,
+				conferenceMemberId: s.conferenceMemberId ?? null
+			}))
+		} as unknown as Record<string, unknown>);
+	}
+	return updatedSpeakers.find((s) => s.id === newId)?.position ?? position;
+}
+
+const COMMITTEE_MEMBER_REPRESENTATION = gql`
+	fragment SpeakerCommitteeMember on Committeemember {
+		id
+		${REPRESENTATION_FIELDS}
+	}
+`;
+
+const CONFERENCE_MEMBER_REPRESENTATION = gql`
+	fragment SpeakerConferenceMember on Conferencemember {
+		id
+		${REPRESENTATION_FIELDS}
+	}
+`;
+
+/**
+ * Writes a new speaker entry's member link explicitly. Callers typically request a minimal
+ * mutation selection (id, position, speakersListId), so the member data a handler returns
+ * would be dropped by graphcache's selection-set-aware write. Online, the speakers list
+ * subscription quickly fills the gap; offline, the entry would render as "N/A" without a flag.
+ */
+function writeSpeakerMemberLink({
+	cache,
+	id,
+	committeeMemberId,
+	conferenceMemberId
+}: { cache: Cache; id: string } & MemberIds) {
+	const committeeMember = committeeMemberId
+		? readEntity(cache, COMMITTEE_MEMBER_REPRESENTATION, {
+				__typename: 'Committeemember',
+				id: committeeMemberId
+			})
+		: null;
+	const conferenceMember = conferenceMemberId
+		? readEntity(cache, CONFERENCE_MEMBER_REPRESENTATION, {
+				__typename: 'Conferencemember',
+				id: conferenceMemberId
+			})
+		: null;
+	cache.writeFragment(
+		gql`
+			fragment AddedSpeakerLink on Speakeronlist {
+				id
+				committeeMember {
+					id
+					${REPRESENTATION_FIELDS}
+				}
+				conferenceMember {
+					id
+					${REPRESENTATION_FIELDS}
+				}
+			}
+		`,
+		{
+			__typename: 'Speakeronlist',
+			id,
+			committeeMember,
+			conferenceMember
+		} as unknown as Record<string, unknown>
+	);
+	return { committeeMember, conferenceMember };
+}
+
+const COMMITTEE_UPDATE_FIELDS = [
+	'abbreviation',
+	'activeAgendaItemId',
+	'allowDelegationsToAddThemselvesToSpeakersList',
+	'allowRequests',
+	'displayRegionalGroups',
+	'name',
+	'presentationLayout',
+	'presentationRootFontSize',
+	'presentationResolutionFontSize',
+	'presentationShowRequests',
+	'showWhiteboard',
+	'stateOfDebate',
+	'status',
+	'statusHeadline',
+	'statusUntil',
+	'whiteboardContent'
+] as const;
 
 // ---------------------------------------------------------------------------
 // Optimistic mutations — mirrors src/api/handlers/*.ts
@@ -369,55 +655,25 @@ export const optimistic: OptimisticMutationConfig = {
 	updateCommittee: (args) => {
 		const result: Record<string, unknown> = {
 			__typename: 'Committee',
-			id: args.id
+			id: args.id,
+			...definedFields(args, COMMITTEE_UPDATE_FIELDS)
 		};
-		for (const field of [
-			'abbreviation',
-			'activeAgendaItemId',
-			'allowDelegationsToAddThemselvesToSpeakersList',
-			'allowRequests',
-			'displayRegionalGroups',
-			'name',
-			'presentationLayout',
-			'presentationRootFontSize',
-			'presentationResolutionFontSize',
-			'presentationShowRequests',
-			'showWhiteboard',
-			'stateOfDebate',
-			'status',
-			'statusHeadline',
-			'statusUntil',
-			'whiteboardContent'
-		]) {
-			if ((args as Record<string, unknown>)[field] !== undefined) {
-				result[field] = (args as Record<string, unknown>)[field];
-			}
-		}
 		if (args.activeAgendaItemId !== undefined) {
-			result.activeAgendaItem = args.activeAgendaItemId
-				? { __typename: 'Agendaitem', id: args.activeAgendaItemId }
-				: null;
+			result.activeAgendaItem = refOrNull('Agendaitem', args.activeAgendaItemId);
 		}
 		return result;
 	},
 	deleteCommittee: () => true,
-	setCommitteeResolutionToggles: (args) => {
-		const result: Record<string, unknown> = {
-			__typename: 'Committee',
-			id: args.committeeId
-		};
-		for (const field of [
+	setCommitteeResolutionToggles: (args) => ({
+		__typename: 'Committee',
+		id: args.committeeId,
+		...definedFields(args, [
 			'amendmentSubmissionOpen',
 			'amendmentSponsoringOpen',
 			'supportReevaluationOpen',
 			'currentOperativeIndex'
-		]) {
-			if ((args as Record<string, unknown>)[field] !== undefined) {
-				result[field] = (args as Record<string, unknown>)[field];
-			}
-		}
-		return result;
-	},
+		])
+	}),
 
 	setActiveAmendment: (args) => {
 		const amendmentId = (args.amendmentId as string | null | undefined) ?? null;
@@ -466,23 +722,20 @@ export const optimistic: OptimisticMutationConfig = {
 	updateConference: (args) => {
 		const result: Record<string, unknown> = {
 			__typename: 'Conference',
-			id: args.id
+			id: args.id,
+			...definedFields(args, [
+				'title',
+				'pressWebsite',
+				'location',
+				'startDate',
+				'endDate',
+				'hasModeratedCaucus'
+			])
 		};
-		for (const field of [
-			'title',
-			'pressWebsite',
-			'location',
-			'startDate',
-			'endDate',
-			'hasModeratedCaucus'
-		]) {
-			if ((args as Record<string, unknown>)[field] !== undefined) {
-				result[field] = (args as Record<string, unknown>)[field];
-			}
-		}
 		if (args.logoSvg !== undefined) {
-			const trimmed = typeof args.logoSvg === 'string' ? args.logoSvg.trim() : null;
-			result.logoSvg = trimmed === '' ? null : args.logoSvg;
+			// An empty logo clears it, like on the server
+			const blank = typeof args.logoSvg === 'string' && args.logoSvg.trim() === '';
+			result.logoSvg = blank ? null : args.logoSvg;
 		}
 		return result;
 	},
@@ -635,13 +888,11 @@ export const optimistic: OptimisticMutationConfig = {
 	updatePresenceEvent: (args) => {
 		const result: Record<string, unknown> = {
 			__typename: 'Presenceevent',
-			id: args.id
+			id: args.id,
+			...nonNullFields(args, ['present', 'committeeId'])
 		};
-		if (args.timestamp !== undefined && args.timestamp !== null)
-			result.timestamp = new Date(args.timestamp as string | Date);
-		if (args.present !== undefined && args.present !== null) result.present = args.present;
-		if (args.committeeId !== undefined && args.committeeId !== null) {
-			result.committeeId = args.committeeId;
+		if (args.timestamp != null) result.timestamp = new Date(args.timestamp as string | Date);
+		if (args.committeeId != null) {
 			result.committee = { __typename: 'Committee', id: args.committeeId as string };
 		}
 		if (args.note !== undefined) result.note = args.note ?? null;
@@ -779,16 +1030,11 @@ export const optimistic: OptimisticMutationConfig = {
 			updatedAt: null
 		};
 	},
-	updateResolutionPaper: (args) => {
-		const result: Record<string, unknown> = {
-			__typename: 'Resolutionpaper',
-			id: args.id
-		};
-		if (args.title != null) result.title = args.title;
-		if (args.status != null) result.status = args.status;
-		if (args.documentNumber != null) result.documentNumber = args.documentNumber;
-		return result;
-	},
+	updateResolutionPaper: (args) => ({
+		__typename: 'Resolutionpaper',
+		id: args.id,
+		...nonNullFields(args, ['title', 'status', 'documentNumber'])
+	}),
 	deleteResolutionPaper: () => true,
 	concludeResolutionPaperVote: (args) => ({
 		__typename: 'Resolutionpaper',
@@ -843,141 +1089,31 @@ export const optimistic: OptimisticMutationConfig = {
 	createAmendment: (args, cache) => {
 		const id = ensureId(args);
 		const sponsorId = nanoid();
-
-		// Chairs supply the proposer via args; delegates resolve from the cached
-		// conferenceUser row (same logic as findSelfConferenceUser).
-		let proposerCommitteeMemberId = (args.proposerCommitteeMemberId as string | undefined) ?? null;
-		if (!proposerCommitteeMemberId) {
-			const paperId = args.paperId as string;
-			const committeeId = cache.resolve(
-				{ __typename: 'Resolutionpaper', id: paperId },
-				'committeeId'
-			) as string | null | undefined;
-			if (committeeId) {
-				const conferenceId = cache.resolve(
-					{ __typename: 'Committee', id: committeeId },
-					'conferenceId'
-				) as string | null | undefined;
-				const self = findSelfConferenceUser(cache, conferenceId ?? null);
-				proposerCommitteeMemberId = self?.committeeMemberId ?? null;
-			}
-		}
-
-		// Mirror the server's auto-sponsor: write an Amendmentsponsor entity for the
-		// proposer so AmendmentList shows the correct sponsor count immediately.
-		if (proposerCommitteeMemberId) {
-			const proposerMember = readEntity<{
-				id: string;
-				representation?: {
-					id: string;
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					icon?: string | null;
-					type?: string | null;
-				} | null;
-			}>(
-				cache,
-				gql`
-					fragment CreateAmendmentProposer on Committeemember {
-						id
-						representation {
-							id
-							name
-							alpha2Code
-							alpha3Code
-							icon
-							type
-						}
-					}
-				`,
-				{ __typename: 'Committeemember', id: proposerCommitteeMemberId }
-			);
-			cache.writeFragment(
-				gql`
-					fragment CreateAmendmentSponsorEntry on Amendmentsponsor {
-						id
-						amendmentId
-						committeeMember {
-							id
-							representation {
-								id
-								name
-								alpha2Code
-								alpha3Code
-								icon
-								type
-							}
-						}
-					}
-				`,
-				{
-					__typename: 'Amendmentsponsor',
-					id: sponsorId,
-					amendmentId: id,
-					committeeMember: proposerMember
-				} as Record<string, unknown>
-			);
-			// Link sponsor into any already-open Query.amendmentSponsors query for
-			// this amendment (e.g. the sponsor panel was opened before the create).
-			const sponsorKey = cache.keyOfEntity({ __typename: 'Amendmentsponsor', id: sponsorId });
-			if (sponsorKey) {
-				const fields = cache
-					.inspectFields('Query')
-					.filter(
-						(f) =>
-							f.fieldName === 'amendmentSponsors' &&
-							(f.arguments as { where?: { amendment?: { id?: string } } } | null)?.where?.amendment
-								?.id === id
-					);
-				for (const f of fields) {
-					const current = cache.resolve('Query', 'amendmentSponsors', f.arguments) as
-						string[] | null | undefined;
-					if (Array.isArray(current) && !current.includes(sponsorKey)) {
-						cache.link('Query', 'amendmentSponsors', f.arguments, [...current, sponsorKey]);
-					}
-				}
-			}
-		}
-
-		// Link the new amendment into any already-open amendments lists (both Query
-		// and Subscription roots, since liveQuery uses both) so the AmendmentList
-		// updates immediately without waiting for the server subscription to fire.
 		const paperId = args.paperId as string;
-		const amendmentKey = `Amendment:${id}`;
-		for (const rootType of ['Query', 'Subscription']) {
-			const amendmentFields = cache
-				.inspectFields(rootType)
-				.filter(
-					(f) =>
-						f.fieldName === 'amendments' &&
-						(f.arguments as { where?: { paper?: { id?: string } } } | null)?.where?.paper?.id ===
-							paperId
-				);
-			for (const f of amendmentFields) {
-				const current = cache.resolve(rootType, 'amendments', f.arguments) as
-					string[] | null | undefined;
-				if (Array.isArray(current) && !current.includes(amendmentKey)) {
-					cache.link(rootType, 'amendments', f.arguments, [...current, amendmentKey]);
-				}
-			}
+
+		const proposerCommitteeMemberId = amendmentProposerId(args, cache);
+		if (proposerCommitteeMemberId) {
+			writeProposerSponsor({ cache, amendmentId: id, sponsorId, proposerCommitteeMemberId });
 		}
+
+		// Link the new amendment into any already-open amendments lists so the AmendmentList
+		// updates immediately without waiting for the server subscription to fire.
+		appendToRootLists({
+			cache,
+			rootTypes: ['Query', 'Subscription'],
+			fieldName: 'amendments',
+			matches: (fieldArgs) => wherePaperId(fieldArgs) === paperId,
+			key: `Amendment:${id}`
+		});
 
 		return {
 			__typename: 'Amendment',
 			id,
-			paperId: args.paperId as string,
-			paper: { __typename: 'Resolutionpaper', id: args.paperId as string },
+			paperId,
+			paper: { __typename: 'Resolutionpaper', id: paperId },
 			proposerCommitteeMemberId,
-			proposer: proposerCommitteeMemberId
-				? { __typename: 'Committeemember', id: proposerCommitteeMemberId }
-				: null,
-			type: args.type as string,
-			status: (args.status as string | undefined) ?? 'PENDING',
-			targetClauseId: (args.targetClauseId as string | undefined) ?? null,
-			targetOperativeIndex: (args.targetOperativeIndex as number | undefined) ?? null,
-			newContent: (args.newContent as string | undefined) ?? null,
-			targetPosition: (args.targetPosition as number | undefined) ?? null,
+			proposer: refOrNull('Committeemember', proposerCommitteeMemberId),
+			...amendmentFieldsFromArgs(args),
 			documentNumber: null,
 			sponsors: proposerCommitteeMemberId
 				? [{ __typename: 'Amendmentsponsor', id: sponsorId }]
@@ -1056,8 +1192,8 @@ export const optimistic: OptimisticMutationConfig = {
 		overwriteName: args.overwriteName ?? null
 	}),
 	addSpeakerOnList: (args, cache) => {
-		if (args.committeeMemberId && args.conferenceMemberId) return null;
-		if (!args.committeeMemberId && !args.conferenceMemberId) return null;
+		// Exactly one of the two member ids names the speaker
+		if (!args.committeeMemberId === !args.conferenceMemberId) return null;
 
 		// Use the minimal fragment — we only need id+position for ordering.
 		const list = readEntity<{ id: string; speakers: SpeakerEntry[] }>(
@@ -1065,309 +1201,22 @@ export const optimistic: OptimisticMutationConfig = {
 			ADD_SPEAKER_LIST_FRAGMENT,
 			{ __typename: 'Speakerslist', id: args.speakersListId as string }
 		);
-		const speakers: SpeakerEntry[] = list?.speakers ?? [];
-
 		const newId = ensureId(args);
+		const memberIds = {
+			committeeMemberId: (args.committeeMemberId as string | undefined) ?? null,
+			conferenceMemberId: (args.conferenceMemberId as string | undefined) ?? null
+		};
 
 		// Idempotency guard: this handler can run more than once for the same logical
 		// call — withLocalDemoMutationCommits re-invokes it (with the same args, so the
-		// same newId) to backfill the committeeMember/conferenceMember link once local
-		// demo's "real" result lands (see ensureId's doc comment above for the general
-		// multi-invocation issue). Without this guard, re-running the append below would
-		// push the SAME speaker into the list a second time — a duplicate entity key in
-		// the cache, which crashes Svelte's keyed each block on render.
-		const existing = speakers.find((s) => s.id === newId);
-
-		let finalPosition = existing?.position;
-		if (!existing) {
-			// Mirror server position semantics: when caller passes a position, every entry
-			// with position >= newPosition shifts up by 1; otherwise we append at the end.
-			const explicit = typeof args.position === 'number' ? (args.position as number) : null;
-			const position = explicit ?? speakers.length;
-
-			const shifted = speakers.map((s) => {
-				if (explicit !== null && s.position >= explicit) return { ...s, position: s.position + 1 };
-				return s;
-			});
-
-			const added = {
-				__typename: 'Speakeronlist',
-				id: newId,
-				position,
-				committeeMemberId: (args.committeeMemberId as string | undefined) ?? null,
-				conferenceMemberId: (args.conferenceMemberId as string | undefined) ?? null
-			};
-
-			// Densify so the cache stays a dense 0..n-1 sequence even when a prior offline
-			// edit left it drifted; this also settles the new entry's final position.
-			const updatedSpeakers = densifySpeakers([...shifted, added]);
-			finalPosition = updatedSpeakers.find((s) => s.id === newId)?.position ?? position;
-
-			// Write the parent list with the recomputed speaker positions so the cache sees
-			// the new ordering immediately without waiting for `updates` to fire.
-			if (list) {
-				cache.writeFragment(SPEAKER_LIST_WITH_SPEAKERS, {
-					__typename: 'Speakerslist',
-					id: list.id,
-					speakers: updatedSpeakers.map((s) => ({
-						__typename: 'Speakeronlist',
-						id: s.id,
-						position: s.position,
-						committeeMemberId: s.committeeMemberId ?? null,
-						conferenceMemberId: s.conferenceMemberId ?? null
-					}))
-				} as unknown as Record<string, unknown>);
-			}
-		}
-
-		let committeeMember = null;
-		if (args.committeeMemberId) {
-			committeeMember = readEntity(
-				cache,
-				gql`
-					fragment AddSpeakerOptimisticCM on Committeemember {
-						id
-						representation {
-							id
-							name
-							alpha2Code
-							alpha3Code
-							icon
-							type
-						}
-					}
-				`,
-				{ __typename: 'Committeemember', id: args.committeeMemberId as string }
-			);
-		}
-
-		let conferenceMember = null;
-		if (args.conferenceMemberId) {
-			conferenceMember = readEntity(
-				cache,
-				gql`
-					fragment AddSpeakerOptimisticConM on Conferencemember {
-						id
-						representation {
-							id
-							name
-							alpha2Code
-							alpha3Code
-							icon
-							type
-						}
-					}
-				`,
-				{ __typename: 'Conferencemember', id: args.conferenceMemberId as string }
-			);
-		}
-
-		// Write the new Speakeronlist's member link explicitly. Callers typically request a
-		// minimal mutation selection (id, position, speakersListId) — the embedded member
-		// data we return below would be dropped by graphcache's selection-set-aware write.
-		// Online, the speakers list subscription quickly fills the gap; offline, no
-		// subscription arrives so the entry would otherwise render as "N/A" without a flag.
-		cache.writeFragment(
-			gql`
-				fragment AddedSpeakerLink on Speakeronlist {
-					id
-					committeeMember {
-						id
-						representation {
-							id
-							name
-							alpha2Code
-							alpha3Code
-							icon
-							type
-						}
-					}
-					conferenceMember {
-						id
-						representation {
-							id
-							name
-							alpha2Code
-							alpha3Code
-							icon
-							type
-						}
-					}
-				}
-			`,
-			{
-				__typename: 'Speakeronlist',
-				id: newId,
-				committeeMember,
-				conferenceMember
-			} as unknown as Record<string, unknown>
-		);
-
-		return {
-			__typename: 'Speakeronlist',
-			id: newId,
-			position: finalPosition ?? speakers.length,
-			speakersListId: args.speakersListId,
-			speakersList: { __typename: 'Speakerslist', id: args.speakersListId as string },
-			overwriteName: null,
-			committeeMemberId: (args.committeeMemberId as string | undefined) ?? null,
-			conferenceMemberId: (args.conferenceMemberId as string | undefined) ?? null,
-			committeeMember: committeeMember ?? null,
-			conferenceMember: conferenceMember ?? null
-		};
-	},
-	removeSpeakerOnList: (args, cache) => {
-		const target = readEntity<{
-			id: string;
-			speakersListId: string;
-			position: number;
-		}>(
-			cache,
-			gql`
-				fragment RemoveSpeakerSource on Speakeronlist {
-					id
-					speakersListId
-					position
-				}
-			`,
-			{ __typename: 'Speakeronlist', id: args.speakerOnListId as string }
-		);
-		if (!target?.speakersListId) return null;
-
-		const updated = removeSpeakerFromList(
-			cache,
-			target.speakersListId,
-			args.speakerOnListId as string,
-			target.position
-		);
-		if (!updated) return null;
-
-		return {
-			__typename: 'Speakerslist',
-			id: updated.id,
-			speakers: updated.speakers.map((s) => ({
-				__typename: 'Speakeronlist',
-				id: s.id,
-				position: s.position
-			}))
-		};
-	},
-	selfAddToSpeakersList: (args, cache) => {
-		// Resolve the calling user's committeeMember / conferenceMember from cache.
-		const list = readSpeakersList(cache, args.speakersListId as string);
-		if (!list?.agendaItem?.committee) return null;
-		const committee = list.agendaItem.committee;
-		if (!committee.allowDelegationsToAddThemselvesToSpeakersList) return null;
-		if (list.isClosed) return null;
-
-		const self = findSelfConferenceUser(cache, committee.conferenceId ?? null);
-		if (!self) return null;
-
-		let committeeMemberId: string | null = null;
-		let conferenceMemberId: string | null = null;
-		if (self.conferenceUserType === 'DELEGATE') {
-			if (!self.committeeMemberId) return null;
-			committeeMemberId = self.committeeMemberId;
-		} else if (self.conferenceUserType === 'NON_STATE_ACTOR') {
-			if (!self.conferenceMemberId) return null;
-			conferenceMemberId = self.conferenceMemberId;
-		} else {
-			return null;
-		}
-
-		const speakers = list.speakers ?? [];
-		// Prevent duplicate self-adds.
-		if (
-			speakers.some(
-				(s) =>
-					(committeeMemberId && s.committeeMemberId === committeeMemberId) ||
-					(conferenceMemberId && s.conferenceMemberId === conferenceMemberId)
-			)
-		) {
-			return null;
-		}
-
-		const newId = ensureId(args);
-		const position = speakers.length;
-
-		// Mirror addSpeakerOnList: ensure the new Speakeronlist's member link is in the
-		// cache even when the mutation selection set omits it, so offline self-adds don't
-		// render as "N/A" without a flag.
-		let committeeMember = null;
-		if (committeeMemberId) {
-			committeeMember = readEntity(
-				cache,
-				gql`
-					fragment SelfAddSpeakerOptimisticCM on Committeemember {
-						id
-						representation {
-							id
-							name
-							alpha2Code
-							alpha3Code
-							icon
-							type
-						}
-					}
-				`,
-				{ __typename: 'Committeemember', id: committeeMemberId }
-			);
-		}
-		let conferenceMember = null;
-		if (conferenceMemberId) {
-			conferenceMember = readEntity(
-				cache,
-				gql`
-					fragment SelfAddSpeakerOptimisticConM on Conferencemember {
-						id
-						representation {
-							id
-							name
-							alpha2Code
-							alpha3Code
-							icon
-							type
-						}
-					}
-				`,
-				{ __typename: 'Conferencemember', id: conferenceMemberId }
-			);
-		}
-		cache.writeFragment(
-			gql`
-				fragment SelfAddedSpeakerLink on Speakeronlist {
-					id
-					committeeMember {
-						id
-						representation {
-							id
-							name
-							alpha2Code
-							alpha3Code
-							icon
-							type
-						}
-					}
-					conferenceMember {
-						id
-						representation {
-							id
-							name
-							alpha2Code
-							alpha3Code
-							icon
-							type
-						}
-					}
-				}
-			`,
-			{
-				__typename: 'Speakeronlist',
-				id: newId,
-				committeeMember,
-				conferenceMember
-			} as unknown as Record<string, unknown>
-		);
+		// same newId) to backfill the member link once local demo's "real" result lands
+		// (see ensureId's doc comment above). Appending again would push the SAME speaker
+		// into the list a second time — a duplicate entity key in the cache, which crashes
+		// Svelte's keyed each block on render.
+		const existing = (list?.speakers ?? []).find((s) => s.id === newId);
+		const position =
+			existing?.position ??
+			insertSpeaker({ cache, list, newId, memberIds, position: args.position });
 
 		return {
 			__typename: 'Speakeronlist',
@@ -1376,50 +1225,41 @@ export const optimistic: OptimisticMutationConfig = {
 			speakersListId: args.speakersListId,
 			speakersList: { __typename: 'Speakerslist', id: args.speakersListId as string },
 			overwriteName: null,
-			committeeMemberId,
-			conferenceMemberId,
-			committeeMember: committeeMember ?? null,
-			conferenceMember: conferenceMember ?? null
+			...memberIds,
+			...writeSpeakerMemberLink({ cache, id: newId, ...memberIds })
+		};
+	},
+	removeSpeakerOnList: (args, cache) => {
+		const updated = listWithoutSpeaker(cache, args.speakerOnListId as string);
+		return updated && speakerListData(updated);
+	},
+	selfAddToSpeakersList: (args, cache) => {
+		const list = readSpeakersList(cache, args.speakersListId as string);
+		const memberIds = selfSpeakerIds(cache, list);
+		if (!memberIds) return null;
+
+		const speakers = list?.speakers ?? [];
+		// Prevent duplicate self-adds.
+		if (speakers.some((s) => isEntryOf(s, memberIds))) return null;
+
+		const newId = ensureId(args);
+		return {
+			__typename: 'Speakeronlist',
+			id: newId,
+			position: speakers.length,
+			speakersListId: args.speakersListId,
+			speakersList: { __typename: 'Speakerslist', id: args.speakersListId as string },
+			overwriteName: null,
+			...memberIds,
+			...writeSpeakerMemberLink({ cache, id: newId, ...memberIds })
 		};
 	},
 	selfRemoveFromSpeakersList: (args, cache) => {
-		const own = findOwnSpeakerEntry(cache, args.speakersListId as string);
-		if (!own) return null;
-
-		const updated = removeSpeakerFromList(
-			cache,
-			args.speakersListId as string,
-			own.id,
-			own.position
-		);
-		if (!updated) return null;
-
-		return {
-			__typename: 'Speakerslist',
-			id: updated.id,
-			speakers: updated.speakers.map((s) => ({
-				__typename: 'Speakeronlist',
-				id: s.id,
-				position: s.position
-			}))
-		};
+		const updated = listWithoutOwnEntry(cache, args.speakersListId as string);
+		return updated && speakerListData(updated);
 	},
 	moveSpeakerToPosition: (args, cache) => {
-		const target = readEntity<{
-			id: string;
-			speakersListId: string;
-			position: number;
-		}>(
-			cache,
-			gql`
-				fragment MoveSpeakerSource on Speakeronlist {
-					id
-					speakersListId
-					position
-				}
-			`,
-			{ __typename: 'Speakeronlist', id: args.id as string }
-		);
+		const target = readSpeakerSource(cache, args.id as string);
 		if (!target?.speakersListId) return null;
 
 		// Only need id and position for the reordering calculation — use a minimal
@@ -1453,15 +1293,10 @@ export const optimistic: OptimisticMutationConfig = {
 		// dependency and re-runs the committee query immediately (the same pattern
 		// used by addSpeakerOnList / removeSpeakerOnList).
 		const densified = densifySpeakers(updatedSpeakers);
-		cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
-			__typename: 'Speakerslist',
-			id: target.speakersListId,
-			speakers: densified.map((s) => ({
-				__typename: 'Speakeronlist',
-				id: s.id,
-				position: s.position
-			}))
-		} as unknown as Record<string, unknown>);
+		cache.writeFragment(
+			ADD_SPEAKER_LIST_FRAGMENT,
+			speakerListData({ id: target.speakersListId, speakers: densified })
+		);
 
 		return {
 			__typename: 'Speakeronlist',
@@ -1475,20 +1310,9 @@ export const optimistic: OptimisticMutationConfig = {
 	// speakersList.ts
 	// -------------------------------------------------------------------------
 	updateSpeakersList: (args, cache) => {
-		const result: Record<string, unknown> = {
-			__typename: 'Speakerslist',
-			id: args.id
-		};
-		if (args.isClosed != null) result.isClosed = args.isClosed;
-		if (args.speakingTime != null) result.speakingTime = args.speakingTime;
-
 		// Snapshot the current list so we can mirror the server's derived calculations
 		// for timeLeft (on stopTimer) and phase (auto-derivation).
-		const current = readEntity<{
-			phase?: string | null;
-			timeLeft?: number | null;
-			startTimestamp?: string | Date | null;
-		}>(
+		const current = readEntity<SpeakersListTimer>(
 			cache,
 			gql`
 				fragment UpdateSpeakersListCurrent on Speakerslist {
@@ -1500,46 +1324,13 @@ export const optimistic: OptimisticMutationConfig = {
 			`,
 			{ __typename: 'Speakerslist', id: args.id as string }
 		);
-
-		if (args.stopTimer) {
-			result.startTimestamp = null;
-			// Compute remaining time the same way the server does so all clients agree.
-			if (
-				current?.startTimestamp &&
-				typeof current.timeLeft === 'number' &&
-				args.timeLeft == null
-			) {
-				const startMs = new Date(current.startTimestamp).getTime();
-				// Use server time so the elapsed calculation is consistent with the
-				// startTimestamp anchor (which is server-time-based after confirmation).
-				const elapsedSec = (getServerTime().valueOf() - startMs) / 1000;
-				result.timeLeft = Math.round(current.timeLeft - elapsedSec);
-			} else if (args.timeLeft != null) {
-				result.timeLeft = args.timeLeft;
-			}
-		} else {
-			if (args.timeLeft != null) result.timeLeft = args.timeLeft;
-			if (args.startTimestamp !== undefined && args.startTimestamp !== null) {
-				// Use the timestamp from args (already getServerTime().toDate() at call site)
-				// rather than new Date(), so the optimistic anchor matches the server anchor
-				// and the timer display is accurate before the server confirms.
-				result.startTimestamp = new Date(args.startTimestamp as string | Date);
-			}
-		}
-
-		// Phase: explicit wins, otherwise derive from current.
-		let phase: string | undefined;
-		if (args.phase !== undefined && args.phase !== null) phase = args.phase as string;
-		else if (current?.phase) {
-			if (args.stopTimer && args.timeLeft != null) phase = 'SPEECH';
-			else if (args.stopTimer) {
-				if (current.phase === 'SPEECH') phase = 'SPEECH_DONE';
-				else if (current.phase === 'ANSWER') phase = 'ANSWER_DONE';
-			} else if (args.startTimestamp !== undefined && args.startTimestamp !== null) {
-				if (current.phase === 'SPEECH_DONE') phase = 'SPEECH';
-				else if (current.phase === 'ANSWER_DONE') phase = 'ANSWER';
-			}
-		}
+		const result: Record<string, unknown> = {
+			__typename: 'Speakerslist',
+			id: args.id,
+			...nonNullFields(args, ['isClosed', 'speakingTime']),
+			...speakersListTimerFields(args, current)
+		};
+		const phase = derivedSpeakersListPhase(args, current);
 		if (phase !== undefined) result.phase = phase;
 		return result;
 	},
@@ -1591,65 +1382,27 @@ export const optimistic: OptimisticMutationConfig = {
 			updatedAt: null
 		};
 	},
-	updateVotingSession: (args) => {
-		const result: Record<string, unknown> = { __typename: 'Votingsession', id: args.id };
-		if (args.currentStage !== undefined && args.currentStage !== null)
-			result.currentStage = args.currentStage;
-		if (args.votesPro != null) result.votesPro = args.votesPro;
-		if (args.votesCon != null) result.votesCon = args.votesCon;
-		if (args.votesAbstain != null) result.votesAbstain = args.votesAbstain;
-		if (args.currentMemberIndex != null) result.currentMemberIndex = args.currentMemberIndex;
-		return result;
-	},
+	updateVotingSession: (args) => ({
+		__typename: 'Votingsession',
+		id: args.id,
+		...nonNullFields(args, [
+			'currentStage',
+			'votesPro',
+			'votesCon',
+			'votesAbstain',
+			'currentMemberIndex'
+		])
+	}),
 	completeVotingSession: (args) => {
 		// Boolean return: we still apply the completion timestamp via the updates resolver
 		// below, but graphcache requires a primitive here.
 		void args;
 		return true;
 	},
-	setVoteForMember: (args, cache) => {
-		// Mirror server upsert: if a vote already exists for (sessionId, committeeMemberId),
-		// reuse its id so we update the same entity instead of creating a phantom.
-		const existingId = findExistingVoteId(
-			cache,
-			args.sessionId as string,
-			args.committeeMemberId as string
-		);
-		const id = existingId ?? ensureId(args);
-		return {
-			__typename: 'Votingvote',
-			id,
-			votingSessionId: args.sessionId,
-			votingSession: { __typename: 'Votingsession', id: args.sessionId as string },
-			committeeMemberId: args.committeeMemberId,
-			committeeMember: { __typename: 'Committeemember', id: args.committeeMemberId as string },
-			vote: args.vote,
-			createdAt: new Date(),
-			updatedAt: null
-		};
-	},
-	castDeviceVote: (args, cache) => {
-		// Same upsert-by-(sessionId, committeeMemberId) reasoning as setVoteForMember.
-		// `committeeMemberId` here is a cache-only hint (see the handler comment in
-		// votingSession.ts) — the server always resolves the caller's own seat itself.
-		const existingId = findExistingVoteId(
-			cache,
-			args.sessionId as string,
-			args.committeeMemberId as string
-		);
-		const id = existingId ?? ensureId(args);
-		return {
-			__typename: 'Votingvote',
-			id,
-			votingSessionId: args.sessionId,
-			votingSession: { __typename: 'Votingsession', id: args.sessionId as string },
-			committeeMemberId: args.committeeMemberId,
-			committeeMember: { __typename: 'Committeemember', id: args.committeeMemberId as string },
-			vote: args.vote,
-			createdAt: new Date(),
-			updatedAt: null
-		};
-	},
+	setVoteForMember: (args, cache) => upsertedVote(args, cache),
+	// `committeeMemberId` here is a cache-only hint (see the handler comment in
+	// votingSession.ts) — the server always resolves the caller's own seat itself.
+	castDeviceVote: (args, cache) => upsertedVote(args, cache),
 
 	// -------------------------------------------------------------------------
 	// paperShareCode.ts / paperSponsor.ts / amendmentSponsor.ts /
@@ -1763,31 +1516,174 @@ export const optimistic: OptimisticMutationConfig = {
 			updatedAt: null
 		};
 	},
-	updateRequestType: (args) => {
-		const result: Record<string, unknown> = {
-			__typename: 'Requesttype',
-			id: args.id
-		};
-		for (const field of [
+	updateRequestType: (args) => ({
+		__typename: 'Requesttype',
+		id: args.id,
+		...definedFields(args, [
 			'name',
 			'icon',
 			'priority',
 			'enabled',
 			'delegatesOnly',
 			'showOnPresentation'
-		]) {
-			if ((args as Record<string, unknown>)[field] !== undefined) {
-				result[field] = (args as Record<string, unknown>)[field];
-			}
-		}
-		return result;
-	},
+		])
+	}),
 	deleteRequestType: () => true
 };
 
 // ---------------------------------------------------------------------------
 // Cache-lookup helpers used by optimistic handlers
 // ---------------------------------------------------------------------------
+
+type SpeakersListTimer = {
+	phase?: string | null;
+	timeLeft?: number | null;
+	startTimestamp?: string | Date | null;
+};
+
+/** The timer fields updateSpeakersList writes, computed the way the server does */
+function speakersListTimerFields(
+	args: Record<string, unknown>,
+	current: SpeakersListTimer | null
+): { timeLeft?: unknown; startTimestamp?: Date | null } {
+	const timeLeft = args.timeLeft ?? undefined;
+	if (!args.stopTimer) {
+		// The timestamp from args (server time at the call site) anchors the optimistic timer
+		// like the server's, so the display is accurate before the server confirms.
+		const start = args.startTimestamp ?? undefined;
+		return {
+			...(timeLeft !== undefined && { timeLeft }),
+			...(start !== undefined && { startTimestamp: new Date(start as string | Date) })
+		};
+	}
+	if (timeLeft !== undefined) return { startTimestamp: null, timeLeft };
+	if (!current?.startTimestamp || typeof current.timeLeft !== 'number') {
+		return { startTimestamp: null };
+	}
+	// Remaining time on server time, consistent with the startTimestamp anchor
+	const elapsedSec =
+		(getServerTime().valueOf() - new Date(current.startTimestamp).getTime()) / 1000;
+	return { startTimestamp: null, timeLeft: Math.round(current.timeLeft - elapsedSec) };
+}
+
+const PHASE_AFTER_STOP: Record<string, string> = { SPEECH: 'SPEECH_DONE', ANSWER: 'ANSWER_DONE' };
+const PHASE_AFTER_START: Record<string, string> = { SPEECH_DONE: 'SPEECH', ANSWER_DONE: 'ANSWER' };
+
+/** The phase updateSpeakersList moves to: an explicit one wins, else derived from the current */
+function derivedSpeakersListPhase(
+	args: Record<string, unknown>,
+	current: SpeakersListTimer | null
+): string | undefined {
+	if (args.phase != null) return args.phase as string;
+	if (!current?.phase) return undefined;
+	if (args.stopTimer) return args.timeLeft != null ? 'SPEECH' : PHASE_AFTER_STOP[current.phase];
+	if (args.startTimestamp != null) return PHASE_AFTER_START[current.phase];
+	return undefined;
+}
+
+/**
+ * A member's vote in a session. Mirrors the server's upsert: an existing vote for
+ * (sessionId, committeeMemberId) keeps its id, so the same entity is updated instead of a
+ * phantom created.
+ */
+function upsertedVote(args: Record<string, unknown>, cache: Cache) {
+	const sessionId = args.sessionId as string;
+	const committeeMemberId = args.committeeMemberId as string;
+	return {
+		__typename: 'Votingvote',
+		id: findExistingVoteId(cache, sessionId, committeeMemberId) ?? ensureId(args),
+		votingSessionId: sessionId,
+		votingSession: { __typename: 'Votingsession', id: sessionId },
+		committeeMemberId,
+		committeeMember: { __typename: 'Committeemember', id: committeeMemberId },
+		vote: args.vote,
+		createdAt: new Date(),
+		updatedAt: null
+	};
+}
+
+/** The fields of a new amendment its creating mutation's args determine */
+function amendmentFieldsFromArgs(args: Record<string, unknown>) {
+	return {
+		type: args.type as string,
+		status: (args.status as string | undefined) ?? 'PENDING',
+		targetClauseId: (args.targetClauseId as string | undefined) ?? null,
+		targetOperativeIndex: (args.targetOperativeIndex as number | undefined) ?? null,
+		newContent: (args.newContent as string | undefined) ?? null,
+		targetPosition: (args.targetPosition as number | undefined) ?? null
+	};
+}
+
+/**
+ * Chairs supply the proposer via args; delegates resolve from the cached conferenceUser row
+ * (see findSelfConferenceUser).
+ */
+function amendmentProposerId(args: Record<string, unknown>, cache: Cache): string | null {
+	const given = args.proposerCommitteeMemberId as string | undefined;
+	if (given) return given;
+	const committeeId = cache.resolve(
+		{ __typename: 'Resolutionpaper', id: args.paperId as string },
+		'committeeId'
+	) as string | null | undefined;
+	if (!committeeId) return null;
+	const conferenceId = cache.resolve({ __typename: 'Committee', id: committeeId }, 'conferenceId');
+	const self = findSelfConferenceUser(cache, (conferenceId as string | null | undefined) ?? null);
+	return self?.committeeMemberId ?? null;
+}
+
+/**
+ * Mirrors the server's auto-sponsor: writes an Amendmentsponsor for the proposer so the
+ * AmendmentList shows the correct sponsor count immediately, and links it into any
+ * already-open Query.amendmentSponsors of the amendment.
+ */
+function writeProposerSponsor({
+	cache,
+	amendmentId,
+	sponsorId,
+	proposerCommitteeMemberId
+}: {
+	cache: Cache;
+	amendmentId: string;
+	sponsorId: string;
+	proposerCommitteeMemberId: string;
+}) {
+	const proposerMember = readEntity(
+		cache,
+		gql`
+			fragment CreateAmendmentProposer on Committeemember {
+				id
+				${REPRESENTATION_FIELDS}
+			}
+		`,
+		{ __typename: 'Committeemember', id: proposerCommitteeMemberId }
+	);
+	cache.writeFragment(
+		gql`
+			fragment CreateAmendmentSponsorEntry on Amendmentsponsor {
+				id
+				amendmentId
+				committeeMember {
+					id
+					${REPRESENTATION_FIELDS}
+				}
+			}
+		`,
+		{
+			__typename: 'Amendmentsponsor',
+			id: sponsorId,
+			amendmentId,
+			committeeMember: proposerMember
+		} as Record<string, unknown>
+	);
+	const sponsorKey = cache.keyOfEntity({ __typename: 'Amendmentsponsor', id: sponsorId });
+	if (!sponsorKey) return;
+	appendToRootLists({
+		cache,
+		fieldName: 'amendmentSponsors',
+		matches: (fieldArgs) => whereAmendmentId(fieldArgs) === amendmentId,
+		key: sponsorKey
+	});
+}
 
 /**
  * The NSA a check-in or check-out names, as the cache knows them. The scanner identifies the
@@ -1909,112 +1805,85 @@ function recomputeCommitteeMajoritiesForMembers(
 	present: boolean
 ) {
 	const affected = new Set(memberIds);
-	const affectedMemberKeys = new Set(memberIds.map((id) => `Committeemember:${id}`));
-
-	// `committeeId` is not in every page's selection set, so cache.resolve(member, 'committeeId')
-	// may return undefined. Instead, walk known Committee entities (discovered via root Query
-	// fields) and pick those whose `members` link contains any of the affected member keys.
-	const committeeIds = new Set<string>();
-	const queryFields = cache.inspectFields('Query');
-	const committeeKeys = new Set<string>();
-	for (const f of queryFields) {
-		const value = cache.resolve('Query', f.fieldName, f.arguments);
-		if (Array.isArray(value)) {
-			for (const v of value)
-				if (typeof v === 'string' && v.startsWith('Committee:')) committeeKeys.add(v);
-		} else if (typeof value === 'string' && value.startsWith('Committee:')) {
-			committeeKeys.add(value);
-		}
-	}
-	for (const key of committeeKeys) {
-		const id = key.slice('Committee:'.length);
-		const memberFields = cache
-			.inspectFields({ __typename: 'Committee', id })
-			.filter((f) => f.fieldName === 'members');
-		for (const f of memberFields) {
-			const members = cache.resolve({ __typename: 'Committee', id }, 'members', f.arguments) as
-				string[] | null | undefined;
-			if (!Array.isArray(members)) continue;
-			if (members.some((m) => typeof m === 'string' && affectedMemberKeys.has(m))) {
-				committeeIds.add(id);
-				break;
-			}
-		}
-	}
-
-	for (const committeeId of committeeIds) {
-		// Read members + representation type. We have to walk the link manually because
-		// readFragment returns null entirely if any requested field is missing from the
-		// cache, and we want this to work even on pages that select a slim member shape.
-		const memberFields = cache
-			.inspectFields({ __typename: 'Committee', id: committeeId })
-			.filter((f) => f.fieldName === 'members');
-		const memberKeys = new Set<string>();
-		for (const f of memberFields) {
-			const arr = cache.resolve(
-				{ __typename: 'Committee', id: committeeId },
-				'members',
-				f.arguments
-			) as string[] | null | undefined;
-			if (!Array.isArray(arr)) continue;
-			for (const k of arr) if (typeof k === 'string') memberKeys.add(k);
-		}
+	for (const committeeId of committeesWithMembers(cache, memberIds)) {
+		// Walks the member links by hand: readFragment returns null entirely if any requested
+		// field is missing, and this has to work on pages that select a slim member shape.
+		const memberKeys = committeeMemberKeys(cache, committeeId);
 		if (memberKeys.size === 0) continue;
 
-		let totalPresent = 0;
-		for (const key of memberKeys) {
-			if (!key.startsWith('Committeemember:')) continue;
-			const id = key.slice('Committeemember:'.length);
-			const member = { __typename: 'Committeemember', id };
-			const representationKey = cache.resolve(member, 'representation') as
-				string | null | undefined;
-			let type: string | null | undefined = null;
-			if (typeof representationKey === 'string') {
-				const repId = representationKey.startsWith('Representation:')
-					? representationKey.slice('Representation:'.length)
-					: representationKey;
-				type = cache.resolve({ __typename: 'Representation', id: repId }, 'type') as
-					string | null | undefined;
-			}
-			if (type !== 'DELEGATION') continue;
-			const cachedPresent = cache.resolve(member, 'present') as boolean | null | undefined;
-			const effectivePresent = affected.has(id) ? present : !!cachedPresent;
-			if (effectivePresent) totalPresent += 1;
-		}
-
-		const customSimple = cache.resolve(
-			{ __typename: 'Committee', id: committeeId },
-			'customSimpleMajority'
-		) as number | null | undefined;
-		const customTwoThirds = cache.resolve(
-			{ __typename: 'Committee', id: committeeId },
-			'customTwoThirdsMajority'
-		) as number | null | undefined;
-
-		cache.writeFragment(
-			gql`
-				fragment CommitteeMajorityWrite on Committee {
-					id
-					totalPresent
-					simpleMajority
-					twoThirdsMajority
-				}
-			`,
-			{
-				__typename: 'Committee',
-				id: committeeId,
-				totalPresent,
-				simpleMajority:
-					typeof customSimple === 'number'
-						? customSimple
-						: calculateMajority(totalPresent, 'simple'),
-				twoThirdsMajority:
-					typeof customTwoThirds === 'number'
-						? customTwoThirds
-						: calculateMajority(totalPresent, 'twoThirds')
-			} as Record<string, unknown>
-		);
+		const totalPresent = idsOfType(memberKeys, 'Committeemember').filter((id) => {
+			if (memberRepresentationType(cache, id) !== 'DELEGATION') return false;
+			if (affected.has(id)) return present;
+			return !!cache.resolve({ __typename: 'Committeemember', id }, 'present');
+		}).length;
+		writeCommitteeMajorities({ cache, committeeId, totalPresent });
 	}
+}
+
+/** Every key the cached variants of a committee's `members` hold */
+function committeeMemberKeys(cache: Cache, committeeId: string): Set<string> {
+	const variants = listVariants(cache, { __typename: 'Committee', id: committeeId }, 'members');
+	return new Set(variants.flatMap(({ keys }) => keys.filter((k) => typeof k === 'string')));
+}
+
+/**
+ * The committees whose `members` hold any of `memberIds`. `committeeId` is not in every page's
+ * selection set, so committees are found through the root Query fields instead.
+ */
+function committeesWithMembers(cache: Cache, memberIds: string[]): string[] {
+	const memberKeys = new Set(memberIds.map((id) => `Committeemember:${id}`));
+	return idsOfType(rootEntityKeys(cache, 'Committee'), 'Committee').filter((committeeId) =>
+		listVariants(cache, { __typename: 'Committee', id: committeeId }, 'members').some(({ keys }) =>
+			keys.some((k) => memberKeys.has(k))
+		)
+	);
+}
+
+function memberRepresentationType(cache: Cache, memberId: string) {
+	const representationKey = cache.resolve(
+		{ __typename: 'Committeemember', id: memberId },
+		'representation'
+	);
+	if (typeof representationKey !== 'string') return null;
+	const repId = representationKey.startsWith('Representation:')
+		? representationKey.slice('Representation:'.length)
+		: representationKey;
+	return cache.resolve({ __typename: 'Representation', id: repId }, 'type');
+}
+
+/** totalPresent and the majorities it gives, unless the committee sets its own */
+function writeCommitteeMajorities({
+	cache,
+	committeeId,
+	totalPresent
+}: {
+	cache: Cache;
+	committeeId: string;
+	totalPresent: number;
+}) {
+	const committee = { __typename: 'Committee', id: committeeId };
+	const customSimple = cache.resolve(committee, 'customSimpleMajority');
+	const customTwoThirds = cache.resolve(committee, 'customTwoThirdsMajority');
+	cache.writeFragment(
+		gql`
+			fragment CommitteeMajorityWrite on Committee {
+				id
+				totalPresent
+				simpleMajority
+				twoThirdsMajority
+			}
+		`,
+		{
+			...committee,
+			totalPresent,
+			simpleMajority:
+				typeof customSimple === 'number' ? customSimple : calculateMajority(totalPresent, 'simple'),
+			twoThirdsMajority:
+				typeof customTwoThirds === 'number'
+					? customTwoThirds
+					: calculateMajority(totalPresent, 'twoThirds')
+		} as Record<string, unknown>
+	);
 }
 
 function findExistingVoteId(
@@ -2022,60 +1891,45 @@ function findExistingVoteId(
 	sessionId: string,
 	committeeMemberId: string
 ): string | null {
-	const votes = cache.resolve({ __typename: 'Votingsession', id: sessionId }, 'votes') as
-		string[] | null | undefined;
+	const votes = cache.resolve({ __typename: 'Votingsession', id: sessionId }, 'votes');
 	if (!Array.isArray(votes)) return null;
-	for (const key of votes) {
-		if (typeof key !== 'string' || !key.startsWith('Votingvote:')) continue;
-		const id = key.slice('Votingvote:'.length);
-		const data = readEntity<{ id: string; committeeMemberId?: string }>(
-			cache,
-			gql`
-				fragment ExistingVoteSnapshot on Votingvote {
-					id
-					committeeMemberId
-				}
-			`,
-			{ __typename: 'Votingvote', id }
-		);
-		if (data?.committeeMemberId === committeeMemberId) return data.id;
-	}
-	return null;
+	const existing = idsOfType(votes, 'Votingvote')
+		.map((id) =>
+			readEntity<{ id: string; committeeMemberId?: string }>(
+				cache,
+				gql`
+					fragment ExistingVoteSnapshot on Votingvote {
+						id
+						committeeMemberId
+					}
+				`,
+				{ __typename: 'Votingvote', id }
+			)
+		)
+		.find((vote) => vote?.committeeMemberId === committeeMemberId);
+	return existing?.id ?? null;
 }
 
-function findSelfConferenceUser(
-	cache: Cache,
-	conferenceId: string | null
-): {
+type SelfConferenceUser = {
 	id: string;
 	conferenceUserType: string;
 	committeeMemberId?: string | null;
 	conferenceMemberId?: string | null;
-} | null {
-	// Participants read only their own row's email, so the cached Conferenceuser whose email is
-	// readable is the caller's. Falls back to the first match in the given conference where the
-	// role is DELEGATE / NON_STATE_ACTOR.
-	const queryFields = cache.inspectFields('Query');
-	const keys = new Set<string>();
-	for (const f of queryFields) {
-		const value = cache.resolve('Query', f.fieldName, f.arguments);
-		if (Array.isArray(value)) {
-			for (const v of value)
-				if (typeof v === 'string' && v.startsWith('Conferenceuser:')) keys.add(v);
-		} else if (typeof value === 'string' && value.startsWith('Conferenceuser:')) {
-			keys.add(value);
-		}
-	}
-	for (const key of keys) {
-		const id = key.slice('Conferenceuser:'.length);
-		const data = readEntity<{
-			id: string;
-			conferenceId?: string;
-			conferenceUserType?: string;
-			committeeMemberId?: string | null;
-			conferenceMemberId?: string | null;
-			userEmail?: string | null;
-		}>(
+};
+
+/**
+ * The caller's own Conferenceuser in `conferenceId` (any conference without one), as a
+ * DELEGATE or NON_STATE_ACTOR. Participants read only their own row's email, so the cached
+ * row whose email is readable is the caller's.
+ */
+function findSelfConferenceUser(
+	cache: Cache,
+	conferenceId: string | null
+): SelfConferenceUser | null {
+	for (const id of idsOfType(rootEntityKeys(cache, 'Conferenceuser'), 'Conferenceuser')) {
+		const data = readEntity<
+			SelfConferenceUser & { conferenceId?: string; userEmail?: string | null }
+		>(
 			cache,
 			gql`
 				fragment SelfConferenceUserSnapshot on Conferenceuser {
@@ -2089,13 +1943,7 @@ function findSelfConferenceUser(
 			`,
 			{ __typename: 'Conferenceuser', id }
 		);
-		if (!data) continue;
-		if (conferenceId && data.conferenceId !== conferenceId) continue;
-		if (data.conferenceUserType !== 'DELEGATE' && data.conferenceUserType !== 'NON_STATE_ACTOR')
-			continue;
-		// userEmail is only readable on the self row, so finding any readable email
-		// uniquely identifies the calling user in this conference.
-		if (data.userEmail) {
+		if (data && isOwnParticipantRow(data, conferenceId)) {
 			return {
 				id: data.id,
 				conferenceUserType: data.conferenceUserType,
@@ -2105,6 +1953,15 @@ function findSelfConferenceUser(
 		}
 	}
 	return null;
+}
+
+function isOwnParticipantRow(
+	row: { conferenceId?: string; conferenceUserType?: string; userEmail?: string | null },
+	conferenceId: string | null
+) {
+	if (conferenceId && row.conferenceId !== conferenceId) return false;
+	const participates = ['DELEGATE', 'NON_STATE_ACTOR'].includes(row.conferenceUserType ?? '');
+	return participates && !!row.userEmail;
 }
 
 // ---------------------------------------------------------------------------
@@ -2120,6 +1977,92 @@ const ADD_SPEAKER_LIST_FRAGMENT = gql`
 		}
 	}
 `;
+
+/**
+ * Links a confirmed new speaker into its list's `speakers` unless it is there already: at its
+ * result's position, else at `explicit` (shifting the entries from there), else at the end.
+ */
+function appendSpeakerToList({
+	cache,
+	speakersListId,
+	newSpeaker,
+	explicit
+}: {
+	cache: Cache;
+	speakersListId: unknown;
+	newSpeaker: Record<string, unknown> | undefined;
+	explicit: number | null;
+}) {
+	if (!newSpeaker?.id) return;
+	const list = readEntity<{ speakers: SpeakerEntry[] }>(cache, ADD_SPEAKER_LIST_FRAGMENT, {
+		__typename: 'Speakerslist',
+		id: speakersListId as string
+	});
+	if (!list || list.speakers.some((s) => s.id === newSpeaker.id)) return;
+
+	const position =
+		typeof newSpeaker.position === 'number'
+			? newSpeaker.position
+			: (explicit ?? list.speakers.length);
+	const shifted =
+		explicit === null
+			? list.speakers
+			: list.speakers.map((s) => (s.position >= explicit ? { ...s, position: s.position + 1 } : s));
+	cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
+		__typename: 'Speakerslist',
+		id: speakersListId,
+		speakers: densifySpeakers([
+			...shifted,
+			{ __typename: 'Speakeronlist', id: newSpeaker.id as string, position }
+		])
+	} as Record<string, unknown>);
+}
+
+/** Drops members of a deleted representation, detaching them from their parent lists */
+function dropRepresentationMembers({
+	cache,
+	keys,
+	typename,
+	parentOf
+}: {
+	cache: Cache;
+	keys: unknown;
+	typename: 'Committeemember' | 'Conferencemember';
+	parentOf: (member: Entity) => { parent: Entity; fieldName: string } | null;
+}) {
+	for (const id of idsOfType(Array.isArray(keys) ? keys : [], typename)) {
+		const member = { __typename: typename, id };
+		const parent = parentOf(member);
+		if (parent) removeFromList(cache, parent.parent, parent.fieldName, `${typename}:${id}`);
+		cache.invalidate(member);
+	}
+}
+
+/**
+ * Removes the paper's operative clause votes for `clauseId` (but `keepId`) from its lists
+ * and the cache, so an upsert's stale entry is GC'd.
+ */
+function dropClauseVotes({
+	cache,
+	paperId,
+	clauseId,
+	keepId
+}: {
+	cache: Cache;
+	paperId: string;
+	clauseId: unknown;
+	keepId?: string;
+}) {
+	const paper = { __typename: 'Resolutionpaper', id: paperId };
+	for (const { keys } of listVariants(cache, paper, 'operativeClauseVotes')) {
+		for (const id of idsOfType(keys, 'Operativeclausevote')) {
+			const vote = { __typename: 'Operativeclausevote', id };
+			if (id === keepId || cache.resolve(vote, 'clauseId') !== clauseId) continue;
+			removeFromList(cache, paper, 'operativeClauseVotes', `Operativeclausevote:${id}`);
+			cache.invalidate(vote);
+		}
+	}
+}
 
 export const updates: UpdatesConfig = {
 	Mutation: {
@@ -2286,38 +2229,26 @@ export const updates: UpdatesConfig = {
 			const rep = { __typename: 'Representation', id: args.id as string };
 			const repKey = cache.keyOfEntity(rep);
 			const conferenceId = cache.resolve(rep, 'conferenceId') as string | undefined;
+			const conference = conferenceId ? { __typename: 'Conference', id: conferenceId } : null;
 			if (repKey) {
-				const cmKeys =
-					(cache.resolve(rep, 'committeeMembers') as string[] | null | undefined) ?? [];
-				const cnmKeys =
-					(cache.resolve(rep, 'conferenceMembers') as string[] | null | undefined) ?? [];
-				for (const k of cmKeys) {
-					if (typeof k !== 'string' || !k.startsWith('Committeemember:')) continue;
-					const id = k.slice('Committeemember:'.length);
-					const member = { __typename: 'Committeemember', id };
-					const committeeId = cache.resolve(member, 'committeeId') as string | undefined;
-					if (committeeId) {
-						removeFromList(cache, { __typename: 'Committee', id: committeeId }, 'members', k);
+				dropRepresentationMembers({
+					cache,
+					keys: cache.resolve(rep, 'committeeMembers'),
+					typename: 'Committeemember',
+					parentOf: (member) => {
+						const committeeId = cache.resolve(member, 'committeeId') as string | undefined;
+						return committeeId
+							? { parent: { __typename: 'Committee', id: committeeId }, fieldName: 'members' }
+							: null;
 					}
-					cache.invalidate(member);
-				}
-				for (const k of cnmKeys) {
-					if (typeof k !== 'string' || !k.startsWith('Conferencemember:')) continue;
-					const id = k.slice('Conferencemember:'.length);
-					const member = { __typename: 'Conferencemember', id };
-					if (conferenceId) {
-						removeFromList(cache, { __typename: 'Conference', id: conferenceId }, 'members', k);
-					}
-					cache.invalidate(member);
-				}
-				if (conferenceId) {
-					removeFromList(
-						cache,
-						{ __typename: 'Conference', id: conferenceId },
-						'representations',
-						repKey
-					);
-				}
+				});
+				dropRepresentationMembers({
+					cache,
+					keys: cache.resolve(rep, 'conferenceMembers'),
+					typename: 'Conferencemember',
+					parentOf: () => conference && { parent: conference, fieldName: 'members' }
+				});
+				if (conference) removeFromList(cache, conference, 'representations', repKey);
 			}
 			cache.invalidate(rep);
 		},
@@ -2394,65 +2325,19 @@ export const updates: UpdatesConfig = {
 		// ---------------------------------------------------------------
 		addSpeakerOnList: (result, args, cache) => {
 			const newSpeaker = (result as Record<string, Record<string, unknown>>).addSpeakerOnList;
-			if (!newSpeaker?.id) return;
-
-			const list = cache.readFragment(ADD_SPEAKER_LIST_FRAGMENT, {
-				__typename: 'Speakerslist',
-				id: args.speakersListId
-			} as Record<string, unknown>) as {
-				speakers: Array<{ id: string; position: number; __typename: string }>;
-			} | null;
-			if (!list) return;
-
-			if (list.speakers.some((s) => s.id === newSpeaker.id)) return;
-
-			const explicit = typeof args.position === 'number' ? (args.position as number) : null;
-			const position =
-				typeof newSpeaker.position === 'number'
-					? (newSpeaker.position as number)
-					: (explicit ?? list.speakers.length);
-
 			// When an explicit position was used, shift existing entries to mirror the
 			// server's unique(speakersListId, position) constraint resolution.
-			const shifted =
-				explicit !== null
-					? list.speakers.map((s) =>
-							s.position >= explicit ? { ...s, position: s.position + 1 } : s
-						)
-					: list.speakers;
-
-			cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
-				__typename: 'Speakerslist',
-				id: args.speakersListId,
-				speakers: densifySpeakers([
-					...shifted,
-					{ __typename: 'Speakeronlist', id: newSpeaker.id as string, position }
-				])
-			} as Record<string, unknown>);
+			const explicit = typeof args.position === 'number' ? (args.position as number) : null;
+			appendSpeakerToList({ cache, speakersListId: args.speakersListId, newSpeaker, explicit });
 		},
 		selfAddToSpeakersList: (result, args, cache) => {
 			const newSpeaker = (result as Record<string, Record<string, unknown>>).selfAddToSpeakersList;
-			if (!newSpeaker?.id) return;
-			const list = cache.readFragment(ADD_SPEAKER_LIST_FRAGMENT, {
-				__typename: 'Speakerslist',
-				id: args.speakersListId
-			} as Record<string, unknown>) as {
-				speakers: Array<{ id: string; position: number; __typename: string }>;
-			} | null;
-			if (!list) return;
-			if (list.speakers.some((s) => s.id === newSpeaker.id)) return;
-			const position =
-				typeof newSpeaker.position === 'number'
-					? (newSpeaker.position as number)
-					: list.speakers.length;
-			cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
-				__typename: 'Speakerslist',
-				id: args.speakersListId,
-				speakers: densifySpeakers([
-					...list.speakers,
-					{ __typename: 'Speakeronlist', id: newSpeaker.id as string, position }
-				])
-			} as Record<string, unknown>);
+			appendSpeakerToList({
+				cache,
+				speakersListId: args.speakersListId,
+				newSpeaker,
+				explicit: null
+			});
 		},
 		// For a real backend, the mutation returns the updated parent Speakerslist
 		// (speakers array already renumbered), so the automatic mutation-result write
@@ -2472,63 +2357,17 @@ export const updates: UpdatesConfig = {
 		// parent's `speakers` link array avoids that; the removed entity itself is
 		// naturally GC'd once nothing else references it.
 		removeSpeakerOnList: (_result, args, cache) => {
-			const target = readEntity<{ id: string; speakersListId: string; position: number }>(
-				cache,
-				gql`
-					fragment RemoveSpeakerSourceUpdate on Speakeronlist {
-						id
-						speakersListId
-						position
-					}
-				`,
-				{ __typename: 'Speakeronlist', id: args.speakerOnListId as string }
-			);
-			if (!target?.speakersListId) return;
-
-			const updated = removeSpeakerFromList(
-				cache,
-				target.speakersListId,
-				args.speakerOnListId as string,
-				target.position
-			);
-			if (!updated) return;
-
-			cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
-				__typename: 'Speakerslist',
-				id: updated.id,
-				speakers: updated.speakers.map((s) => ({
-					__typename: 'Speakeronlist',
-					id: s.id,
-					position: s.position
-				}))
-			} as Record<string, unknown>);
+			const updated = listWithoutSpeaker(cache, args.speakerOnListId as string);
+			if (updated) cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, speakerListData(updated));
+		},
+		selfRemoveFromSpeakersList: (_result, args, cache) => {
+			const updated = listWithoutOwnEntry(cache, args.speakersListId as string);
+			if (updated) cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, speakerListData(updated));
 		},
 
 		// ---------------------------------------------------------------
 		// votingSession
 		// ---------------------------------------------------------------
-		selfRemoveFromSpeakersList: (_result, args, cache) => {
-			const own = findOwnSpeakerEntry(cache, args.speakersListId as string);
-			if (!own) return;
-
-			const updated = removeSpeakerFromList(
-				cache,
-				args.speakersListId as string,
-				own.id,
-				own.position
-			);
-			if (!updated) return;
-
-			cache.writeFragment(ADD_SPEAKER_LIST_FRAGMENT, {
-				__typename: 'Speakerslist',
-				id: updated.id,
-				speakers: updated.speakers.map((s) => ({
-					__typename: 'Speakeronlist',
-					id: s.id,
-					position: s.position
-				}))
-			} as Record<string, unknown>);
-		},
 		startVotingSession: (result, args, cache) => {
 			const created = (result as Record<string, Record<string, unknown>>).startVotingSession;
 			if (!created?.id) return;
@@ -2686,29 +2525,22 @@ export const updates: UpdatesConfig = {
 			if (!deleted?.id) return;
 			const event = { __typename: 'Presenceevent', id: deleted.id as string };
 			const key = cache.keyOfEntity(event);
-			const conferenceUserId =
-				(deleted.conferenceUserId as string | undefined) ??
-				(cache.resolve(event, 'conferenceUserId') as string | undefined);
-			const committeeId =
-				(deleted.committeeId as string | undefined) ??
-				(cache.resolve(event, 'committeeId') as string | undefined);
-			if (key) {
-				if (conferenceUserId) {
-					removeFromList(
-						cache,
-						{ __typename: 'Conferenceuser', id: conferenceUserId },
-						'presenceEvents',
-						key
-					);
-				}
-				if (committeeId) {
-					removeFromList(
-						cache,
-						{ __typename: 'Committee', id: committeeId },
-						'presenceEvents',
-						key
-					);
-				}
+			// The result's ids, else the cached event's
+			const idOf = (field: string) =>
+				(deleted[field] as string | undefined) ??
+				(cache.resolve(event, field) as string | undefined);
+			const conferenceUserId = idOf('conferenceUserId');
+			const committeeId = idOf('committeeId');
+			if (key && conferenceUserId) {
+				removeFromList(
+					cache,
+					{ __typename: 'Conferenceuser', id: conferenceUserId },
+					'presenceEvents',
+					key
+				);
+			}
+			if (key && committeeId) {
+				removeFromList(cache, { __typename: 'Committee', id: committeeId }, 'presenceEvents', key);
 			}
 			cache.invalidate(event);
 		},
@@ -2794,7 +2626,7 @@ export const updates: UpdatesConfig = {
 			const created = (result as Record<string, Record<string, unknown>>).createAmendment;
 			if (!created?.id) return;
 			const id = created.id as string;
-			const child = { __typename: 'Amendment', id };
+			const paperId = args.paperId as string;
 
 			// Write all known fields from args into the entity so the amendment card
 			// renders fully before the subscription delivers the complete entity. Without
@@ -2813,50 +2645,24 @@ export const updates: UpdatesConfig = {
 						paperId
 					}
 				`,
-				{
-					__typename: 'Amendment',
-					id,
-					type: args.type as string,
-					status: (args.status as string | undefined) ?? 'PENDING',
-					targetClauseId: (args.targetClauseId as string | undefined) ?? null,
-					targetOperativeIndex: (args.targetOperativeIndex as number | undefined) ?? null,
-					newContent: (args.newContent as string | undefined) ?? null,
-					targetPosition: (args.targetPosition as number | undefined) ?? null,
-					paperId: args.paperId as string
-				} as Record<string, unknown>
+				{ __typename: 'Amendment', id, ...amendmentFieldsFromArgs(args), paperId } as Record<
+					string,
+					unknown
+				>
 			);
 
-			addToList(
+			addToList(cache, { __typename: 'Resolutionpaper', id: paperId }, 'amendments', {
+				__typename: 'Amendment',
+				id
+			});
+			// The root-level lists AmendmentList queries directly
+			appendToRootLists({
 				cache,
-				{ __typename: 'Resolutionpaper', id: args.paperId as string },
-				'amendments',
-				child
-			);
-			// Update the root-level amendments lists that AmendmentList queries directly.
-			// liveQuery uses both a regular query (Query root) and a subscription
-			// (Subscription root); link in both so the list updates immediately without
-			// waiting for the WS subscription push.
-			const paperId = args.paperId as string;
-			const childKey = cache.keyOfEntity(child);
-			if (childKey) {
-				for (const rootType of ['Query', 'Subscription']) {
-					const fields = cache
-						.inspectFields(rootType)
-						.filter(
-							(f) =>
-								f.fieldName === 'amendments' &&
-								(f.arguments as { where?: { paper?: { id?: string } } } | null)?.where?.paper
-									?.id === paperId
-						);
-					for (const f of fields) {
-						const current = cache.resolve(rootType, 'amendments', f.arguments) as
-							string[] | null | undefined;
-						if (Array.isArray(current) && !current.includes(childKey)) {
-							cache.link(rootType, 'amendments', f.arguments, [...current, childKey]);
-						}
-					}
-				}
-			}
+				rootTypes: ['Query', 'Subscription'],
+				fieldName: 'amendments',
+				matches: (fieldArgs) => wherePaperId(fieldArgs) === paperId,
+				key: `Amendment:${id}`
+			});
 		},
 		acceptAmendment: (_result, _args, cache) => {
 			// acceptAmendment may create amendmentReviewItem rows as a side effect.
@@ -2890,13 +2696,13 @@ export const updates: UpdatesConfig = {
 		// stale field values until the page is reloaded. Write the mutated fields
 		// directly from the known args instead of waiting on that round-trip.
 		updateAmendmentReviewItem: (_result, args, cache) => {
-			const fields: Record<string, unknown> = {};
-			if (args.phase !== undefined) fields.phase = args.phase;
-			if (args.aiObsolete !== undefined) fields.aiObsolete = args.aiObsolete;
-			if (args.aiObsoleteReason !== undefined) fields.aiObsoleteReason = args.aiObsoleteReason;
-			if (args.aiRewriteSuggestion !== undefined)
-				fields.aiRewriteSuggestion = args.aiRewriteSuggestion;
-			if (args.aiRewriteReason !== undefined) fields.aiRewriteReason = args.aiRewriteReason;
+			const fields = definedFields(args, [
+				'phase',
+				'aiObsolete',
+				'aiObsoleteReason',
+				'aiRewriteSuggestion',
+				'aiRewriteReason'
+			]);
 			if (Object.keys(fields).length === 0) return;
 
 			cache.writeFragment(
@@ -2960,52 +2766,17 @@ export const updates: UpdatesConfig = {
 		linkOperativeClauseVote: (result, args, cache) => {
 			const created = (result as Record<string, Record<string, unknown>>).linkOperativeClauseVote;
 			if (!created?.id) return;
-			// linkOperativeClauseVote is an upsert: if a vote for this clause already
-			// exists, remove the stale entry before adding the fresh one so the list
-			// stays deduplicated and the old entity is GC'd.
-			const paper = { __typename: 'Resolutionpaper', id: args.paperId as string };
-			const voteFields = cache
-				.inspectFields(paper)
-				.filter((f) => f.fieldName === 'operativeClauseVotes');
-			for (const f of voteFields) {
-				const existing = cache.resolve(paper, 'operativeClauseVotes', f.arguments) as
-					string[] | null | undefined;
-				if (!Array.isArray(existing)) continue;
-				for (const k of existing) {
-					if (typeof k !== 'string' || !k.startsWith('Operativeclausevote:')) continue;
-					const id = k.slice('Operativeclausevote:'.length);
-					if (id === (created.id as string)) continue;
-					const clauseId = cache.resolve({ __typename: 'Operativeclausevote', id }, 'clauseId');
-					if (clauseId === args.clauseId) {
-						removeFromList(cache, paper, 'operativeClauseVotes', k);
-						cache.invalidate({ __typename: 'Operativeclausevote', id });
-					}
-				}
-			}
-			addToList(cache, paper, 'operativeClauseVotes', {
+			// An upsert: a vote already linked to this clause is replaced, so the list stays
+			// deduplicated and the old entity is GC'd.
+			const paperId = args.paperId as string;
+			dropClauseVotes({ cache, paperId, clauseId: args.clauseId, keepId: created.id as string });
+			addToList(cache, { __typename: 'Resolutionpaper', id: paperId }, 'operativeClauseVotes', {
 				__typename: 'Operativeclausevote',
 				id: created.id as string
 			});
 		},
 		unlinkOperativeClauseVote: (_result, args, cache) => {
-			const paper = { __typename: 'Resolutionpaper', id: args.paperId as string };
-			const voteFields = cache
-				.inspectFields(paper)
-				.filter((f) => f.fieldName === 'operativeClauseVotes');
-			for (const f of voteFields) {
-				const existing = cache.resolve(paper, 'operativeClauseVotes', f.arguments) as
-					string[] | null | undefined;
-				if (!Array.isArray(existing)) continue;
-				for (const k of existing) {
-					if (typeof k !== 'string' || !k.startsWith('Operativeclausevote:')) continue;
-					const id = k.slice('Operativeclausevote:'.length);
-					const clauseId = cache.resolve({ __typename: 'Operativeclausevote', id }, 'clauseId');
-					if (clauseId === args.clauseId) {
-						removeFromList(cache, paper, 'operativeClauseVotes', k);
-						cache.invalidate({ __typename: 'Operativeclausevote', id });
-					}
-				}
-			}
+			dropClauseVotes({ cache, paperId: args.paperId as string, clauseId: args.clauseId });
 		},
 
 		// ---------------------------------------------------------------
@@ -3014,64 +2785,37 @@ export const updates: UpdatesConfig = {
 		addAmendmentSponsor: (result, args, cache) => {
 			const created = (result as Record<string, Record<string, unknown>>).addAmendmentSponsor;
 			if (!created?.id) return;
+			const amendmentId = args.amendmentId as string;
 			const child = { __typename: 'Amendmentsponsor', id: created.id as string };
 
-			// Update Amendment.sponsors (used by AmendmentList for count)
-			addToList(
-				cache,
-				{ __typename: 'Amendment', id: args.amendmentId as string },
-				'sponsors',
-				child
-			);
-
-			// Update root Query.amendmentSponsors (used by AmendmentSponsorPanel liveQuery)
+			// Amendment.sponsors, which AmendmentList counts
+			addToList(cache, { __typename: 'Amendment', id: amendmentId }, 'sponsors', child);
+			// Query.amendmentSponsors, which the AmendmentSponsorPanel liveQuery reads
 			const childKey = cache.keyOfEntity(child);
-			if (childKey) {
-				const fields = cache
-					.inspectFields('Query')
-					.filter(
-						(f) =>
-							f.fieldName === 'amendmentSponsors' &&
-							(f.arguments as { where?: { amendment?: { id?: string } } } | null)?.where?.amendment
-								?.id === (args.amendmentId as string)
-					);
-				for (const f of fields) {
-					const current = cache.resolve('Query', 'amendmentSponsors', f.arguments) as
-						string[] | null | undefined;
-					if (!Array.isArray(current) || current.includes(childKey)) continue;
-					cache.link('Query', 'amendmentSponsors', f.arguments, [...current, childKey]);
-				}
-			}
+			if (!childKey) return;
+			appendToRootLists({
+				cache,
+				fieldName: 'amendmentSponsors',
+				matches: (fieldArgs) => whereAmendmentId(fieldArgs) === amendmentId,
+				key: childKey
+			});
 		},
 
 		removeAmendmentSponsor: (_result, args, cache) => {
 			const sponsor = { __typename: 'Amendmentsponsor', id: args.id as string };
 			const amendmentId = cache.resolve(sponsor, 'amendmentId') as string | undefined;
-			if (amendmentId) {
-				const key = cache.keyOfEntity(sponsor);
-				if (key) {
-					// Remove from Amendment.sponsors (used by AmendmentList for count)
-					removeFromList(cache, { __typename: 'Amendment', id: amendmentId }, 'sponsors', key);
-					// Remove from root Query.amendmentSponsors (used by AmendmentSponsorPanel liveQuery)
-					const fields = cache
-						.inspectFields('Query')
-						.filter(
-							(f) =>
-								f.fieldName === 'amendmentSponsors' &&
-								(f.arguments as { where?: { amendment?: { id?: string } } } | null)?.where
-									?.amendment?.id === amendmentId
-						);
-					for (const f of fields) {
-						const current = cache.resolve('Query', 'amendmentSponsors', f.arguments) as
-							string[] | null | undefined;
-						if (!Array.isArray(current)) continue;
-						cache.link(
-							'Query',
-							'amendmentSponsors',
-							f.arguments,
-							current.filter((k) => k !== key)
-						);
-					}
+			const key = cache.keyOfEntity(sponsor);
+			if (amendmentId && key) {
+				// Amendment.sponsors and Query.amendmentSponsors, see addAmendmentSponsor
+				removeFromList(cache, { __typename: 'Amendment', id: amendmentId }, 'sponsors', key);
+				for (const { args: fieldArgs, keys } of listVariants(cache, 'Query', 'amendmentSponsors')) {
+					if (whereAmendmentId(fieldArgs) !== amendmentId) continue;
+					cache.link(
+						'Query',
+						'amendmentSponsors',
+						fieldArgs,
+						keys.filter((k) => k !== key)
+					);
 				}
 			}
 			cache.invalidate(sponsor);
@@ -3168,9 +2912,9 @@ export const updates: UpdatesConfig = {
 			if (!created?.id) return;
 			// Force the participant/admin conference index queries to refetch since we
 			// can't easily project the entire imported tree into the cache.
-			const queryFields = cache.inspectFields('Query');
-			for (const f of queryFields) {
-				if (f.fieldName === 'findManyConferences' || f.fieldName === 'findFirstConference') {
+			const conferenceIndexes = ['findManyConferences', 'findFirstConference'];
+			for (const f of cache.inspectFields('Query')) {
+				if (conferenceIndexes.includes(f.fieldName)) {
 					cache.invalidate('Query', f.fieldName, f.arguments);
 				}
 			}

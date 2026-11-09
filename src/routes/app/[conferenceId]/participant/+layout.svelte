@@ -4,6 +4,7 @@
 	import { client } from '#lib/api/rumbleClient/client';
 
 	import { getCurrentUser } from '#lib/state/currentUser.svelte';
+	import { participantSelection } from '../selections';
 
 	let { children }: { children: Snippet } = $props();
 
@@ -19,33 +20,7 @@
 				user: { id: { eq: currentUser.id ?? '' } }
 			}
 		},
-		id: true,
-		conferenceUserType: true,
-		committeeMemberId: true,
-		conferenceMemberId: true,
-		committeeMember: {
-			id: true,
-			present: true,
-			committeeId: true,
-			representation: {
-				id: true,
-				name: true,
-				alpha2Code: true,
-				alpha3Code: true,
-				type: true,
-				icon: true
-			}
-		},
-		conferenceMember: {
-			id: true,
-			representation: {
-				id: true,
-				name: true,
-				alpha3Code: true,
-				type: true,
-				icon: true
-			}
-		}
+		...participantSelection
 	});
 </script>
 

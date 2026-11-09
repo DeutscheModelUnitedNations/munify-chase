@@ -3,7 +3,8 @@
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
-	import { PAPER_STATUS_ORDER, statusLabel, type PaperStatus } from './paperContext';
+	import { PAPER_STATUS_ORDER, errorMessage, statusLabel, type PaperStatus } from './paperContext';
+	import { advanceAction, resumeVoteOptions, stepBubble, stepKind } from './chairLifecycle';
 	import { openVotingModal, resumeVotingModal } from '#lib/components/voting/votingModal';
 
 	interface Props {
@@ -37,22 +38,19 @@
 	let amendmentPhaseModalOpen = $state(false);
 	let finalConfirmOpen = $state(false);
 
-	async function advance() {
-		if (!nextStatus) return;
-		if (nextStatus === 'AMENDMENT_PHASE') {
-			amendmentPhaseModalOpen = true;
-			return;
-		}
-		if (nextStatus === 'VOTING_PHASE') {
+	const ADVANCE: Record<ReturnType<typeof advanceAction>, () => unknown> = {
+		none: () => undefined,
+		askAmendmentSettings: () => (amendmentPhaseModalOpen = true),
+		startVoting: async () => {
 			await doAdvance();
 			await setCurrentClause(0);
-			return;
-		}
-		if (nextStatus === 'FINAL') {
-			finalConfirmOpen = true;
-			return;
-		}
-		await doAdvance();
+		},
+		confirmFinal: () => (finalConfirmOpen = true),
+		advance: () => doAdvance()
+	};
+
+	async function advance() {
+		await ADVANCE[advanceAction(nextStatus)]();
 	}
 
 	async function doAdvance(deployConfetti = false) {
@@ -69,7 +67,7 @@
 			});
 			toast.success(m.statusChangedTo({ status: statusLabel(advancingTo) }));
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed to advance');
+			toast.error(errorMessage(err, 'Failed to advance'));
 		} finally {
 			busy = false;
 		}
@@ -94,7 +92,7 @@
 				id: true
 			});
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed to update settings');
+			toast.error(errorMessage(err, 'Failed to update settings'));
 		} finally {
 			busy = false;
 		}
@@ -114,43 +112,21 @@
 				currentOperativeIndex: true
 			});
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed');
+			toast.error(errorMessage(err, 'Failed'));
 		}
-	}
-
-	function canRevertTo(status: PaperStatus, index: number) {
-		return index < currentIdx;
-	}
-	// A step's bubble is interactive when it is the immediate next stage
-	// (advance) or a revertable earlier stage.
-	function isClickable(status: PaperStatus, index: number) {
-		return index === currentIdx + 1 || canRevertTo(status, index);
 	}
 
 	let hoveredIdx = $state<number | null>(null);
 
-	// The next stage's bubble shows the play icon in place of its number; a
-	// revertable earlier bubble shows it on hover. Otherwise the step number.
-	function circleContent(status: PaperStatus, index: number) {
-		if (index === currentIdx + 1) return '▶';
-		if (canRevertTo(status, index) && hoveredIdx === index) return '▶';
-		return String(index + 1);
-	}
-
 	function goToStage(status: PaperStatus, index: number) {
-		if (index === currentIdx + 1) advance();
-		else if (canRevertTo(status, index)) revertTarget = status;
+		const kind = stepKind({ index, currentIdx });
+		if (kind === 'next') advance();
+		else if (kind === 'past') revertTarget = status;
 	}
 
 	function resumeVote() {
-		const active = committee.activeVotingSession;
-		if (!active) return;
-		resumeVotingModal({
-			voteType: active.mode as 'SHOW_OF_HANDS' | 'ROLL_CALL' | 'DEVICE_BASED',
-			voteName: active.voteName ?? paper.title,
-			majority: (active.majority ?? 'ABSOLUTE') as 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS',
-			withAbstentions: active.withAbstentions ?? true
-		});
+		const session = committee.activeVotingSession;
+		if (session) resumeVotingModal(resumeVoteOptions({ session, fallbackName: paper.title }));
 	}
 
 	function startClauseVote() {
@@ -222,7 +198,7 @@
 			});
 			toast.success(m.statusChangedTo({ status: statusLabel(revertTarget) }));
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed');
+			toast.error(errorMessage(err, 'Failed'));
 		} finally {
 			busy = false;
 			revertTarget = null;
@@ -237,64 +213,12 @@
 	     hover and move back through a confirm. -->
 	<ul class="steps steps-horizontal text-sm" data-tour="chair-paper.phases">
 		{#each PAPER_STATUS_ORDER as status, i (status)}
-			{@const clickable = isClickable(status, i)}
-			<li
-				class="step relative {i <= currentIdx ? 'step-primary' : ''}"
-				data-content={circleContent(status, i)}
-			>
-				{#if clickable}
-					<button
-						class="absolute inset-0 z-10 cursor-pointer"
-						title={i === currentIdx + 1
-							? m.advanceToStatus({ status: statusLabel(status) })
-							: m.progressToStage()}
-						aria-label={i === currentIdx + 1
-							? m.advanceToStatus({ status: statusLabel(status) })
-							: m.progressToStage()}
-						disabled={busy}
-						onmouseenter={() => (hoveredIdx = i)}
-						onmouseleave={() => (hoveredIdx = null)}
-						onfocus={() => (hoveredIdx = i)}
-						onblur={() => (hoveredIdx = null)}
-						onclick={() => goToStage(status, i)}
-					></button>
-				{/if}
-				<span
-					class:font-bold={i === currentIdx}
-					class:opacity-50={i > currentIdx}
-					title={undefined}
-				>
-					{statusLabel(status)}
-				</span>
-			</li>
+			{@render lifecycleStep(status, i, stepKind({ index: i, currentIdx }))}
 		{/each}
 	</ul>
 
 	{#if paper.status === 'VOTING_PHASE'}
-		{@const active = committee.activeVotingSession}
-		<div class="flex flex-wrap items-center gap-x-4 gap-y-2" data-tour="chair-paper.vote-actions">
-			{#if active}
-				<button class="btn btn-sm btn-warning" title={m.resumeVote()} onclick={resumeVote}>
-					<i aria-hidden="true" class="ph-fill ph-arrow-clockwise"></i>
-					{m.resumeVote()}
-				</button>
-			{:else}
-				{#if currentClauseId && onStartClauseVote}
-					<button
-						class="btn btn-sm btn-secondary"
-						title={m.startClauseVote()}
-						onclick={startClauseVote}
-					>
-						<i aria-hidden="true" class="ph-fill ph-check-square-offset"></i>
-						{m.startClauseVote()}
-					</button>
-				{/if}
-				<button class="btn btn-sm btn-success" title={m.startVote()} onclick={startVote}>
-					<i aria-hidden="true" class="ph-fill ph-gavel"></i>
-					{m.startVote()}
-				</button>
-			{/if}
-		</div>
+		{@render voteActions()}
 	{/if}
 </div>
 
@@ -424,3 +348,55 @@
 		></button>
 	</div>
 {/if}
+
+{#snippet lifecycleStep(status: PaperStatus, i: number, kind: ReturnType<typeof stepKind>)}
+	{@const stageTitle =
+		kind === 'next' ? m.advanceToStatus({ status: statusLabel(status) }) : m.progressToStage()}
+	<li
+		class="step relative {kind === 'next' || kind === 'future' ? '' : 'step-primary'}"
+		data-content={stepBubble({ kind, index: i, hovered: hoveredIdx === i })}
+	>
+		{#if kind === 'next' || kind === 'past'}
+			<button
+				class="absolute inset-0 z-10 cursor-pointer"
+				title={stageTitle}
+				aria-label={stageTitle}
+				disabled={busy}
+				onmouseenter={() => (hoveredIdx = i)}
+				onmouseleave={() => (hoveredIdx = null)}
+				onfocus={() => (hoveredIdx = i)}
+				onblur={() => (hoveredIdx = null)}
+				onclick={() => goToStage(status, i)}
+			></button>
+		{/if}
+		<span class:font-bold={kind === 'current'} class:opacity-50={i > currentIdx} title={undefined}>
+			{statusLabel(status)}
+		</span>
+	</li>
+{/snippet}
+
+{#snippet voteActions()}
+	<div class="flex flex-wrap items-center gap-x-4 gap-y-2" data-tour="chair-paper.vote-actions">
+		{#if committee.activeVotingSession}
+			<button class="btn btn-sm btn-warning" title={m.resumeVote()} onclick={resumeVote}>
+				<i aria-hidden="true" class="ph-fill ph-arrow-clockwise"></i>
+				{m.resumeVote()}
+			</button>
+		{:else}
+			{#if currentClauseId && onStartClauseVote}
+				<button
+					class="btn btn-sm btn-secondary"
+					title={m.startClauseVote()}
+					onclick={startClauseVote}
+				>
+					<i aria-hidden="true" class="ph-fill ph-check-square-offset"></i>
+					{m.startClauseVote()}
+				</button>
+			{/if}
+			<button class="btn btn-sm btn-success" title={m.startVote()} onclick={startVote}>
+				<i aria-hidden="true" class="ph-fill ph-gavel"></i>
+				{m.startVote()}
+			</button>
+		{/if}
+	</div>
+{/snippet}

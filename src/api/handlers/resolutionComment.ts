@@ -11,6 +11,8 @@ import { isParticipantInConference, isTeamInConference } from '#api/services/aut
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
+import { paperWithAbility, type ResolverContext } from './helpers/paperAccess';
+import { assertMayCommentWith } from './helpers/paperRules';
 
 abilityBuilder.resolutionComment.allow('read').when((ctx) => {
 	return {
@@ -47,6 +49,22 @@ const pubsub = rumblePubsub({ table: 'resolutionComment' });
 
 const visibilityEnum = enum_({ tsName: 'commentVisibility' });
 
+/** The comment as the caller may read it, for a resolver to hand back. */
+async function readableComment(ctx: ResolverContext, id: string) {
+	return (await ctx.abilities.resolutionComment.filter('read')).merge({ where: { id } }).query
+		.single;
+}
+
+/** Comments take one reply level: a reply to a reply is refused. */
+async function assertReplyLevel(parentCommentId: string) {
+	const parent = await db.query.resolutionComment
+		.findFirst({ where: { id: parentCommentId } })
+		.then(assertFindFirstExists);
+	if (parent.parentCommentId) {
+		throw new GraphQLError('Comments are limited to a single reply level');
+	}
+}
+
 schemaBuilder.mutationFields((t) => ({
 	createResolutionComment: t.drizzleField({
 		type: ref,
@@ -61,13 +79,7 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			const user = ctx.mustBeLoggedIn();
 
-			const paper = await db.query.resolutionPaper
-				.findFirst(
-					(await ctx.abilities.resolutionPaper.filter('read')).merge({
-						where: { id: args.paperId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
+			const paper = await paperWithAbility({ ctx, paperId: args.paperId, action: 'read' });
 
 			const author = await db.query.conferenceUser
 				.findFirst({
@@ -79,20 +91,8 @@ schemaBuilder.mutationFields((t) => ({
 				.then(assertFindFirstExists);
 
 			const visibility = args.visibility ?? 'PUBLIC';
-			if (visibility === 'TEAM_ONLY') {
-				if (author.conferenceUserType !== 'ADMIN' && author.conferenceUserType !== 'TEAM') {
-					throw new GraphQLError('Only chairs can create team-only comments');
-				}
-			}
-
-			if (args.parentCommentId) {
-				const parent = await db.query.resolutionComment
-					.findFirst({ where: { id: args.parentCommentId } })
-					.then(assertFindFirstExists);
-				if (parent.parentCommentId) {
-					throw new GraphQLError('Comments are limited to a single reply level');
-				}
-			}
+			assertMayCommentWith({ visibility, authorType: author.conferenceUserType });
+			if (args.parentCommentId) await assertReplyLevel(args.parentCommentId);
 
 			await db.insert(schema.resolutionComment).values({
 				id: args.id,
@@ -107,12 +107,7 @@ schemaBuilder.mutationFields((t) => ({
 			pubsub.created();
 
 			return db.query.resolutionComment
-				.findFirst(
-					query(
-						(await ctx.abilities.resolutionComment.filter('read')).merge({ where: { id: args.id } })
-							.query.single
-					)
-				)
+				.findFirst(query(await readableComment(ctx, args.id)))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -134,12 +129,7 @@ schemaBuilder.mutationFields((t) => ({
 			pubsub.updated(args.id);
 
 			return db.query.resolutionComment
-				.findFirst(
-					query(
-						(await ctx.abilities.resolutionComment.filter('read')).merge({ where: { id: args.id } })
-							.query.single
-					)
-				)
+				.findFirst(query(await readableComment(ctx, args.id)))
 				.then(assertFindFirstExists);
 		}
 	}),

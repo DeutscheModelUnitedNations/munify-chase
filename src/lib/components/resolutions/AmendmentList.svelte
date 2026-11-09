@@ -2,26 +2,26 @@
 	import { m } from '#lib/paraglide/messages';
 	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
-	import {
-		isTeam,
-		amendmentStatusLabel,
-		amendmentStatusBadgeClass,
-		amendmentTypeLabel,
-		type AmendmentType,
-		type AmendmentStatus,
-		type ResolutionViewer
-	} from './paperContext';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
-	import Flag from '#lib/components/Flag.svelte';
+	import { isTeam, type ResolutionViewer } from './paperContext';
 	import { openVotingModal, type VotingResult } from '#lib/components/voting/votingModal';
-	import AmendmentSponsorPanel from './AmendmentSponsorPanel.svelte';
 	import AmendmentReviewPanel from './AmendmentReviewPanel.svelte';
+	import AmendmentCard from './AmendmentCard.svelte';
+	import AmendmentVoteOutcome from './AmendmentVoteOutcome.svelte';
+	import AmendmentDecisionConfirm from './AmendmentDecisionConfirm.svelte';
 	import AiSpinner from '#lib/components/AiSpinner.svelte';
 	import AiIcon from '#lib/components/AiIcon.svelte';
-	import { slide } from 'svelte/transition';
-	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import { rankAmendmentsByImpact } from '#lib/ai/amendments';
 	import { getAiPreference, preferenceToMode } from '#lib/ai/aiPreference.svelte';
+	import { errorMessage } from './sponsors';
+	import {
+		amendmentVoteName,
+		canRankByImpact,
+		changeSummary,
+		groupPendingReviews,
+		rankMap,
+		scopeAmendments,
+		type DecisionKind
+	} from './amendmentListState';
 
 	interface Props {
 		paperId: string;
@@ -96,33 +96,9 @@
 	});
 
 	// Group unresolved review items by trigger, scoped to the currently visible clause tab.
-	const pendingReviewGroups = $derived.by(() => {
-		const pending = (allReviewItems ?? []).filter(
-			(r: {
-				phase?: string | null;
-				subjectAmendment?: { status?: string | null; type?: string | null } | null;
-			}) =>
-				r.phase !== 'RESOLVED' &&
-				r.subjectAmendment?.status === 'SUBMITTED' &&
-				r.subjectAmendment?.type === 'ALTER_TEXT'
-		);
-		const map = new SvelteMap<string, typeof pending>();
-		for (const item of pending) {
-			const key = item.triggerAmendment?.id ?? '';
-			if (!key) continue;
-			// Only surface the banner on the clause the trigger amendment targeted.
-			if ((item.triggerAmendment?.targetClauseId ?? null) !== selectedClauseId) continue;
-			// Subject must target the same clause as the trigger — guards against stale data.
-			if ((item.subjectAmendment?.targetClauseId ?? null) !== selectedClauseId) continue;
-			if (!map.has(key)) map.set(key, []);
-			map.get(key)!.push(item);
-		}
-		return [...map.entries()].map(([triggerId, items]) => ({
-			triggerId,
-			items,
-			trigger: items[0]?.triggerAmendment
-		}));
-	});
+	const pendingReviewGroups = $derived(
+		groupPendingReviews({ items: allReviewItems, clauseId: selectedClauseId })
+	);
 
 	let activeTrigger = $state<string | null>(null);
 	const activeGroup = $derived(
@@ -163,80 +139,34 @@
 		sponsors: { id: true, amendmentId: true, committeeMember: { id: true } }
 	});
 
-	// Clause-targeted amendments when a clause is selected; ADD amendments
-	// (which target a position, not a clause) surface at the document level.
-	const PROCESSED: AmendmentStatus[] = ['CONSENSUS_ADOPTED', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'];
-	const isProcessed = (a: { status?: string | null }) =>
-		PROCESSED.includes(a.status as AmendmentStatus);
-	// PENDING = not yet submitted to chairs; always sort to absolute bottom.
-	const isPending = (a: { status?: string | null }) => a.status === 'PENDING';
-	// Sort weight: 0 = active/submitted, 1 = processed, 2 = pending draft
-	function sortTier(a: { status?: string | null }): number {
-		if (isPending(a)) return 2;
-		if (isProcessed(a)) return 1;
-		return 0;
-	}
-
-	// Type-based priority: DELETE first (renders others obsolete), then ALTER_TEXT,
-	// then ADD, then ALTER_POSITION.
-	function typePriority(type: string | null | undefined): number {
-		switch (type) {
-			case 'DELETE':
-				return 0;
-			case 'ALTER_TEXT':
-				return 1;
-			case 'ADD':
-				return 2;
-			case 'ALTER_POSITION':
-				return 3;
-			default:
-				return 4;
-		}
-	}
-
 	// AI-assigned impact ranks for ALTER_TEXT amendments. Populated on demand.
 	let aiSortOrder = $state(new Map<string, number>());
 	let aiSortBusy = $state(false);
 
-	const scoped = $derived.by(() => {
-		const list = amendments ?? [];
-		const filtered = selectedClauseId
-			? list.filter((a) => a.targetClauseId === selectedClauseId)
-			: list.filter((a) => !a.targetClauseId);
-		return filtered.slice().sort((a, b) => {
-			const tierDiff = sortTier(a) - sortTier(b);
-			if (tierDiff !== 0) return tierDiff;
-			// Within processed or within pending: preserve submission order.
-			if (isProcessed(a) || isPending(a)) return 0;
-			// Active/submitted: type priority first.
-			const typeDiff = typePriority(a.type) - typePriority(b.type);
-			if (typeDiff !== 0) return typeDiff;
-			// Within ALTER_TEXT: AI impact rank if available.
-			if (a.type === 'ALTER_TEXT' && aiSortOrder.size > 0) {
-				const aRank = aiSortOrder.get(a.id) ?? Infinity;
-				const bRank = aiSortOrder.get(b.id) ?? Infinity;
-				if (aRank !== bRank) return aRank - bRank;
-			}
-			return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-		});
-	});
+	// Clause-targeted amendments when a clause is selected; ADD amendments
+	// (which target a position, not a clause) surface at the document level.
+	const scoped = $derived(
+		scopeAmendments({ amendments, clauseId: selectedClauseId, ranks: aiSortOrder })
+	);
 
 	const unprocessedAlterText = $derived(
 		scoped.filter((a) => a.status === 'SUBMITTED' && a.type === 'ALTER_TEXT')
 	);
 
 	async function sortByImpact() {
-		if (aiSortBusy || unprocessedAlterText.length < 2) return;
 		const pref = getAiPreference();
-		if (pref === 'off') return;
+		const ready = canRankByImpact({
+			busy: aiSortBusy,
+			candidates: unprocessedAlterText.length,
+			preference: pref
+		});
+		if (!ready) return;
 		aiSortBusy = true;
 		try {
 			const ranked = await rankAmendmentsByImpact(unprocessedAlterText, preferenceToMode(pref));
-			const map = new SvelteMap<string, number>();
-			ranked.forEach((id, i) => map.set(id, i));
-			aiSortOrder = map;
+			aiSortOrder = rankMap(ranked);
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'AI sort failed');
+			toast.error(errorMessage(err, 'AI sort failed'));
 		} finally {
 			aiSortBusy = false;
 		}
@@ -244,14 +174,6 @@
 
 	const myMemberId = $derived(viewer.committeeMemberId ?? null);
 	const team = $derived(isTeam(viewer));
-
-	let expandedSponsors = $state(new Set<string>());
-	function toggleSponsors(id: string) {
-		const next = new SvelteSet(expandedSponsors);
-		if (next.has(id)) next.delete(id);
-		else next.add(id);
-		expandedSponsors = next;
-	}
 
 	let busyId = $state<string | null>(null);
 
@@ -261,7 +183,7 @@
 			await fn();
 			if (successMsg) toast.success(successMsg);
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Action failed');
+			toast.error(errorMessage(err, 'Action failed'));
 		} finally {
 			busyId = null;
 		}
@@ -326,10 +248,8 @@
 
 	async function startAmendmentVote(a: AmendmentRow) {
 		await present(a.id);
-		const typeLabel = amendmentTypeLabel(a.type as AmendmentType);
-		const voteName = a.documentNumber ? `${a.documentNumber} – ${typeLabel}` : typeLabel;
 		const result = await openVotingModal({
-			voteName,
+			voteName: amendmentVoteName(a),
 			voteType: 'SHOW_OF_HANDS',
 			majority: 'SIMPLE',
 			withAbstentions: true
@@ -363,40 +283,9 @@
 		unpresent();
 	}
 
-	// A short, human-readable summary of what applying the amendment will do.
-	function changeSummary(a: AmendmentRow): { headline: string; body?: string | null } {
-		const opNum = a.targetOperativeIndex != null ? a.targetOperativeIndex + 1 : null;
-		const clauseRef = opNum != null ? ` – ${m.operativeClausePresentation()} ${opNum}` : '';
-		switch (a.type) {
-			case 'DELETE':
-				return { headline: `${m.deleteClausePresentation()}${clauseRef}` };
-			case 'ALTER_TEXT':
-				return { headline: `${m.alterClausePresentation()}${clauseRef}`, body: a.newContent };
-			case 'ADD':
-				return {
-					headline: `${m.addClausePresentation()} – ${m.insertAfterPresentation({ index: (a.targetPosition ?? 0) + 1 })}`,
-					body: a.newContent
-				};
-			case 'ALTER_POSITION':
-				return {
-					headline: `${m.moveClausePresentation()} – ${m.moveToPositionPresentation({ position: (a.targetPosition ?? 0) + 1 })}`
-				};
-			default:
-				return { headline: amendmentTypeLabel(a.type as AmendmentType) };
-		}
-	}
-
 	// Chair decisions (accept / adopt-by-consensus / reject) are confirmed via a
 	// modal before they take effect, since they immediately alter the document.
-	type DecisionKind = 'accept' | 'consensus' | 'reject';
 	let pendingDecision = $state<{ kind: DecisionKind; amendmentId: string } | null>(null);
-
-	const decisionMessage = (kind: DecisionKind) =>
-		kind === 'accept'
-			? m.confirmAcceptAmendment()
-			: kind === 'consensus'
-				? m.confirmAdoptByConsensus()
-				: m.confirmRejectAmendment();
 
 	function closeDecision() {
 		pendingDecision = null;
@@ -412,30 +301,53 @@
 	}
 </script>
 
-<div class="flex h-full flex-col gap-3">
-	<!-- Review banners — shown whenever accepted amendments left unresolved siblings -->
-	{#if team && pendingReviewGroups.length > 0}
-		<div class="flex flex-col gap-1.5">
-			{#each pendingReviewGroups as group (group.triggerId)}
-				<button
-					class="bg-warning/15 border-warning/40 text-warning-content flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm hover:brightness-95 active:brightness-90"
-					onclick={() => (activeTrigger = group.triggerId)}
-				>
-					<i aria-hidden="true" class="ph-fill ph-warning text-warning shrink-0"></i>
-					<span class="flex-1">
-						<span class="font-semibold">
-							{group.items.length} amendment{group.items.length > 1 ? 's' : ''} need{group.items
-								.length === 1
-								? 's'
-								: ''} review
-						</span>
-						after accepting
-						<span class="font-mono">{group.trigger?.documentNumber ?? 'amendment'}</span>
+<!-- Review banners — shown whenever accepted amendments left unresolved siblings -->
+{#snippet reviewBanners()}
+	<div class="flex flex-col gap-1.5">
+		{#each pendingReviewGroups as group (group.triggerId)}
+			<button
+				class="bg-warning/15 border-warning/40 text-warning-content flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm hover:brightness-95 active:brightness-90"
+				onclick={() => (activeTrigger = group.triggerId)}
+			>
+				<i aria-hidden="true" class="ph-fill ph-warning text-warning shrink-0"></i>
+				<span class="flex-1">
+					<span class="font-semibold">
+						{group.items.length} amendment{group.items.length > 1 ? 's' : ''} need{group.items
+							.length === 1
+							? 's'
+							: ''} review
 					</span>
-					<i aria-hidden="true" class="ph-fill ph-caret-right text-warning/60 shrink-0 text-xs"></i>
-				</button>
-			{/each}
-		</div>
+					after accepting
+					<span class="font-mono">{group.trigger?.documentNumber ?? 'amendment'}</span>
+				</span>
+				<i aria-hidden="true" class="ph-fill ph-caret-right text-warning/60 shrink-0 text-xs"></i>
+			</button>
+		{/each}
+	</div>
+{/snippet}
+
+{#snippet impactSortButton()}
+	<div class="flex justify-end">
+		<button
+			class="btn btn-xs {aiSortOrder.size > 0 ? 'btn-primary' : 'btn-ghost'}"
+			disabled={aiSortBusy}
+			onclick={sortByImpact}
+		>
+			{#if aiSortBusy}
+				<AiSpinner size="xs" />
+			{:else if aiSortOrder.size > 0}
+				<AiIcon size="xs" />
+			{:else}
+				<i aria-hidden="true" class="ph-fill ph-magic-wand"></i>
+			{/if}
+			Sort by impact
+		</button>
+	</div>
+{/snippet}
+
+<div class="flex h-full flex-col gap-3">
+	{#if team && pendingReviewGroups.length > 0}
+		{@render reviewBanners()}
 	{/if}
 
 	{#if !scoped.length}
@@ -444,276 +356,48 @@
 		</p>
 	{:else}
 		{#if team && unprocessedAlterText.length > 1}
-			<div class="flex justify-end">
-				<button
-					class="btn btn-xs {aiSortOrder.size > 0 ? 'btn-primary' : 'btn-ghost'}"
-					disabled={aiSortBusy}
-					onclick={sortByImpact}
-				>
-					{#if aiSortBusy}
-						<AiSpinner size="xs" />
-					{:else if aiSortOrder.size > 0}
-						<AiIcon size="xs" />
-					{:else}
-						<i aria-hidden="true" class="ph-fill ph-magic-wand"></i>
-					{/if}
-					Sort by impact
-				</button>
-			</div>
+			{@render impactSortButton()}
 		{/if}
 		<div class="flex-1 space-y-3 overflow-y-auto">
 			{#each scoped as a (a.id)}
-				{@const mine = a.proposer?.id === myMemberId}
-				{@const isActive = a.id === activeAmendmentId}
-				{@const sponsorsExpanded = expandedSponsors.has(a.id)}
-				{@const sponsorCount = a.sponsors?.length ?? 0}
-				{@const canSubmit = sponsorCount >= minAmendmentSponsors}
-				<div
-					class="bg-base-100 rounded-lg p-3"
-					class:ring-2={isActive}
-					class:ring-inset={isActive}
-					class:ring-primary={isActive}
-				>
-					<div class="flex items-center justify-between gap-2">
-						<div class="flex items-center gap-1.5">
-							<span class="flex items-center gap-1.5 font-mono text-sm font-semibold">
-								{#if a.type === 'ADD'}
-									<i aria-hidden="true" class="ph-fill ph-plus"></i>
-								{:else if a.type === 'DELETE'}
-									<i aria-hidden="true" class="ph-fill ph-trash"></i>
-								{:else if a.type === 'ALTER_TEXT'}
-									<i aria-hidden="true" class="ph-fill ph-pen"></i>
-								{:else if a.type === 'ALTER_POSITION'}
-									<i aria-hidden="true" class="ph-fill ph-arrows-down-up"></i>
-								{/if}
-								{#if a.documentNumber}
-									{a.documentNumber}
-								{/if}
-							</span>
-						</div>
-						<span class="badge badge-sm {amendmentStatusBadgeClass(a.status as AmendmentStatus)}">
-							{amendmentStatusLabel(a.status as AmendmentStatus)}
-						</span>
-					</div>
-					<div class="text-base-content/70 mt-2 flex items-center gap-2 text-xs">
-						<Flag representation={a.proposer?.representation} size="xs" />
-						<span
-							>{getTranslatedCountryNameFromAlpha3Code(a.proposer?.representation?.alpha3Code) ??
-								a.proposer?.representation?.name ??
-								m.unknown()}</span
-						>
-						<span class="text-base-content/40">·</span>
-						<button
-							class="btn btn-xs btn-ghost -my-1 -ml-1 gap-1"
-							class:text-warning={!canSubmit && a.status === 'PENDING'}
-							onclick={() => toggleSponsors(a.id)}
-						>
-							{m.sponsorsCount({
-								current: String(sponsorCount),
-								needed: String(minAmendmentSponsors)
-							})}
-							<i
-								aria-hidden="true"
-								class="ph-fill ph-caret-down text-[0.6rem] transition-transform duration-200"
-								class:rotate-180={sponsorsExpanded}
-							></i>
-						</button>
-					</div>
-					{#if sponsorsExpanded}
-						<div transition:slide={{ duration: 200 }}>
-							<AmendmentSponsorPanel
-								amendmentId={a.id}
-								{committeeId}
-								{sponsoringOpen}
-								{viewer}
-								proposerMemberId={a.proposer?.id}
-								amendmentStatus={a.status}
-							/>
-						</div>
-					{/if}
-
-					{#if a.newContent}
-						<p
-							class="bg-base-200 mt-2 rounded p-2 font-mono text-xs whitespace-pre-wrap opacity-80"
-						>
-							{a.newContent}
-						</p>
-					{/if}
-
-					<div class="mt-3 flex flex-wrap gap-1.5">
-						{#if mine && a.status === 'PENDING'}
-							<div
-								class="tooltip tooltip-top"
-								data-tip={canSubmit
-									? undefined
-									: m.sponsorsNeededToSubmit({
-											current: String(sponsorCount),
-											needed: String(minAmendmentSponsors)
-										})}
-							>
-								<button
-									class="btn btn-xs btn-primary"
-									disabled={busyId === a.id || !canSubmit}
-									onclick={() => submit(a.id)}>{m.submit()}</button
-								>
-							</div>
-							<button
-								class="btn btn-xs btn-ghost"
-								disabled={busyId === a.id}
-								onclick={() => withdraw(a.id)}>{m.withdraw()}</button
-							>
-						{/if}
-
-						{#if team && (a.status === 'SUBMITTED' || a.status === 'PENDING')}
-							{#if isActive}
-								<button
-									class="btn btn-xs btn-primary"
-									disabled={busyId === a.id || busyId === 'unpresent'}
-									onclick={() => unpresent()}>{m.stopPresenting()}</button
-								>
-							{:else}
-								<button
-									class="btn btn-xs btn-ghost"
-									disabled={busyId === a.id || a.status === 'PENDING'}
-									onclick={() => present(a.id)}
-								>
-									<i aria-hidden="true" class="ph-fill ph-eye"></i>
-									{m.present()}
-								</button>
-							{/if}
-							<div class="join ml-auto" data-tour="chair-paper.decide">
-								<button
-									class="btn btn-xs btn-primary join-item"
-									disabled={busyId === a.id || busyId === 'unpresent' || a.status === 'PENDING'}
-									onclick={() => startAmendmentVote(a)}
-								>
-									<i aria-hidden="true" class="ph-fill ph-check-square-offset"></i>
-									{m.startVote()}
-								</button>
-								<div class="dropdown dropdown-end join-item flex">
-									<button
-										tabindex="0"
-										class="btn btn-xs btn-primary join-item px-1.5"
-										aria-label={m.decideManually()}
-										title={m.decideManually()}
-									>
-										<i aria-hidden="true" class="ph-fill ph-caret-down"></i>
-									</button>
-									<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-									<ul
-										tabindex="0"
-										class="dropdown-content menu bg-base-100 border-base-300 rounded-box z-50 mt-1 w-48 border p-1 shadow-xl"
-									>
-										<li>
-											<button
-												class="text-success"
-												disabled={busyId === a.id}
-												onclick={() => (pendingDecision = { kind: 'consensus', amendmentId: a.id })}
-											>
-												<i aria-hidden="true" class="ph-fill ph-handshake"></i>
-												{m.adoptByConsensus()}
-											</button>
-										</li>
-										<li>
-											<button
-												class="text-success"
-												disabled={busyId === a.id}
-												onclick={() => (pendingDecision = { kind: 'accept', amendmentId: a.id })}
-											>
-												<i aria-hidden="true" class="ph-fill ph-check"></i>
-												{m.accept()}
-											</button>
-										</li>
-										<li>
-											<button
-												class="text-error"
-												disabled={busyId === a.id}
-												onclick={() => (pendingDecision = { kind: 'reject', amendmentId: a.id })}
-											>
-												<i aria-hidden="true" class="ph-fill ph-x"></i>
-												{m.reject()}
-											</button>
-										</li>
-									</ul>
-								</div>
-							</div>
-						{/if}
-					</div>
-				</div>
+				<AmendmentCard
+					amendment={a}
+					{committeeId}
+					{viewer}
+					{team}
+					{myMemberId}
+					{sponsoringOpen}
+					{minAmendmentSponsors}
+					active={a.id === activeAmendmentId}
+					{busyId}
+					onsubmit={() => submit(a.id)}
+					onwithdraw={() => withdraw(a.id)}
+					onpresent={() => present(a.id)}
+					onunpresent={() => unpresent()}
+					onvote={() => startAmendmentVote(a)}
+					ondecide={(kind) => (pendingDecision = { kind, amendmentId: a.id })}
+				/>
 			{/each}
 		</div>
 	{/if}
 </div>
 
 {#if pendingDecision}
-	<div class="modal modal-open">
-		<div class="modal-box">
-			<h3 class="text-lg font-bold">{m.confirm()}</h3>
-			<p class="py-3">{decisionMessage(pendingDecision.kind)}</p>
-			<div class="modal-action">
-				<button class="btn btn-ghost" onclick={closeDecision}>{m.cancel()}</button>
-				<button
-					class="btn {pendingDecision.kind === 'reject' ? 'btn-error' : 'btn-success'}"
-					onclick={confirmDecision}>{m.confirm()}</button
-				>
-			</div>
-		</div>
-		<button class="modal-backdrop" aria-label={m.cancel()} onclick={closeDecision}></button>
-	</div>
+	<AmendmentDecisionConfirm
+		kind={pendingDecision.kind}
+		onconfirm={confirmDecision}
+		onclose={closeDecision}
+	/>
 {/if}
 
 {#if voteOutcome}
-	{@const adopted = voteOutcome.result.outcome === 'ADOPTED'}
-	{@const summary = changeSummary(voteOutcome.amendment)}
-	<div class="modal modal-open">
-		<div class="modal-box">
-			<div class="flex items-center justify-between gap-2">
-				<h3 class="text-lg font-bold">{m.voteResult()}</h3>
-				<span class="badge {adopted ? 'badge-success' : 'badge-error'}">
-					{adopted ? m.amendmentStatusAccepted() : m.amendmentStatusRejected()}
-				</span>
-			</div>
-
-			<div class="text-base-content/70 mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-				<span
-					><i aria-hidden="true" class="ph-fill ph-check text-success"></i>
-					{voteOutcome.result.votesFor}
-					{m.votesFor()}</span
-				>
-				<span
-					><i aria-hidden="true" class="ph-fill ph-x text-error"></i>
-					{voteOutcome.result.votesAgainst}
-					{m.votesAgainst()}</span
-				>
-				<span
-					><i aria-hidden="true" class="ph-fill ph-minus"></i>
-					{voteOutcome.result.votesAbstain}
-					{m.votesAbstain()}</span
-				>
-			</div>
-
-			<div class="bg-base-200 mt-4 rounded-lg p-3">
-				<p class="text-base-content/60 text-xs">{m.proposedAmendmentPresentation()}</p>
-				<p class="mt-1 font-semibold">{summary.headline}</p>
-				{#if summary.body}
-					<p class="bg-base-100 mt-2 rounded p-2 font-mono text-xs whitespace-pre-wrap">
-						{summary.body}
-					</p>
-				{/if}
-			</div>
-
-			<div class="modal-action">
-				<button class="btn btn-ghost" onclick={cancelVoteOutcome}>{m.cancel()}</button>
-				<button class="btn btn-error" class:btn-outline={adopted} onclick={rejectVoteOutcome}
-					>{m.reject()}</button
-				>
-				<button class="btn btn-success" class:btn-outline={!adopted} onclick={applyVoteOutcome}
-					>{m.applyAmendment()}</button
-				>
-			</div>
-		</div>
-		<button class="modal-backdrop" aria-label={m.cancel()} onclick={cancelVoteOutcome}></button>
-	</div>
+	<AmendmentVoteOutcome
+		result={voteOutcome.result}
+		summary={changeSummary(voteOutcome.amendment)}
+		onapply={applyVoteOutcome}
+		onreject={rejectVoteOutcome}
+		oncancel={cancelVoteOutcome}
+	/>
 {/if}
 
 {#if activeGroup}

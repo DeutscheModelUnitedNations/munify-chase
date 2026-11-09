@@ -4,6 +4,8 @@ import { isParticipantInConference, isTeamInConference } from '#api/services/aut
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
+import { chairsCommittee, type ResolverContext } from './helpers/paperAccess';
+import { chairNamedMember } from './helpers/paperRules';
 
 abilityBuilder.amendmentSponsor.allow('read').when((ctx) => {
 	return {
@@ -35,6 +37,25 @@ const ref = object({ table: 'amendmentSponsor' });
 query({ table: 'amendmentSponsor' });
 const pubsub = rumblePubsub({ table: 'amendmentSponsor' });
 
+/** The caller's own seat in the paper's committee, while it takes amendment sponsors. */
+async function ownSponsoringMember({ ctx, paperId }: { ctx: ResolverContext; paperId: string }) {
+	const user = ctx.mustBeLoggedIn();
+	if (!user.email) throw new GraphQLError('User email required');
+	const member = await db.query.committeeMember.findFirst({
+		where: {
+			users: { userEmail: user.email },
+			committee: { resolutionPapers: { id: paperId } }
+		},
+		columns: { id: true },
+		with: { committee: true }
+	});
+	if (!member) throw new GraphQLError('Not a committee member');
+	if (!member.committee.amendmentSponsoringOpen) {
+		throw new GraphQLError('Amendment sponsoring is closed');
+	}
+	return member.id;
+}
+
 schemaBuilder.mutationFields((t) => ({
 	addAmendmentSponsor: t.drizzleField({
 		type: ref,
@@ -44,7 +65,7 @@ schemaBuilder.mutationFields((t) => ({
 			committeeMemberId: t.arg.id()
 		},
 		resolve: async (query, _root, args, ctx) => {
-			const user = ctx.mustBeLoggedIn();
+			ctx.mustBeLoggedIn();
 			const amendment = await db.query.amendment
 				.findFirst({
 					where: (await ctx.abilities.amendment.filter('read')).merge({
@@ -54,56 +75,24 @@ schemaBuilder.mutationFields((t) => ({
 				})
 				.then(assertFindFirstExists);
 
-			const chair = await db.query.committee.findFirst({
-				where: { id: amendment.paper.committee.id, ...isTeamInConference(ctx) },
-				columns: { id: true }
-			});
-
-			let createdId: string;
-
-			if (chair?.id) {
-				if (!args.committeeMemberId) {
-					throw new GraphQLError('Committee member ID required when chair is creating sponsor');
-				}
-				createdId = await db
-					.insert(schema.amendmentSponsor)
-					.values({
-						id: args.id,
-						amendmentId: args.amendmentId,
-						committeeMemberId: args.committeeMemberId
+			const committeeMemberId = (await chairsCommittee({
+				ctx,
+				committeeId: amendment.paper.committee.id
+			}))
+				? chairNamedMember({
+						committeeMemberId: args.committeeMemberId,
+						missing: 'Committee member ID required when chair is creating sponsor'
 					})
-					.returning({ id: schema.amendmentSponsor.id })
-					.onConflictDoNothing()
-					.then(assertFirstEntryExists)
-					.then((r) => r.id);
-				pubsub.created();
-			} else {
-				if (!user.email) throw new GraphQLError('User email required');
-				const member = await db.query.committeeMember.findFirst({
-					where: {
-						users: { userEmail: user.email },
-						committee: { resolutionPapers: { id: amendment.paperId } }
-					},
-					columns: { id: true },
-					with: { committee: true }
-				});
-				if (!member) throw new GraphQLError('Not a committee member');
-				if (!member.committee.amendmentSponsoringOpen) {
-					throw new GraphQLError('Amendment sponsoring is closed');
-				}
-				createdId = await db
-					.insert(schema.amendmentSponsor)
-					.values({
-						id: args.id,
-						amendmentId: args.amendmentId,
-						committeeMemberId: member.id
-					})
-					.returning({ id: schema.amendmentSponsor.id })
-					.onConflictDoNothing()
-					.then(assertFirstEntryExists)
-					.then((r) => r.id);
-				pubsub.created();
-			}
+				: await ownSponsoringMember({ ctx, paperId: amendment.paperId });
+
+			const createdId = await db
+				.insert(schema.amendmentSponsor)
+				.values({ id: args.id, amendmentId: args.amendmentId, committeeMemberId })
+				.returning({ id: schema.amendmentSponsor.id })
+				.onConflictDoNothing()
+				.then(assertFirstEntryExists)
+				.then((r) => r.id);
+			pubsub.created();
 
 			return db.query.amendmentSponsor
 				.findFirst(

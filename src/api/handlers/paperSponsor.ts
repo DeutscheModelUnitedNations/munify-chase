@@ -4,6 +4,8 @@ import { isParticipantInConference, isTeamInConference } from '#api/services/aut
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
+import { chairsCommittee, paperWithAbility, type ResolverContext } from './helpers/paperAccess';
+import { assertSponsoringOpen, chairNamedMember } from './helpers/paperRules';
 
 abilityBuilder.paperSponsor.allow('read').when((ctx) => {
 	return {
@@ -29,6 +31,28 @@ const ref = object({ table: 'paperSponsor' });
 query({ table: 'paperSponsor' });
 const pubsub = rumblePubsub({ table: 'paperSponsor' });
 
+/** The caller's own seat in the paper's committee, while the paper takes sponsors. */
+async function ownSponsoringMember({
+	ctx,
+	paper
+}: {
+	ctx: ResolverContext;
+	paper: { id: string; status: Parameters<typeof assertSponsoringOpen>[0] };
+}) {
+	const user = ctx.mustBeLoggedIn();
+	if (!user.email) throw new GraphQLError('User email required');
+	const committeeMember = await db.query.committeeMember
+		.findFirst({
+			where: {
+				users: { userEmail: user.email },
+				committee: { resolutionPapers: { id: paper.id } }
+			}
+		})
+		.then(assertFindFirstExists);
+	assertSponsoringOpen(paper.status);
+	return committeeMember.id;
+}
+
 schemaBuilder.mutationFields((t) => ({
 	addPaperSponsor: t.drizzleField({
 		type: ref,
@@ -38,70 +62,23 @@ schemaBuilder.mutationFields((t) => ({
 			committeeMemberId: t.arg.id()
 		},
 		resolve: async (query, _root, args, ctx) => {
-			const paper = await db.query.resolutionPaper
-				.findFirst(
-					(await ctx.abilities.resolutionPaper.filter('read')).merge({
-						where: { id: args.paperId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
+			const paper = await paperWithAbility({ ctx, paperId: args.paperId, action: 'read' });
 
-			const isChair = !!(await db.query.committee.findFirst({
-				where: { ...isTeamInConference(ctx), id: paper.committeeId }
-			}));
-
-			let createdId: string;
-
-			if (isChair) {
-				if (!args.committeeMemberId)
-					throw new GraphQLError('Committee member ID required for chair sponsorship');
-				createdId = await db
-					.insert(schema.paperSponsor)
-					.values({
-						id: args.id,
-						paperId: args.paperId,
-						committeeMemberId: args.committeeMemberId
+			const committeeMemberId = (await chairsCommittee({ ctx, committeeId: paper.committeeId }))
+				? chairNamedMember({
+						committeeMemberId: args.committeeMemberId,
+						missing: 'Committee member ID required for chair sponsorship'
 					})
-					.returning({ id: schema.paperSponsor.id })
-					.onConflictDoNothing()
-					.then(assertFirstEntryExists)
-					.then((p) => p.id);
+				: await ownSponsoringMember({ ctx, paper });
 
-				pubsub.created();
-			} else {
-				const user = ctx.mustBeLoggedIn();
-				if (!user.email) throw new GraphQLError('User email required');
-				const committeeMember = await db.query.committeeMember
-					.findFirst({
-						where: {
-							users: { userEmail: user.email },
-							committee: { resolutionPapers: { id: args.paperId } }
-						}
-					})
-					.then(assertFindFirstExists);
-
-				if (
-					paper.status !== 'WORKING_PAPER' &&
-					paper.status !== 'SUBMITTED' &&
-					paper.status !== 'DRAFT_RESOLUTION'
-				) {
-					throw new GraphQLError('Sponsoring is not open for this paper');
-				}
-
-				createdId = await db
-					.insert(schema.paperSponsor)
-					.values({
-						id: args.id,
-						paperId: args.paperId,
-						committeeMemberId: committeeMember.id
-					})
-					.returning({ id: schema.paperSponsor.id })
-					.onConflictDoNothing()
-					.then(assertFirstEntryExists)
-					.then((p) => p.id);
-
-				pubsub.created();
-			}
+			const createdId = await db
+				.insert(schema.paperSponsor)
+				.values({ id: args.id, paperId: args.paperId, committeeMemberId })
+				.returning({ id: schema.paperSponsor.id })
+				.onConflictDoNothing()
+				.then(assertFirstEntryExists)
+				.then((p) => p.id);
+			pubsub.created();
 
 			return db.query.paperSponsor
 				.findFirst(
@@ -123,17 +100,8 @@ schemaBuilder.mutationFields((t) => ({
 				.findFirst({ where: { id: args.id }, with: { paper: true } })
 				.then(assertFindFirstExists);
 
-			const isChair = !!(await db.query.committee.findFirst({
-				where: { ...isTeamInConference(ctx), id: sponsor.paper.committeeId }
-			}));
-
-			if (
-				!isChair &&
-				sponsor.paper.status !== 'WORKING_PAPER' &&
-				sponsor.paper.status !== 'SUBMITTED' &&
-				sponsor.paper.status !== 'DRAFT_RESOLUTION'
-			) {
-				throw new GraphQLError('Sponsoring is not open for this paper');
+			if (!(await chairsCommittee({ ctx, committeeId: sponsor.paper.committeeId }))) {
+				assertSponsoringOpen(sponsor.paper.status);
 			}
 
 			await db

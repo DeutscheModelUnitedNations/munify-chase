@@ -16,6 +16,7 @@ import {
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
+import { findUpdatableConference } from './helpers/scopedLookups';
 
 // The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
 abilityBuilder.conferenceMember.allow('read').when(
@@ -51,13 +52,7 @@ schemaBuilder.mutationFields((t) => ({
 			representationId: t.arg.id({ required: true })
 		},
 		resolve: async (query, root, args, ctx) => {
-			await db.query.conference
-				.findFirst(
-					(await ctx.abilities.conference.filter('update')).merge({
-						where: { id: args.conferenceId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
+			await findUpdatableConference(ctx, args.conferenceId);
 
 			const result = await db
 				.insert(schema.conferenceMember)

@@ -9,19 +9,19 @@
 
 	let { role, detail = null }: Props = $props();
 
-	const config = $derived.by(() => {
-		switch (role) {
-			case 'ADMIN':
-				return { label: m.launcherRoleAdmin(), icon: 'shield-check', variant: 'badge-neutral' };
-			case 'CHAIR':
-				return { label: m.launcherRoleChair(), icon: 'gavel', variant: 'badge-accent' };
-			case 'SPECTATOR':
-				return { label: m.launcherRoleSpectator(), icon: 'eye', variant: 'badge-ghost' };
-			case 'DELEGATE':
-			default:
-				return { label: m.launcherRoleDelegate(), icon: 'flag', variant: 'badge-primary' };
-		}
-	});
+	const ROLE_BADGES: Record<LauncherBadge, () => { label: string; icon: string; variant: string }> =
+		{
+			ADMIN: () => ({
+				label: m.launcherRoleAdmin(),
+				icon: 'shield-check',
+				variant: 'badge-neutral'
+			}),
+			CHAIR: () => ({ label: m.launcherRoleChair(), icon: 'gavel', variant: 'badge-accent' }),
+			SPECTATOR: () => ({ label: m.launcherRoleSpectator(), icon: 'eye', variant: 'badge-ghost' }),
+			DELEGATE: () => ({ label: m.launcherRoleDelegate(), icon: 'flag', variant: 'badge-primary' })
+		};
+
+	const config = $derived((ROLE_BADGES[role] ?? ROLE_BADGES.DELEGATE)());
 </script>
 
 <div class="badge badge-soft {config.variant} text-base-content gap-1.5 whitespace-nowrap py-3">

@@ -3,7 +3,7 @@ import { ADMIN_DOMAIN_WHITELIST, ADMIN_EMAIL_WHITELIST } from '$app/env/private'
 import { GraphQLError } from 'graphql';
 import { sql } from 'drizzle-orm';
 
-export function isAdminEmail(email: string) {
+function isAdminEmail(email: string) {
 	const whitelistEmails = ADMIN_EMAIL_WHITELIST.split(',').filter(Boolean);
 	const whitelistDomains = ADMIN_DOMAIN_WHITELIST.split(',').filter(Boolean);
 	const domain = email.split('@')[1];

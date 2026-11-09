@@ -2,8 +2,13 @@ import { db, schema } from '#api/db/db';
 import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '#api/rumble';
 import { isTeamInConference, isParticipantInConference } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { eq } from 'drizzle-orm';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import {
+	findOwnConferenceUser,
+	findUpdatableCommittee,
+	type HandlerContext
+} from './helpers/scopedLookups';
+import { setActiveSession } from './helpers/committeeSessions';
 
 abilityBuilder.rollCallSession.allow('read').when((ctx) => ({
 	where: { committee: isParticipantInConference(ctx) }
@@ -20,6 +25,10 @@ const pubsub = rumblePubsub({ table: 'rollCallSession' });
 const committeePubsub = rumblePubsub({ table: 'committee' });
 query({ table: 'rollCallSession' });
 
+async function readableSession(ctx: HandlerContext, id: string) {
+	return (await ctx.abilities.rollCallSession.filter('read')).merge({ where: { id } }).query.single;
+}
+
 schemaBuilder.mutationFields((t) => {
 	return {
 		startRollCallSession: t.drizzleField({
@@ -29,35 +38,17 @@ schemaBuilder.mutationFields((t) => {
 				committeeId: t.arg.id({ required: true })
 			},
 			resolve: async (q, _root, args, ctx) => {
-				const committee = await db.query.committee
-					.findFirst(
-						(await ctx.abilities.committee.filter('update')).merge({
-							where: { id: args.committeeId }
-						}).query.single
-					)
-					.then(assertFindFirstExists);
+				const committee = await findUpdatableCommittee(ctx, args.committeeId);
 
-				// Resume an already-active session if one is referenced. This is the
-				// single source of truth — no need to scan rollCallSession for null
-				// completedAt anymore, the FK on the committee tells us directly.
+				// Resume an already-active session if one is referenced: the committee's reference is
+				// the single source of truth, no need to scan for sessions without completedAt.
 				if (committee.activeRollCallSessionId) {
 					return db.query.rollCallSession
-						.findFirst(
-							q(
-								(await ctx.abilities.rollCallSession.filter('read')).merge({
-									where: { id: committee.activeRollCallSessionId }
-								}).query.single
-							)
-						)
+						.findFirst(q(await readableSession(ctx, committee.activeRollCallSessionId)))
 						.then(assertFindFirstExists);
 				}
 
-				const startedBy = await db.query.conferenceUser.findFirst({
-					where: {
-						userEmail: ctx.mustBeLoggedIn().email!,
-						conferenceId: committee.conferenceId
-					}
-				});
+				const startedBy = await findOwnConferenceUser(ctx, committee.conferenceId);
 
 				const result = await db.transaction(async (tx) => {
 					const inserted = await tx
@@ -70,10 +61,11 @@ schemaBuilder.mutationFields((t) => {
 						})
 						.returning()
 						.then(assertFirstEntryExists);
-					await tx
-						.update(schema.committee)
-						.set({ activeRollCallSessionId: inserted.id })
-						.where(eq(schema.committee.id, args.committeeId));
+					await setActiveSession({
+						tx,
+						committeeId: args.committeeId,
+						active: { activeRollCallSessionId: inserted.id }
+					});
 					return inserted;
 				});
 
@@ -82,13 +74,7 @@ schemaBuilder.mutationFields((t) => {
 				committeePubsub.updated(args.committeeId);
 
 				return db.query.rollCallSession
-					.findFirst(
-						q(
-							(await ctx.abilities.rollCallSession.filter('read')).merge({
-								where: { id: result.id }
-							}).query.single
-						)
-					)
+					.findFirst(q(await readableSession(ctx, result.id)))
 					.then(assertFindFirstExists);
 			}
 		}),
@@ -111,12 +97,7 @@ schemaBuilder.mutationFields((t) => {
 				pubsub.updated(args.id);
 
 				return db.query.rollCallSession
-					.findFirst(
-						q(
-							(await ctx.abilities.rollCallSession.filter('read')).merge({ where: { id: args.id } })
-								.query.single
-						)
-					)
+					.findFirst(q(await readableSession(ctx, args.id)))
 					.then(assertFindFirstExists);
 			}
 		}),
@@ -130,26 +111,23 @@ schemaBuilder.mutationFields((t) => {
 				// Look up the committee whose `activeRollCallSessionId` points at us so
 				// we can clear it in the same transaction. Reading via the session row
 				// keeps the ability scope check intact.
+				const sessionFilter = (await ctx.abilities.rollCallSession.filter('update')).merge({
+					where: { id: args.id }
+				});
 				const session = await db.query.rollCallSession
-					.findFirst(
-						(await ctx.abilities.rollCallSession.filter('update')).merge({ where: { id: args.id } })
-							.query.single
-					)
+					.findFirst(sessionFilter.query.single)
 					.then(assertFindFirstExists);
 
 				await db.transaction(async (tx) => {
 					await tx
 						.update(schema.rollCallSession)
 						.set({ completedAt: new Date() })
-						.where(
-							(await ctx.abilities.rollCallSession.filter('update')).merge({
-								where: { id: args.id }
-							}).sql.where
-						);
-					await tx
-						.update(schema.committee)
-						.set({ activeRollCallSessionId: null })
-						.where(eq(schema.committee.id, session.committeeId));
+						.where(sessionFilter.sql.where);
+					await setActiveSession({
+						tx,
+						committeeId: session.committeeId,
+						active: { activeRollCallSessionId: null }
+					});
 				});
 
 				pubsub.updated(args.id);

@@ -5,6 +5,8 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { count, eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '#lib/helpers/nanoid';
+import { findUpdatableConference, type HandlerContext } from './helpers/scopedLookups';
+import { givenFields, hasFields } from './helpers/givenFields';
 
 abilityBuilder.requestType.allow('read').when((ctx) => ({
 	where: isParticipantInConference(ctx)
@@ -14,10 +16,14 @@ abilityBuilder.requestType.allow(['update', 'delete']).when((ctx) => ({
 	where: isAdminInConference(ctx)
 }));
 
-export const RequestTypeRef = object({ table: 'requestType' });
+const RequestTypeRef = object({ table: 'requestType' });
 
 const pubsub = rumblePubsub({ table: 'requestType' });
 query({ table: 'requestType' });
+
+async function readableRequestType(ctx: HandlerContext, id: string) {
+	return (await ctx.abilities.requestType.filter('read')).merge({ where: { id } }).query.single;
+}
 
 schemaBuilder.mutationFields((t) => ({
 	createRequestType: t.drizzleField({
@@ -31,13 +37,7 @@ schemaBuilder.mutationFields((t) => ({
 			showOnPresentation: t.arg.boolean()
 		},
 		resolve: async (query, _root, args, ctx) => {
-			await db.query.conference
-				.findFirst(
-					(await ctx.abilities.conference.filter('update')).merge({
-						where: { id: args.conferenceId }
-					}).query.single
-				)
-				.then(assertFindFirstExists);
+			await findUpdatableConference(ctx, args.conferenceId);
 
 			const result = await db.transaction(async (tx) => {
 				const priority = (
@@ -66,12 +66,7 @@ schemaBuilder.mutationFields((t) => ({
 			pubsub.created();
 
 			return db.query.requestType
-				.findFirst(
-					query(
-						(await ctx.abilities.requestType.filter('read')).merge({ where: { id: result.id } })
-							.query.single
-					)
-				)
+				.findFirst(query(await readableRequestType(ctx, result.id)))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -95,17 +90,13 @@ schemaBuilder.mutationFields((t) => ({
 				)
 				.then(assertFindFirstExists);
 
-			const updateSet: Record<string, unknown> = {};
-			if (args.name !== undefined && args.name !== null) updateSet.name = args.name;
-			if (args.icon !== undefined) updateSet.icon = args.icon;
-			if (args.priority !== undefined && args.priority !== null) updateSet.priority = args.priority;
-			if (args.enabled !== undefined && args.enabled !== null) updateSet.enabled = args.enabled;
-			if (args.delegatesOnly !== undefined && args.delegatesOnly !== null)
-				updateSet.delegatesOnly = args.delegatesOnly;
-			if (args.showOnPresentation !== undefined && args.showOnPresentation !== null)
-				updateSet.showOnPresentation = args.showOnPresentation;
+			const updateSet = givenFields({
+				args,
+				keys: ['name', 'priority', 'enabled', 'delegatesOnly', 'showOnPresentation'],
+				clearable: ['icon']
+			});
 
-			if (Object.keys(updateSet).length > 0) {
+			if (hasFields(updateSet)) {
 				await db
 					.update(schema.requestType)
 					.set(updateSet)
@@ -115,12 +106,7 @@ schemaBuilder.mutationFields((t) => ({
 			pubsub.updated(args.id);
 
 			return db.query.requestType
-				.findFirst(
-					query(
-						(await ctx.abilities.requestType.filter('read')).merge({ where: { id: args.id } }).query
-							.single
-					)
-				)
+				.findFirst(query(await readableRequestType(ctx, args.id)))
 				.then(assertFindFirstExists);
 		}
 	}),

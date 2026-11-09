@@ -3,7 +3,8 @@
 	import type { CommitteestatusEnum } from '#lib/api/rumbleClient/client';
 	import { getCommitteeStatusBackground } from '#lib/utils/committeeStatus';
 	import Marquee from 'svelte-fast-marquee';
-	import { onMount } from 'svelte';
+	import { createOverflowCheck } from './overflowCheck.svelte';
+	import { formatCountdown } from './countdown';
 	import * as m from '#lib/paraglide/messages';
 	import { getLocale } from '#lib/paraglide/runtime';
 	import dayjs from 'dayjs';
@@ -38,20 +39,14 @@
 		subTextClass = 'text-sm'
 	}: Props = $props();
 
-	let textElement = $state<HTMLParagraphElement>();
-	let isOverflowing = $state(false);
-
-	function checkOverflow() {
-		if (textElement) {
-			isOverflowing = textElement.scrollWidth > textElement.clientWidth;
-		}
-	}
-
-	onMount(() => {
-		checkOverflow();
-		window.addEventListener('resize', checkOverflow);
-		return () => window.removeEventListener('resize', checkOverflow);
-	});
+	const overflow = createOverflowCheck();
+	const showMarquee = $derived(overflow.overflowing && marqueeOnOverflow);
+	const statusBackground = $derived(
+		committeeStatus ? getCommitteeStatusBackground(committeeStatus) : ''
+	);
+	const untilTime = $derived(
+		until?.toLocaleTimeString(getLocale(), { hour: '2-digit', minute: '2-digit' }) ?? m.unknown()
+	);
 
 	let countdownDelta = $state<duration.Duration>();
 
@@ -77,9 +72,8 @@
 </script>
 
 <div
-	class="alert py-0 block w-full {textClass} shadow-sm {committeeStatus
-		? getCommitteeStatusBackground(committeeStatus)
-		: ''} {fullHeight ? 'h-full' : ''}"
+	class="alert py-0 block w-full {textClass} shadow-sm {statusBackground}"
+	class:h-full={fullHeight}
 >
 	<div class="flex h-full w-full min-w-0 flex-1 flex-row items-center gap-4 overflow-hidden py-2">
 		{#if iconText}
@@ -89,8 +83,8 @@
 		{/if}
 
 		<div class="flex w-full min-w-0 flex-1 flex-col overflow-hidden">
-			{#if !isOverflowing || !marqueeOnOverflow}
-				<h3 bind:this={textElement} class="w-full min-w-0 truncate">
+			{#if !showMarquee}
+				<h3 bind:this={overflow.element} class="w-full min-w-0 truncate">
 					{text}
 				</h3>
 			{:else}
@@ -111,25 +105,13 @@
 				</div>
 			{/if}
 			{#if until}
-				<p class={subTextClass}>
-					{m.until({
-						time:
-							until?.toLocaleTimeString(getLocale(), {
-								hour: '2-digit',
-								minute: '2-digit'
-							}) ?? m.unknown()
-					})}
-				</p>
+				<p class={subTextClass}>{m.until({ time: untilTime })}</p>
 			{/if}
 		</div>
 
 		{#if until && countdownDelta && !hideCountdown}
 			{#if countdownDeltaInFuture()}
-				<p class="flex-none font-mono">
-					{countdownDelta.hours() !== 0 ? countdownDelta.format('H:') : ''}{countdownDelta.format(
-						'mm:ss'
-					)}
-				</p>
+				<p class="flex-none font-mono">{formatCountdown(countdownDelta)}</p>
 			{:else}
 				<i aria-hidden="true" class="ph-fill ph-bell icon-shake"></i>
 			{/if}

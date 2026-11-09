@@ -10,29 +10,21 @@
 	import ResultChart from './ResultChart.svelte';
 	import DeviceVotingCountdown from './DeviceVotingCountdown.svelte';
 	import Flag from '#lib/components/Flag.svelte';
-	import { sortTranslatedCountries } from '#lib/utils/nationTranslationHelper.svelte';
-	import { calculateMajority } from '#lib/utils/majorities';
+	import CloseCornerButton from './CloseCornerButton.svelte';
+	import CloseVoteButton from './CloseVoteButton.svelte';
+	import { completeVotingSession } from './votingSession';
+	import {
+		committeeMajorityAmount,
+		finishVote,
+		voteSetupArgs,
+		presentDelegations,
+		type VotingCommittee
+	} from './votingMath';
 	import type { VotingResult } from './votingModal';
 
 	interface Props {
 		active: boolean;
-		committee: {
-			id: string;
-			totalPresent: number;
-			simpleMajority: number;
-			twoThirdsMajority: number;
-			members: Array<{
-				id: string;
-				present: boolean;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					icon?: string | null;
-					type?: string | null;
-				} | null;
-			}>;
-		};
+		committee: VotingCommittee;
 		voteName?: string;
 		majority?: VotingMajority;
 		withAbstentions?: boolean;
@@ -91,11 +83,7 @@
 	let windowSeconds = $derived(liveSession?.deviceVotingWindowSeconds ?? deviceVotingWindowSeconds);
 	let votes = $derived(liveSession?.votes ?? []);
 
-	let members = $derived(
-		committee?.members
-			.filter((member) => member.present && member.representation?.type === 'DELEGATION')
-			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!)) ?? []
-	);
+	let members = $derived(presentDelegations(committee?.members ?? []));
 
 	let votedIds = $derived(votes.map((v) => v.committeeMemberId));
 	let nonVoters = $derived(members.filter((member) => !votedIds.includes(member.id)));
@@ -103,25 +91,19 @@
 	let votesCon = $derived(votes.filter((v) => v.vote === 'CON').length);
 	let votesAbstain = $derived(votes.filter((v) => v.vote === 'ABSTAIN').length);
 
-	let majorityAmount = $derived.by(() => {
-		switch (majority) {
-			case 'SIMPLE':
-				return calculateMajority((committee?.totalPresent ?? 0) - votesAbstain, 'simple');
-			case 'ABSOLUTE':
-				return committee?.simpleMajority ?? 0;
-			case 'TWO_THIRDS':
-				return committee?.twoThirdsMajority ?? 0;
-			default:
-				return 0;
-		}
-	});
+	let majorityAmount = $derived(
+		committeeMajorityAmount({ majority, committee, abstainCount: votesAbstain })
+	);
+	let evaluationDue = $derived(
+		timerExpired && !!sessionId && !serverEvaluationStage && !evaluationRequested
+	);
 
 	// The only trigger for ending the voting window is the timer — no manual override,
 	// so every delegate keeps the full window they were promised. Owned by this
 	// component (not the countdown child) so the mutation call site can't race with
 	// the child unmounting itself.
 	$effect(() => {
-		if (timerExpired && sessionId && !serverEvaluationStage && !evaluationRequested) {
+		if (evaluationDue && sessionId) {
 			evaluationRequested = true;
 			client.mutate
 				.updateVotingSession({ __args: { id: sessionId, currentStage: 'EVALUATION' }, id: true })
@@ -131,33 +113,21 @@
 		}
 	});
 
-	const exit = (completed: boolean = false) => {
-		const outcome: 'ADOPTED' | 'REJECTED' | null = completed
-			? votesPro >= majorityAmount
-				? 'ADOPTED'
-				: 'REJECTED'
-			: null;
+	const closeSession = (outcome: 'ADOPTED' | 'REJECTED' | null) => {
+		completeVotingSession({ id: sessionId, outcome });
+		mintedSessionId = null;
+	};
 
-		if (sessionId) {
-			const id = sessionId;
-			mintedSessionId = null;
-			client.mutate.completeVotingSession({ __args: { id, outcome } }).catch(() => {});
-		}
-
-		if (oncomplete) {
-			if (completed) {
-				oncomplete({
-					outcome: outcome!,
-					votesFor: votesPro,
-					votesAgainst: votesCon,
-					votesAbstain: votesAbstain,
-					cancelled: false
-				});
-			} else {
-				oncomplete({ votesFor: 0, votesAgainst: 0, votesAbstain: 0, cancelled: true });
-			}
-		}
-
+	const exit = (completed: boolean) => {
+		const { outcome, result } = finishVote({
+			completed,
+			majorityAmount,
+			votesFor: votesPro,
+			votesAgainst: votesCon,
+			votesAbstain
+		});
+		closeSession(outcome);
+		oncomplete?.(result);
 		active = false;
 	};
 
@@ -189,10 +159,7 @@
 							id,
 							committeeId: committee.id,
 							mode: 'DEVICE_BASED',
-							majority: majority ?? 'SIMPLE',
-							majorityAmount: 0,
-							withAbstentions: withAbstentions ?? false,
-							voteName: voteName ?? null,
+							...voteSetupArgs({ majority, withAbstentions, voteName }),
 							deviceVotingWindowSeconds
 						},
 						id: true,
@@ -203,9 +170,7 @@
 					})
 					.then((result) => {
 						if (!active) {
-							client.mutate
-								.completeVotingSession({ __args: { id: result.id, outcome: null } })
-								.catch(() => {});
+							completeVotingSession({ id: result.id });
 							return;
 						}
 						// Server may resume an existing session under a different id; adopt it.
@@ -221,13 +186,7 @@
 				hotkeys.deleteScope('deviceBasedVote');
 			};
 		} else {
-			untrack(() => {
-				if (sessionId) {
-					const id = sessionId;
-					mintedSessionId = null;
-					client.mutate.completeVotingSession({ __args: { id, outcome: null } }).catch(() => {});
-				}
-			});
+			untrack(() => closeSession(null));
 		}
 	});
 </script>
@@ -274,22 +233,8 @@
 	{/if}
 
 	{#if evaluationStage}
-		<div class="modal-action justify-around">
-			<button class="btn btn-lg flex gap-2" onclick={() => exit(true)}>
-				<i aria-hidden="true" class="ph-fill ph-x"></i>
-				{m.close()}
-				<Kbd hotkey="esc" />
-			</button>
-		</div>
+		<CloseVoteButton class="justify-around" onclick={() => exit(true)} />
 	{/if}
 
-	<div class="absolute top-3 right-3">
-		<button
-			aria-label="Close modal"
-			class="btn btn-ghost btn-circle btn-sm"
-			onclick={() => exit(evaluationStage)}
-		>
-			<i aria-hidden="true" class="ph-duotone ph-x"></i>
-		</button>
-	</div>
+	<CloseCornerButton onclick={() => exit(evaluationStage)} />
 </Modal>

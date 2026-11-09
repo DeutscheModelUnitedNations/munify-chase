@@ -10,29 +10,29 @@ import { OIDC } from './services/OIDC';
 import { LINK_TOKEN_HEADER } from './services/link/linkAuth';
 import { LINK_ROLE, rolesOfClaim, type OidcRole } from './services/oidcRoles';
 
-export { oidcRoles } from './services/oidcRoles';
-
-export function context(req: RequestEvent) {
+/** The SvelteKit event a request stands for: a WebSocket connection carries a synthetic one. */
+function requestEventOf(req: RequestEvent): RequestEvent {
 	const source: unknown =
 		(req as RequestEvent & { extra?: { request?: unknown } }).extra?.request ?? req;
-	if (hasSyntheticSvelteRequestEvent(source as { extra?: unknown })) {
-		req = (source as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] as RequestEvent;
-	}
+	if (!hasSyntheticSvelteRequestEvent(source as { extra?: unknown })) return req;
+	return (source as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] as RequestEvent;
+}
+
+/** The roles the session's tokens claim. */
+function claimedRoles(oidc: RequestEvent['locals']['oidc']): OidcRole[] {
+	if (!OIDC_ROLE_CLAIM) return [];
+	const claims = (oidc?.accessTokenClaims ?? {}) as Record<string, unknown>;
+	const idClaims = (oidc?.idTokenClaims ?? {}) as Record<string, unknown>;
+	return rolesOfClaim(claims[OIDC_ROLE_CLAIM] ?? idClaims[OIDC_ROLE_CLAIM]);
+}
+
+export function context(event: RequestEvent) {
+	const req = requestEventOf(event);
 
 	// the link role comes from the linked DELEGATOR's token (`linkHandle`, `websocket.ts`), never
 	// from a session
 	const OIDCRoleNames: OidcRole[] = [
-		...(OIDC_ROLE_CLAIM
-			? rolesOfClaim(
-					(req.locals.oidc?.accessTokenClaims as Record<string, unknown> | undefined)?.[
-						OIDC_ROLE_CLAIM
-					] ??
-						(req.locals.oidc?.idTokenClaims as Record<string, unknown> | undefined)?.[
-							OIDC_ROLE_CLAIM
-						]
-				)
-			: []
-		).filter((role) => role !== LINK_ROLE),
+		...claimedRoles(req.locals.oidc).filter((role) => role !== LINK_ROLE),
 		...(req.locals.linkCaller ? [LINK_ROLE] : [])
 	];
 
@@ -56,21 +56,23 @@ export function context(req: RequestEvent) {
 		hasRole(role: OidcRole) {
 			return OIDCRoleNames.includes(role);
 		},
-		isSessionLive: async (): Promise<boolean> => {
-			const oidc = req.locals.oidc;
-			const accessToken = oidc?.tokens.accessToken;
-			if (!oidc || !accessToken) return false;
-
-			try {
-				await OIDC.core.processTokens({ access_token: accessToken, subject: oidc.user.sub });
-				return true;
-			} catch (error) {
-				// An unreachable provider says nothing about the session, callers fail open on throws
-				if (error instanceof OidcProviderUnavailableError) throw error;
-				return false;
-			}
-		}
+		isSessionLive: () => isSessionLive(req.locals.oidc)
 	};
+}
+
+/** Whether the provider still accepts the session's access token. */
+async function isSessionLive(oidc: RequestEvent['locals']['oidc']): Promise<boolean> {
+	const accessToken = oidc?.tokens.accessToken;
+	if (!oidc || !accessToken) return false;
+
+	try {
+		await OIDC.core.processTokens({ access_token: accessToken, subject: oidc.user.sub });
+		return true;
+	} catch (error) {
+		// An unreachable provider says nothing about the session, callers fail open on throws
+		if (error instanceof OidcProviderUnavailableError) throw error;
+		return false;
+	}
 }
 
 export type Context = ReturnType<typeof context>;

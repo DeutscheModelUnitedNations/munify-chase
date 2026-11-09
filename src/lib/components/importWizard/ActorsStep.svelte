@@ -44,6 +44,31 @@
 	}
 </script>
 
+{#snippet actorFields(
+	rep: ImportData['representations'][number],
+	placeholder: string,
+	removeLabel: string
+)}
+	<input
+		type="text"
+		class="input input-bordered join-item flex-1"
+		bind:value={rep.name}
+		{placeholder}
+	/>
+	<div class="btn join-item {memberCount(rep.id) === 0 ? 'btn-error' : ''}">
+		<i aria-hidden="true" class="ph-fill ph-users"></i>
+		<span class="ml-2">{memberCount(rep.id)}</span>
+	</div>
+	<button
+		type="button"
+		class="btn join-item text-error"
+		aria-label={removeLabel}
+		onclick={() => removeRepresentation(rep.id)}
+	>
+		<i aria-hidden="true" class="ph-fill ph-trash"></i>
+	</button>
+{/snippet}
+
 <div class="flex flex-col gap-7">
 	<StepHeader eyebrow={m.actorsEyebrow()} title={m.actorsTitle()} subtitle={m.actorsSubtitle()} />
 
@@ -59,24 +84,7 @@
 					fallback="megaphone-simple"
 					triggerClass="btn join-item bg-error text-error-content w-14"
 				/>
-				<input
-					type="text"
-					class="input input-bordered join-item flex-1"
-					bind:value={rep.name}
-					placeholder={m.nonStateActor()}
-				/>
-				<div class="btn join-item {memberCount(rep.id) === 0 ? 'btn-error' : ''}">
-					<i aria-hidden="true" class="ph-fill ph-users"></i>
-					<span class="ml-2">{memberCount(rep.id)}</span>
-				</div>
-				<button
-					type="button"
-					class="btn join-item text-error"
-					aria-label="Remove NSA"
-					onclick={() => removeRepresentation(rep.id)}
-				>
-					<i aria-hidden="true" class="ph-fill ph-trash"></i>
-				</button>
+				{@render actorFields(rep, m.nonStateActor(), 'Remove NSA')}
 			</div>
 		{/each}
 		<button class="btn btn-sm self-start" onclick={() => addRepresentation('NSA')}>
@@ -98,24 +106,7 @@
 				>
 					<span class="text-xs font-bold tracking-widest">UN</span>
 				</div>
-				<input
-					type="text"
-					class="input input-bordered join-item flex-1"
-					bind:value={rep.name}
-					placeholder={m.unActor()}
-				/>
-				<div class="btn join-item {memberCount(rep.id) === 0 ? 'btn-error' : ''}">
-					<i aria-hidden="true" class="ph-fill ph-users"></i>
-					<span class="ml-2">{memberCount(rep.id)}</span>
-				</div>
-				<button
-					type="button"
-					class="btn join-item text-error"
-					aria-label="Remove UN actor"
-					onclick={() => removeRepresentation(rep.id)}
-				>
-					<i aria-hidden="true" class="ph-fill ph-trash"></i>
-				</button>
+				{@render actorFields(rep, m.unActor(), 'Remove UN actor')}
 			</div>
 		{/each}
 		<button class="btn btn-sm self-start" onclick={() => addRepresentation('UN')}>

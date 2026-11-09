@@ -2,22 +2,18 @@ import type { IncomingMessage } from 'node:http';
 import type { RequestEvent } from '@sveltejs/kit';
 import { parseCookie as parseCookies, type SerializeOptions } from 'cookie';
 import { HOST_HEADER, ORIGIN, PORT_HEADER, PROTOCOL_HEADER } from '$app/env/private';
-
-function headerValue(
-	headers: IncomingMessage['headers'],
-	name: string | undefined
-): string | undefined {
-	if (!name) return undefined;
-	const value = headers[name.toLowerCase()];
-	return Array.isArray(value) ? value[0] : value;
-}
+import { requestOrigin, toHeaders } from './nodeHeaders';
+import { OIDC } from './OIDC';
+import { context } from '#api/context';
 
 function getRequestOrigin(headers: IncomingMessage['headers']): string {
-	if (ORIGIN) return ORIGIN;
-	const proto = headerValue(headers, PROTOCOL_HEADER) ?? 'https';
-	const host = headerValue(headers, HOST_HEADER) ?? headerValue(headers, 'host') ?? 'localhost';
-	const port = headerValue(headers, PORT_HEADER);
-	return `${proto}://${host}${port ? `:${port}` : ''}`;
+	return requestOrigin({
+		headers,
+		origin: ORIGIN,
+		protocolHeader: PROTOCOL_HEADER,
+		hostHeader: HOST_HEADER,
+		portHeader: PORT_HEADER
+	});
 }
 
 export function nativeToRequestEvent(
@@ -27,18 +23,9 @@ export function nativeToRequestEvent(
 	const url = new URL(source.url ?? '/', getRequestOrigin(source.headers));
 	const jar = parseCookies(source.headers.cookie ?? '');
 
-	const headers = new Headers();
-	for (const [key, value] of Object.entries(source.headers)) {
-		if (typeof value === 'string') {
-			headers.set(key, value);
-		} else if (Array.isArray(value)) {
-			headers.set(key, value.join(', '));
-		}
-	}
-
 	return {
 		url,
-		request: new Request(url.toString(), { headers }),
+		request: new Request(url.toString(), { headers: toHeaders(source.headers) }),
 		locals: {} as RequestEvent['locals'],
 		cookies: {
 			get: (name: string) => {
@@ -69,4 +56,23 @@ export function nativeToRequestEvent(
 		isDataRequest: false,
 		isSubRequest: false
 	} as unknown as RequestEvent;
+}
+
+/**
+ * Runs the session handling SvelteKit requests get on a request that did not come through
+ * SvelteKit (a WebSocket upgrade, a token sent in band), and answers its event and context.
+ * Throws when it carries no valid session.
+ */
+export async function authenticatedEvent(source: Pick<IncomingMessage, 'headers' | 'url'>) {
+	let event = nativeToRequestEvent(source);
+	await OIDC.handle({
+		event,
+		resolve: (resolved) => {
+			event = resolved;
+			return Promise.resolve(new Response());
+		}
+	});
+	const ctx = context(event);
+	ctx.mustBeLoggedIn();
+	return { event, ctx };
 }

@@ -11,6 +11,7 @@ import {
 import { assertFindFirstExists, mapNullFieldsToUndefined } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { assertNotManagedByDelegator } from '#api/services/link/managedRows';
+import { logoSvgUpdate } from './helpers/conferenceLogo';
 
 // The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
 abilityBuilder.conference
@@ -104,21 +105,6 @@ schemaBuilder.mutationFields((t) => ({
 			});
 			const mappedArgs = mapNullFieldsToUndefined(args);
 
-			// Explicitly resolve the logo so it can be cleared: an empty string
-			// removes the logo (stored as null), anything else is validated and
-			// stored verbatim. `undefined` leaves the existing logo untouched.
-			let logoSvgUpdate: { logoSvg?: string | null } = {};
-			if (args.logoSvg !== undefined && args.logoSvg !== null) {
-				const trimmed = args.logoSvg.trim();
-				if (trimmed === '') {
-					logoSvgUpdate = { logoSvg: null };
-				} else if (!trimmed.includes('<svg') || args.logoSvg.length > 512 * 1024) {
-					throw new GraphQLError('Invalid SVG logo');
-				} else {
-					logoSvgUpdate = { logoSvg: args.logoSvg };
-				}
-			}
-
 			await db
 				.update(schema.conference)
 				.set({
@@ -128,7 +114,7 @@ schemaBuilder.mutationFields((t) => ({
 					startDate: mappedArgs.startDate,
 					endDate: mappedArgs.endDate,
 					hasModeratedCaucus: mappedArgs.hasModeratedCaucus,
-					...logoSvgUpdate
+					...logoSvgUpdate(args.logoSvg)
 				})
 				.where(
 					(await ctx.abilities.conference.filter('update')).merge({ where: { id: args.id } }).sql

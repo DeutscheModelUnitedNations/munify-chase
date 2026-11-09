@@ -150,6 +150,19 @@ function alpha2ToFlagEmoji(alpha2: string): string {
 		.join('');
 }
 
+/** The parsed clause an ADD / ALTER_TEXT row proposes; `null` when its markup does not parse. */
+function overlayContent(r: AmendmentRow): AmendmentOverlay['newContent'] | null {
+	if ((r.type !== 'ADD' && r.type !== 'ALTER_TEXT') || !r.newContent) return undefined;
+	const parsed = parseClauseFragment(r.newContent);
+	return parsed.valid ? parsed.clause : null;
+}
+
+function proposerNameOf(r: AmendmentRow): string | undefined {
+	const rep = r.proposer?.representation;
+	if (!rep?.name) return undefined;
+	return rep.alpha2Code ? `${alpha2ToFlagEmoji(rep.alpha2Code)} ${rep.name}` : rep.name;
+}
+
 /**
  * Map DB amendment rows to the editor library's AmendmentOverlay shape.
  * ADD / ALTER_TEXT carry RES-Markup which we parse into an OperativeClause;
@@ -159,15 +172,8 @@ function alpha2ToFlagEmoji(alpha2: string): string {
 export function toAmendmentOverlays(rows: readonly AmendmentRow[]): AmendmentOverlay[] {
 	const overlays: AmendmentOverlay[] = [];
 	for (const r of rows) {
-		let newContent;
-		if ((r.type === 'ADD' || r.type === 'ALTER_TEXT') && r.newContent) {
-			const parsed = parseClauseFragment(r.newContent);
-			if (!parsed.valid) continue;
-			newContent = parsed.clause;
-		}
-		const rep = r.proposer?.representation;
-		const flag = rep?.alpha2Code ? alpha2ToFlagEmoji(rep.alpha2Code) + ' ' : '';
-		const proposerName = rep?.name ? flag + rep.name : undefined;
+		const newContent = overlayContent(r);
+		if (newContent === null) continue;
 		overlays.push({
 			id: r.id,
 			type: r.type as AmendmentOverlay['type'],
@@ -176,9 +182,14 @@ export function toAmendmentOverlays(rows: readonly AmendmentRow[]): AmendmentOve
 			targetOperativeIndex: r.targetOperativeIndex ?? undefined,
 			targetPosition: r.targetPosition ?? undefined,
 			newContent,
-			proposerName,
+			proposerName: proposerNameOf(r),
 			sponsorCount: r.sponsors?.length ?? 0
 		});
 	}
 	return overlays;
+}
+
+/** The message of a thrown error, else the fallback. */
+export function errorMessage(err: unknown, fallback: string): string {
+	return err instanceof Error ? err.message : fallback;
 }

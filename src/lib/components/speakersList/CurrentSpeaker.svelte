@@ -3,44 +3,13 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import { m } from '#lib/paraglide/messages';
 	import Timer from './Timer.svelte';
+	import type { SpeakersListData } from './types';
 	import { scale } from 'svelte/transition';
 	import { bounceOut } from 'svelte/easing';
 	import { compareSpeakers } from '#lib/helpers/speakerSort';
 
 	interface Props {
-		speakersList?: {
-			id: string;
-			type: string;
-			isClosed: boolean;
-			speakingTime: number;
-			startTimestamp?: Date | null;
-			timeLeft: number;
-			speakers: Array<{
-				id: string;
-				position: number;
-				overwriteName?: string | null;
-				committeeMember?: {
-					id: string;
-					representation?: {
-						name?: string | null;
-						alpha2Code?: string | null;
-						alpha3Code?: string | null;
-						icon?: string | null;
-						type?: string | null;
-					} | null;
-				} | null;
-				conferenceMember?: {
-					id: string;
-					representation?: {
-						name?: string | null;
-						alpha2Code?: string | null;
-						alpha3Code?: string | null;
-						icon?: string | null;
-						type?: string | null;
-					} | null;
-				} | null;
-			}>;
-		} | null;
+		speakersList?: SpeakersListData | null;
 	}
 
 	let { speakersList }: Props = $props();

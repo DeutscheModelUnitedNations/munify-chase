@@ -2,7 +2,7 @@
  * The system roles the identity provider grants. `delegator` is the linked MUNify DELEGATOR's
  * (`#api/services/link/linkAuth`): only its link token grants it, never a person's session.
  */
-export const oidcRoles = ['admin', 'member', 'service_user', 'delegator'] as const;
+const oidcRoles = ['admin', 'member', 'service_user', 'delegator'] as const;
 
 export type OidcRole = (typeof oidcRoles)[number];
 

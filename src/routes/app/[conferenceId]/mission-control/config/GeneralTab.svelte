@@ -5,6 +5,13 @@
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '#lib/utils/toast';
 	import { svgToDataUrl } from '#lib/utils/svgToDataUrl';
+	import { untrack } from 'svelte';
+	import {
+		readSvgLogo,
+		settingsForm,
+		settingsUpdate,
+		type GeneralSettingsForm
+	} from './generalSettings';
 
 	interface Props {
 		conference: {
@@ -21,55 +28,23 @@
 
 	let { conference }: Props = $props();
 
-	let title = $state('');
-	let pressWebsite = $state('');
-	let location = $state('');
-	let startDate = $state('');
-	let endDate = $state('');
-	let hasModeratedCaucus = $state(false);
-	let logoSvg = $state('');
+	let form = $state<GeneralSettingsForm>(settingsForm(untrack(() => conference)));
 	let isSaving = $state(false);
 
-	let logoPreview = $derived(svgToDataUrl(logoSvg));
+	let logoPreview = $derived(svgToDataUrl(form.logoSvg));
 
-	async function onLogoFileSelected(event: Event) {
-		const input = event.target as HTMLInputElement;
+	async function onLogoFileSelected(event: Event & { currentTarget: HTMLInputElement }) {
+		const input = event.currentTarget;
 		const file = input.files?.[0];
 		if (!file) return;
-		if (file.size > 512 * 1024) {
-			toast.error(m.invalidSvgLogo());
-			input.value = '';
-			return;
-		}
-		let text: string;
-		try {
-			text = await file.text();
-		} catch {
-			toast.error(m.invalidSvgLogo());
-			input.value = '';
-			return;
-		}
-		if (!text.includes('<svg')) {
-			toast.error(m.invalidSvgLogo());
-			input.value = '';
-			return;
-		}
-		logoSvg = text;
+		const svg = await readSvgLogo(file);
 		input.value = '';
+		if (svg === null) toast.error(m.invalidSvgLogo());
+		else form.logoSvg = svg;
 	}
 
 	function removeLogo() {
-		logoSvg = '';
-	}
-
-	function toDateInputValue(d: Date | string | null | undefined): string {
-		if (!d) return '';
-		const date = d instanceof Date ? d : new Date(d);
-		if (Number.isNaN(date.getTime())) return '';
-		const year = date.getUTCFullYear();
-		const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-		const day = String(date.getUTCDate()).padStart(2, '0');
-		return `${year}-${month}-${day}`;
+		form.logoSvg = '';
 	}
 
 	// Seed the form from the conference ONCE per conference (keyed by id).
@@ -80,13 +55,7 @@
 	$effect(() => {
 		if (conference.id === syncedConferenceId) return;
 		syncedConferenceId = conference.id;
-		title = conference.title;
-		pressWebsite = conference.pressWebsite ?? '';
-		location = conference.location ?? '';
-		startDate = toDateInputValue(conference.startDate);
-		endDate = toDateInputValue(conference.endDate);
-		hasModeratedCaucus = conference.hasModeratedCaucus;
-		logoSvg = conference.logoSvg ?? '';
+		form = settingsForm(conference);
 	});
 
 	async function saveSettings() {
@@ -94,16 +63,7 @@
 		try {
 			await toast.promise(
 				client.mutate.updateConference({
-					__args: {
-						id: conference.id,
-						title,
-						pressWebsite: pressWebsite || null,
-						location: location || null,
-						startDate: startDate ? new Date(startDate) : null,
-						endDate: endDate ? new Date(endDate) : null,
-						hasModeratedCaucus,
-						logoSvg
-					},
+					__args: settingsUpdate({ id: conference.id, form }),
 					id: true
 				}),
 				promiseToastStrings(m.configuration(), 'update')
@@ -124,7 +84,7 @@
 				id="conference-title"
 				type="text"
 				class="input input-bordered w-full"
-				bind:value={title}
+				bind:value={form.title}
 			/>
 		</div>
 
@@ -137,7 +97,7 @@
 				type="text"
 				class="input input-bordered w-full"
 				placeholder="https://..."
-				bind:value={pressWebsite}
+				bind:value={form.pressWebsite}
 			/>
 		</div>
 
@@ -150,7 +110,7 @@
 				type="text"
 				class="input input-bordered w-full"
 				placeholder={m.conferenceLocationPlaceholder()}
-				bind:value={location}
+				bind:value={form.location}
 			/>
 		</div>
 
@@ -163,7 +123,7 @@
 					id="conference-start-date"
 					type="date"
 					class="input input-bordered w-full"
-					bind:value={startDate}
+					bind:value={form.startDate}
 				/>
 			</div>
 			<div class="form-control">
@@ -174,7 +134,7 @@
 					id="conference-end-date"
 					type="date"
 					class="input input-bordered w-full"
-					bind:value={endDate}
+					bind:value={form.endDate}
 				/>
 			</div>
 		</div>
@@ -185,7 +145,7 @@
 					id="has-moderated-caucus"
 					type="checkbox"
 					class="toggle toggle-primary"
-					bind:checked={hasModeratedCaucus}
+					bind:checked={form.hasModeratedCaucus}
 				/>
 				<div class="flex flex-col">
 					<span class="label-text font-semibold">{m.hasModeratedCaucus()}</span>
@@ -214,7 +174,7 @@
 					class="file-input file-input-bordered w-full"
 					onchange={onLogoFileSelected}
 				/>
-				{#if logoSvg}
+				{#if form.logoSvg}
 					<button type="button" class="btn btn-ghost btn-sm text-error" onclick={removeLogo}>
 						<i aria-hidden="true" class="ph-fill ph-trash mr-1"></i>{m.removeLogo()}
 					</button>

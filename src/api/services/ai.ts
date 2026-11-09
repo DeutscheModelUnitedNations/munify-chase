@@ -15,93 +15,51 @@ import { createFireworks } from '@ai-sdk/fireworks';
 import { createTogetherAI } from '@ai-sdk/togetherai';
 import { createDeepInfra } from '@ai-sdk/deepinfra';
 import { createCerebras } from '@ai-sdk/cerebras';
-import { generateText } from 'ai';
+import { generateText, type LanguageModel } from 'ai';
 import { logger } from '#lib/logger';
 
 let currentProviderIndex = 0;
 
-const providers = AI_PROVIDERS?.map((config) => {
-	const [providerName, ...modelParts] = config.model.split('/');
-	const modelName = modelParts.join('/');
+type ProviderConfig = { model: string; apiKey?: string; baseURL?: string };
+type ModelFactory = (modelName: string) => LanguageModel;
 
-	switch (providerName) {
-		case 'openai': {
-			const openai = createOpenAI({ apiKey: config.apiKey });
-			return { model: openai(modelName) };
-		}
-		case 'openai-compatible': {
-			if (!config.baseURL) {
-				logger.warn('An openai-compatible AI provider without a baseURL is skipped');
-				return undefined;
-			}
-			const openaiCompatible = createOpenAICompatible({
-				name: 'openai-compatible',
-				baseURL: config.baseURL,
-				apiKey: config.apiKey
-			});
-			return { model: openaiCompatible(modelName) };
-		}
-		case 'anthropic': {
-			const anthropic = createAnthropic({ apiKey: config.apiKey });
-			return { model: anthropic(modelName) };
-		}
-		case 'google': {
-			const google = createGoogleGenerativeAI({ apiKey: config.apiKey });
-			return { model: google(modelName) };
-		}
-		case 'google-vertex': {
-			const vertex = createVertex({ googleAuthOptions: {} });
-			return { model: vertex(modelName) };
-		}
-		case 'azure': {
-			const azure = createAzure({ apiKey: config.apiKey });
-			return { model: azure(modelName) };
-		}
-		case 'amazon-bedrock': {
-			const bedrock = createAmazonBedrock();
-			return { model: bedrock(modelName) };
-		}
-		case 'xai': {
-			const xai = createXai({ apiKey: config.apiKey });
-			return { model: xai(modelName) };
-		}
-		case 'groq': {
-			const groq = createGroq({ apiKey: config.apiKey });
-			return { model: groq(modelName) };
-		}
-		case 'mistral': {
-			const mistral = createMistral({ apiKey: config.apiKey });
-			return { model: mistral(modelName) };
-		}
-		case 'cohere': {
-			const cohere = createCohere({ apiKey: config.apiKey });
-			return { model: cohere(modelName) };
-		}
-		case 'deepseek': {
-			const deepseek = createDeepSeek({ apiKey: config.apiKey });
-			return { model: deepseek(modelName) };
-		}
-		case 'fireworks': {
-			const fireworks = createFireworks({ apiKey: config.apiKey });
-			return { model: fireworks(modelName) };
-		}
-		case 'togetherai': {
-			const togetherai = createTogetherAI({ apiKey: config.apiKey });
-			return { model: togetherai(modelName) };
-		}
-		case 'deepinfra': {
-			const deepinfra = createDeepInfra({ apiKey: config.apiKey });
-			return { model: deepinfra(modelName) };
-		}
-		case 'cerebras': {
-			const cerebras = createCerebras({ apiKey: config.apiKey });
-			return { model: cerebras(modelName) };
-		}
-		default:
-			logger.warn('Unknown AI provider, skipped', { provider: providerName });
+/** How each provider named before the slash of a configured model builds its models. */
+const providerFactories: Record<string, (config: ProviderConfig) => ModelFactory | undefined> = {
+	openai: ({ apiKey }) => createOpenAI({ apiKey }),
+	'openai-compatible': ({ apiKey, baseURL }) => {
+		if (!baseURL) {
+			logger.warn('An openai-compatible AI provider without a baseURL is skipped');
 			return undefined;
+		}
+		return createOpenAICompatible({ name: 'openai-compatible', baseURL, apiKey });
+	},
+	anthropic: ({ apiKey }) => createAnthropic({ apiKey }),
+	google: ({ apiKey }) => createGoogleGenerativeAI({ apiKey }),
+	'google-vertex': () => createVertex({ googleAuthOptions: {} }),
+	azure: ({ apiKey }) => createAzure({ apiKey }),
+	'amazon-bedrock': () => createAmazonBedrock(),
+	xai: ({ apiKey }) => createXai({ apiKey }),
+	groq: ({ apiKey }) => createGroq({ apiKey }),
+	mistral: ({ apiKey }) => createMistral({ apiKey }),
+	cohere: ({ apiKey }) => createCohere({ apiKey }),
+	deepseek: ({ apiKey }) => createDeepSeek({ apiKey }),
+	fireworks: ({ apiKey }) => createFireworks({ apiKey }),
+	togetherai: ({ apiKey }) => createTogetherAI({ apiKey }),
+	deepinfra: ({ apiKey }) => createDeepInfra({ apiKey }),
+	cerebras: ({ apiKey }) => createCerebras({ apiKey })
+};
+
+function providerOf(config: ProviderConfig) {
+	const [providerName, ...modelParts] = config.model.split('/');
+	if (!Object.hasOwn(providerFactories, providerName)) {
+		logger.warn('Unknown AI provider, skipped', { provider: providerName });
+		return undefined;
 	}
-}).filter(Boolean);
+	const createModel = providerFactories[providerName](config);
+	return createModel && { model: createModel(modelParts.join('/')) };
+}
+
+const providers = AI_PROVIDERS?.map(providerOf).filter(Boolean);
 
 const nextProvider = () => {
 	if (!providers) {
@@ -120,12 +78,12 @@ export async function makeAICall(
 	params: Omit<Parameters<typeof generateText>[0], 'model'>,
 	maxIterations = 3
 ) {
-	let provider = nextProvider();
-	if (!provider) {
-		throw new Error('No AI providers configured');
-	}
-
+	let lastError: unknown;
 	for (let attempt = 1; attempt <= maxIterations; attempt++) {
+		const provider = nextProvider();
+		if (!provider) {
+			throw new Error('No AI providers configured', { cause: lastError });
+		}
 		try {
 			return await generateText({
 				...params,
@@ -133,13 +91,8 @@ export async function makeAICall(
 			} as Parameters<typeof generateText>[0]);
 		} catch (error) {
 			logger.error('Calling the AI provider failed', { attempt, err: error });
-			if (attempt === maxIterations) {
-				throw new Error('All attempts to call AI provider failed', { cause: error });
-			}
-			provider = nextProvider();
-			if (!provider) {
-				throw new Error('No AI providers configured', { cause: error });
-			}
+			lastError = error;
 		}
 	}
+	throw new Error('All attempts to call AI provider failed', { cause: lastError });
 }

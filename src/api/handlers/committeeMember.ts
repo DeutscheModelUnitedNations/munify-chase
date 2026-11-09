@@ -11,6 +11,8 @@ import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
+import { findUpdatableConference, type Transaction } from './helpers/scopedLookups';
+import { presenceEventsFor } from './helpers/rollCallPresence';
 
 // The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
 abilityBuilder.committeeMember.allow('read').when(
@@ -45,6 +47,41 @@ const ref = object({ table: 'committeeMember' });
 const pubsub = rumblePubsub({ table: 'committeeMember' });
 query({ table: 'committeeMember' });
 
+/** Presence is only taken in a roll call that is still running. */
+async function assertOpenRollCall(tx: Transaction, rollCallSessionId: string | null | undefined) {
+	if (!rollCallSessionId) return;
+	const session = await tx.query.rollCallSession.findFirst({
+		where: { id: rollCallSessionId, completedAt: { isNull: true } }
+	});
+	if (!session) throw new GraphQLError('Roll call session not found or already completed');
+}
+
+/** Records the presence change of the seats people hold. */
+async function recordPresenceEvents({
+	tx,
+	updated,
+	rollCallSessionId,
+	present
+}: {
+	tx: Transaction;
+	updated: { id: string; committeeId: string }[];
+	rollCallSessionId: string | null | undefined;
+	present: boolean;
+}) {
+	if (updated.length === 0) return;
+	const conferenceUsers = await tx.query.conferenceUser.findMany({
+		where: { committeeMemberId: { in: updated.map((cm) => cm.id) } }
+	});
+	const events = presenceEventsFor({
+		updated,
+		conferenceUsers,
+		rollCallSessionId,
+		present,
+		now: new Date()
+	});
+	if (events.length > 0) await tx.insert(schema.presenceEvent).values(events);
+}
+
 schemaBuilder.mutationFields((t) => {
 	return {
 		createCommitteeMember: t.drizzleField({
@@ -60,13 +97,7 @@ schemaBuilder.mutationFields((t) => {
 				});
 				if (!committee) throw new GraphQLError('Committee not found');
 
-				await db.query.conference
-					.findFirst(
-						(await ctx.abilities.conference.filter('update')).merge({
-							where: { id: committee.conferenceId }
-						}).query.single
-					)
-					.then(assertFindFirstExists);
+				await findUpdatableConference(ctx, committee.conferenceId);
 
 				const result = await db
 					.insert(schema.committeeMember)
@@ -118,19 +149,11 @@ schemaBuilder.mutationFields((t) => {
 			},
 			resolve: async (query, _root, args, ctx) => {
 				await db.transaction(async (tx) => {
-					if (args.rollCallSessionId) {
-						const session = await tx.query.rollCallSession.findFirst({
-							where: { id: args.rollCallSessionId, completedAt: { isNull: true } }
-						});
-						if (!session)
-							throw new GraphQLError('Roll call session not found or already completed');
-					}
+					await assertOpenRollCall(tx, args.rollCallSessionId);
 
-					const res = await tx
+					const updated = await tx
 						.update(schema.committeeMember)
-						.set({
-							present: args.present
-						})
+						.set({ present: args.present })
 						.where(
 							(await ctx.abilities.committeeMember.filter('update')).merge({
 								where: { id: { in: args.ids } }
@@ -141,29 +164,12 @@ schemaBuilder.mutationFields((t) => {
 							committeeId: schema.committeeMember.committeeId
 						});
 
-					if (res.length > 0) {
-						const conferenceUsers = await tx.query.conferenceUser.findMany({
-							where: { committeeMemberId: { in: res.map((cm) => cm.id) } }
-						});
-						const cuByMemberId = new Map(
-							conferenceUsers.map((cu) => [cu.committeeMemberId, cu.id])
-						);
-
-						const events = res
-							.filter((cm) => cuByMemberId.has(cm.id))
-							.map((cm) => ({
-								conferenceUserId: cuByMemberId.get(cm.id)!,
-								committeeId: cm.committeeId,
-								rollCallSessionId: args.rollCallSessionId ?? null,
-								type: (args.rollCallSessionId ? 'ROLL_CALL' : 'MANUAL') as 'ROLL_CALL' | 'MANUAL',
-								present: args.present,
-								timestamp: new Date()
-							}));
-
-						if (events.length > 0) {
-							await tx.insert(schema.presenceEvent).values(events);
-						}
-					}
+					await recordPresenceEvents({
+						tx,
+						updated,
+						rollCallSessionId: args.rollCallSessionId,
+						present: args.present
+					});
 				});
 
 				pubsub.updated(args.ids);

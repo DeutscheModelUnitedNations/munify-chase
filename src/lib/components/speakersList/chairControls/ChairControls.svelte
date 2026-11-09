@@ -4,51 +4,14 @@
 	import MoreOptions from './MoreOptions.svelte';
 	import NextSpeech from './NextSpeech.svelte';
 	import AddSpeakers from './AddSpeakers.svelte';
+	import type { ListRepresentation, SpeakersListData } from '../types';
 
-	type List = {
-		id: string;
-		type: string;
-		isClosed: boolean;
-		speakingTime: number;
-		startTimestamp?: Date | null;
-		timeLeft: number;
-		speakers: Array<{
-			id: string;
-			position: number;
-			overwriteName?: string | null;
-			committeeMember?: {
-				id: string;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					icon?: string | null;
-					type?: string | null;
-				} | null;
-			} | null;
-			conferenceMember?: {
-				id: string;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					icon?: string | null;
-					type?: string | null;
-				} | null;
-			} | null;
-		}>;
-	} | null;
+	type List = SpeakersListData | null;
 
 	type MemberLike = {
 		id: string;
 		present?: boolean;
-		representation?: {
-			name?: string | null;
-			alpha2Code?: string | null;
-			alpha3Code?: string | null;
-			icon?: string | null;
-			type?: string | null;
-		} | null;
+		representation?: ListRepresentation | null;
 	};
 
 	interface Props {

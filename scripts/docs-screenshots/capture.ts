@@ -1,7 +1,7 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium, type Browser, type BrowserContext } from 'playwright';
+import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
 import { SCREENSHOT_THEMES } from '../../src/lib/docs/screenshots';
 import { SHOTS } from './shots';
 import { stage } from './stage';
@@ -62,6 +62,8 @@ type CaptureOptions = {
 	t: Translate;
 };
 
+const colorScheme = (theme: string) => (theme === 'dark' ? 'dark' : 'light');
+
 async function newContext(
 	{ browser, baseUrl, states, locale, theme }: CaptureOptions,
 	role: Role,
@@ -70,7 +72,7 @@ async function newContext(
 	const context = await browser.newContext({
 		storageState: states[role],
 		viewport: shot?.viewport ?? DEFAULT_VIEWPORT,
-		colorScheme: theme === 'dark' ? 'dark' : 'light',
+		colorScheme: colorScheme(theme),
 		reducedMotion: 'reduce',
 		locale
 	});
@@ -84,16 +86,39 @@ async function newContext(
 	return context;
 }
 
+async function saveScreenshot(page: Page, shot: Shot, options: CaptureOptions) {
+	const path = join(OUT_DIR, options.locale, options.theme, `${shot.id}.jpg`);
+	await mkdir(dirname(path), { recursive: true });
+	const screenshot = { path, type: 'jpeg', quality: 82 } as const;
+	if (typeof shot.clip === 'function') await shot.clip(page, options.t).screenshot(screenshot);
+	else if (shot.clip) await page.locator(shot.clip).first().screenshot(screenshot);
+	else await page.screenshot({ ...screenshot, fullPage: shot.fullPage });
+}
+
+/** Opens `path` as `role` in a context of its own, which joins `contexts` to be closed later */
+async function openPage(
+	options: CaptureOptions,
+	contexts: BrowserContext[],
+	{ role, path, shot }: { role: Role; path: string; shot?: Shot }
+) {
+	const context = await newContext(options, role, shot);
+	contexts.push(context);
+	const page = await context.newPage();
+	await page.goto(`${options.baseUrl}${path}`, { waitUntil: 'load' });
+	return page;
+}
+
 async function captureShot(shot: Shot, options: CaptureOptions) {
 	const ids = await stage(options.t);
 	await shot.setup?.(ids);
 
 	const contexts: BrowserContext[] = [];
 	try {
-		const context = await newContext(options, shot.role, shot);
-		contexts.push(context);
-		const page = await context.newPage();
-		await page.goto(`${options.baseUrl}${shot.path(ids)}`, { waitUntil: 'load' });
+		const page = await openPage(options, contexts, {
+			role: shot.role,
+			path: shot.path(ids),
+			shot
+		});
 		await page.addStyleTag({ content: FREEZE_CSS });
 		// Live queries keep connections open, so there is no network idle to wait for
 		await page.waitForTimeout(SETTLE_MS);
@@ -103,23 +128,14 @@ async function captureShot(shot: Shot, options: CaptureOptions) {
 			ids,
 			t: options.t,
 			openAs: async (role, path) => {
-				const other = await newContext(options, role);
-				contexts.push(other);
-				const otherPage = await other.newPage();
-				await otherPage.goto(`${options.baseUrl}${path}`, { waitUntil: 'load' });
+				const otherPage = await openPage(options, contexts, { role, path });
 				await otherPage.waitForTimeout(SETTLE_MS);
 				return otherPage;
 			}
 		});
 		await page.evaluate(() => document.fonts.ready);
 		await page.waitForTimeout(400);
-
-		const path = join(OUT_DIR, options.locale, options.theme, `${shot.id}.jpg`);
-		await mkdir(dirname(path), { recursive: true });
-		const screenshot = { path, type: 'jpeg', quality: 82 } as const;
-		if (typeof shot.clip === 'function') await shot.clip(page, options.t).screenshot(screenshot);
-		else if (shot.clip) await page.locator(shot.clip).first().screenshot(screenshot);
-		else await page.screenshot({ ...screenshot, fullPage: shot.fullPage });
+		await saveScreenshot(page, shot, options);
 	} finally {
 		for (const context of contexts) await context.close();
 	}
@@ -130,33 +146,48 @@ async function captureShot(shot: Shot, options: CaptureOptions) {
  * starting with it, e.g. `chair/`.
  */
 export async function capture(baseUrl: string, filter?: string) {
-	const shots = SHOTS.filter((s) => !filter || s.id.startsWith(filter));
+	const shots = SHOTS.filter((s) => s.id.startsWith(filter ?? ''));
 	const browser = await chromium.launch();
 	const failures: string[] = [];
 	try {
-		const roles = Object.keys(ROLE_LOGINS) as Role[];
-		const states: CaptureOptions['states'] = {};
-		for (const role of roles) states[role] = await login(browser, baseUrl, role);
-
+		const states = await loginAll(browser, baseUrl);
 		for (const shot of shots) {
-			for (const locale of LOCALES) {
-				const t = await translator(locale);
-				for (const theme of THEMES) {
-					const options = { browser, baseUrl, states, locale, theme, t };
-					try {
-						await captureShot(shot, options).catch(() =>
-							// Vite occasionally reloads a page while optimizing dependencies
-							captureShot(shot, options)
-						);
-					} catch (error) {
-						failures.push(`${shot.id} (${locale}, ${theme}): ${(error as Error).message}`);
-					}
-				}
-			}
+			failures.push(...(await captureVariants(shot, { browser, baseUrl, states })));
 			console.info(`captured ${shot.id}`);
 		}
 	} finally {
 		await browser.close();
+	}
+	return failures;
+}
+
+async function loginAll(browser: Browser, baseUrl: string) {
+	const states: CaptureOptions['states'] = {};
+	for (const role of Object.keys(ROLE_LOGINS) as Role[]) {
+		states[role] = await login(browser, baseUrl, role);
+	}
+	return states;
+}
+
+/** Captures `shot` in every locale and theme, answering what failed */
+async function captureVariants(
+	shot: Shot,
+	base: Pick<CaptureOptions, 'browser' | 'baseUrl' | 'states'>
+) {
+	const failures: string[] = [];
+	for (const locale of LOCALES) {
+		const t = await translator(locale);
+		for (const theme of THEMES) {
+			const options = { ...base, locale, theme, t };
+			try {
+				await captureShot(shot, options).catch(() =>
+					// Vite occasionally reloads a page while optimizing dependencies
+					captureShot(shot, options)
+				);
+			} catch (error) {
+				failures.push(`${shot.id} (${locale}, ${theme}): ${(error as Error).message}`);
+			}
+		}
 	}
 	return failures;
 }

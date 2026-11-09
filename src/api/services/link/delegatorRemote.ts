@@ -1,4 +1,4 @@
-import { Client, fetchExchange, subscriptionExchange } from '@urql/core';
+import { Client, fetchExchange, subscriptionExchange, type CombinedError } from '@urql/core';
 import { createClient as createSSEClient } from 'graphql-sse';
 import {
 	makeLiveQuery,
@@ -26,12 +26,15 @@ const availableSubscriptions = new Set(
 export function createDelegatorClient({
 	url,
 	token,
-	onConnected
+	onConnected,
+	onError
 }: {
 	url: string;
 	token?: string;
 	/** Every (re)connect of the subscription stream, when updates may have been missed. */
 	onConnected?: (reconnected: boolean) => void;
+	/** An update a live query skipped, keeping its last rows. */
+	onError?: (error: CombinedError) => void;
 }) {
 	const headers: Record<string, string> = token ? { [LINK_TOKEN_HEADER]: token } : {};
 	const sse = createSSEClient({
@@ -63,12 +66,13 @@ export function createDelegatorClient({
 		]
 	});
 
+	// every selection carries the id, in the result types too
 	const options = { urqlClient, schema, autoIncludeIdField: 'id' };
 	return {
-		liveQuery: makeLiveQuery<Query>({ ...options, availableSubscriptions }),
-		query: makeQuery<Query>(options),
-		mutate: makeMutation<Mutation>(options),
-		subscribe: makeSubscription<Subscription>(options),
+		liveQuery: makeLiveQuery<Query, false, 'id'>({ ...options, availableSubscriptions, onError }),
+		query: makeQuery<Query, false, 'id'>(options),
+		mutate: makeMutation<Mutation, 'id'>(options),
+		subscribe: makeSubscription<Subscription, 'id'>(options),
 		dispose: () => sse.dispose()
 	};
 }

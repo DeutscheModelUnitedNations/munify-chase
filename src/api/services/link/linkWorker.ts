@@ -5,7 +5,7 @@ import { createDelegatorClient, type DelegatorClient } from './delegatorRemote';
 import { joinTables } from './joinTables';
 import { instanceLinkPubsub } from './linkPubsub';
 import { openLinkToken } from './linkTokens';
-import { createGate, handled, listen } from './liveTable';
+import { createGate, handled } from './liveTable';
 import { mirrorConference } from './mirror';
 import { reconcileConference, releaseConference } from './reconcile';
 import { syncWorkingPapers } from './workingPaperSync';
@@ -28,7 +28,6 @@ const DEBOUNCE_MS = 400;
 const FIRST_ANSWERS_AT_ONCE = 4;
 
 const CONFERENCE = {
-	id: true,
 	title: true,
 	location: true,
 	startConference: true,
@@ -101,20 +100,21 @@ function runWorker() {
 			for (const watch of watches.values()) watch.stop();
 		});
 
+		// A live query's answer may fail (DELEGATOR unreachable, a rule refusing): that is noted on the
+		// link, never left to crash the app. A first answer is asked again, an update waits for the next.
+		const failed = (error: unknown) => void recordError({ linkId: link.id, error });
+
 		let reconnected = () => {};
 		const remote: DelegatorClient = createDelegatorClient({
 			url: link.remoteUrl,
 			token: openLinkToken(link.outboundToken),
+			onError: failed,
 			onConnected: () => {
 				void storeIdentityKey({ remote, linkId: link.id });
 				reconnected();
 			}
 		});
 		cleanups.push(() => remote.dispose());
-
-		// A live query's first answer may fail (DELEGATOR unreachable, a rule refusing): that is noted
-		// on the link and asked again on the next (re)connect, never left to crash the app.
-		const failed = (error: unknown) => void recordError({ linkId: link.id, error });
 
 		/** Brings one conference's mirror up to what the tables hold, once they all answered. */
 		const apply = async (conferenceId: string) => {
@@ -197,7 +197,7 @@ function runWorker() {
 		const watchConferences = () => {
 			unwatchConferences?.();
 			const list = handled(remote.liveQuery.conferences(CONFERENCE), failed);
-			unwatchConferences = listen(list, (rows) => {
+			unwatchConferences = list.subscribe((rows) => {
 				if (!rows || stopped) return;
 				const current = new Map(
 					Array.from(rows)

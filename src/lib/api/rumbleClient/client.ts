@@ -3310,7 +3310,7 @@ export const client = {
    *
    * Internally, this does some magic to make the data reactive with Svelte's reactivity system. But it can be used with other frameworks as well.
    */
-  liveQuery: makeLiveQuery<Query>({
+  liveQuery: makeLiveQuery<Query, false>({
 	  urqlClient,
 	  availableSubscriptions: new Set(["agendaItem", "agendaItems", "amendment", "amendmentReviewItem", "amendmentReviewItems", "amendmentSponsor", "amendmentSponsors", "amendments", "committee", "committeeMember", "committeeMembers", "committees", "conference", "conferenceMember", "conferenceMembers", "conferenceUser", "conferenceUsers", "conferences", "instanceLink", "instanceLinks", "operativeClauseVote", "operativeClauseVotes", "paperContentSnapshot", "paperContentSnapshots", "paperEditor", "paperEditors", "paperShareCode", "paperShareCodes", "paperSponsor", "paperSponsors", "presenceEvent", "presenceEvents", "representation", "representations", "request", "requestType", "requestTypes", "requests", "resolutionComment", "resolutionComments", "resolutionPaper", "resolutionPapers", "rollCallSession", "rollCallSessions", "speakerOnList", "speakerOnLists", "speakersList", "speakersLists", "user", "users", "votingSession", "votingSessions", "votingVote", "votingVotes"]),
 		schema,
@@ -3332,7 +3332,7 @@ export const client = {
   /**
    * A one-time fetch of data.
    */
-  query: makeQuery<Query>({
+  query: makeQuery<Query, false>({
 	  urqlClient,
 		schema,
   }),

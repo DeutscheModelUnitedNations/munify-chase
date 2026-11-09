@@ -16,7 +16,7 @@ function fakeRemote({ failFirst = 0 }: { failFirst?: number } = {}) {
 			return Object.assign(answer, {
 				subscribe: (next: (rows: Row[]) => void) => {
 					listeners.set(offset, next);
-					return { unsubscribe: () => listeners.delete(offset) };
+					return () => void listeners.delete(offset);
 				}
 			});
 		},

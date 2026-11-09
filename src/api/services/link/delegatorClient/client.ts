@@ -6001,7 +6001,7 @@ export const client = {
 	 *
 	 * Internally, this does some magic to make the data reactive with Svelte's reactivity system. But it can be used with other frameworks as well.
 	 */
-	liveQuery: makeLiveQuery<Query>({
+	liveQuery: makeLiveQuery<Query, false, 'id'>({
 		urqlClient,
 		availableSubscriptions: new Set([
 			'assignmentReview',
@@ -6106,7 +6106,7 @@ export const client = {
 	/**
 	 * A mutation that can be used to e.g. create, update or delete data.
 	 */
-	mutate: makeMutation<Mutation>({
+	mutate: makeMutation<Mutation, 'id'>({
 		urqlClient,
 		schema,
 		autoIncludeIdField: 'id'
@@ -6114,7 +6114,7 @@ export const client = {
 	/**
 	 * A continuous stream of results that updates when the server sends new data.
 	 */
-	subscribe: makeSubscription<Subscription>({
+	subscribe: makeSubscription<Subscription, 'id'>({
 		urqlClient,
 		schema,
 		autoIncludeIdField: 'id'
@@ -6122,7 +6122,7 @@ export const client = {
 	/**
 	 * A one-time fetch of data.
 	 */
-	query: makeQuery<Query>({
+	query: makeQuery<Query, false, 'id'>({
 		urqlClient,
 		schema,
 		autoIncludeIdField: 'id'

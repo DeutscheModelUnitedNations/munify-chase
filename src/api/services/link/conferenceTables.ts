@@ -55,34 +55,27 @@ export function watchConferenceTables({
 	let participantIds: string[] = [];
 	let userIds: string[] = [];
 
-	const COMMITTEE = { id: true, name: true, abbreviation: true, roles: { id: true } } as const;
-	const AGENDA_ITEM = { id: true, title: true, committeeId: true } as const;
+	const COMMITTEE = { name: true, abbreviation: true, roles: { id: true } } as const;
+	const AGENDA_ITEM = { title: true, committeeId: true } as const;
 	const ROLE = {
-		id: true,
 		kind: true,
 		name: true,
 		fontAwesomeIcon: true,
 		chaseAccess: true,
 		nation: { alpha2Code: true }
 	} as const;
-	const TEAM_MEMBER = { id: true, role: true, userId: true } as const;
-	const DELEGATION = { id: true, assignedRoleId: true } as const;
+	const TEAM_MEMBER = { role: true, userId: true } as const;
+	const DELEGATION = { assignedRoleId: true } as const;
 	const DELEGATION_MEMBER = {
-		id: true,
 		delegationId: true,
 		conferenceParticipantId: true,
 		assignedCommitteeId: true
 	} as const;
-	const SINGLE_PARTICIPANT = {
-		id: true,
-		conferenceParticipantId: true,
-		assignedRoleId: true
-	} as const;
-	const SUPERVISOR = { id: true, conferenceParticipantId: true } as const;
-	const PARTICIPANT = { id: true, userId: true, nsaCardNumber: true } as const;
-	const USER = { id: true, email: true, givenName: true, familyName: true } as const;
+	const SINGLE_PARTICIPANT = { conferenceParticipantId: true, assignedRoleId: true } as const;
+	const SUPERVISOR = { conferenceParticipantId: true } as const;
+	const PARTICIPANT = { userId: true, nsaCardNumber: true } as const;
+	const USER = { email: true, givenName: true, familyName: true } as const;
 	const PAPER = {
-		id: true,
 		delegationId: true,
 		agendaItemId: true,
 		versions: { id: true, version: true }

@@ -3,26 +3,8 @@ export const PAGE_SIZE = 1000;
 
 /** What a rumble live query answers: the first answer as a promise, then every change. */
 export type LiveResult<T> = PromiseLike<unknown> & {
-	subscribe: (next: (value: T) => void) => unknown;
+	subscribe: (next: (value: T) => void) => () => void;
 };
-
-/**
- * Subscribes to a live query and answers how to stop. rumble types `subscribe` as answering an
- * unsubscribe function, but its observable answers `{ unsubscribe }`; both shapes are handled.
- */
-export function listen<T>(result: LiveResult<T>, next: (value: T) => void) {
-	const subscription: unknown = result.subscribe(next);
-	return () => {
-		if (typeof subscription === 'function') subscription();
-		else if (
-			typeof subscription === 'object' &&
-			subscription !== null &&
-			'unsubscribe' in subscription &&
-			typeof subscription.unsubscribe === 'function'
-		)
-			subscription.unsubscribe();
-	};
-}
 
 /** Lets a live query's first answer fail without an unhandled rejection; it still subscribes. */
 export function handled<T extends PromiseLike<unknown>>(
@@ -137,7 +119,7 @@ export function liveTable<Row extends { id: string }>({
 					Math.min(RETRY_MAX_MS, RETRY_FIRST_MS * 2 ** failures)
 				);
 			});
-			unsubscribe = listen(result, (value) => {
+			unsubscribe = result.subscribe((value) => {
 				if (!value || !current()) return;
 				page.rows = Array.from(value);
 				answered(index);

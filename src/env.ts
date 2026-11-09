@@ -135,6 +135,12 @@ export const variables = defineEnvVars({
 			)
 	},
 
+	GITHUB_TOKEN: {
+		description:
+			'GitHub token without scopes for looking up the latest desktop app release on the landing page. Raises the API rate limit, the 15 minute cache stays well below the 60 requests per hour allowed without one',
+		schema: z.string().optional()
+	},
+
 	// --- Public ---
 	PUBLIC_VERSION: {
 		description: 'App version shown in the UI, set by the Docker build',

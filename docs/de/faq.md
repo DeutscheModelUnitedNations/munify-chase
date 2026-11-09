@@ -44,7 +44,7 @@ Details zur Konfiguration findest du im [Self-Hosting-Guide](https://munify.clou
 
 ## Gibt es eine Desktop-App?
 
-Ja. CHASE gibt es als native Desktop-App für macOS, Windows und Linux. Den aktuellen Installer findest du auf der [GitHub-Releases-Seite](https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest).
+Ja. CHASE gibt es als native Desktop-App für macOS, Windows und Linux. Den aktuellen Installer findest du im [Download-Bereich der Startseite](/#download). Dort wird die passende Datei für dein System vorgeschlagen, alle Installer liegen außerdem auf der [GitHub-Releases-Seite](https://github.com/DeutscheModelUnitedNations/munify-chase/releases/latest).
 
 Die veröffentlichte Desktop-App verbindet sich mit dem CHASE-Server, für den sie gebaut wurde, und arbeitet weiter, wenn die Verbindung kurz abbricht. Wenn du CHASE selbst hostest, nutze die Web-App im Browser oder baue die Desktop-App mit deiner eigenen Serveradresse.
 

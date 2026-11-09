@@ -24,7 +24,7 @@
 	{#if platform}
 		{@const label = platformLabel(platform)}
 		<a class="btn btn-primary w-full sm:w-auto" href={href(platform)} data-sveltekit-reload>
-			<i class="ph {label.icon}"></i>
+			<i class="ph-fill {label.icon}"></i>
 			{m.homeDownloadForOs({ os: label.os })}
 			<span class="font-normal opacity-80">{label.format}</span>
 		</a>
@@ -38,7 +38,7 @@
 			{#each others as p (p)}
 				{@const label = platformLabel(p)}
 				<a class="btn btn-outline btn-sm" href={href(p)} data-sveltekit-reload>
-					<i class="ph {label.icon}"></i>
+					<i class="ph-fill {label.icon}"></i>
 					{label.os}
 					<span class="font-normal opacity-70">{label.format}</span>
 				</a>

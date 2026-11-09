@@ -1,5 +1,13 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"a11yHighContrast": "Hoher Kontrast",
+	"a11ySkipToContent": "Zum Inhalt springen",
+	"a11yStatusEndTime": "Endzeit",
+	"a11yThemeDark": "dunkel",
+	"a11yThemeLight": "hell",
+	"a11yThemeSystem": "wie das System",
+	"a11yUpcomingSpeakers": "Als Nächstes",
+	"a11yVoteClosingSoon": "Noch {seconds} Sekunden zum Abstimmen",
 	"aServiceBy": "Ein Service von",
 	"abort": "Abbrechen",
 	"absent": "Abwesend",

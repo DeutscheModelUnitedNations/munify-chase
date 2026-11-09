@@ -6,6 +6,7 @@
 	import LanguageSwitcher from '#lib/components/LanguageSwitcher.svelte';
 	import * as m from '#lib/paraglide/messages';
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
+	import ContrastToggle from './ContrastToggle.svelte';
 </script>
 
 <div class="w-full p-4">
@@ -22,6 +23,7 @@
 		</nav>
 		<div class="flex">
 			<ThemeSwitcher />
+			<ContrastToggle />
 			<LanguageSwitcher />
 		</div>
 		<nav>

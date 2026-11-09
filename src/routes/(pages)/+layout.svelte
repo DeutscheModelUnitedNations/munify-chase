@@ -8,7 +8,9 @@
 <div class="bg-base-100 min-h-screen">
 	<Navbar />
 
-	{@render children()}
+	<main id="main-content" tabindex="-1">
+		{@render children()}
+	</main>
 
 	<Footer />
 </div>

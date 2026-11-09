@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import adapter from '@sveltejs/adapter-node';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
@@ -140,6 +141,10 @@ export default defineConfig({
 	// worker.ts imports web-llm too, and worker bundles get their own plugin list
 	worker: {
 		plugins: () => [webLlmImportMetaUrlFix()]
+	},
+	// Unit tests live next to the code; e2e/ holds the Playwright specs (`bun run test:e2e`)
+	test: {
+		include: ['src/**/*.{test,spec}.{js,ts}']
 	},
 	server: {
 		allowedHosts: ['svelte-dev.munify.cloud'],

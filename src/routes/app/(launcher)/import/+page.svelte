@@ -272,6 +272,8 @@
 
 	<!-- Body -->
 	<main
+		id="main-content"
+		tabindex="-1"
 		class="mx-auto flex w-full flex-1 flex-col gap-4 px-6 {step === 0
 			? 'max-w-full py-16'
 			: 'max-w-3xl py-10'}"

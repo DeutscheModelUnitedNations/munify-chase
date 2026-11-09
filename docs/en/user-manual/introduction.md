@@ -47,3 +47,9 @@ Choose your role to get started:
 ## Technical Requirements
 
 CHASE is a web application that works in modern browsers (Chrome, Firefox, Safari, Edge). No installation is required: simply open the URL your conference organizers provide. A native desktop app is also available for Windows, macOS, and Linux for a more integrated experience.
+
+## Accessibility {#accessibility}
+
+CHASE works with a keyboard and a screen reader. As a delegate you hear when you move up the speakers list and when it is your turn. When the chair opens a vote, the focus lands on the vote buttons, and you are reminded shortly before it closes.
+
+Next to the light and dark switch you can turn on **High contrast**. Text, borders and notices become stronger and easier to read. The choice applies on this device. If your system is set to increase contrast, high contrast is on from the start.

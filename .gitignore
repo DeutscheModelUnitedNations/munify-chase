@@ -27,3 +27,7 @@ vite.config.ts.timestamp-*
 
 .lazyi18n
 src-tauri
+
+# Playwright
+/test-results
+/playwright-report

@@ -2,6 +2,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { resolve } from '$app/paths';
 	import ThemeSwitcher from './ThemeSwitcher.svelte';
+	import ContrastToggle from './ContrastToggle.svelte';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import HelpButton from '#lib/tours/HelpButton.svelte';
 	import { m } from '#lib/paraglide/messages';
@@ -281,6 +282,7 @@
 
 		<div class="flex w-full gap-1 px-2 py-2">
 			<ThemeSwitcher />
+			<ContrastToggle />
 			<LanguageSwitcher />
 		</div>
 

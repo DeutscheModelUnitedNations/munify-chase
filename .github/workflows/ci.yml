@@ -73,6 +73,44 @@ jobs:
       # - run: bunx houdini generate # TODO
       - run: bun run check
 
+  # Accessibility (e2e/accessibility.spec.ts): axe-core and the keyboard paths in a real browser,
+  # over the public pages and the offline demo conference. They need no seeded rows and no sign
+  # in, so an empty, migrated database does. The OIDC provider is the oidc-mock the dev server
+  # starts itself.
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      NODE_ENV: development
+      PUBLIC_OIDC_AUTHORITY: http://127.0.0.1:8090/oidc/.well-known/openid-configuration
+      PUBLIC_OIDC_CLIENT_ID: chase
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup-bun
+      - run: bunx svelte-kit sync
+      - run: bun run db:migrate
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-results
+          path: test-results/
+          retention-days: 7
+
   # Codebase intelligence (dead code, duplication, complexity) — https://fallow.tools
   #
   # Advisory only: findings never fail this job and it is deliberately left out of
@@ -184,7 +222,7 @@ jobs:
 
   docker-build:
     if: github.event_name == 'push'
-    needs: [format, lint, test, i18n, security, typecheck]
+    needs: [format, lint, test, i18n, security, typecheck, e2e]
     runs-on: ubuntu-latest
     env:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}

@@ -25,6 +25,7 @@ bun run format:check     # Prettier check (no write)
 bun run check            # svelte-kit sync + svelte-check
 bun run typecheck        # tsc --noEmit
 bun run test             # Vitest
+bun run test:e2e         # Playwright + axe-core accessibility checks (public pages, offline demo)
 bun run fallow:audit     # fallow gate: findings introduced vs. the base branch
 bun run fallow:health    # fallow health score (0-100 + letter grade)
 bun run fallow           # fallow full pipeline (dead code + duplication + health)
@@ -115,6 +116,34 @@ bun run preview          # Preview production build
 - **Config and imports**: SvelteKit's configuration lives in the `sveltekit()` plugin options in `vite.config.ts` (there is no `svelte.config.js`). Import from `src/lib` with the `#lib/...` subpath import, without a file extension for TypeScript modules (e.g. `#lib/helpers/requests`, but `#lib/components/Flag.svelte`). TypeScript resolves `package.json` `imports` like Node, without trying extensions, so `#lib/*` maps to the fallback list `./src/lib/*`, `./src/lib/*.ts`, `./src/lib/*.js`. Server code under `src/api` uses `#api/...` the same way, assets `#assets/...`. SvelteKit's `alias` option is deprecated, so don't add aliases there.
 - **Patched dependencies**: `bun patch` changes go in `patches/` and are listed under `patchedDependencies` in `package.json`. None are needed right now. Drop a patch once a release includes its fix.
 - **Env access**: every variable is declared, described and validated (Zod) in `src/env.ts` and imported by name from `$app/env/private` (server only) or `$app/env/public`. `browser`, `building` and `dev` come from `$app/env`. `$env/*` and `$app/environment` are deprecated. When adding a variable, also document it in `.env.example`. Standalone scripts (`db:seed:dev`, `db:reset`, `drizzle.config.ts`) run outside SvelteKit and read `process.env` directly. A test that needs a variable mocks the module
+
+## Accessibility
+
+Delegates include blind and low-vision people, so the participant view in particular has to work
+with a screen reader and in high contrast. `e2e/accessibility.spec.ts` runs axe-core (WCAG 2.2
+A/AA, serious and critical) over the public pages and the offline demo conference, contrast in
+the high contrast variant, plus the keyboard paths. It needs no database rows or sign in.
+
+- **Dialogs** go through `Modal` (`label` names it, else its first heading) or carry
+  `aria-modal="true"` and `{@attach open ? modalFocus(close) : undefined}`
+  (`#lib/helpers/modalFocus`): focus moves in, Tab stays inside, Escape closes (pass no callback
+  where Escape would throw away typing, as in the amendment composer), focus returns to the
+  opener. Not `showModal()` for `Modal`: toasts and the command palette must stay above it.
+- **What changes in a session is announced.** A polite live region that is always rendered says
+  what the eye sees change (the delegate's place on a list, a vote closing soon, the lock-in).
+  Never announce every tick of a timer.
+- **Moving content** (marquees) pauses for `prefersReducedMotion` (`svelte/motion`) and on hover,
+  and is `aria-hidden` next to a plain `sr-only` copy; the speakers queue reads as one ordered list.
+- **One `<main id="main-content" tabindex="-1">` per page** for the root layout's skip link.
+- **Icon-only means unnamed**: `aria-label` on icon buttons, `sr-only` text where a tooltip
+  carries the meaning (the majorities). State is `aria-pressed` / `aria-selected`, not colour; a
+  control that looks disabled is `disabled` (or `aria-disabled` where it must keep its colour,
+  as the expired vote buttons do).
+- **High contrast** (`#lib/helpers/contrast`, `ContrastToggle` next to the theme switch, or the
+  system's "increase contrast") sets `data-contrast="more"`, and `app.css` darkens the semantic
+  colours and lifts muted text. The default look keeps DMUN's pale shades; this is the one that
+  has to pass 4.5:1.
+- `app.css` gives Font Awesome 6 glyphs empty alternative text, so plain `<i>` icons are silent.
 
 ## Codebase Intelligence (fallow)
 

@@ -137,6 +137,7 @@
 	<div class="flex w-full gap-2">
 		<input
 			type="time"
+			aria-label={m.a11yStatusEndTime()}
 			class="input input-xl w-full flex-1 text-center font-mono"
 			value={untilFormatted}
 			onchange={(e) => {

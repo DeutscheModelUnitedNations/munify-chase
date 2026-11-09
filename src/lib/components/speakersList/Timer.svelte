@@ -62,7 +62,10 @@
 			: ''} transition-colors duration-1000"
 	>
 		<div class="flex font-mono text-2xl">
-			<span class="{!overtime ? 'opacity-0' : ''} transition-all duration-1000">+</span>
+			<span
+				class="{!overtime ? 'opacity-0' : ''} transition-all duration-1000"
+				aria-hidden={!overtime}>+</span
+			>
 			<span class="transition-all duration-1000 {!overtime ? '-translate-x-3' : 'translate-x-0'}"
 				>{countdownDeltaFormatted(countdownDelta)}
 				<span class="font-mono text-lg opacity-50">

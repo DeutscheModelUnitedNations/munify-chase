@@ -301,6 +301,19 @@
 						<div class="card-body gap-3 p-4">
 							<h2 class="card-title text-lg">{label}</h2>
 
+							<!-- The badge below says it to the eye; this says it aloud whenever it changes -->
+							{#if canSelfAdd}
+								<p class="sr-only" aria-live="polite">
+									{myPosition === null
+										? ''
+										: `${label}: ${
+												myPosition === 0
+													? m.youreUp()
+													: m.onListPosition({ position: String(myPosition) })
+											}`}
+								</p>
+							{/if}
+
 							<CurrentSpeaker speakersList={list} />
 
 							<PresentationSpeakersQueue rawSpeakers={list.speakers} closed={list.isClosed} />

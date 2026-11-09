@@ -254,118 +254,128 @@
 </svelte:head>
 
 {#if committee}
-	<Grid
-		itemSize={{ height: browser ? window.innerHeight / 16 : 60 }}
-		cols={12}
-		on:change={resizeQueues}
-		collision="none"
-	>
-		{#if layout.committeeTitle}
-			{@const gridProps = layout.committeeTitle}
-			<GridItem
-				{...gridProps}
-				class="card bg-base-100 gap-2 overflow-hidden p-4"
-				id="committee-title"
-			>
-				<AbbreviationInfoBox text={committee.name || '—'} abbreviation={committee.abbreviation} />
-			</GridItem>
-		{/if}
-		{#if layout.committeeStatus}
-			{@const gridProps = layout.committeeStatus}
-			<GridItem
-				{...gridProps}
-				class="card bg-base-100 gap-2 overflow-hidden p-4"
-				id="committee-status"
-			>
-				<IconInfoBox
-					text={committee.statusHeadline.length > 0
-						? committee.statusHeadline
-						: getCommitteeStatusText(committee.status)}
-					faIcon={getCommitteeStatusIcon(committee.status)}
-					committeeStatus={committee.status}
-					until={new Date(committee.statusUntil)}
-					fullHeight
-					hideCountdown={committee.status === 'FORMAL'}
-				/>
-			</GridItem>
-		{/if}
-		{#if layout.agendaItem}
-			{@const gridProps = layout.agendaItem}
-			<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="agenda-item">
-				<IconInfoBox text={activeAgendaItem?.title || '—'} faIcon="podium" fullHeight />
-			</GridItem>
-		{/if}
-		{#if layout.majorities}
-			{@const gridProps = layout.majorities}
-			<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="majorities">
-				<Majorities
-					totalPresent={committee.totalPresent}
-					simpleMajority={committee.simpleMajority}
-					twoThirdsMajority={committee.twoThirdsMajority}
-					{minAmendmentSponsors}
-				/>
-			</GridItem>
-		{/if}
+	<main id="main-content" tabindex="-1">
+		<Grid
+			itemSize={{ height: browser ? window.innerHeight / 16 : 60 }}
+			cols={12}
+			on:change={resizeQueues}
+			collision="none"
+		>
+			{#if layout.committeeTitle}
+				{@const gridProps = layout.committeeTitle}
+				<GridItem
+					{...gridProps}
+					class="card bg-base-100 gap-2 overflow-hidden p-4"
+					id="committee-title"
+				>
+					<AbbreviationInfoBox text={committee.name || '—'} abbreviation={committee.abbreviation} />
+				</GridItem>
+			{/if}
+			{#if layout.committeeStatus}
+				{@const gridProps = layout.committeeStatus}
+				<GridItem
+					{...gridProps}
+					class="card bg-base-100 gap-2 overflow-hidden p-4"
+					id="committee-status"
+				>
+					<IconInfoBox
+						text={committee.statusHeadline.length > 0
+							? committee.statusHeadline
+							: getCommitteeStatusText(committee.status)}
+						faIcon={getCommitteeStatusIcon(committee.status)}
+						committeeStatus={committee.status}
+						until={new Date(committee.statusUntil)}
+						fullHeight
+						hideCountdown={committee.status === 'FORMAL'}
+					/>
+				</GridItem>
+			{/if}
+			{#if layout.agendaItem}
+				{@const gridProps = layout.agendaItem}
+				<GridItem
+					{...gridProps}
+					class="card bg-base-100 gap-2 overflow-hidden p-4"
+					id="agenda-item"
+				>
+					<IconInfoBox text={activeAgendaItem?.title || '—'} faIcon="podium" fullHeight />
+				</GridItem>
+			{/if}
+			{#if layout.majorities}
+				{@const gridProps = layout.majorities}
+				<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="majorities">
+					<Majorities
+						totalPresent={committee.totalPresent}
+						simpleMajority={committee.simpleMajority}
+						twoThirdsMajority={committee.twoThirdsMajority}
+						{minAmendmentSponsors}
+					/>
+				</GridItem>
+			{/if}
 
-		{#if layout.whiteboard}
-			{@const gridProps = layout.whiteboard}
-			<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="whiteboard">
-				<WhiteboardViewer data={committee.whiteboardContent} />
-			</GridItem>
-		{/if}
+			{#if layout.whiteboard}
+				{@const gridProps = layout.whiteboard}
+				<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="whiteboard">
+					<WhiteboardViewer data={committee.whiteboardContent} />
+				</GridItem>
+			{/if}
 
-		{#if layout.speakersList}
-			{@const gridProps = layout.speakersList}
-			<GridItem
-				{...gridProps}
-				class="card bg-base-100 gap-8 overflow-hidden p-4"
-				id="speakers-list"
-			>
-				<CurrentSpeaker {speakersList} />
-				<SpeakersQueue
-					rawSpeakers={speakersList?.speakers}
-					closed={speakersList?.isClosed}
-					bind:resizeFn={speakersQueueResizeFn}
-				/>
-			</GridItem>
-		{/if}
+			{#if layout.speakersList}
+				{@const gridProps = layout.speakersList}
+				<GridItem
+					{...gridProps}
+					class="card bg-base-100 gap-8 overflow-hidden p-4"
+					id="speakers-list"
+				>
+					<CurrentSpeaker {speakersList} />
+					<SpeakersQueue
+						rawSpeakers={speakersList?.speakers}
+						closed={speakersList?.isClosed}
+						bind:resizeFn={speakersQueueResizeFn}
+					/>
+				</GridItem>
+			{/if}
 
-		{#if layout.commentsList}
-			{@const gridProps = layout.commentsList}
-			<GridItem {...gridProps} class="card bg-base-100 gap-8 overflow-hidden p-4" id="comment-list">
-				<CurrentSpeaker speakersList={commentsList} />
-				<SpeakersQueue
-					rawSpeakers={commentsList?.speakers}
-					closed={commentsList?.isClosed}
-					bind:resizeFn={commentsQueueResizeFn}
-				/>
-			</GridItem>
-		{/if}
+			{#if layout.commentsList}
+				{@const gridProps = layout.commentsList}
+				<GridItem
+					{...gridProps}
+					class="card bg-base-100 gap-8 overflow-hidden p-4"
+					id="comment-list"
+				>
+					<CurrentSpeaker speakersList={commentsList} />
+					<SpeakersQueue
+						rawSpeakers={commentsList?.speakers}
+						closed={commentsList?.isClosed}
+						bind:resizeFn={commentsQueueResizeFn}
+					/>
+				</GridItem>
+			{/if}
 
-		{#if layout.resolutionPreview && activePaperId}
-			{@const gridProps = layout.resolutionPreview}
-			<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
-				<PresentationResolutionPreview
-					paperId={activePaperId}
-					currentOperativeIndex={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE' ||
-					committee.activeDraftResolution?.status === 'VOTING_PHASE'
-						? committee.currentOperativeIndex
-						: undefined}
-					resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
-					showAmendments={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'}
-					activeAmendment={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'
-						? (committee.activeAmendment ?? null)
-						: null}
-				/>
-			</GridItem>
-		{/if}
-		{#if layout.requests}
-			{@const gridProps = layout.requests}
-			<GridItem {...gridProps} class="card bg-base-100 overflow-hidden p-4" id="requests">
-				<PresentationRequests requests={presentationRequests} />
-			</GridItem>
-		{/if}
-	</Grid>
+			{#if layout.resolutionPreview && activePaperId}
+				{@const gridProps = layout.resolutionPreview}
+				<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
+					<PresentationResolutionPreview
+						paperId={activePaperId}
+						currentOperativeIndex={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE' ||
+						committee.activeDraftResolution?.status === 'VOTING_PHASE'
+							? committee.currentOperativeIndex
+							: undefined}
+						resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
+						showAmendments={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'}
+						activeAmendment={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'
+							? (committee.activeAmendment ?? null)
+							: null}
+					/>
+				</GridItem>
+			{/if}
+			{#if layout.requests}
+				{@const gridProps = layout.requests}
+				<GridItem {...gridProps} class="card bg-base-100 overflow-hidden p-4" id="requests">
+					<PresentationRequests requests={presentationRequests} />
+				</GridItem>
+			{/if}
+		</Grid>
+	</main>
 
 	<AdoptionConfetti
 		lastAdoptionDate={committee.lastResolutionAdoptionDate}

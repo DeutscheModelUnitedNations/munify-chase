@@ -56,6 +56,19 @@
 				min-height: 100vh;
 			}
 		</style>
+		<script>
+			// High contrast before the first paint, so the page never flashes in the other look.
+			// Mirrors contrastIsMore in src/lib/helpers/contrast.ts
+			try {
+				var choice = localStorage.getItem('contrast');
+				if (
+					choice === 'more' ||
+					(choice !== 'normal' && matchMedia('(prefers-contrast: more)').matches)
+				) {
+					document.documentElement.dataset.contrast = 'more';
+				}
+			} catch (e) {}
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover" class="bg-base-200">

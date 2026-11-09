@@ -98,7 +98,7 @@
 	]);
 </script>
 
-<Modal bind:open closeOnEsc={false}>
+<Modal bind:open closeOnEsc={false} label={voteName || m.deviceBasedVoting()}>
 	<h1 class="mb-4 text-center text-2xl font-bold">{voteName || m.deviceBasedVoting()}</h1>
 
 	<DeviceVotingCountdown
@@ -107,14 +107,16 @@
 		bind:expired
 	/>
 
-	<!-- Buttons stay enabled-looking (not `disabled`) once expired so the locked-in
-		selection keeps its color — daisyUI's disabled state greys out every button
+	<!-- Buttons stay enabled-looking (not `disabled`, but `aria-disabled`) once expired so the
+		locked-in selection keeps its color — daisyUI's disabled state greys out every button
 		equally, which would hide which choice was actually cast. Sized well past
 		btn-xl since this is a phone-first tap target, not a desktop control. -->
 	<div class="mt-6 flex flex-col gap-4">
 		<button
 			class="btn h-28 text-3xl {selected === 'PRO' ? 'btn-success' : 'btn-outline btn-success'}
 				{expired ? 'pointer-events-none' : ''}"
+			aria-pressed={selected === 'PRO'}
+			aria-disabled={expired}
 			onclick={() => cast('PRO')}
 		>
 			<i class="fas fa-circle-plus text-4xl"></i>
@@ -123,6 +125,8 @@
 		<button
 			class="btn h-28 text-3xl {selected === 'CON' ? 'btn-error' : 'btn-outline btn-error'}
 				{expired ? 'pointer-events-none' : ''}"
+			aria-pressed={selected === 'CON'}
+			aria-disabled={expired}
 			onclick={() => cast('CON')}
 		>
 			<i class="fas fa-circle-minus text-4xl"></i>
@@ -132,6 +136,8 @@
 			<button
 				class="btn h-28 text-3xl {selected === 'ABSTAIN' ? 'btn-info' : 'btn-outline btn-info'}
 					{expired ? 'pointer-events-none' : ''}"
+				aria-pressed={selected === 'ABSTAIN'}
+				aria-disabled={expired}
 				onclick={() => cast('ABSTAIN')}
 			>
 				<i class="fas fa-circle text-4xl"></i>
@@ -140,10 +146,13 @@
 		{/if}
 	</div>
 
-	{#if expired}
-		<div class="alert alert-info mt-4">
-			<i class="fas fa-lock"></i>
-			<span>{selected ? m.deviceVoteLockedIn() : m.deviceVoteLockedNone()}</span>
-		</div>
-	{/if}
+	<!-- Always there, so a screen reader announces the lock-in when it appears -->
+	<div role="status">
+		{#if expired}
+			<div class="alert alert-info mt-4">
+				<i class="fas fa-lock"></i>
+				<span>{selected ? m.deviceVoteLockedIn() : m.deviceVoteLockedNone()}</span>
+			</div>
+		{/if}
+	</div>
 </Modal>

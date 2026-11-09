@@ -1,4 +1,6 @@
 <script lang="ts">
+	import DialogBackdrop from '../DialogBackdrop.svelte';
+	import { modalFocus } from '#lib/helpers/modalFocus';
 	import { untrack } from 'svelte';
 	import { m } from '#lib/paraglide/messages';
 	import { client } from '#lib/api/rumbleClient/client';
@@ -226,7 +228,7 @@
 	];
 </script>
 
-<dialog class="modal" {open}>
+<dialog class="modal" {open} aria-modal="true" {@attach open ? modalFocus() : undefined}>
 	<div class="modal-box bg-base-200 flex flex-col w-11/12 max-w-4xl" style="min-height: 32rem;">
 		<h3 class="mb-4 text-lg font-bold">{m.proposeAmendment()}</h3>
 
@@ -424,7 +426,5 @@
 			</button>
 		</div>
 	</div>
-	<form method="dialog" class="modal-backdrop">
-		<button onclick={() => close()}>close</button>
-	</form>
+	<DialogBackdrop onclose={close} />
 </dialog>

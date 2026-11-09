@@ -16,6 +16,7 @@
 	import CookieBanner from '#lib/components/CookieBanner.svelte';
 	import Inspect from 'svelte-inspect-value';
 	import { SPLASH_SCREENS } from '#lib/pwa/splashScreens';
+	import { m } from '#lib/paraglide/messages';
 
 	dayjs.extend(duration);
 
@@ -50,6 +51,14 @@
 		<link rel="apple-touch-startup-image" href="/{screen.file}" media={screen.media} />
 	{/each}
 </svelte:head>
+
+<!-- The first thing Tab reaches: past the navigation, to the layout's <main> -->
+<a
+	href="#main-content"
+	class="btn btn-primary sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100]"
+>
+	{m.a11ySkipToContent()}
+</a>
 
 {@render children()}
 

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import DialogBackdrop from '../DialogBackdrop.svelte';
+	import { modalFocus } from '#lib/helpers/modalFocus';
 	import { m } from '#lib/paraglide/messages';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { nanoid } from '#lib/helpers/nanoid';
@@ -123,9 +125,11 @@
 		const day = Math.round(hr / 24);
 		return `${day}d ago`;
 	}
+
+	const focusWhileOpen = $derived(open ? modalFocus(close) : undefined);
 </script>
 
-<dialog class="modal" {open}>
+<dialog class="modal" {open} aria-modal="true" {@attach focusWhileOpen}>
 	<div class="modal-box bg-base-200 max-h-[85vh] w-full max-w-2xl">
 		<div class="mb-4 flex items-center justify-between">
 			<h3 class="text-lg font-bold">
@@ -193,9 +197,7 @@
 			</button>
 		</div>
 	</div>
-	<form method="dialog" class="modal-backdrop">
-		<button onclick={() => close()}>close</button>
-	</form>
+	<DialogBackdrop onclose={close} />
 </dialog>
 
 {#if confirmSnap}
@@ -215,7 +217,11 @@
 				</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label={m.cancel()} onclick={() => (confirmSnap = null)}
+		<button
+			class="modal-backdrop"
+			tabindex="-1"
+			aria-label={m.cancel()}
+			onclick={() => (confirmSnap = null)}
 		></button>
 	</div>
 {/if}

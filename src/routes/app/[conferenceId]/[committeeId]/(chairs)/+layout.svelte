@@ -398,9 +398,9 @@
 	{commentList}
 />
 
-<div class="pb-16">
+<main id="main-content" tabindex="-1" class="pb-16">
 	{@render children()}
-</div>
+</main>
 
 <StatusChangerModal
 	{committeeId}

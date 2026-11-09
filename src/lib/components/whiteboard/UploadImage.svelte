@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { modalFocus } from '#lib/helpers/modalFocus';
 	import { m } from '#lib/paraglide/messages';
 
 	interface Props {
@@ -76,7 +77,12 @@
 	}
 </script>
 
-<dialog class="modal" open={showModal}>
+<dialog
+	class="modal"
+	open={showModal}
+	aria-modal="true"
+	{@attach showModal ? modalFocus(handleCancel) : undefined}
+>
 	<div class="modal-box bg-base-200">
 		<h3 class="mb-4 text-lg font-bold">{m.img()}</h3>
 
@@ -153,6 +159,11 @@
 			</button>
 		</div>
 	</div>
-	<button type="button" class="modal-backdrop" onclick={handleCancel} aria-label="Close modal"
+	<button
+		type="button"
+		class="modal-backdrop"
+		tabindex="-1"
+		onclick={handleCancel}
+		aria-label={m.close()}
 	></button>
 </dialog>

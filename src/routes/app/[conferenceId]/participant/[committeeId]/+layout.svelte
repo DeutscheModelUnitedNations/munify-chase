@@ -158,9 +158,9 @@
 	</div>
 
 	<!-- Main content with bottom padding for nav -->
-	<div class="pb-16">
+	<main id="main-content" tabindex="-1" class="pb-16">
 		{@render children()}
-	</div>
+	</main>
 
 	<!-- Bottom dock navigation -->
 	<div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">

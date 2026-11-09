@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { prefersReducedMotion } from 'svelte/motion';
 	import type { CommitteestatusEnum } from '#lib/api/rumbleClient/client';
 	import { getCommitteeStatusBackground } from '#lib/utils/committeeStatus';
 	import Marquee from 'svelte-fast-marquee';
@@ -93,15 +94,21 @@
 					{text}
 				</h3>
 			{:else}
-				<Marquee
-					speed={30}
-					class="w-full min-w-0 flex-1"
-					gap="1rem"
-					style="mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);"
-				>
-					<p class="text-nowrap">{text}</p>
-					<p>+++</p>
-				</Marquee>
+				<!-- The text twice and a separator, scrolling: a screen reader gets it once instead -->
+				<h3 class="sr-only">{text}</h3>
+				<div class="flex w-full min-w-0 flex-1" aria-hidden="true">
+					<Marquee
+						play={!prefersReducedMotion.current}
+						pauseOnHover
+						speed={30}
+						class="w-full min-w-0 flex-1"
+						gap="1rem"
+						style="mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);"
+					>
+						<p class="text-nowrap">{text}</p>
+						<p>+++</p>
+					</Marquee>
+				</div>
 			{/if}
 			{#if until}
 				<p class={subTextClass}>

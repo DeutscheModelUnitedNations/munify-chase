@@ -151,3 +151,102 @@
 [data-theme='dark'] .docs-shot-light {
 	display: none;
 }
+
+/* --- ACCESSIBILITY --- */
+
+/*
+ * Font Awesome 6 draws each glyph as generated content, which screen readers read out as an
+ * unpronounceable character, also inside a button's name. `/ ""` gives it empty alternative text
+ * (as Font Awesome 7 does itself); browsers without that syntax keep Font Awesome's own rule.
+ */
+:is(.fa, .fas, .far, .fab, .fad, .fa-solid, .fa-regular, .fa-brands, .fa-duotone)::before {
+	content: var(--fa) / '';
+}
+
+:is(.fad, .fa-duotone)::after {
+	content: var(--fa--fa) / '';
+}
+
+/*
+ * High contrast (`#lib/helpers/contrast`, the toggle next to the theme switch, or the system's
+ * "increase contrast"): the DMUN look with every text at 4.5:1 or more on the base colours, and
+ * borders and focus at 3:1 or more. The light theme's semantic colours are the pale 300 shades,
+ * which as text (soft badges and alerts, outline buttons such as the vote buttons) fall below 2:1.
+ */
+:root[data-contrast='more']:not([data-theme='dark']) {
+	--color-secondary: var(--color-secondary-700);
+	--color-secondary-content: #ffffff;
+	--color-accent: var(--color-accent-700);
+	--color-accent-content: #ffffff;
+	--color-info: var(--color-info-700);
+	--color-info-content: #ffffff;
+	--color-success: var(--color-success-700);
+	--color-success-content: #ffffff;
+	--color-warning: var(--color-warning-700);
+	--color-warning-content: #ffffff;
+	--color-error: var(--color-error-700);
+	--color-error-content: #ffffff;
+	--color-base-300: #858585;
+	--border: 2px;
+}
+
+:root[data-contrast='more'][data-theme='dark'] {
+	--color-primary: var(--color-primary-200);
+	--color-primary-content: #1b1837;
+	--color-secondary: var(--color-secondary-300);
+	--color-secondary-content: #1b1837;
+	--color-accent: var(--color-accent-300);
+	--color-accent-content: #1b1837;
+	--color-info: var(--color-info-300);
+	--color-info-content: var(--color-info-900);
+	--color-success: var(--color-success-300);
+	--color-success-content: var(--color-success-900);
+	--color-warning: var(--color-warning-300);
+	--color-warning-content: var(--color-warning-900);
+	--color-error: var(--color-error-300);
+	--color-error-content: var(--color-error-900);
+	--color-base-300: #8a889e;
+	--border: 2px;
+}
+
+/* The landing page's eyebrow lines use a fixed accent shade, dark on the navy ground */
+:root[data-contrast='more'][data-theme='dark'] .text-accent-600 {
+	color: var(--color-accent-300);
+}
+
+/* Muted text is a share of the text colour; at half it is 3.9:1 on white */
+:root[data-contrast='more'] [class*='text-base-content/'] {
+	color: var(--color-base-content);
+}
+
+:root[data-contrast='more'] [class*='text-neutral-content/'] {
+	color: var(--color-neutral-content);
+}
+
+:root[data-contrast='more'] [class*='text-primary-content/'] {
+	color: var(--color-primary-content);
+}
+
+/* Still a little dimmer than the rest, so what it marks keeps a hint of it */
+:root[data-contrast='more']
+	:is(.opacity-40, .opacity-50, .opacity-60, .opacity-70, .opacity-75, .opacity-80) {
+	opacity: 0.85;
+}
+
+/* daisyUI dims the tabs that are not selected; the selected one keeps its underline or fill */
+:root[data-contrast='more'] .tab {
+	color: var(--color-base-content);
+}
+
+:root[data-contrast='more'] ::placeholder {
+	color: color-mix(in oklab, var(--color-base-content) 75%, transparent);
+}
+
+:root[data-contrast='more'] :is(.input, .select, .textarea, .file-input) {
+	border-color: var(--color-base-300);
+}
+
+:root[data-contrast='more'] :focus-visible {
+	outline: 3px solid var(--color-base-content);
+	outline-offset: 2px;
+}

@@ -10,6 +10,7 @@
 	import { browser } from '$app/env';
 	import { onMount } from 'svelte';
 	import { compareSpeakers } from '#lib/helpers/speakerSort';
+	import { prefersReducedMotion } from 'svelte/motion';
 
 	interface Props {
 		// speaker on list
@@ -47,6 +48,14 @@
 
 	let speakers = $derived(rawSpeakers?.toSorted(compareSpeakers).toSpliced(0, 1));
 
+	type Speaker = NonNullable<Props['rawSpeakers']>[number];
+	const speakerName = (speaker: Speaker) => {
+		const representation = (speaker.committeeMember || speaker.conferenceMember)?.representation;
+		return (
+			representation?.name || getTranslatedCountryNameFromAlpha3Code(representation?.alpha3Code)
+		);
+	};
+
 	let container = $state<HTMLElement | null>(null);
 	let overflowContainer = $state<HTMLElement | null>(null);
 	let containerHeight = $state(250);
@@ -79,7 +88,28 @@
 	});
 </script>
 
-<div class="relative flex h-full w-full flex-col overflow-hidden" bind:this={container}>
+<!-- What the queue below shows by fitting rows to the height and scrolling the rest: everyone
+	 waiting, in order -->
+<div class="sr-only">
+	{#if speakers && speakers.length > 0}
+		<ol aria-label={m.a11yUpcomingSpeakers()}>
+			{#each speakers as speaker (speaker.id)}
+				<li>{speakerName(speaker)}</li>
+			{/each}
+		</ol>
+	{:else}
+		<p>{m.listEmpty()}</p>
+	{/if}
+	{#if closed}
+		<p>{m.listClosed()}</p>
+	{/if}
+</div>
+
+<div
+	class="relative flex h-full w-full flex-col overflow-hidden"
+	bind:this={container}
+	aria-hidden="true"
+>
 	{#if speakers && speakers.length > 0}
 		{#each speakers.slice(0, visibleCount) as speaker, i (speaker.id)}
 			{@const member = speaker.committeeMember || speaker.conferenceMember}
@@ -103,7 +133,7 @@
 				? 'opacity-100'
 				: 'opacity-0'} transition-all duration-300"
 		>
-			<Marquee speed={30} gap="3rem">
+			<Marquee speed={30} gap="3rem" play={!prefersReducedMotion.current} pauseOnHover>
 				<div class="flex items-center justify-center gap-2 py-4" bind:this={overflowContainer}>
 					{#each speakers.slice(visibleCount) as speaker, i (i)}
 						{@const member = speaker.committeeMember || speaker.conferenceMember}

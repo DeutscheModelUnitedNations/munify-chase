@@ -129,7 +129,7 @@ export function renderDoc(source: string, slug: string, options: RenderOptions):
 				}
 				if (depth === 2 || depth === 3) toc.push({ id, text: text.replace(/[*_`]/g, ''), depth });
 				if (depth === 1) return `<h1>${content}</h1>`;
-				return `<h${depth} id="${id}" class="group scroll-mt-24">${content}<a href="#${id}" class="ml-2 opacity-0 group-hover:opacity-50 no-underline" aria-hidden="true">#</a></h${depth}>`;
+				return `<h${depth} id="${id}" class="group scroll-mt-24">${content}<a href="#${id}" class="ml-2 opacity-0 group-hover:opacity-50 no-underline" aria-hidden="true" tabindex="-1">#</a></h${depth}>`;
 			},
 			link({ href, title, tokens }) {
 				const text = this.parser.parseInline(tokens);

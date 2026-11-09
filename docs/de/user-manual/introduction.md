@@ -47,3 +47,9 @@ Wähle deine Rolle, um loszulegen:
 ## Technische Voraussetzungen
 
 CHASE ist eine Webanwendung und läuft in modernen Browsern (Chrome, Firefox, Safari, Edge). Eine Installation ist nicht nötig: Öffne einfach die URL, die dir deine Konferenzorganisation gibt. Für ein integrierteres Erlebnis gibt es außerdem eine native Desktop-App für Windows, macOS und Linux.
+
+## Barrierefreiheit {#accessibility}
+
+CHASE lässt sich mit Tastatur und Screenreader bedienen. Als Delegierte*r hörst du, wann du auf der Redeliste nachrückst und wann du dran bist. Öffnet der Vorsitz eine Abstimmung, landet der Fokus direkt bei den Stimmknöpfen, und kurz vor Schluss wirst du erinnert.
+
+Neben dem Schalter für hell und dunkel schaltest du **Hoher Kontrast** ein. Dann sind Texte, Rahmen und Hinweise kräftiger und leichter zu lesen. Die Wahl gilt auf diesem Gerät. Hast du in deinem System mehr Kontrast eingestellt, ist der hohe Kontrast von Anfang an an.

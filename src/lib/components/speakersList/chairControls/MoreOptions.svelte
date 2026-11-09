@@ -221,6 +221,7 @@
 			/>
 			<button
 				class={speakersList?.speakers?.length ? 'btn' : 'btn btn-disabled'}
+				disabled={!speakersList?.speakers?.length}
 				onclick={openChangeSpeakersNameModal}
 			>
 				<i class="fas fa-pencil"></i>

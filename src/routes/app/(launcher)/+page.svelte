@@ -219,7 +219,11 @@
 		<AvatarMenu givenName={user.givenName} familyName={user.familyName} email={user.email} />
 	</header>
 
-	<div class="mx-auto flex w-full max-w-[1200px] flex-1 flex-col px-4 pb-6 md:px-12">
+	<main
+		id="main-content"
+		tabindex="-1"
+		class="mx-auto flex w-full max-w-[1200px] flex-1 flex-col px-4 pb-6 md:px-12"
+	>
 		<header class="mb-6 flex flex-col gap-4">
 			<div>
 				<p class="text-base-content/60 m-0 text-sm">
@@ -312,7 +316,7 @@
 				</a>
 			</footer>
 		{/if}
-	</div>
+	</main>
 
 	<Footer />
 </div>

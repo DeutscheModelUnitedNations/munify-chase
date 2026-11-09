@@ -96,7 +96,12 @@
 </script>
 
 <div class="join">
-	<select class="select select-lg join-item w-full" onchange={update} bind:value>
+	<select
+		class="select select-lg join-item w-full"
+		aria-label={m.agendaItem()}
+		onchange={update}
+		bind:value
+	>
 		<option disabled selected={!activeAgendaItem}>
 			{m.selectAgendaItem()}
 		</option>

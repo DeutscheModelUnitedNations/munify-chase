@@ -19,7 +19,12 @@
 	}
 </script>
 
-<button class="btn btn-lg relative min-h-10 flex-1 text-2xl" onclick={() => (modalOpen = true)}>
+<button
+	class="btn btn-lg relative min-h-10 flex-1 text-2xl"
+	aria-label="{m.language()}: {localeInfo[getLocale()]?.label ?? getLocale()}"
+	aria-haspopup="dialog"
+	onclick={() => (modalOpen = true)}
+>
 	<Flag size="xs" representation={{ alpha2Code: localeInfo[getLocale()]?.flag }} />
 </button>
 
@@ -31,6 +36,8 @@
 		{#each locales as l (l)}
 			<button
 				class="btn btn-lg justify-start gap-4 text-lg {getLocale() === l ? 'btn-active' : ''}"
+				aria-pressed={getLocale() === l}
+				lang={l}
 				onclick={() => switchLocale(l)}
 			>
 				<Flag size="xs" representation={{ alpha2Code: localeInfo[l]?.flag }} />

@@ -36,9 +36,11 @@
 				<i class="fa-duotone fa-{faIcon.replace('fa-', '')}"></i>
 			{/if}
 		</div>
-		<h4 class="font-mono text-3xl font-bold">
+		<p class="font-mono text-3xl font-bold">
+			<!-- The tooltip only shows on hover; this is what the number means to a screen reader -->
+			{#if tooltip}<span class="sr-only">{tooltip}:</span>{/if}
 			{(!totalPresent || totalPresent === 0) && !showZero ? '—' : number}
-		</h4>
+		</p>
 	</div>
 {/snippet}
 

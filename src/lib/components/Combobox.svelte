@@ -62,7 +62,7 @@
 -->
 <Combobox.Root type="single" bind:value bind:open allowDeselect={false}>
 	<div class="join">
-		<Combobox.Trigger class={triggerClass}>
+		<Combobox.Trigger class={triggerClass} aria-label={placeholder}>
 			<i class="fas fa-magnifying-glass"></i>
 		</Combobox.Trigger>
 		<Combobox.Input>

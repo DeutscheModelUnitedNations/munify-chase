@@ -4,10 +4,10 @@ type Member =
 	typeof schema.conferenceMember.$inferSelect | typeof schema.committeeMember.$inferSelect;
 type Representation = typeof schema.representation.$inferSelect;
 type DefaultRepresentation = Pick<Representation, 'id' | 'createdAt' | 'updatedAt' | 'type'>;
-type NSARepresentation = Pick<Representation, 'faIcon' | 'name' | 'conferenceId'> & {
+type NSARepresentation = Pick<Representation, 'icon' | 'name' | 'conferenceId'> & {
 	type: (typeof schema.representationType.enumValues)[1];
 } & DefaultRepresentation;
-type DelegationRepresentation = Pick<Representation, 'faIcon' | 'name' | 'conferenceId'> & {
+type DelegationRepresentation = Pick<Representation, 'icon' | 'name' | 'conferenceId'> & {
 	type: (typeof schema.representationType.enumValues)[2];
 } & DefaultRepresentation;
 type UNRepresentation = Pick<

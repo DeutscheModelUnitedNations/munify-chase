@@ -52,7 +52,7 @@
 
 <Modal bind:open closeOnEsc={false}>
 	<h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-		<i class="fas fa-robot opacity-60"></i>
+		<i class="ph-fill ph-robot opacity-60"></i>
 		{m.aiOnboardingTitle()}
 	</h3>
 
@@ -80,7 +80,7 @@
 		</section>
 
 		<div class="alert alert-warning py-2 text-xs">
-			<i class="fas fa-triangle-exclamation shrink-0"></i>
+			<i class="ph-fill ph-warning shrink-0"></i>
 			<span>{m.aiOnboardingDisclaimer()}</span>
 		</div>
 
@@ -129,7 +129,7 @@
 			</div>
 			{#if !hasWebGpu}
 				<div class="alert alert-warning py-2 text-xs mt-2">
-					<i class="fas fa-triangle-exclamation shrink-0"></i>
+					<i class="ph-fill ph-warning shrink-0"></i>
 					<span>
 						{m.aiOnboardingWebGpuUnsupported()}
 						<a
@@ -177,7 +177,7 @@
 					</p>
 					{#if tierSlider !== -1}
 						<div class="alert alert-warning py-1.5 text-xs mt-1">
-							<i class="fas fa-triangle-exclamation shrink-0"></i>
+							<i class="ph-fill ph-warning shrink-0"></i>
 							<span>{m.aiOnboardingModelCrashWarning()}</span>
 						</div>
 					{/if}

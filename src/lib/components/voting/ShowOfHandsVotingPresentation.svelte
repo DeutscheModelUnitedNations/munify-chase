@@ -66,22 +66,22 @@
 
 	let resultBoxes = $derived.by(() => {
 		if (!session) return [];
-		const boxes: { faIcon: string; value: number; classes: string }[] = [
+		const boxes: { icon: string; value: number; classes: string }[] = [
 			{
-				faIcon: 'fa-circle-plus',
+				icon: 'plus-circle',
 				value: session.votesPro ?? 0,
 				classes: 'bg-success text-success-content'
 			}
 		];
 		if (session.withAbstentions) {
 			boxes.push({
-				faIcon: 'fa-circle',
+				icon: 'circle',
 				value: session.votesAbstain ?? 0,
 				classes: 'bg-info text-info-content'
 			});
 		}
 		boxes.push({
-			faIcon: 'fa-circle-minus',
+			icon: 'minus-circle',
 			value: session.votesCon ?? 0,
 			classes: 'bg-error text-error-content'
 		});
@@ -101,14 +101,14 @@
 		}
 	};
 
-	const getFaIcon = (stage: VotingStage) => {
+	const getIcon = (stage: VotingStage) => {
 		switch (stage) {
 			case 'PRO':
-				return 'fa-circle-plus';
+				return 'plus-circle';
 			case 'CON':
-				return 'fa-circle-minus';
+				return 'minus-circle';
 			case 'ABSTAIN':
-				return 'fa-circle';
+				return 'circle';
 			default:
 				return '';
 		}
@@ -136,9 +136,7 @@
 		in:fly={{ duration: 500, delay: 500, easing: cubicOut, x: 10 }}
 		out:fly={{ duration: 500, easing: cubicIn, x: -10 }}
 	>
-		<i
-			class="fas fa-{getFaIcon(stage).replace('fa-', '')} fa-beat text-7xl"
-			style="--fa-animation-duration: 2s;"
+		<i class="ph-fill ph-{getIcon(stage)} icon-beat text-7xl" style="--icon-animation-duration: 2s;"
 		></i>
 		<h3 class="text-5xl font-bold">{getText(stage)}</h3>
 	</div>
@@ -174,11 +172,11 @@
 					/>
 
 					<div class="flex items-center justify-center gap-6">
-						{#each resultBoxes as box (box.faIcon)}
+						{#each resultBoxes as box (box.icon)}
 							<div
 								class="card {box.classes} min-w-26 items-center justify-center gap-4 px-10 py-4 shadow-sm"
 							>
-								<i class="fas {box.faIcon} text-3xl"></i>
+								<i class="ph-fill ph-{box.icon} text-3xl"></i>
 								<h3 class="text-4xl font-bold">{box.value}</h3>
 							</div>
 						{/each}

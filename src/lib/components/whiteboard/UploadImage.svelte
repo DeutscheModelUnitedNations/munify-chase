@@ -85,14 +85,14 @@
 				class="tab flex-1 {activeTab === 'UPLOAD' ? 'tab-active' : ''}"
 				onclick={() => (activeTab = 'UPLOAD')}
 			>
-				<i class="fa-duotone fa-upload mr-2"></i>
+				<i class="ph-duotone ph-upload-simple mr-2"></i>
 				{m.upload()}
 			</button>
 			<button
 				class="tab tab-bordered flex-1 {activeTab === 'URL' ? 'tab-active' : ''}"
 				onclick={() => (activeTab = 'URL')}
 			>
-				<i class="fa-duotone fa-link mr-2"></i>
+				<i class="ph-duotone ph-link mr-2"></i>
 				{m.url()}
 			</button>
 		</div>
@@ -121,9 +121,9 @@
 						disabled={!uploadedFile || isUploading}
 					>
 						{#if isUploading}
-							<i class="fa-solid fa-spinner fa-spin"></i>
+							<i class="ph-fill ph-spinner-gap animate-spin"></i>
 						{:else}
-							<i class="fa-solid fa-upload mr-2"></i>
+							<i class="ph-fill ph-upload-simple mr-2"></i>
 						{/if}
 						{m.submitImg()}
 					</button>
@@ -140,7 +140,7 @@
 					</div>
 
 					<button class="btn btn-primary" onclick={handleUrlSubmit} disabled={!imageUrl}>
-						<i class="fa-solid fa-check mr-2"></i>
+						<i class="ph-fill ph-check mr-2"></i>
 						{m.submitImg()}
 					</button>
 				</div>
@@ -149,7 +149,7 @@
 
 		<div class="modal-action">
 			<button class="btn btn-error" onclick={handleCancel}>
-				<i class="fas fa-xmark"></i>{m.abort()}
+				<i class="ph-fill ph-x"></i>{m.abort()}
 			</button>
 		</div>
 	</div>

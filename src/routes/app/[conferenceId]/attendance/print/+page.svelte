@@ -59,7 +59,7 @@
 		{m.cards()}
 	</span>
 	<button class="btn btn-primary" onclick={() => window.print()}>
-		<i class="fas fa-print mr-2"></i>{m.print()}
+		<i class="ph-fill ph-printer mr-2"></i>{m.print()}
 	</button>
 </div>
 

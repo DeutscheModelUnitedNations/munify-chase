@@ -41,7 +41,7 @@ schemaBuilder.mutationFields((t) => ({
 			name: t.arg.string(),
 			alpha2Code: t.arg.string(),
 			alpha3Code: t.arg.string(),
-			faIcon: t.arg.string()
+			icon: t.arg.string()
 		},
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.conference
@@ -62,7 +62,7 @@ schemaBuilder.mutationFields((t) => ({
 						name: args.name ?? undefined,
 						alpha2Code: args.alpha2Code ?? undefined,
 						alpha3Code: args.alpha3Code ?? undefined,
-						faIcon: args.faIcon ?? undefined
+						icon: args.icon ?? undefined
 					})
 					.returning()
 					.then(assertFirstEntryExists);

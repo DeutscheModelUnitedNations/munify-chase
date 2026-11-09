@@ -69,7 +69,7 @@
 				<Flag size="xs" representation={display.representation} />
 			{:else}
 				<div class="bg-base-200 flex h-6 w-8 items-center justify-center rounded">
-					<i class="fas fa-user text-xs opacity-60"></i>
+					<i class="ph-fill ph-user text-xs opacity-60"></i>
 				</div>
 			{/if}
 			<span class="font-medium">{display.name}</span>

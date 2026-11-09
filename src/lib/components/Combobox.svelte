@@ -63,7 +63,7 @@
 <Combobox.Root type="single" bind:value bind:open allowDeselect={false}>
 	<div class="join">
 		<Combobox.Trigger class={triggerClass}>
-			<i class="fas fa-magnifying-glass"></i>
+			<i class="ph-fill ph-magnifying-glass"></i>
 		</Combobox.Trigger>
 		<Combobox.Input>
 			{#snippet child({ props })}
@@ -106,7 +106,7 @@
 	<Combobox.Portal>
 		<Combobox.Content class={contentClass} sideOffset={10} {side}>
 			<Combobox.ScrollUpButton class="flex w-full justify-center py-1">
-				<i class="fas fa-caret-up"></i>
+				<i class="ph-fill ph-caret-up"></i>
 			</Combobox.ScrollUpButton>
 			<Combobox.Viewport class="p-1">
 				{#each filteredOptions as option (getKey ? getKey(option) : getStringValue(option))}
@@ -129,7 +129,7 @@
 				{/each}
 			</Combobox.Viewport>
 			<Combobox.ScrollDownButton class="flex w-full items-center justify-center py-1">
-				<i class="fas fa-caret-down"></i>
+				<i class="ph-fill ph-caret-down"></i>
 			</Combobox.ScrollDownButton>
 		</Combobox.Content>
 	</Combobox.Portal>

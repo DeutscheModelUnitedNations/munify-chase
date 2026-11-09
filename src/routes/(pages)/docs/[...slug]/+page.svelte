@@ -51,7 +51,7 @@
 		{#if data.kind === 'page'}
 			{#if data.fallback}
 				<div role="note" class="alert alert-soft alert-info not-prose mb-6">
-					<i class="fa-duotone fa-language"></i>
+					<i class="ph-duotone ph-translate"></i>
 					<span>{m.docsFallbackNotice({ locale: getLocale() })}</span>
 				</div>
 			{/if}
@@ -72,7 +72,7 @@
 		<div class="not-prose border-base-300 mt-12 flex flex-wrap justify-between gap-4 border-t pt-6">
 			{#if neighbours.prev}
 				<a href={docHref(neighbours.prev)} class="btn btn-ghost">
-					<i class="fa-duotone fa-arrow-left"></i>
+					<i class="ph-duotone ph-arrow-left"></i>
 					{titleFor(neighbours.prev)}
 				</a>
 			{:else}
@@ -81,7 +81,7 @@
 			{#if neighbours.next}
 				<a href={docHref(neighbours.next)} class="btn btn-ghost">
 					{titleFor(neighbours.next)}
-					<i class="fa-duotone fa-arrow-right"></i>
+					<i class="ph-duotone ph-arrow-right"></i>
 				</a>
 			{/if}
 		</div>
@@ -95,7 +95,7 @@
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					<i class="fa-duotone fa-pen-to-square"></i>
+					<i class="ph-duotone ph-note-pencil"></i>
 					{m.docsEditPage()}
 				</a>
 				<!-- eslint-enable svelte/no-navigation-without-resolve -->

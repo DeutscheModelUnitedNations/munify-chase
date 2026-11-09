@@ -15,7 +15,7 @@
 		alpha2Code: string | null;
 		alpha3Code: string | null;
 		type: string;
-		faIcon: string | null;
+		icon: string | null;
 	}
 
 	interface Committee {

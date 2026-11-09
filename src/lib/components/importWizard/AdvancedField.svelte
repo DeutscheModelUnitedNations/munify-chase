@@ -19,7 +19,7 @@
 		class="btn btn-ghost btn-sm self-start opacity-70"
 		onclick={() => (open = true)}
 	>
-		<i class="fa-solid fa-gear"></i>
+		<i class="ph-fill ph-gear"></i>
 		{m.editLabel({ label })}
 	</button>
 {:else}
@@ -32,7 +32,7 @@
 				onclick={() => (open = false)}
 				aria-label="Close"
 			>
-				<i class="fa-solid fa-xmark"></i>
+				<i class="ph-fill ph-x"></i>
 			</button>
 		</div>
 		<input

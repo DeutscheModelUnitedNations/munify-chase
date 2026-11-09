@@ -11,11 +11,16 @@ export const INSTALL_GUIDE_URL = `${REPO_URL}/blob/native-client/docs/INSTALL.md
 export const ARCH_BUILD_URL = `${REPO_URL}/tree/native-client/aur/munify-chase-bin`;
 
 const PLATFORM_ASSETS = {
-	windows: { os: 'Windows', format: '.exe', icon: 'fa-windows', pattern: /-setup\.exe$/ },
-	macos: { os: 'macOS', format: '.dmg', icon: 'fa-apple', pattern: /\.dmg$/ },
-	'linux-appimage': { os: 'Linux', format: '.AppImage', icon: 'fa-linux', pattern: /\.AppImage$/ },
-	'linux-deb': { os: 'Linux', format: '.deb', icon: 'fa-linux', pattern: /\.deb$/ },
-	'linux-rpm': { os: 'Linux', format: '.rpm', icon: 'fa-linux', pattern: /\.rpm$/ }
+	windows: { os: 'Windows', format: '.exe', icon: 'ph-windows-logo', pattern: /-setup\.exe$/ },
+	macos: { os: 'macOS', format: '.dmg', icon: 'ph-apple-logo', pattern: /\.dmg$/ },
+	'linux-appimage': {
+		os: 'Linux',
+		format: '.AppImage',
+		icon: 'ph-linux-logo',
+		pattern: /\.AppImage$/
+	},
+	'linux-deb': { os: 'Linux', format: '.deb', icon: 'ph-linux-logo', pattern: /\.deb$/ },
+	'linux-rpm': { os: 'Linux', format: '.rpm', icon: 'ph-linux-logo', pattern: /\.rpm$/ }
 } as const;
 
 export type DownloadPlatform = keyof typeof PLATFORM_ASSETS;

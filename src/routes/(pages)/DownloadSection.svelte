@@ -53,6 +53,14 @@
 		{m.homeDownloadUnsignedNote()}
 	</p>
 
+	<p
+		role="note"
+		class="border-primary flex max-w-[66ch] items-start gap-3 border-l-4 py-1 pl-3 text-sm"
+	>
+		<i class="fa-solid fa-circle-info text-primary mt-0.5"></i>
+		<span>{m.homeDownloadHostedOnly()}</span>
+	</p>
+
 	<div class="flex flex-wrap gap-x-6 gap-y-2">
 		<a class="link link-primary font-bold" href={INSTALL_GUIDE_URL} target="_blank">
 			{m.homeDownloadInstallGuide()}

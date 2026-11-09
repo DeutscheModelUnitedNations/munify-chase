@@ -515,6 +515,7 @@
 	"homeDownloadAllReleases": "Alle Versionen auf GitHub",
 	"homeDownloadArch": "Arch Linux",
 	"homeDownloadForOs": "Für {os} herunterladen",
+	"homeDownloadHostedOnly": "Die Desktop-App verbindet sich mit chase.munify.cloud, der von der DMUN betriebenen CHASE-Instanz. Mit selbst gehosteten Instanzen funktioniert sie nicht.",
 	"homeDownloadInstallGuide": "Installationsanleitung",
 	"homeDownloadOtherPlatforms": "Andere Plattformen",
 	"homeDownloadText": "Lieber ein eigenes Fenster statt eines Browser-Tabs? Die CHASE-Desktop-App läuft unter Windows, macOS und Linux, arbeitet weiter, wenn die Verbindung kurz abbricht, und aktualisiert sich automatisch.",

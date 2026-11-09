@@ -4,6 +4,7 @@
 	import type { importDataSchema } from '#lib/utils/import';
 	import { nanoid } from '#lib/helpers/nanoid';
 	import StepHeader from './StepHeader.svelte';
+	import IconPicker from '#lib/components/IconPicker.svelte';
 
 	type ImportData = z.infer<typeof importDataSchema>;
 
@@ -25,7 +26,7 @@
 		data.representations.push({
 			id: repId,
 			representationType: type,
-			faIcon: type === 'NSA' ? 'megaphone' : undefined,
+			icon: type === 'NSA' ? 'megaphone-simple' : undefined,
 			name: ''
 		});
 		if (!data.conferenceMembers) data.conferenceMembers = [];
@@ -53,14 +54,10 @@
 		{/if}
 		{#each nsas as rep (rep.id)}
 			<div class="join w-full">
-				<div class="btn join-item bg-error text-error-content w-14 pointer-events-none">
-					<i class="fa-solid fa-{(rep.faIcon ?? 'megaphone').replace('fa-', '')}"></i>
-				</div>
-				<input
-					type="text"
-					class="input input-bordered join-item w-44 font-mono text-sm"
-					bind:value={rep.faIcon}
-					placeholder={m.icon()}
+				<IconPicker
+					bind:value={rep.icon}
+					fallback="megaphone-simple"
+					triggerClass="btn join-item bg-error text-error-content w-14"
 				/>
 				<input
 					type="text"
@@ -69,7 +66,7 @@
 					placeholder={m.nonStateActor()}
 				/>
 				<div class="btn join-item {memberCount(rep.id) === 0 ? 'btn-error' : ''}">
-					<i class="fa-solid fa-users"></i>
+					<i class="ph-fill ph-users"></i>
 					<span class="ml-2">{memberCount(rep.id)}</span>
 				</div>
 				<button
@@ -78,12 +75,12 @@
 					aria-label="Remove NSA"
 					onclick={() => removeRepresentation(rep.id)}
 				>
-					<i class="fa-solid fa-trash"></i>
+					<i class="ph-fill ph-trash"></i>
 				</button>
 			</div>
 		{/each}
 		<button class="btn btn-sm self-start" onclick={() => addRepresentation('NSA')}>
-			<i class="fa-solid fa-plus"></i>
+			<i class="ph-fill ph-plus"></i>
 			{m.addNonStateActor()}
 		</button>
 	</fieldset>
@@ -108,7 +105,7 @@
 					placeholder={m.unActor()}
 				/>
 				<div class="btn join-item {memberCount(rep.id) === 0 ? 'btn-error' : ''}">
-					<i class="fa-solid fa-users"></i>
+					<i class="ph-fill ph-users"></i>
 					<span class="ml-2">{memberCount(rep.id)}</span>
 				</div>
 				<button
@@ -117,12 +114,12 @@
 					aria-label="Remove UN actor"
 					onclick={() => removeRepresentation(rep.id)}
 				>
-					<i class="fa-solid fa-trash"></i>
+					<i class="ph-fill ph-trash"></i>
 				</button>
 			</div>
 		{/each}
 		<button class="btn btn-sm self-start" onclick={() => addRepresentation('UN')}>
-			<i class="fa-solid fa-plus"></i>
+			<i class="ph-fill ph-plus"></i>
 			{m.addUnActor()}
 		</button>
 	</fieldset>

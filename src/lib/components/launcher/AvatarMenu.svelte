@@ -49,14 +49,14 @@
 		</li>
 		<li>
 			<a href="https://delegator.munify.cloud/my-account" target="_blank" rel="noopener noreferrer">
-				<i class="fa-duotone fa-user"></i>
+				<i class="ph-duotone ph-user"></i>
 				{m.myDelegatorAccount()}
-				<i class="fa-solid fa-arrow-up-right text-base-content/50 text-xs" aria-hidden="true"></i>
+				<i class="ph-fill ph-arrow-up-right text-base-content/50 text-xs" aria-hidden="true"></i>
 			</a>
 		</li>
 		<li>
 			<a href={resolve('logout')}>
-				<i class="fa-duotone fa-arrow-right-from-bracket"></i>
+				<i class="ph-duotone ph-sign-out"></i>
 				{m.launcherSignOut()}
 			</a>
 		</li>

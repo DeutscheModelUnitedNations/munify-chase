@@ -23,7 +23,7 @@
 		name: true,
 		conferenceMember: {
 			id: true,
-			representation: { id: true, name: true, faIcon: true }
+			representation: { id: true, name: true, icon: true }
 		}
 	});
 
@@ -63,7 +63,7 @@
 	let groupedByOrg = $derived.by(() => {
 		const map = new SvelteMap<
 			string,
-			{ orgId: string; name: string; faIcon: string | null; users: NsaUser[] }
+			{ orgId: string; name: string; icon: string | null; users: NsaUser[] }
 		>();
 		for (const u of nsaUsers ?? []) {
 			const rep = u.conferenceMember?.representation;
@@ -71,7 +71,7 @@
 			const entry = map.get(orgId) ?? {
 				orgId,
 				name: rep?.name ?? m.unknown(),
-				faIcon: rep?.faIcon ?? null,
+				icon: rep?.icon ?? null,
 				users: []
 			};
 			entry.users.push(u);
@@ -138,7 +138,7 @@
 	<div class="flex flex-wrap items-center justify-end gap-2">
 		{#if conference?.managedByDelegator}
 			<span class="text-base-content/60 text-sm">
-				<i class="fas fa-link mr-1"></i>{m.nsaCardsFromDelegator()}
+				<i class="ph-fill ph-link mr-1"></i>{m.nsaCardsFromDelegator()}
 			</span>
 		{:else}
 			<a
@@ -147,12 +147,12 @@
 				target="_blank"
 				rel="noopener"
 			>
-				<i class="fas fa-print mr-1"></i>
+				<i class="ph-fill ph-printer mr-1"></i>
 				{m.printAllCards()}
 			</a>
 		{/if}
 		<button class="btn btn-ghost btn-sm" onclick={exportCsv}>
-			<i class="fas fa-file-csv mr-1"></i>
+			<i class="ph-fill ph-file-csv mr-1"></i>
 			{m.exportCsv()}
 		</button>
 	</div>
@@ -165,15 +165,15 @@
 					{@const checkedIn = latest?.present}
 					{@const committee = checkedIn ? committeesById.get(latest.committeeId) : null}
 					<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
-						{#if org.faIcon}
-							<i class="fas {org.faIcon} text-lg"></i>
+						{#if org.icon}
+							<i class="ph-fill ph-{org.icon} text-lg"></i>
 						{:else}
-							<i class="fas fa-user-tag text-lg"></i>
+							<i class="ph-fill ph-identification-badge text-lg"></i>
 						{/if}
 						<span class="flex-1">{user.name ?? user.userEmail}</span>
 						{#if checkedIn && committee}
 							<span class="badge badge-success">
-								<i class="fas fa-arrow-right-to-bracket mr-1"></i>
+								<i class="ph-fill ph-sign-in mr-1"></i>
 								{committee.abbreviation ?? committee.name}
 							</span>
 						{:else}
@@ -186,7 +186,7 @@
 								aria-label={m.qrCard()}
 								title={m.qrCard()}
 							>
-								<i class="fas fa-qrcode"></i>
+								<i class="ph-fill ph-qr-code"></i>
 							</button>
 						{/if}
 					</li>

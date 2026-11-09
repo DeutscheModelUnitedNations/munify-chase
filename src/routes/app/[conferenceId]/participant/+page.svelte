@@ -33,7 +33,7 @@
 					alpha2Code: true,
 					alpha3Code: true,
 					type: true,
-					faIcon: true
+					icon: true
 				}
 			},
 			conferenceMember: {
@@ -44,7 +44,7 @@
 					alpha2Code: true,
 					alpha3Code: true,
 					type: true,
-					faIcon: true
+					icon: true
 				}
 			}
 		})) ?? [];
@@ -116,13 +116,13 @@
 {#if role === 'DELEGATE' && !myCommitteeId}
 	<!-- Waiting screen for unassigned delegates -->
 	<div class="flex h-full w-full flex-col items-center justify-center gap-6 p-8">
-		<i class="fa-duotone fa-hourglass-clock text-8xl opacity-50"></i>
+		<i class="ph-duotone ph-clock-countdown text-8xl opacity-50"></i>
 		<h2 class="text-center text-3xl font-bold">{m.waitingForAssignment()}</h2>
 		<p class="max-w-md text-center text-lg opacity-70">
 			{m.waitingForAssignmentDescription()}
 		</p>
 		<a href={resolve('/app/(launcher)')} class="btn btn-ghost mt-4">
-			<i class="fa-duotone fa-arrow-left mr-2"></i>
+			<i class="ph-duotone ph-arrow-left mr-2"></i>
 			{m.back()}
 		</a>
 	</div>
@@ -131,7 +131,7 @@
 	<div class="navbar bg-base-100 shadow-sm">
 		<div class="flex-none">
 			<a class="btn btn-ghost" href={resolve('/app/(launcher)')}>
-				<i class="fa-duotone fa-arrow-left mr-2"></i>
+				<i class="ph-duotone ph-arrow-left mr-2"></i>
 				{m.back()}
 			</a>
 		</div>

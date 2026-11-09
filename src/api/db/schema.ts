@@ -144,7 +144,7 @@ export const representation = snakeCase.table(
 		alpha2Code: text(),
 		alpha3Code: text(),
 		type: representationType().notNull(),
-		faIcon: text(),
+		icon: text(),
 		regionalGroup: regionalGroup(),
 		managedByDelegator: managedByDelegator(),
 		conferenceId: text()
@@ -629,7 +629,7 @@ export const requestType = snakeCase.table(
 			.notNull()
 			.references(() => conference.id, { onDelete: 'cascade' }),
 		name: text().notNull(),
-		faIcon: text(),
+		icon: text(),
 		// Determines display order in the chair's pending-requests list (natural
 		// hierarchy of request types). Lower sorts first.
 		priority: smallint().notNull(),

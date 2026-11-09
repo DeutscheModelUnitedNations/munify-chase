@@ -29,19 +29,19 @@
 	title={state === 'error' ? m.yjsCorrupt() : undefined}
 >
 	{#if state === 'synced'}
-		<i class="fas fa-cloud-check"></i>
+		<i class="ph-fill ph-cloud-check"></i>
 		{m.yjsSynced()}
 	{:else if state === 'syncing'}
-		<i class="fas fa-cloud-arrow-up fa-fade"></i>
+		<i class="ph-fill ph-cloud-arrow-up icon-fade"></i>
 		{m.yjsSyncing()}
 	{:else if state === 'loading'}
-		<i class="fas fa-spinner fa-spin"></i>
+		<i class="ph-fill ph-spinner-gap animate-spin"></i>
 		{m.loadingDocument()}
 	{:else if state === 'error'}
-		<i class="fas fa-triangle-exclamation"></i>
+		<i class="ph-fill ph-warning"></i>
 		{m.yjsCorrupt()}
 	{:else}
-		<i class="fas fa-cloud-slash"></i>
+		<i class="ph-fill ph-cloud-slash"></i>
 		{m.yjsOffline()}
 	{/if}
 </div>

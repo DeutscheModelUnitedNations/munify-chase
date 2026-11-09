@@ -23,14 +23,12 @@ import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 import { assertNotManagedByDelegator } from '#api/services/link/managedRows';
 
 // The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
-abilityBuilder.committee
-	.allow('read')
-	.when(
-		linkedDelegator({
-			where: { conference: SYNCED_CONFERENCE },
-			columns: { id: true, conferenceId: true }
-		})
-	);
+abilityBuilder.committee.allow('read').when(
+	linkedDelegator({
+		where: { conference: SYNCED_CONFERENCE },
+		columns: { id: true, conferenceId: true }
+	})
+);
 
 abilityBuilder.committee.allow('read').when((ctx) => {
 	return {

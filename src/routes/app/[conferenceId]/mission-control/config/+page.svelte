@@ -43,7 +43,7 @@
 					alpha2Code: true,
 					alpha3Code: true,
 					type: true,
-					faIcon: true
+					icon: true
 				}
 			}
 		},
@@ -63,7 +63,7 @@
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true,
-					faIcon: true
+					icon: true
 				},
 				committee: {
 					id: true,
@@ -78,7 +78,7 @@
 					name: true,
 					alpha3Code: true,
 					type: true,
-					faIcon: true
+					icon: true
 				}
 			}
 		},
@@ -88,7 +88,7 @@
 			alpha2Code: true,
 			alpha3Code: true,
 			type: true,
-			faIcon: true
+			icon: true
 		},
 		members: {
 			id: true,
@@ -97,13 +97,13 @@
 				name: true,
 				alpha3Code: true,
 				type: true,
-				faIcon: true
+				icon: true
 			}
 		},
 		requestTypes: {
 			id: true,
 			name: true,
-			faIcon: true,
+			icon: true,
 			priority: true,
 			enabled: true,
 			delegatesOnly: true,
@@ -140,11 +140,11 @@
 
 	type ConfigTab = typeof activeTab;
 	const configTabs: { id: ConfigTab; title: () => string; icon: string }[] = [
-		{ id: 'general', title: m.general, icon: 'sliders' },
+		{ id: 'general', title: m.general, icon: 'sliders-horizontal' },
 		{ id: 'users', title: m.users, icon: 'users' },
-		{ id: 'committees', title: m.committees, icon: 'building-columns' },
+		{ id: 'committees', title: m.committees, icon: 'bank' },
 		{ id: 'delegations', title: m.delegations, icon: 'flag' },
-		{ id: 'nsa', title: m.nonStateActors, icon: 'people-group' },
+		{ id: 'nsa', title: m.nonStateActors, icon: 'users-three' },
 		{ id: 'requestTypes', title: m.requestTypes, icon: 'hand' }
 	];
 
@@ -207,7 +207,7 @@
 	<div class="flex w-full max-w-screen-lg flex-col gap-6">
 		{#if !isAdmin}
 			<div class="alert alert-error">
-				<i class="fas fa-exclamation-triangle"></i>
+				<i class="ph-fill ph-warning"></i>
 				<span>{m.notAuthorized()}</span>
 			</div>
 		{:else if conference}

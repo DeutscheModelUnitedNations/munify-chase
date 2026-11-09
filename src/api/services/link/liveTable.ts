@@ -77,7 +77,7 @@ export function liveTable<Row extends { id: string }>({
 	gate?: Gate;
 }) {
 	type Page = { rows: readonly Row[] | undefined; stop: () => void };
-	let pages: Page[] = [];
+	const pages: Page[] = [];
 	let rows = new Map<string, Row>();
 	/** Counts settles, so an older one finishing late does not overwrite a newer one. */
 	let settles = 0;
@@ -138,24 +138,34 @@ export function liveTable<Row extends { id: string }>({
 		if (pages.every((p) => p.rows)) void settle();
 	};
 
+	/** The rows every page answered, by id. */
+	const answeredRows = () => {
+		const next = new Map<string, Row>();
+		for (const page of pages) for (const row of page.rows ?? []) next.set(row.id, row);
+		return next;
+	};
+
+	/**
+	 * The rows among `departed` that still exist. Across several pages a row may only have moved
+	 * between them; when asking fails, they stay until a later answer tells.
+	 */
+	const stillThere = async (departed: string[]) => {
+		try {
+			return await readIds(departed);
+		} catch (error) {
+			onError(error);
+			return departed.flatMap((id) => rows.get(id) ?? []);
+		}
+	};
+
 	const settle = async () => {
 		const run = ++settles;
 		settling = true;
-		const next = new Map<string, Row>();
-		for (const page of pages) for (const row of page.rows ?? []) next.set(row.id, row);
+		const next = answeredRows();
 		const departed = [...rows.keys()].filter((id) => !next.has(id));
-		// one page is one consistent answer; across several, a row may have moved between them
+		// one page is one consistent answer
 		if (pages.length > 1 && departed.length > 0) {
-			try {
-				for (const row of await readIds(departed)) next.set(row.id, row);
-			} catch (error) {
-				onError(error);
-				// keep them until a later answer tells
-				for (const id of departed) {
-					const row = rows.get(id);
-					if (row) next.set(id, row);
-				}
-			}
+			for (const row of await stillThere(departed)) next.set(row.id, row);
 		}
 		if (run !== settles || stopped) return;
 		rows = next;
@@ -187,5 +197,3 @@ export function liveTable<Row extends { id: string }>({
 		}
 	};
 }
-
-export type LiveTable<Row extends { id: string }> = ReturnType<typeof liveTable<Row>>;

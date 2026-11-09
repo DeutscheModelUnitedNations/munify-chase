@@ -813,7 +813,7 @@ export const optimistic: OptimisticMutationConfig = {
 			name: (args.name as string | undefined) ?? null,
 			alpha2Code: (args.alpha2Code as string | undefined) ?? null,
 			alpha3Code: (args.alpha3Code as string | undefined) ?? null,
-			faIcon: (args.faIcon as string | undefined) ?? null,
+			icon: (args.icon as string | undefined) ?? null,
 			regionalGroup: null,
 			committeeMembers: [],
 			conferenceMembers: [],
@@ -982,7 +982,7 @@ export const optimistic: OptimisticMutationConfig = {
 					name?: string | null;
 					alpha2Code?: string | null;
 					alpha3Code?: string | null;
-					faIcon?: string | null;
+					icon?: string | null;
 					type?: string | null;
 				} | null;
 			}>(
@@ -995,7 +995,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1014,7 +1014,7 @@ export const optimistic: OptimisticMutationConfig = {
 								name
 								alpha2Code
 								alpha3Code
-								faIcon
+								icon
 								type
 							}
 						}
@@ -1241,7 +1241,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1262,7 +1262,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1287,7 +1287,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1298,7 +1298,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1414,7 +1414,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1434,7 +1434,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1453,7 +1453,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1464,7 +1464,7 @@ export const optimistic: OptimisticMutationConfig = {
 							name
 							alpha2Code
 							alpha3Code
-							faIcon
+							icon
 							type
 						}
 					}
@@ -1862,7 +1862,7 @@ export const optimistic: OptimisticMutationConfig = {
 			conferenceId: args.conferenceId as string,
 			conference: { __typename: 'Conference', id: args.conferenceId as string },
 			name: args.name as string,
-			faIcon: (args.faIcon as string | undefined) ?? null,
+			icon: (args.icon as string | undefined) ?? null,
 			priority: 0,
 			enabled: true,
 			delegatesOnly: (args.delegatesOnly as boolean | undefined) ?? false,
@@ -1879,7 +1879,7 @@ export const optimistic: OptimisticMutationConfig = {
 		};
 		for (const field of [
 			'name',
-			'faIcon',
+			'icon',
 			'priority',
 			'enabled',
 			'delegatesOnly',

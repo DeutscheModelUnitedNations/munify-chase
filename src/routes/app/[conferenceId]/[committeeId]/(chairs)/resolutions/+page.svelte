@@ -65,7 +65,7 @@
 				type: true,
 				alpha2Code: true,
 				alpha3Code: true,
-				faIcon: true
+				icon: true
 			}
 		},
 		sponsors: { id: true },
@@ -171,7 +171,9 @@
 				disabled={creating || !committee?.activeAgendaItem}
 				onclick={createPaper}
 			>
-				{#if creating}<i class="fas fa-spinner fa-spin"></i>{:else}<i class="fas fa-plus"></i>{/if}
+				{#if creating}<i class="ph-fill ph-spinner-gap animate-spin"></i>{:else}<i
+						class="ph-fill ph-plus"
+					></i>{/if}
 				{m.createPaper()}
 			</button>
 		</header>
@@ -205,7 +207,7 @@
 		{#if !filteredPapers.length}
 			<BasicCard data-tour="resolutions.list">
 				<div class="flex flex-col items-center gap-2 py-12 text-center opacity-70">
-					<i class="fas fa-file-lines text-5xl"></i>
+					<i class="ph-fill ph-file-text text-5xl"></i>
 					<p class="text-lg font-semibold">{m.noPapersYet()}</p>
 					<p>{m.createFirstPaper()}</p>
 				</div>
@@ -248,7 +250,8 @@
 									disabled={promotingId === paper.id}
 									onclick={() => promote(paper.id)}
 								>
-									{#if promotingId === paper.id}<i class="fas fa-spinner fa-spin"></i>{/if}
+									{#if promotingId === paper.id}<i class="ph-fill ph-spinner-gap animate-spin"
+										></i>{/if}
 									{m.promoteToDraftResolution()}
 								</button>
 							{/if}
@@ -263,13 +266,13 @@
 								onclick={() => setActive(paper.id)}
 							>
 								{#if settingActiveId === paper.id}
-									<i class="fas fa-spinner fa-spin"></i>
+									<i class="ph-fill ph-spinner-gap animate-spin"></i>
 								{:else}
-									<i class="fas fa-star"></i>
+									<i class="ph-fill ph-star"></i>
 								{/if}
 							</button>
 							<a href={paperHref(paper.id)} aria-label={m.open()}>
-								<i class="fas fa-chevron-right opacity-50"></i>
+								<i class="ph-fill ph-caret-right opacity-50"></i>
 							</a>
 						</div>
 					</div>

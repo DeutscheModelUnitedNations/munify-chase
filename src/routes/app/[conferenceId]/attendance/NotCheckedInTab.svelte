@@ -23,7 +23,7 @@
 		userEmail: true,
 		name: true,
 		conferenceMember: {
-			representation: { name: true, faIcon: true }
+			representation: { name: true, icon: true }
 		}
 	});
 
@@ -50,7 +50,7 @@
 				representation: {
 					id: true,
 					name: true,
-					faIcon: true,
+					icon: true,
 					alpha3Code: true,
 					type: true
 				}
@@ -67,7 +67,7 @@
 				id: string;
 				name: string;
 				alpha3Code?: string | null;
-				faIcon?: string | null;
+				icon?: string | null;
 			}[];
 		}[] = [];
 		for (const c of conference?.committees ?? []) {
@@ -77,7 +77,7 @@
 					id: mem.id,
 					name: mem.representation?.name ?? '',
 					alpha3Code: mem.representation?.alpha3Code ?? null,
-					faIcon: mem.representation?.faIcon ?? null
+					icon: mem.representation?.icon ?? null
 				}))
 				.sort((a, b) => a.name.localeCompare(b.name));
 			if (absent.length === 0) continue;
@@ -137,10 +137,10 @@
 				{#each visible as user (user.id)}
 					{@const rep = user.conferenceMember?.representation}
 					<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
-						{#if rep?.faIcon}
-							<i class="fas {rep.faIcon} text-lg"></i>
+						{#if rep?.icon}
+							<i class="ph-fill ph-{rep.icon} text-lg"></i>
 						{:else}
-							<i class="fas fa-user-tag text-lg"></i>
+							<i class="ph-fill ph-identification-badge text-lg"></i>
 						{/if}
 						<span class="flex-1">{user.name ?? user.userEmail}</span>
 						{#if rep?.name}
@@ -171,15 +171,15 @@
 						<ul class="flex flex-col gap-1">
 							{#each group.absent as member (member.id)}
 								<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
-									{#if member.faIcon}
-										<Flag size="xs" representation={{ type: 'NSA', faIcon: member.faIcon }} />
+									{#if member.icon}
+										<Flag size="xs" representation={{ type: 'NSA', icon: member.icon }} />
 									{:else if member?.alpha3Code}
 										<Flag
 											size="xs"
 											representation={{ type: 'DELEGATION', alpha3Code: member.alpha3Code }}
 										/>
 									{:else}
-										<i class="fas fa-user text-lg"></i>
+										<i class="ph-fill ph-user text-lg"></i>
 									{/if}
 									<span class="flex-1">{member.name}</span>
 								</li>

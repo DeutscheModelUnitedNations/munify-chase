@@ -74,8 +74,8 @@
 	let busy = $state(false);
 
 	const modeTabs = [
-		{ id: 'IN' as const, label: m.checkIn(), faIcon: 'fa-arrow-right-to-bracket' },
-		{ id: 'OUT' as const, label: m.checkOut(), faIcon: 'fa-arrow-right-from-bracket' }
+		{ id: 'IN' as const, label: m.checkIn(), icon: 'sign-in' },
+		{ id: 'OUT' as const, label: m.checkOut(), icon: 'sign-out' }
 	];
 
 	function beep(ok: boolean) {
@@ -164,7 +164,7 @@
 								userEmail: true,
 								name: true,
 								conferenceMember: {
-									representation: { name: true, faIcon: true }
+									representation: { name: true, icon: true }
 								}
 							}
 						})
@@ -179,7 +179,7 @@
 								userEmail: true,
 								name: true,
 								conferenceMember: {
-									representation: { name: true, faIcon: true }
+									representation: { name: true, icon: true }
 								}
 							}
 						});
@@ -222,7 +222,7 @@
 		<header class="flex items-center justify-between">
 			<h2 class="text-2xl font-bold">{m.nsaAttendanceScannerTitle()}</h2>
 			<button class="btn btn-ghost btn-sm" onclick={close} aria-label={m.close()}>
-				<i class="fas fa-xmark text-xl"></i>
+				<i class="ph-fill ph-x text-xl"></i>
 			</button>
 		</header>
 
@@ -279,11 +279,11 @@
 					{#each scanLog as entry (entry.id)}
 						<li class="alert {entry.ok ? 'alert-success' : 'alert-error'} py-2" role="status">
 							<i
-								class="fas {entry.ok
+								class="ph-fill {entry.ok
 									? entry.mode === 'IN'
-										? 'fa-arrow-right-to-bracket'
-										: 'fa-arrow-right-from-bracket'
-									: 'fa-triangle-exclamation'}"
+										? 'ph-sign-in'
+										: 'ph-sign-out'
+									: 'ph-warning'}"
 							></i>
 							<div class="flex-1 text-sm">
 								<div class="font-medium">{entry.label}</div>

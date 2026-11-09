@@ -128,14 +128,14 @@
 								<td>
 									<div class="flex gap-1">
 										<button class="btn btn-ghost btn-sm" onclick={saveEdit} aria-label={m.save()}>
-											<i class="fas fa-check text-sm text-success"></i>
+											<i class="ph-fill ph-check text-sm text-success"></i>
 										</button>
 										<button
 											class="btn btn-ghost btn-sm"
 											onclick={cancelEdit}
 											aria-label={m.abort()}
 										>
-											<i class="fas fa-times text-sm"></i>
+											<i class="ph-fill ph-x text-sm"></i>
 										</button>
 									</div>
 								</td>
@@ -150,14 +150,14 @@
 											onclick={() => startEdit(committee)}
 											aria-label={m.edit()}
 										>
-											<i class="fas fa-pen text-sm"></i>
+											<i class="ph-fill ph-pen text-sm"></i>
 										</button>
 										<button
 											class="btn btn-ghost btn-sm text-error"
 											onclick={() => deleteCommittee(committee.id)}
 											aria-label={m.removeMember()}
 										>
-											<i class="fas fa-trash text-sm"></i>
+											<i class="ph-fill ph-trash text-sm"></i>
 										</button>
 									</div>
 								</td>
@@ -200,7 +200,7 @@
 				{#if isCreating}
 					<span class="loading loading-spinner loading-sm"></span>
 				{:else}
-					<i class="fas fa-plus"></i>
+					<i class="ph-fill ph-plus"></i>
 				{/if}
 				{m.addCommittee()}
 			</button>

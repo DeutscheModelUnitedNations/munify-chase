@@ -8,7 +8,7 @@ description: Configurar atores não estatais e atores da ONU
 
 O separador **Atores Não Estatais** lista todos os ANE e atores da ONU registados na conferência, com o respetivo ícone e tipo de função.
 
-Para adicionar um, preencha o **Nome**, escolha a **Função** (**Ator Não Estatal** ou **Ator da ONU**) e, opcionalmente, um **Ícone**, ou seja, um nome de ícone Font Awesome como `building-ngo`, para o representar visualmente em vez de uma bandeira. Clique em **Adicionar ONG** para guardar.
+Para adicionar um, preencha o **Nome**, escolha a **Função** (**Ator Não Estatal** ou **Ator da ONU**) e um **Ícone** para o representar em vez de uma bandeira. Clique no botão do ícone para abrir o seletor, pesquise com palavras-chave em inglês (por exemplo "health" ou "building") e clique num ícone para o escolher. Clique em **Adicionar ONG** para guardar.
 
 As entradas não podem ser editadas. Para alterar uma, remova-a com o ícone do caixote do lixo (pede confirmação) e adicione-a de novo.
 

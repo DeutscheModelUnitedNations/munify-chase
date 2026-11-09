@@ -14,9 +14,9 @@
 	let { data = $bindable() }: Props = $props();
 
 	const upcoming = [
-		{ icon: 'building-columns', label: () => m.committees() },
+		{ icon: 'bank', label: () => m.committees() },
 		{ icon: 'flag', label: () => m.delegations() },
-		{ icon: 'circle-check', label: () => m.editStep() }
+		{ icon: 'check-circle', label: () => m.editStep() }
 	];
 
 	function toDateInputValue(d: Date | string | undefined | null): string {
@@ -96,7 +96,7 @@
 			<div
 				class="bg-primary/5 border-primary/20 text-base-content/70 flex items-center gap-3 rounded-box border p-3 text-sm"
 			>
-				<span class="text-primary text-lg"><i class="fa-solid fa-{s.icon}"></i></span>
+				<span class="text-primary text-lg"><i class="ph-fill ph-{s.icon}"></i></span>
 				<span>{m.nextUpLabel({ label: s.label() })}</span>
 			</div>
 		{/each}

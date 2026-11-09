@@ -33,7 +33,7 @@
 		amendmentId: true,
 		committeeMember: {
 			id: true,
-			representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+			representation: { name: true, alpha2Code: true, alpha3Code: true, icon: true, type: true }
 		}
 	});
 
@@ -62,7 +62,7 @@
 	const members = await client.liveQuery.committeeMembers({
 		__args: { where: { committee: { id: { eq: committeeId } } } },
 		id: true,
-		representation: { name: true, alpha2Code: true, alpha3Code: true, faIcon: true, type: true }
+		representation: { name: true, alpha2Code: true, alpha3Code: true, icon: true, type: true }
 	});
 
 	const getName = (member: (typeof members)[number] | undefined) =>
@@ -109,7 +109,7 @@
 						name: true,
 						alpha2Code: true,
 						alpha3Code: true,
-						faIcon: true,
+						icon: true,
 						type: true
 					}
 				}
@@ -160,7 +160,7 @@
 							aria-label={m.delete()}
 							onclick={() => remove(s.id)}
 						>
-							<i class="fas fa-xmark text-error"></i>
+							<i class="ph-fill ph-x text-error"></i>
 						</button>
 					{/if}
 				</li>
@@ -170,7 +170,7 @@
 
 	{#if !team && !isProposer && myMemberId && sponsoringOpen && sponsoringActive && !iSponsor}
 		<button class="btn btn-outline btn-xs self-start" disabled={busy} onclick={() => add()}>
-			<i class="fas fa-handshake"></i>
+			<i class="ph-fill ph-handshake"></i>
 			{m.sponsorAmendment()}
 		</button>
 	{/if}

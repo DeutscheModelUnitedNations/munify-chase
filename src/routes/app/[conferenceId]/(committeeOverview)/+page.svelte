@@ -41,7 +41,7 @@
 			href={resolve('/app/(launcher)')}
 			aria-label="Go back to app"
 		>
-			<i class="fa-duotone fa-home"></i>
+			<i class="ph-duotone ph-house"></i>
 		</a>
 	</div>
 </div>

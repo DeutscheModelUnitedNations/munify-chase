@@ -55,7 +55,7 @@
 {#if link?.status === 'PENDING'}
 	<section class="card bg-base-200 gap-3 p-5">
 		<h2 class="m-0 text-lg font-bold">
-			<i class="fa-duotone fa-link"></i>
+			<i class="ph-duotone ph-link"></i>
 			{m.delegatorLinkRequestTitle()}
 		</h2>
 		<p class="m-0 text-sm">{m.delegatorLinkRequestBody({ url: link.remoteUrl })}</p>
@@ -70,11 +70,11 @@
 		</label>
 		<div class="flex flex-wrap gap-2">
 			<button class="btn btn-primary" disabled={busy || code.trim().length !== 6} onclick={approve}>
-				<i class="fa-duotone fa-check"></i>
+				<i class="ph-duotone ph-check"></i>
 				{m.delegatorLinkApprove()}
 			</button>
 			<button class="btn btn-ghost" disabled={busy} onclick={reject}>
-				<i class="fa-duotone fa-xmark"></i>
+				<i class="ph-duotone ph-x"></i>
 				{m.delegatorLinkReject()}
 			</button>
 		</div>
@@ -82,7 +82,7 @@
 {:else if link?.status === 'ACTIVE'}
 	<section class="card bg-base-200 gap-3 p-5">
 		<h2 class="m-0 text-lg font-bold">
-			<i class="fa-duotone fa-link"></i>
+			<i class="ph-duotone ph-link"></i>
 			{m.delegatorLinkActiveTitle()}
 		</h2>
 		<p class="m-0 text-sm">{m.delegatorLinkActiveBody({ url: link.remoteUrl })}</p>
@@ -94,17 +94,17 @@
 		</dl>
 		{#if link.lastError}
 			<div class="alert alert-warning text-sm">
-				<i class="fa-duotone fa-triangle-exclamation"></i>
+				<i class="ph-duotone ph-warning"></i>
 				<span>{m.delegatorLinkLastError({ error: link.lastError })}</span>
 			</div>
 		{/if}
 		<div class="flex flex-wrap gap-2">
 			<a class="btn btn-primary btn-sm" href={link.remoteUrl} target="_blank" rel="noopener">
-				<i class="fa-duotone fa-arrow-up-right-from-square"></i>
+				<i class="ph-duotone ph-arrow-square-out"></i>
 				{m.delegatorLinkOpen()}
 			</a>
 			<button class="btn btn-ghost btn-sm text-error" disabled={busy} onclick={unlink}>
-				<i class="fa-duotone fa-link-slash"></i>
+				<i class="ph-duotone ph-link-break"></i>
 				{m.delegatorLinkUnlink()}
 			</button>
 		</div>

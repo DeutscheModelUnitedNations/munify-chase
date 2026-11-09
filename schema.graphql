@@ -1026,7 +1026,7 @@ input ImportDataConferenceUser {
 input ImportDataRepresentation {
   alpha2Code: String
   alpha3Code: String
-  faIcon: String
+  icon: String
   id: ID!
   name: String
   regionalGroup: RegionalgroupEnum
@@ -1036,7 +1036,7 @@ input ImportDataRepresentation {
 input ImportDataRequestType {
   delegatesOnly: Boolean
   enabled: Boolean
-  faIcon: String
+  icon: String
   id: ID
   name: String!
 }
@@ -1209,9 +1209,9 @@ type Mutation {
   createManualRequest(committeeId: ID!, committeeMemberId: ID, conferenceMemberId: ID, id: ID, requestTypeId: ID!): Request!
   createManualSnapshot(id: ID, paperId: ID!): Papercontentsnapshot!
   createPaperShareCode(id: ID, paperId: ID!, permission: SharecodepermissionEnum!): Papersharecode!
-  createRepresentation(alpha2Code: String, alpha3Code: String, conferenceId: ID!, faIcon: String, id: ID, name: String, type: RepresentationtypeEnum!): Representation!
+  createRepresentation(alpha2Code: String, alpha3Code: String, conferenceId: ID!, icon: String, id: ID, name: String, type: RepresentationtypeEnum!): Representation!
   createRequest(committeeId: ID!, id: ID, requestTypeId: ID!): Request!
-  createRequestType(conferenceId: ID!, delegatesOnly: Boolean, faIcon: String, id: ID, name: String!, showOnPresentation: Boolean): Requesttype!
+  createRequestType(conferenceId: ID!, delegatesOnly: Boolean, icon: String, id: ID, name: String!, showOnPresentation: Boolean): Requesttype!
   createResolutionComment(clauseId: String, content: String!, id: ID, paperId: ID!, parentCommentId: ID, visibility: CommentvisibilityEnum): Resolutioncomment!
   createResolutionPaper(agendaItemId: ID!, committeeId: ID!, creatorCommitteeMemberId: ID, id: ID, status: PaperstatusEnum, title: String): Resolutionpaper!
   deleteAmendment(id: ID!): Boolean!
@@ -1296,7 +1296,7 @@ type Mutation {
   updateConference(endDate: Date, hasModeratedCaucus: Boolean, id: ID!, location: String, logoSvg: String, pressWebsite: String, startDate: Date, title: String): Conference!
   updateConferenceUser(committeeMemberId: ID, conferenceMemberId: ID, conferenceUserType: ConferenceusertypeEnum!, id: ID!, name: String): Conferenceuser!
   updatePresenceEvent(committeeId: ID, id: ID!, note: String, present: Boolean, timestamp: DateTime): Presenceevent!
-  updateRequestType(delegatesOnly: Boolean, enabled: Boolean, faIcon: String, id: ID!, name: String, priority: Int, showOnPresentation: Boolean): Requesttype!
+  updateRequestType(delegatesOnly: Boolean, enabled: Boolean, icon: String, id: ID!, name: String, priority: Int, showOnPresentation: Boolean): Requesttype!
   updateResolutionComment(content: String!, id: ID!): Resolutioncomment!
   updateResolutionPaper(deployConfetti: Boolean, documentNumber: String, id: ID!, status: PaperstatusEnum, title: String): Resolutionpaper!
   updateSpeakerOnList(id: ID!, overwriteName: String): Speakeronlist!
@@ -1825,7 +1825,7 @@ type Representation {
   """Get the conferenceMembers related to this representation"""
   conferenceMembers(limit: Int, offset: Int, orderBy: ConferencememberOrderInputArgument, where: ConferencememberWhereInputArgument): [Conferencemember!]!
   createdAt: DateTime!
-  faIcon: String
+  icon: String
   id: ID!
   managedByDelegator: Boolean!
   name: String
@@ -1839,7 +1839,7 @@ input RepresentationOrderInputArgument {
   alpha3Code: SortingParameter
   conferenceId: SortingParameter
   createdAt: SortingParameter
-  faIcon: SortingParameter
+  icon: SortingParameter
   id: SortingParameter
   managedByDelegator: SortingParameter
   name: SortingParameter
@@ -1865,7 +1865,7 @@ input RepresentationWhereInputArgument {
   conferenceId: IDWhereInputArgument
   conferenceMembers: ConferencememberWhereInputArgument
   createdAt: DateTimeWhereInputArgument
-  faIcon: StringWhereInputArgument
+  icon: StringWhereInputArgument
   id: IDWhereInputArgument
   managedByDelegator: BooleanWhereInputArgument
   name: StringWhereInputArgument
@@ -1961,7 +1961,7 @@ type Requesttype {
   createdAt: DateTime!
   delegatesOnly: Boolean!
   enabled: Boolean!
-  faIcon: String
+  icon: String
   id: ID!
   name: String!
   priority: Int!
@@ -1977,7 +1977,7 @@ input RequesttypeOrderInputArgument {
   createdAt: SortingParameter
   delegatesOnly: SortingParameter
   enabled: SortingParameter
-  faIcon: SortingParameter
+  icon: SortingParameter
   id: SortingParameter
   name: SortingParameter
   priority: SortingParameter
@@ -1994,7 +1994,7 @@ input RequesttypeWhereInputArgument {
   createdAt: DateTimeWhereInputArgument
   delegatesOnly: BooleanWhereInputArgument
   enabled: BooleanWhereInputArgument
-  faIcon: StringWhereInputArgument
+  icon: StringWhereInputArgument
   id: IDWhereInputArgument
   name: StringWhereInputArgument
   priority: IntWhereInputArgument

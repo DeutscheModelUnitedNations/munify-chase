@@ -25,7 +25,7 @@
 		rel="noopener"
 		title={m.managedByDelegatorHint()}
 	>
-		<i class="fas fa-link"></i>
+		<i class="ph-fill ph-link"></i>
 		{m.managedByDelegator()}
 	</a>
 {/if}

@@ -24,7 +24,7 @@ export type Command = {
 	keywords?: string[];
 	/** `page` for things on the current page, `navigation` to go elsewhere, `global` otherwise */
 	group: CommandGroup;
-	/** Font Awesome icon name without the `fa-` prefix */
+	/** Phosphor icon name without the `ph-` prefix (rendered duotone) */
 	icon?: string;
 	/**
 	 * hotkeys-js key string like `alt+n`. The registry binds it while the command is

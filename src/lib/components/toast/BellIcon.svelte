@@ -1,1 +1,1 @@
-<i class="fa-duotone fa-bell fa-shake text-xl"></i>
+<i class="ph-duotone ph-bell icon-shake text-xl"></i>

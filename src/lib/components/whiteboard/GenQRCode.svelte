@@ -158,7 +158,7 @@
 						generateQRCode();
 					}}
 				>
-					<i class="fa-duotone fa-users mr-2"></i>
+					<i class="ph-duotone ph-users mr-2"></i>
 					{m.committeeUrl()}
 				</button>
 				<button
@@ -169,7 +169,7 @@
 						qrError = '';
 					}}
 				>
-					<i class="fa-duotone fa-link mr-2"></i>
+					<i class="ph-duotone ph-link mr-2"></i>
 					{m.customUrl()}
 				</button>
 			</div>
@@ -184,17 +184,17 @@
 							class="max-w-full h-auto border border-base-300 rounded-lg shadow-md"
 						/>
 						<p class="text-sm text-base-content/70 mt-3">
-							<i class="fa-regular fa-circle-check text-success mr-1"></i>
+							<i class="ph ph-check-circle text-success mr-1"></i>
 							{m.qrCodeSuccess()}
 						</p>
 					{:else if isGenerating}
 						<div class="text-center">
-							<i class="fa-solid fa-spinner fa-spin text-4xl text-primary mb-3"></i>
+							<i class="ph-fill ph-spinner-gap animate-spin text-4xl text-primary mb-3"></i>
 							<p class="text-sm">{m.generating()}</p>
 						</div>
 					{:else}
 						<div class="text-center text-base-content/50">
-							<i class="fa-solid fa-qrcode text-5xl mb-3 opacity-50"></i>
+							<i class="ph-fill ph-qr-code text-5xl mb-3 opacity-50"></i>
 							<p class="text-sm">
 								{activeTab === 'CUSTOM' ? m.enterUrlToGenerate() : m.clickGenerateForCommittee()}
 							</p>
@@ -203,7 +203,7 @@
 
 					{#if qrError}
 						<div class="alert alert-error mt-4 py-2 text-sm">
-							<i class="fa-solid fa-circle-exclamation"></i>
+							<i class="ph-fill ph-warning-circle"></i>
 							{qrError}
 						</div>
 					{/if}
@@ -267,12 +267,12 @@
 		<div class="bg-base-200 modal-action mt-0 border-base-300 border-t px-6 py-4">
 			{#if qrImageUrl}
 				<button class="btn btn-success" onclick={handleConfirm}>
-					<i class="fa-regular fa-check-circle mr-2"></i>
+					<i class="ph ph-check-circle mr-2"></i>
 					{m.useQRCode()}
 				</button>
 			{/if}
 			<button class="btn btn-error" onclick={handleCancel}>
-				<i class="fas fa-xmark mr-2"></i>
+				<i class="ph-fill ph-x mr-2"></i>
 				{m.abort()}
 			</button>
 		</div>

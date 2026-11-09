@@ -60,7 +60,7 @@ export function watchConferenceTables({
 	const ROLE = {
 		kind: true,
 		name: true,
-		fontAwesomeIcon: true,
+		icon: true,
 		chaseAccess: true,
 		nation: { alpha2Code: true }
 	} as const;

@@ -33,7 +33,7 @@ function source(overrides: Partial<MirrorSource> = {}): MirrorSource {
 				id: 'role-amnesty',
 				kind: 'NON_STATE_ACTOR',
 				name: 'Amnesty',
-				fontAwesomeIcon: 'fa-dove',
+				icon: 'bird',
 				chaseAccess: 'SPECTATOR'
 			},
 			{ id: 'role-press', kind: 'CUSTOM', name: 'Press', chaseAccess: 'SPECTATOR' },
@@ -99,7 +99,7 @@ describe('mirrorConference', () => {
 			alpha3Code: 'deu',
 			regionalGroup: 'WESTERN_EUROPE_OTHERS'
 		});
-		expect(representations[1]).toMatchObject({ type: 'NSA', name: 'Amnesty', faIcon: 'fa-dove' });
+		expect(representations[1]).toMatchObject({ type: 'NSA', name: 'Amnesty', icon: 'bird' });
 	});
 
 	it('gives a nation one committee member per committee, shared by its delegates there', () => {

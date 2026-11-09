@@ -8,7 +8,7 @@ description: Configuring non-state actors and UN actors
 
 The **Non-state Actors** tab lists every NSA and UN actor registered for the conference, alongside their icon and role type.
 
-To add one, fill in a **Name**, choose the **Role** (**Non-state Actor** or **UN Actor**), and optionally an **Icon**, a Font Awesome icon name such as `building-ngo`, to represent them visually instead of a flag. Click **Add NGO** to save.
+To add one, fill in a **Name**, choose the **Role** (**Non-state Actor** or **UN Actor**), and an **Icon** to represent them instead of a flag. Click the icon button to open the picker, search by name or keyword (for example "health" or "building") and click an icon to choose it. Click **Add NGO** to save.
 
 Entries can't be edited. To change one, remove it with the trash icon (asks for confirmation) and add it again.
 

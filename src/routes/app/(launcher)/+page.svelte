@@ -34,7 +34,7 @@
 				name: true,
 				alpha2Code: true,
 				alpha3Code: true,
-				faIcon: true
+				icon: true
 			}
 		},
 		conferenceMember: {
@@ -45,7 +45,7 @@
 				name: true,
 				alpha2Code: true,
 				alpha3Code: true,
-				faIcon: true
+				icon: true
 			}
 		},
 		conference: {
@@ -244,7 +244,7 @@
 
 			{#if isGlobalAdmin}
 				<label class="input w-full">
-					<i class="fa-duotone fa-magnifying-glass opacity-60"></i>
+					<i class="ph-duotone ph-magnifying-glass opacity-60"></i>
 					<input
 						type="search"
 						aria-label={m.launcherSearchPlaceholder()}
@@ -308,7 +308,7 @@
 			<footer class="mt-8 flex flex-col items-center gap-2 pt-6 text-center">
 				<p class="text-base-content/70 m-0 text-sm">{m.delegatorLinkConferencesFromDelegator()}</p>
 				<a class="btn btn-ghost btn-sm" href={delegatorUrl} target="_blank" rel="noopener">
-					<i class="fa-duotone fa-arrow-up-right-from-square"></i>
+					<i class="ph-duotone ph-arrow-square-out"></i>
 					{m.delegatorLinkOpen()}
 				</a>
 			</footer>
@@ -318,18 +318,18 @@
 				style="background: linear-gradient(180deg, transparent 0%, var(--color-base-100) 35%);"
 			>
 				<a class="btn btn-primary btn-lg" href={resolve('/app/(launcher)/import')}>
-					<i class="fa-solid fa-plus"></i>
+					<i class="ph-fill ph-plus"></i>
 					{m.createConference()}
 				</a>
 				<a class="btn btn-ghost btn-sm" href={resolve('/app/(launcher)/import')}>
-					<i class="fa-duotone fa-file-arrow-up"></i>
+					<i class="ph-duotone ph-file-arrow-up"></i>
 					{m.launcherImportDelegator()}
 				</a>
 			</footer>
 		{:else}
 			<footer class="mt-8 flex justify-center pt-6">
 				<a class="btn btn-ghost btn-sm" href={resolve('/app/(launcher)/import')}>
-					<i class="fa-solid fa-plus"></i>
+					<i class="ph-fill ph-plus"></i>
 					{m.createConference()}
 				</a>
 			</footer>

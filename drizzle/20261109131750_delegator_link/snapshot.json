@@ -1,0 +1,683 @@
+{
+	"deltas": [
+		{
+			"op": "create",
+			"row": {
+				"entityType": "tables",
+				"isRlsEnabled": false,
+				"name": "instance_link",
+				"schema": "public"
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"entityType": "enums",
+				"name": "instance_link_status",
+				"schema": "public",
+				"values": ["PENDING", "ACTIVE", "FROZEN"]
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "false",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "managed_by_delegator",
+				"notNull": true,
+				"schema": "public",
+				"table": "agenda_item",
+				"type": "boolean",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "false",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "managed_by_delegator",
+				"notNull": true,
+				"schema": "public",
+				"table": "committee",
+				"type": "boolean",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "false",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "managed_by_delegator",
+				"notNull": true,
+				"schema": "public",
+				"table": "committee_member",
+				"type": "boolean",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "false",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "managed_by_delegator",
+				"notNull": true,
+				"schema": "public",
+				"table": "conference",
+				"type": "boolean",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "false",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "managed_by_delegator",
+				"notNull": true,
+				"schema": "public",
+				"table": "conference_member",
+				"type": "boolean",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "false",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "managed_by_delegator",
+				"notNull": true,
+				"schema": "public",
+				"table": "conference_user",
+				"type": "boolean",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "delegator_user_id",
+				"notNull": false,
+				"schema": "public",
+				"table": "conference_user",
+				"type": "text",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "1",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "card_number",
+				"notNull": true,
+				"schema": "public",
+				"table": "conference_user",
+				"type": "integer",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "id",
+				"notNull": true,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "text",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "now()",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "created_at",
+				"notNull": true,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "timestamp",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "now()",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "updated_at",
+				"notNull": false,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "timestamp",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "remote_url",
+				"notNull": true,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "text",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "'PENDING'",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "status",
+				"notNull": true,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "instance_link_status",
+				"typeSchema": "public"
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "inbound_token_hash",
+				"notNull": false,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "text",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "outbound_token",
+				"notNull": true,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "text",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "confirmation_code",
+				"notNull": true,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "text",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "linked_at",
+				"notNull": false,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "timestamp",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "last_event_at",
+				"notNull": false,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "timestamp",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "last_reconcile_at",
+				"notNull": false,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "timestamp",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "last_error",
+				"notNull": false,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "text",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "remote_signing_keys",
+				"notNull": false,
+				"schema": "public",
+				"table": "instance_link",
+				"type": "jsonb",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "false",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "managed_by_delegator",
+				"notNull": true,
+				"schema": "public",
+				"table": "representation",
+				"type": "boolean",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "delegator_paper_id",
+				"notNull": false,
+				"schema": "public",
+				"table": "resolution_paper",
+				"type": "text",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "delegator_version",
+				"notNull": false,
+				"schema": "public",
+				"table": "resolution_paper",
+				"type": "integer",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "detached_at",
+				"notNull": false,
+				"schema": "public",
+				"table": "resolution_paper",
+				"type": "timestamp",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"columns": [
+					{
+						"asc": true,
+						"isExpression": true,
+						"nullsFirst": false,
+						"opclass": null,
+						"value": "(true)"
+					}
+				],
+				"concurrently": false,
+				"entityType": "indexes",
+				"isUnique": true,
+				"method": "btree",
+				"name": "instance_link_single_row",
+				"nameExplicit": true,
+				"schema": "public",
+				"table": "instance_link",
+				"where": null,
+				"with": ""
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"columns": ["id"],
+				"entityType": "pks",
+				"name": "instance_link_pkey",
+				"nameExplicit": false,
+				"schema": "public",
+				"table": "instance_link"
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"columns": ["delegator_paper_id"],
+				"entityType": "uniques",
+				"name": "resolution_paper_delegator_paper_id_key",
+				"nameExplicit": false,
+				"nullsNotDistinct": false,
+				"schema": "public",
+				"table": "resolution_paper"
+			}
+		},
+		{
+			"key": "columns\u0000[\"public\",\"conference_user\",\"attendance_code\"]",
+			"op": "drop"
+		},
+		{
+			"key": "uniques\u0000[\"public\",\"conference_user\",\"conference_user_conference_id_attendance_code_unique\"]",
+			"op": "drop"
+		}
+	],
+	"dialect": "postgres",
+	"footprints": [
+		{
+			"reads": ["n|sch|public"],
+			"statementTarget": ["enum", "public", "instance_link_status"],
+			"statementType": "create_enum",
+			"writes": [
+				"s|enum|public.instance_link_status",
+				"n|enum|public.instance_link_status",
+				"e|enum|public.instance_link_status",
+				"n|type|public.instance_link_status"
+			]
+		},
+		{
+			"reads": ["n|sch|public", "n|enum|public.instance_link_status"],
+			"statementTarget": ["table", "public", "instance_link"],
+			"statementType": "create_table",
+			"writes": [
+				"s|tbl|public.instance_link",
+				"n|tbl|public.instance_link",
+				"e|tbl|public.instance_link",
+				"n|rel|public.instance_link",
+				"n|type|public.instance_link",
+				"n|rel|public.instance_link_pkey"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.conference_user",
+				"n|sch|public",
+				"e|col|public.conference_user.conference_id",
+				"e|col|public.conference_user.attendance_code"
+			],
+			"sharedWrites": ["e|uniqueness|public.conference_user.attendance_code.conference_id"],
+			"statementTarget": ["table", "public", "conference_user"],
+			"statementType": "drop_unique",
+			"writes": [
+				"s|uq|public.conference_user.conference_user_conference_id_attendance_code_unique",
+				"n|uq|public.conference_user.conference_user_conference_id_attendance_code_unique",
+				"e|uq|public.conference_user.conference_user_conference_id_attendance_code_unique",
+				"n|con|public.conference_user.conference_user_conference_id_attendance_code_unique",
+				"n|rel|public.conference_user_conference_id_attendance_code_unique"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.agenda_item", "n|sch|public"],
+			"statementTarget": ["column", "public", "agenda_item", "managed_by_delegator"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.agenda_item.managed_by_delegator",
+				"n|col|public.agenda_item.managed_by_delegator",
+				"e|col|public.agenda_item.managed_by_delegator"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.committee", "n|sch|public"],
+			"statementTarget": ["column", "public", "committee", "managed_by_delegator"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.committee.managed_by_delegator",
+				"n|col|public.committee.managed_by_delegator",
+				"e|col|public.committee.managed_by_delegator"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.committee_member", "n|sch|public"],
+			"statementTarget": ["column", "public", "committee_member", "managed_by_delegator"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.committee_member.managed_by_delegator",
+				"n|col|public.committee_member.managed_by_delegator",
+				"e|col|public.committee_member.managed_by_delegator"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.conference", "n|sch|public"],
+			"statementTarget": ["column", "public", "conference", "managed_by_delegator"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.conference.managed_by_delegator",
+				"n|col|public.conference.managed_by_delegator",
+				"e|col|public.conference.managed_by_delegator"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.conference_member", "n|sch|public"],
+			"statementTarget": ["column", "public", "conference_member", "managed_by_delegator"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.conference_member.managed_by_delegator",
+				"n|col|public.conference_member.managed_by_delegator",
+				"e|col|public.conference_member.managed_by_delegator"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.conference_user", "n|sch|public"],
+			"statementTarget": ["column", "public", "conference_user", "managed_by_delegator"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.conference_user.managed_by_delegator",
+				"n|col|public.conference_user.managed_by_delegator",
+				"e|col|public.conference_user.managed_by_delegator"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.conference_user", "n|sch|public"],
+			"statementTarget": ["column", "public", "conference_user", "delegator_user_id"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.conference_user.delegator_user_id",
+				"n|col|public.conference_user.delegator_user_id",
+				"e|col|public.conference_user.delegator_user_id"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.conference_user", "n|sch|public"],
+			"statementTarget": ["column", "public", "conference_user", "card_number"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.conference_user.card_number",
+				"n|col|public.conference_user.card_number",
+				"e|col|public.conference_user.card_number"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.representation", "n|sch|public"],
+			"statementTarget": ["column", "public", "representation", "managed_by_delegator"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.representation.managed_by_delegator",
+				"n|col|public.representation.managed_by_delegator",
+				"e|col|public.representation.managed_by_delegator"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.resolution_paper", "n|sch|public"],
+			"statementTarget": ["column", "public", "resolution_paper", "delegator_paper_id"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.resolution_paper.delegator_paper_id",
+				"n|col|public.resolution_paper.delegator_paper_id",
+				"e|col|public.resolution_paper.delegator_paper_id"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.resolution_paper", "n|sch|public"],
+			"statementTarget": ["column", "public", "resolution_paper", "delegator_version"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.resolution_paper.delegator_version",
+				"n|col|public.resolution_paper.delegator_version",
+				"e|col|public.resolution_paper.delegator_version"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.resolution_paper", "n|sch|public"],
+			"statementTarget": ["column", "public", "resolution_paper", "detached_at"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.resolution_paper.detached_at",
+				"n|col|public.resolution_paper.detached_at",
+				"e|col|public.resolution_paper.detached_at"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.conference_user", "n|sch|public"],
+			"statementTarget": ["column", "public", "conference_user", "attendance_code"],
+			"statementType": "drop_column",
+			"writes": [
+				"s|col|public.conference_user.attendance_code",
+				"n|col|public.conference_user.attendance_code",
+				"e|col|public.conference_user.attendance_code"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.resolution_paper",
+				"n|sch|public",
+				"n|col|public.resolution_paper.delegator_paper_id"
+			],
+			"statementTarget": ["table", "public", "resolution_paper"],
+			"statementType": "add_unique",
+			"writes": [
+				"s|uq|public.resolution_paper.resolution_paper_delegator_paper_id_key",
+				"n|uq|public.resolution_paper.resolution_paper_delegator_paper_id_key",
+				"e|uq|public.resolution_paper.resolution_paper_delegator_paper_id_key",
+				"n|con|public.resolution_paper.resolution_paper_delegator_paper_id_key",
+				"n|rel|public.resolution_paper_delegator_paper_id_key"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.instance_link", "n|sch|public"],
+			"statementTarget": ["index", "public", "instance_link", "instance_link_single_row"],
+			"statementType": "create_index",
+			"writes": [
+				"s|idx|public.instance_link_single_row",
+				"n|idx|public.instance_link_single_row",
+				"e|idx|public.instance_link_single_row",
+				"n|rel|public.instance_link_single_row"
+			]
+		}
+	],
+	"id": "ea098f79-08b6-48a5-a7c6-c50cf82437fb",
+	"prevIds": ["51f867c0-7faf-4bd6-a059-1fc5aa8d460a"],
+	"type": "diff",
+	"version": "9"
+}

@@ -41,7 +41,7 @@
 					id: true,
 					alpha3Code: true,
 					alpha2Code: true,
-					faIcon: true,
+					icon: true,
 					type: true,
 					name: true
 				},
@@ -82,7 +82,7 @@
 		{#if isDownloading}
 			<span class="loading loading-spinner loading-xs"></span>
 		{:else}
-			<i class="fa-duotone fa-download"></i>
+			<i class="ph-duotone ph-download-simple"></i>
 		{/if}
 		<span class="hidden sm:inline">{m.exportAttendanceData()}</span>
 	</button>

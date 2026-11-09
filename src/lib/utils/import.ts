@@ -29,7 +29,7 @@ export const importDataSchema = z.object({
 					.optional()
 					.refine((data) => data === undefined || data?.length === 2),
 				name: z.string().optional(),
-				faIcon: z.string().optional(),
+				icon: z.string().optional(),
 				regionalGroup: z
 					.enum([
 						'AFRICA',
@@ -43,7 +43,7 @@ export const importDataSchema = z.object({
 			.refine(
 				(data) =>
 					(data.representationType === 'DELEGATION' && data.alpha3Code && data.alpha2Code) ||
-					(data.representationType === 'NSA' && data.name && data.faIcon) ||
+					(data.representationType === 'NSA' && data.name && data.icon) ||
 					data.representationType === 'UN'
 			)
 	),
@@ -87,7 +87,7 @@ export const importDataSchema = z.object({
 			z.object({
 				id: z.string().optional(),
 				name: z.string(),
-				faIcon: z.string().optional(),
+				icon: z.string().optional(),
 				enabled: z.boolean().optional(),
 				delegatesOnly: z.boolean().optional()
 			})
@@ -118,7 +118,7 @@ export const importDataSchema = z.object({
 // 	alpha3Code?: string;
 // 	alpha2Code?: string;
 // 	name?: string;
-// 	faIcon?: string;
+// 	icon?: string;
 // }
 
 // export interface ConferenceMember {

@@ -103,7 +103,7 @@ export async function ownNsaCards({
 		},
 		columns: { id: true, name: true, userEmail: true, cardNumber: true },
 		with: {
-			conferenceMember: { with: { representation: { columns: { name: true, faIcon: true } } } }
+			conferenceMember: { with: { representation: { columns: { name: true, icon: true } } } }
 		}
 	});
 	const expiresAt = cardExpiry(conference.endDate);
@@ -123,7 +123,7 @@ export async function ownNsaCards({
 				conferenceUserId: user.id,
 				name: user.name ?? user.userEmail,
 				nsaName: user.conferenceMember?.representation?.name ?? null,
-				nsaIcon: user.conferenceMember?.representation?.faIcon ?? null,
+				nsaIcon: user.conferenceMember?.representation?.icon ?? null,
 				cardNumber: user.cardNumber,
 				code
 			};

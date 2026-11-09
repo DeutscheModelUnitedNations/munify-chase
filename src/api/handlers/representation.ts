@@ -19,22 +19,20 @@ import { nanoidValidation } from '#lib/helpers/nanoid';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 
 // The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
-abilityBuilder.representation
-	.allow('read')
-	.when(
-		linkedDelegator({
-			where: { conference: SYNCED_CONFERENCE },
-			columns: {
-				id: true,
-				conferenceId: true,
-				type: true,
-				alpha2Code: true,
-				alpha3Code: true,
-				name: true,
-				faIcon: true
-			}
-		})
-	);
+abilityBuilder.representation.allow('read').when(
+	linkedDelegator({
+		where: { conference: SYNCED_CONFERENCE },
+		columns: {
+			id: true,
+			conferenceId: true,
+			type: true,
+			alpha2Code: true,
+			alpha3Code: true,
+			name: true,
+			icon: true
+		}
+	})
+);
 
 abilityBuilder.representation.allow('read').when((ctx) => {
 	return {
@@ -66,7 +64,7 @@ schemaBuilder.mutationFields((t) => ({
 			name: t.arg.string(),
 			alpha2Code: t.arg.string(),
 			alpha3Code: t.arg.string(),
-			faIcon: t.arg.string()
+			icon: t.arg.string()
 		},
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.conference
@@ -87,7 +85,7 @@ schemaBuilder.mutationFields((t) => ({
 						name: args.name ?? undefined,
 						alpha2Code: args.alpha2Code ?? undefined,
 						alpha3Code: args.alpha3Code ?? undefined,
-						faIcon: args.faIcon ?? undefined
+						icon: args.icon ?? undefined
 					})
 					.returning()
 					.then(assertFirstEntryExists);

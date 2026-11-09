@@ -13,14 +13,12 @@ import { nanoidValidation } from '#lib/helpers/nanoid';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 
 // The linked DELEGATOR reads back the presence of its conferences (`docs/plans/delegator-link.md`).
-abilityBuilder.committeeMember
-	.allow('read')
-	.when(
-		linkedDelegator({
-			where: { committee: { conference: SYNCED_CONFERENCE } },
-			columns: { id: true, committeeId: true, representationId: true }
-		})
-	);
+abilityBuilder.committeeMember.allow('read').when(
+	linkedDelegator({
+		where: { committee: { conference: SYNCED_CONFERENCE } },
+		columns: { id: true, committeeId: true, representationId: true }
+	})
+);
 
 abilityBuilder.committeeMember.allow('read').when((ctx) => {
 	return {

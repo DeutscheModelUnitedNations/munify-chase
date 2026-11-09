@@ -36,7 +36,8 @@ export interface MirrorSource {
 		id: string;
 		kind: RoleKind;
 		name?: string | null;
-		fontAwesomeIcon?: string | null;
+		/** A Phosphor icon name, as both instances store them. */
+		icon?: string | null;
 		chaseAccess: ChaseAccess;
 		nation?: { alpha2Code: string } | null;
 	}[];
@@ -96,7 +97,7 @@ interface MirroredRepresentation {
 	alpha3Code: string | null;
 	regionalGroup: ReturnType<typeof getCountryData>['regionalGroup'] | null;
 	name: string | null;
-	faIcon: string | null;
+	icon: string | null;
 }
 
 export function mirrorConference(source: MirrorSource) {
@@ -117,7 +118,7 @@ export function mirrorConference(source: MirrorSource) {
 					alpha3Code: country.alpha3Code,
 					regionalGroup: country.regionalGroup ?? null,
 					name: null,
-					faIcon: null
+					icon: null
 				}
 			];
 		}
@@ -130,7 +131,7 @@ export function mirrorConference(source: MirrorSource) {
 					alpha3Code: null,
 					regionalGroup: null,
 					name: role.name ?? null,
-					faIcon: role.fontAwesomeIcon ?? null
+					icon: role.icon ?? null
 				}
 			];
 		}

@@ -31,7 +31,7 @@ const ids = (from: number, count: number) =>
 const settled = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 async function setup(
-	readIds: (ids: string[]) => Promise<Row[]> = async () => [],
+	readIds: (ids: string[]) => Promise<Row[]> = () => Promise.resolve([]),
 	{ failFirst = 0 }: { failFirst?: number } = {}
 ) {
 	const remote = fakeRemote({ failFirst });
@@ -83,7 +83,7 @@ describe('liveTable', () => {
 	});
 
 	it('drops a row a single page no longer has, without asking', async () => {
-		const readIds = vi.fn(async () => []);
+		const readIds = vi.fn(() => Promise.resolve([]));
 		const { remote, table } = await setup(readIds);
 		remote.answer(0, ids(0, 3));
 		await settled();
@@ -97,7 +97,9 @@ describe('liveTable', () => {
 		// a row before it went, so the last row of the first page moved into the second, which has
 		// not answered again yet
 		const moved = ids(PAGE_SIZE, 1)[0];
-		const readIds = vi.fn(async (asked: string[]) => (asked.includes(moved.id) ? [moved] : []));
+		const readIds = vi.fn((asked: string[]) =>
+			Promise.resolve(asked.includes(moved.id) ? [moved] : [])
+		);
 		const { remote, table } = await setup(readIds);
 		remote.answer(0, ids(0, PAGE_SIZE));
 		await settled();

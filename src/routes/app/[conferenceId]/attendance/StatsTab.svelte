@@ -129,7 +129,7 @@
 			<div class="flex items-start justify-between">
 				<p class="text-base-content/60 text-sm font-medium">{m.delegateStatistics()}</p>
 				<div class="bg-primary/10 rounded-lg p-2">
-					<i class="fa-duotone fa-users text-primary text-lg"></i>
+					<i class="ph-duotone ph-users text-primary text-lg"></i>
 				</div>
 			</div>
 			<p class="font-mono text-4xl font-bold tabular-nums">{totals.total}</p>
@@ -142,7 +142,7 @@
 			<div class="flex items-start justify-between">
 				<p class="text-base-content/60 text-sm font-medium">{m.delegatePresenceOverview()}</p>
 				<div class="rounded-lg bg-success/10 p-2">
-					<i class="fa-duotone fa-user-check text-success text-lg"></i>
+					<i class="ph-duotone ph-user-check text-success text-lg"></i>
 				</div>
 			</div>
 			<p class="font-mono text-4xl font-bold tabular-nums">
@@ -165,7 +165,7 @@
 			<div class="flex items-start justify-between">
 				<p class="text-base-content/60 text-sm font-medium">{m.nsaStatistics()}</p>
 				<div class="bg-secondary/10 rounded-lg p-2">
-					<i class="fa-duotone fa-user-tag text-secondary text-lg"></i>
+					<i class="ph-duotone ph-identification-badge text-secondary text-lg"></i>
 				</div>
 			</div>
 			<p class="font-mono text-4xl font-bold tabular-nums">{totalNsas}</p>
@@ -178,7 +178,7 @@
 			<div class="flex items-start justify-between">
 				<p class="text-base-content/60 text-sm font-medium">{m.statCommittees()}</p>
 				<div class="bg-accent/10 rounded-lg p-2">
-					<i class="fa-duotone fa-building-columns text-accent text-lg"></i>
+					<i class="ph-duotone ph-bank text-accent text-lg"></i>
 				</div>
 			</div>
 			<p class="font-mono text-4xl font-bold tabular-nums">{committeeCount}</p>

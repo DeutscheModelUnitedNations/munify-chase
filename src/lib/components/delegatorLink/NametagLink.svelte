@@ -24,7 +24,7 @@
 		target="_blank"
 		rel="noopener"
 	>
-		<i class="fas fa-id-badge"></i>
+		<i class="ph-fill ph-identification-badge"></i>
 		{m.showMyNametag()}
 	</a>
 {/if}

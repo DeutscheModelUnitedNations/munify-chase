@@ -26,7 +26,7 @@
 											name: string | null | undefined;
 											alpha2Code: string | null | undefined;
 											alpha3Code: string | null | undefined;
-											faIcon: string | null | undefined;
+											icon: string | null | undefined;
 											type: string | null | undefined;
 									  }
 									| null
@@ -149,8 +149,8 @@
 							{/if}
 							{#if (item.subjectAmendment?.sponsors?.length ?? 0) > 0}
 								<span class="text-base-content/40">
-									<i class="fas fa-users mr-0.5 text-[0.6rem]"></i>{item.subjectAmendment?.sponsors
-										?.length}
+									<i class="ph-fill ph-users mr-0.5 text-[0.6rem]"></i>{item.subjectAmendment
+										?.sponsors?.length}
 								</span>
 							{/if}
 						</div>

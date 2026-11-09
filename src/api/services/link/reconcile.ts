@@ -83,7 +83,7 @@ export async function reconcileConference(mirror: Mirror) {
 					alpha3Code: true,
 					regionalGroup: true,
 					name: true,
-					faIcon: true,
+					icon: true,
 					managedByDelegator: true
 				}
 			}),
@@ -130,7 +130,7 @@ export async function reconcileConference(mirror: Mirror) {
 			representations: rowChanges({
 				current: representations,
 				wanted: mirror.representations,
-				fields: ['type', 'alpha2Code', 'alpha3Code', 'regionalGroup', 'name', 'faIcon']
+				fields: ['type', 'alpha2Code', 'alpha3Code', 'regionalGroup', 'name', 'icon']
 			}),
 			committeeMembers: rowChanges({
 				current: committeeMembers,
@@ -230,7 +230,7 @@ export async function reconcileConference(mirror: Mirror) {
 						alpha3Code: excluded(t.alpha3Code),
 						regionalGroup: excluded(t.regionalGroup),
 						name: excluded(t.name),
-						faIcon: excluded(t.faIcon),
+						icon: excluded(t.icon),
 						...MANAGED
 					}
 				});

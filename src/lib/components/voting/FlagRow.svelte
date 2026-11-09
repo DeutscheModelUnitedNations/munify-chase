@@ -3,13 +3,13 @@
 
 	interface Props {
 		children?: Snippet;
-		faIcon?: string;
+		icon?: string;
 		color?: 'info' | 'success' | 'warning' | 'error';
 		countValue?: number;
 		className?: string;
 	}
 
-	let { children, faIcon, color, countValue = 0, className }: Props = $props();
+	let { children, icon, color, countValue = 0, className }: Props = $props();
 </script>
 
 <div
@@ -19,8 +19,8 @@
 		''}"
 >
 	<div class="flex w-26 flex-shrink-0 flex-row items-center gap-2 font-mono text-5xl">
-		{#if faIcon}
-			<i class="fas fa-{faIcon.replace('fa-', '')} text-{color || 'content'}"></i>
+		{#if icon}
+			<i class="ph-fill ph-{icon} text-{color || 'content'}"></i>
 		{/if}
 		{#if countValue || countValue === 0}
 			<span class="font-mono">

@@ -51,7 +51,7 @@
 			<h2 class="text-2xl font-bold">{m.qrCard()}</h2>
 			<div class="flex flex-wrap gap-2">
 				<button class="btn btn-primary" onclick={openPrint}>
-					<i class="fas fa-print mr-1"></i>{m.print()}
+					<i class="ph-fill ph-printer mr-1"></i>{m.print()}
 				</button>
 				{#if confirmingReprint}
 					<button class="btn btn-warning" onclick={reprint}>{m.nsaCardReprintConfirm()}</button>
@@ -61,7 +61,7 @@
 						title={m.nsaCardReprintHint()}
 						onclick={() => (confirmingReprint = true)}
 					>
-						<i class="fas fa-arrows-rotate mr-1"></i>{m.nsaCardReprint()}
+						<i class="ph-fill ph-arrows-clockwise mr-1"></i>{m.nsaCardReprint()}
 					</button>
 				{/if}
 				<button class="btn btn-ghost" onclick={() => (open = false)}>{m.close()}</button>

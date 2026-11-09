@@ -15,7 +15,7 @@
 		class="badge badge-sm badge-ghost gap-1"
 		title={detached ? m.paperFromDelegatorDetachedHint() : m.paperFromDelegatorFollowingHint()}
 	>
-		<i class="fas fa-link"></i>
+		<i class="ph-fill ph-link"></i>
 		{m.paperFromDelegator({ version: delegatorVersion })}
 	</div>
 {/if}

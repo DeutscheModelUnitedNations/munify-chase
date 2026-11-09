@@ -5,8 +5,8 @@ import { hashLinkToken } from './linkTokens';
  * The link a request's token belongs to, if any: the linked DELEGATOR instance calling. Looked up
  * only when a request carries a token, and once per request (`context` keeps the promise).
  */
-export async function findLinkCaller(token: string | null | undefined) {
-	if (!token) return undefined;
+export function findLinkCaller(token: string | null | undefined) {
+	if (!token) return Promise.resolve(undefined);
 	return db.query.instanceLink.findFirst({
 		where: { inboundTokenHash: hashLinkToken(token), status: { ne: 'FROZEN' } },
 		columns: { id: true, status: true }

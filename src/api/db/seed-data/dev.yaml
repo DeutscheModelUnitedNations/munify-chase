@@ -27,7 +27,7 @@ conferences:
         type: UN
       - name: ICRC
         type: NSA
-        faIcon: kit-medical
+        icon: first-aid-kit
     committees:
       - name: General Assembly
         abbreviation: GV

@@ -3502,7 +3502,7 @@ export const schema = {
 						args: []
 					},
 					{
-						name: 'fontAwesomeIcon',
+						name: 'icon',
 						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
 						args: []
 					},
@@ -3701,7 +3701,7 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
-						name: 'fontAwesomeIcon',
+						name: 'icon',
 						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
 						defaultValue: void 0
 					},
@@ -3840,7 +3840,7 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
-						name: 'fontAwesomeIcon',
+						name: 'icon',
 						type: {
 							kind: 'INPUT_OBJECT',
 							name: 'StringWhereInputArgument',
@@ -10206,7 +10206,7 @@ export const schema = {
 						args: []
 					},
 					{
-						name: 'fontAwesomeIcon',
+						name: 'icon',
 						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
 						args: []
 					},
@@ -10362,7 +10362,7 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
-						name: 'fontAwesomeIcon',
+						name: 'icon',
 						type: { kind: 'ENUM', name: 'SortingParameter', ofType: null, __proto__: null },
 						defaultValue: void 0
 					},
@@ -10551,7 +10551,7 @@ export const schema = {
 						defaultValue: void 0
 					},
 					{
-						name: 'fontAwesomeIcon',
+						name: 'icon',
 						type: {
 							kind: 'INPUT_OBJECT',
 							name: 'StringWhereInputArgument',
@@ -13599,16 +13599,16 @@ export const schema = {
 						args: []
 					},
 					{
-						name: 'fontAwesomeIcon',
-						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
-						args: []
-					},
-					{
 						name: 'foundPieces',
 						type: {
 							kind: 'NON_NULL',
 							ofType: { name: 'Int', kind: 'SCALAR', ofType: null, __proto__: null }
 						},
+						args: []
+					},
+					{
+						name: 'icon',
+						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
 						args: []
 					},
 					{
@@ -15790,7 +15790,7 @@ export const schema = {
 								}
 							},
 							{
-								name: 'fontAwesomeIcon',
+								name: 'icon',
 								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							},
 							{
@@ -15984,7 +15984,7 @@ export const schema = {
 								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							},
 							{
-								name: 'fontAwesomeIcon',
+								name: 'icon',
 								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							},
 							{
@@ -16095,7 +16095,7 @@ export const schema = {
 								}
 							},
 							{
-								name: 'fontAwesomeIcon',
+								name: 'icon',
 								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							},
 							{
@@ -18356,7 +18356,7 @@ export const schema = {
 								type: { kind: 'SCALAR', name: 'DateTime', ofType: null, __proto__: null }
 							},
 							{
-								name: 'fontAwesomeIcon',
+								name: 'icon',
 								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							},
 							{
@@ -18722,7 +18722,7 @@ export const schema = {
 								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							},
 							{
-								name: 'fontAwesomeIcon',
+								name: 'icon',
 								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							},
 							{
@@ -18817,7 +18817,7 @@ export const schema = {
 								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							},
 							{
-								name: 'fontAwesomeIcon',
+								name: 'icon',
 								type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null }
 							},
 							{
@@ -19748,7 +19748,7 @@ export const schema = {
 				name: 'NametagBinGroup',
 				fields: [
 					{
-						name: 'fontAwesomeIcon',
+						name: 'icon',
 						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
 						args: []
 					},
@@ -31816,7 +31816,7 @@ export const schema = {
 						args: []
 					},
 					{
-						name: 'fontAwesomeIcon',
+						name: 'icon',
 						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
 						args: []
 					},
@@ -38944,16 +38944,16 @@ export const schema = {
 						args: []
 					},
 					{
-						name: 'fontAwesomeIcon',
-						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
-						args: []
-					},
-					{
 						name: 'foundCount',
 						type: {
 							kind: 'NON_NULL',
 							ofType: { name: 'Int', kind: 'SCALAR', ofType: null, __proto__: null }
 						},
+						args: []
+					},
+					{
+						name: 'icon',
+						type: { kind: 'SCALAR', name: 'String', ofType: null, __proto__: null },
 						args: []
 					},
 					{

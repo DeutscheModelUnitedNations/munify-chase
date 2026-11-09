@@ -119,7 +119,7 @@
 			aria-disabled={expired}
 			onclick={() => cast('PRO')}
 		>
-			<i class="ph-fill ph-plus-circle text-4xl"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus-circle text-4xl"></i>
 			{m.pro()}
 		</button>
 		<button
@@ -129,7 +129,7 @@
 			aria-disabled={expired}
 			onclick={() => cast('CON')}
 		>
-			<i class="ph-fill ph-minus-circle text-4xl"></i>
+			<i aria-hidden="true" class="ph-fill ph-minus-circle text-4xl"></i>
 			{m.con()}
 		</button>
 		{#if withAbstentions}
@@ -140,7 +140,7 @@
 				aria-disabled={expired}
 				onclick={() => cast('ABSTAIN')}
 			>
-				<i class="ph-fill ph-circle text-4xl"></i>
+				<i aria-hidden="true" class="ph-fill ph-circle text-4xl"></i>
 				{m.abstain()}
 			</button>
 		{/if}
@@ -150,7 +150,7 @@
 	<div role="status">
 		{#if expired}
 			<div class="alert alert-info mt-4">
-				<i class="ph-fill ph-lock"></i>
+				<i aria-hidden="true" class="ph-fill ph-lock"></i>
 				<span>{selected ? m.deviceVoteLockedIn() : m.deviceVoteLockedNone()}</span>
 			</div>
 		{/if}

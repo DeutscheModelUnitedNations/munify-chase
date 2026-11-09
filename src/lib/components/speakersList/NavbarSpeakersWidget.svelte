@@ -417,7 +417,7 @@
 		<div class="flex shrink-0 flex-col items-center gap-1">
 			<span class="font-mono text-sm {overtime ? 'text-error' : ''}">{timeFormatted}</span>
 			<button class="btn btn-xs {buttonClass} gap-1" onclick={handleButton}>
-				<i class="ph-fill ph-{buttonIcon} text-xs"></i>
+				<i aria-hidden="true" class="ph-fill ph-{buttonIcon} text-xs"></i>
 				{buttonLabel}
 				<Kbd hotkey="shift+space" size="xs" class=" opacity-60" />
 			</button>

@@ -217,7 +217,7 @@
 			{:else}
 				<div class="flex items-center justify-center py-6">
 					<span class="text-2xl opacity-70">
-						<i class="ph-fill ph-lock mr-2"></i>
+						<i aria-hidden="true" class="ph-fill ph-lock mr-2"></i>
 						{m.deviceVoteResultsPending()}
 					</span>
 				</div>

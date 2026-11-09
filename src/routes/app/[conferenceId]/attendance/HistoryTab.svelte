@@ -92,7 +92,7 @@
 				{m.hideCheckOut()}
 			</label>
 			<button class="btn btn-primary btn-sm" onclick={openInsert}>
-				<i class="ph-fill ph-plus mr-1"></i>{m.insertPresenceEvent()}
+				<i aria-hidden="true" class="ph-fill ph-plus mr-1"></i>{m.insertPresenceEvent()}
 			</button>
 		</div>
 	</div>
@@ -105,6 +105,7 @@
 				{@const rep = ev.conferenceUser?.conferenceMember?.representation}
 				<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
 					<i
+						aria-hidden="true"
 						class="ph-fill {ev.present
 							? 'ph-sign-in text-success'
 							: 'ph-sign-out text-warning'} text-lg"
@@ -123,7 +124,7 @@
 					{/if}
 					<span class="ml-auto text-sm">{formatDateTime(ev.timestamp)}</span>
 					<button class="btn btn-ghost btn-sm" onclick={() => openEdit(ev)} aria-label={m.edit()}>
-						<i class="ph-fill ph-pen"></i>
+						<i aria-hidden="true" class="ph-fill ph-pen"></i>
 					</button>
 				</li>
 			{/each}

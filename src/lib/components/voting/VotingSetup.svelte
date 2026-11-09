@@ -97,11 +97,11 @@
 {#if activeVotingSession}
 	<div class="flex flex-col gap-3" data-tour="voting.resume">
 		<div class="alert alert-warning p-2 text-sm">
-			<i class="ph-fill ph-warning-circle"></i>
+			<i aria-hidden="true" class="ph-fill ph-warning-circle"></i>
 			<span>{m.voteInProgress()}</span>
 		</div>
 		<button class="btn btn-warning btn-xl" onclick={openResume}>
-			<i class="ph-fill ph-arrow-clockwise mr-2"></i>
+			<i aria-hidden="true" class="ph-fill ph-arrow-clockwise mr-2"></i>
 			{m.resumeVote()}
 		</button>
 	</div>

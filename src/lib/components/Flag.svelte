@@ -69,9 +69,9 @@
 		'bg-base-200 text-base-content opacity-50'}"
 >
 	{#if placeholder}
-		<i class="ph-fill ph-{placeholderIcon()} {iconClassNames()}"></i>
+		<i aria-hidden="true" class="ph-fill ph-{placeholderIcon()} {iconClassNames()}"></i>
 	{:else if representation?.icon}
-		<i class="ph-fill ph-{representation.icon} {iconClassNames()}"></i>
+		<i aria-hidden="true" class="ph-fill ph-{representation.icon} {iconClassNames()}"></i>
 	{:else}
 		<span class="fi fi-{countryCode}"></span>
 	{/if}

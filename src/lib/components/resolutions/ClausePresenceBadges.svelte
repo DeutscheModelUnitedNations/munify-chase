@@ -77,7 +77,11 @@
 					{#if avatar.emoji}
 						{avatar.emoji}
 					{:else}
-						<i class="ph-fill ph-{avatar.icon} text-base-content/50" style="font-size: 0.5rem"></i>
+						<i
+							aria-hidden="true"
+							class="ph-fill ph-{avatar.icon} text-base-content/50"
+							style="font-size: 0.5rem"
+						></i>
 					{/if}
 				</div>
 			</div>

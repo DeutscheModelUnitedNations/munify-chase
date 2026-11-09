@@ -337,23 +337,23 @@
 												class="btn btn-outline btn-error btn-sm w-full"
 												onclick={() => handleSelfRemove(list.id)}
 											>
-												<i class="ph-fill ph-minus mr-1"></i>
+												<i aria-hidden="true" class="ph-fill ph-minus mr-1"></i>
 												{m.removeFromList()}
 											</button>
 										</div>
 									{:else if list.isClosed}
 										<div class="text-sm opacity-50">
-											<i class="ph-fill ph-lock mr-1"></i>
+											<i aria-hidden="true" class="ph-fill ph-lock mr-1"></i>
 											{m.listClosedCannotAdd()}
 										</div>
 									{:else if role === 'DELEGATE' && !myPresent}
 										<div class="text-sm opacity-50">
-											<i class="ph-fill ph-warning mr-1"></i>
+											<i aria-hidden="true" class="ph-fill ph-warning mr-1"></i>
 											{m.notPresentCannotAdd()}
 										</div>
 									{:else}
 										<button class="btn btn-primary btn-sm" onclick={() => handleSelfAdd(list.id)}>
-											<i class="ph-fill ph-plus mr-1"></i>
+											<i aria-hidden="true" class="ph-fill ph-plus mr-1"></i>
 											{m.addMeToList()}
 										</button>
 									{/if}
@@ -387,12 +387,12 @@
 				})}
 			>
 				<div class="card-body flex-row items-center gap-3 p-4">
-					<i class="ph-duotone ph-file-text text-2xl"></i>
+					<i aria-hidden="true" class="ph-duotone ph-file-text text-2xl"></i>
 					<div class="flex-1">
 						<h2 class="card-title text-lg">{m.resolutions()}</h2>
 						<p class="text-base-content/60 text-sm">{m.resolutionsCardHint()}</p>
 					</div>
-					<i class="ph-fill ph-caret-right opacity-50"></i>
+					<i aria-hidden="true" class="ph-fill ph-caret-right opacity-50"></i>
 				</div>
 			</a>
 		{/if}

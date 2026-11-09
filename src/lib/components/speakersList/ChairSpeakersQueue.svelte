@@ -111,14 +111,14 @@
 						aria-label="Delete Speaker"
 						onclick={() => removeSpeaker(speaker.id)}
 					>
-						<i class="ph-fill ph-trash"></i>
+						<i aria-hidden="true" class="ph-fill ph-trash"></i>
 					</button>
 					<button
 						class="btn btn-sm join-item btn-square btn-soft btn-primary"
 						aria-label="Move Speaker Up"
 						onclick={() => moveSpeaker(speaker.id, currentPosition(speaker.id) - 1)}
 					>
-						<i class="ph-fill ph-caret-up"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-up"></i>
 					</button>
 					{#if i < speakers.length - 1}
 						<button
@@ -126,7 +126,7 @@
 							aria-label="Move Speaker Down"
 							onclick={() => moveSpeaker(speaker.id, currentPosition(speaker.id) + 1)}
 						>
-							<i class="ph-fill ph-caret-down"></i>
+							<i aria-hidden="true" class="ph-fill ph-caret-down"></i>
 						</button>
 					{/if}
 					<button
@@ -134,7 +134,7 @@
 						aria-label="Move Speaker to Top"
 						onclick={() => moveSpeaker(speaker.id, 0)}
 					>
-						<i class="ph-fill ph-caret-double-up"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-double-up"></i>
 					</button>
 					{#if i < speakers.length - 1}
 						<button
@@ -142,7 +142,7 @@
 							aria-label="Move Speaker to Bottom"
 							onclick={() => moveSpeaker(speaker.id, bottomPosition)}
 						>
-							<i class="ph-fill ph-caret-double-down"></i>
+							<i aria-hidden="true" class="ph-fill ph-caret-double-down"></i>
 						</button>
 					{/if}
 				</div>

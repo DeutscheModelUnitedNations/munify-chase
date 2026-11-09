@@ -18,7 +18,7 @@
 >
 	<div class="badge badge-xl badge-{badgeColor} m-4 shadow-sm">
 		{#if icon}
-			<i class="ph-fill ph-{icon} text-base-content"></i>
+			<i aria-hidden="true" class="ph-fill ph-{icon} text-base-content"></i>
 		{/if}
 		{#if badgeText}
 			{badgeText}

@@ -243,7 +243,7 @@
 							: 'text-base-content/50 hover:text-base-content'}"
 						onclick={() => (type = t.value)}
 					>
-						<i class="ph-fill ph-{t.icon} text-xs"></i>
+						<i aria-hidden="true" class="ph-fill ph-{t.icon} text-xs"></i>
 						{t.label()}
 					</button>
 				{/each}
@@ -262,7 +262,7 @@
 								aria-label={m.deselect()}
 								onclick={() => (proposerValue = '')}
 							>
-								<i class="ph-fill ph-x text-xs"></i>
+								<i aria-hidden="true" class="ph-fill ph-x text-xs"></i>
 							</button>
 						</div>
 					{:else}
@@ -299,12 +299,13 @@
 								aria-label={m.deselect()}
 								onclick={() => (targetClauseId = null)}
 							>
-								<i class="ph-fill ph-x text-xs"></i>
+								<i aria-hidden="true" class="ph-fill ph-x text-xs"></i>
 							</button>
 						</div>
 					{:else}
 						<label class="input input-bordered input-sm flex w-full items-center gap-2">
-							<i class="ph-fill ph-magnifying-glass text-base-content/40 text-xs"></i>
+							<i aria-hidden="true" class="ph-fill ph-magnifying-glass text-base-content/40 text-xs"
+							></i>
 							<input
 								class="grow"
 								type="text"
@@ -385,7 +386,7 @@
 								aria-label={m.deselect()}
 								onclick={() => (targetPosition = null)}
 							>
-								<i class="ph-fill ph-x text-xs"></i>
+								<i aria-hidden="true" class="ph-fill ph-x text-xs"></i>
 							</button>
 						</div>
 					{:else}
@@ -421,7 +422,7 @@
 		<div class="modal-action">
 			<button class="btn btn-ghost" onclick={() => close()}>{m.cancel()}</button>
 			<button class="btn btn-primary" disabled={saving || !canSubmit} onclick={submit}>
-				{#if saving}<i class="ph-fill ph-spinner-gap animate-spin"></i>{/if}
+				{#if saving}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>{/if}
 				{m.proposeAmendment()}
 			</button>
 		</div>

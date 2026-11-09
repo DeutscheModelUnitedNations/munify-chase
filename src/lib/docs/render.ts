@@ -85,7 +85,7 @@ export function renderDoc(source: string, slug: string, options: RenderOptions):
 					const url = liveDemoUrl(token.id);
 					if (!url) return '';
 					const { start, hint, openInTab } = options.liveLabels;
-					return `<div class="docs-live not-prose rounded-box border-base-300 bg-base-200 my-6 flex flex-wrap items-center gap-3 border p-4" data-live-src="${escapeHtml(url)}"><button type="button" class="btn btn-primary btn-sm" data-docs-live-start><i class="ph-duotone ph-play"></i>${escapeHtml(start)}</button><span class="flex-1 text-sm opacity-70">${escapeHtml(hint)}</span><a class="link link-hover text-sm" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(openInTab)}</a></div>`;
+					return `<div class="docs-live not-prose rounded-box border-base-300 bg-base-200 my-6 flex flex-wrap items-center gap-3 border p-4" data-live-src="${escapeHtml(url)}"><button type="button" class="btn btn-primary btn-sm" data-docs-live-start><i aria-hidden="true" class="ph-duotone ph-play"></i>${escapeHtml(start)}</button><span class="flex-1 text-sm opacity-70">${escapeHtml(hint)}</span><a class="link link-hover text-sm" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(openInTab)}</a></div>`;
 				}
 			},
 			{
@@ -111,7 +111,7 @@ export function renderDoc(source: string, slug: string, options: RenderOptions):
 						? `<p class="font-semibold">${escapeHtml(token.title)}</p>`
 						: '';
 					const inner = this.parser.parse(token.tokens ?? []);
-					return `<div role="note" class="docs-admonition alert alert-soft ${style.alert} not-prose my-6 items-start"><i class="ph-duotone ph-${style.icon} mt-1"></i><div class="prose prose-sm max-w-none">${title}${inner}</div></div>`;
+					return `<div role="note" class="docs-admonition alert alert-soft ${style.alert} not-prose my-6 items-start"><i aria-hidden="true" class="ph-duotone ph-${style.icon} mt-1"></i><div class="prose prose-sm max-w-none">${title}${inner}</div></div>`;
 				}
 			}
 		],

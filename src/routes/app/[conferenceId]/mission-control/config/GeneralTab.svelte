@@ -216,7 +216,7 @@
 				/>
 				{#if logoSvg}
 					<button type="button" class="btn btn-ghost btn-sm text-error" onclick={removeLogo}>
-						<i class="ph-fill ph-trash mr-1"></i>{m.removeLogo()}
+						<i aria-hidden="true" class="ph-fill ph-trash mr-1"></i>{m.removeLogo()}
 					</button>
 				{/if}
 			</div>

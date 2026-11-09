@@ -18,7 +18,7 @@
 
 	<div class="drawer-content min-w-0 pb-16 lg:pl-10">
 		<label for="docs-drawer" class="btn btn-sm btn-ghost mb-4 lg:hidden">
-			<i class="ph-duotone ph-list"></i>
+			<i aria-hidden="true" class="ph-duotone ph-list"></i>
 			{m.docsMenu()}
 		</label>
 		{@render children()}

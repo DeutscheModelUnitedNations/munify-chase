@@ -33,6 +33,7 @@
 			{#each events ?? [] as ev (ev.id)}
 				<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
 					<i
+						aria-hidden="true"
 						class="ph-fill {ev.present
 							? 'ph-sign-in text-success'
 							: 'ph-sign-out text-warning'} text-lg"

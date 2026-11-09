@@ -41,7 +41,7 @@
 			disabled={busy || !value}
 			onclick={add}
 		>
-			<i class="ph-fill ph-plus"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus"></i>
 		</button>
 	{/snippet}
 </Combobox>

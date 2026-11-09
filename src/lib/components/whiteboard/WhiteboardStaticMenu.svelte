@@ -129,7 +129,7 @@
 						aria-label={button.label}
 						onclick={() => button.command()}
 					>
-						<i class={`ph-duotone ph-${button.icon}`}></i>
+						<i aria-hidden="true" class={`ph-duotone ph-${button.icon}`}></i>
 					</button>
 				</div>
 			{/each}

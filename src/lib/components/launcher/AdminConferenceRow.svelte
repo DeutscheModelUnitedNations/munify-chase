@@ -65,7 +65,7 @@
 			title={m.launcherConfigure()}
 			onclick={handleConfigure}
 		>
-			<i class="ph-duotone ph-gear"></i>
+			<i aria-hidden="true" class="ph-duotone ph-gear"></i>
 		</button>
 		<div class="dropdown dropdown-end">
 			<button
@@ -75,7 +75,7 @@
 				aria-label={m.launcherMore()}
 				title={m.launcherMore()}
 			>
-				<i class="ph-duotone ph-dots-three"></i>
+				<i aria-hidden="true" class="ph-duotone ph-dots-three"></i>
 			</button>
 			<ul
 				tabindex="-1"
@@ -83,7 +83,7 @@
 			>
 				<li>
 					<button type="button" class="text-error" onclick={handleDelete}>
-						<i class="ph-duotone ph-trash"></i>
+						<i aria-hidden="true" class="ph-duotone ph-trash"></i>
 						{m.launcherDelete()}
 					</button>
 				</li>

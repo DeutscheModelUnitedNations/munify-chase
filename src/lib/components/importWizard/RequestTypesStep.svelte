@@ -79,7 +79,7 @@
 						disabled={i === 0}
 						onclick={() => moveRequestType(i, -1)}
 					>
-						<i class="ph-fill ph-caret-up"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-up"></i>
 					</button>
 					<button
 						type="button"
@@ -88,7 +88,7 @@
 						disabled={i === (data.requestTypes?.length ?? 0) - 1}
 						onclick={() => moveRequestType(i, 1)}
 					>
-						<i class="ph-fill ph-caret-down"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-down"></i>
 					</button>
 				</div>
 				<IconPicker
@@ -115,18 +115,18 @@
 					aria-label="Remove request type"
 					onclick={() => removeRequestType(i)}
 				>
-					<i class="ph-fill ph-trash"></i>
+					<i aria-hidden="true" class="ph-fill ph-trash"></i>
 				</button>
 			</div>
 		{/each}
 
 		<div class="mt-2 flex gap-2">
 			<button type="button" class="btn btn-sm" onclick={loadDefaults}>
-				<i class="ph-fill ph-magic-wand"></i>
+				<i aria-hidden="true" class="ph-fill ph-magic-wand"></i>
 				{m.loadDefaultRequestTypes()}
 			</button>
 			<button type="button" class="btn btn-sm btn-ghost" onclick={addRequestType}>
-				<i class="ph-fill ph-plus"></i>
+				<i aria-hidden="true" class="ph-fill ph-plus"></i>
 				{m.addRequestType()}
 			</button>
 		</div>

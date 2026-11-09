@@ -220,7 +220,7 @@
 				setPresence(false);
 			}}
 		>
-			<i class="ph-fill ph-x"></i>
+			<i aria-hidden="true" class="ph-fill ph-x"></i>
 			{m.absent()}
 			<Kbd hotkey="J" />
 		</button>
@@ -234,7 +234,7 @@
 					syncIndex(newIndex);
 				}}
 			>
-				<i class="ph-fill ph-caret-up"></i>
+				<i aria-hidden="true" class="ph-fill ph-caret-up"></i>
 			</button>
 			<button
 				class="btn btn-outline btn-lg join-item"
@@ -245,7 +245,7 @@
 					syncIndex(newIndex);
 				}}
 			>
-				<i class="ph-fill ph-caret-down"></i>
+				<i aria-hidden="true" class="ph-fill ph-caret-down"></i>
 			</button>
 		</div>
 		<button
@@ -254,7 +254,7 @@
 				setPresence(true);
 			}}
 		>
-			<i class="ph-fill ph-check"></i>
+			<i aria-hidden="true" class="ph-fill ph-check"></i>
 			{m.present()}
 			<Kbd hotkey="L" />
 		</button>
@@ -267,7 +267,7 @@
 					active = false;
 				}}
 			>
-				<i class="ph-duotone ph-x"></i>
+				<i aria-hidden="true" class="ph-duotone ph-x"></i>
 			</button>
 		</div>
 	</div></Modal

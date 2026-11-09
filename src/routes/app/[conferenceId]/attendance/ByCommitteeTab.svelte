@@ -116,7 +116,7 @@
 <div class="flex flex-col gap-4">
 	{#if conferenceTotals.total > 0}
 		<div class="text-base-content/70 flex items-center gap-2 px-1 text-sm">
-			<i class="ph-duotone ph-users-three"></i>
+			<i aria-hidden="true" class="ph-duotone ph-users-three"></i>
 			<span>{m.delegatePresence()}:</span>
 			<span class="font-semibold tabular-nums"
 				>{m.delegatesPresentOfTotal({
@@ -161,9 +161,9 @@
 						{@const rep = event.conferenceUser?.conferenceMember?.representation}
 						<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
 							{#if rep?.icon}
-								<i class="ph-fill ph-{rep.icon} text-lg"></i>
+								<i aria-hidden="true" class="ph-fill ph-{rep.icon} text-lg"></i>
 							{:else}
-								<i class="ph-fill ph-identification-badge text-lg"></i>
+								<i aria-hidden="true" class="ph-fill ph-identification-badge text-lg"></i>
 							{/if}
 							<span class="flex-1">
 								{event.conferenceUser?.name ?? event.conferenceUser?.userEmail ?? m.unknown()}
@@ -179,7 +179,9 @@
 									class="badge badge-warning"
 									title={m.forgottenCheckoutWarning({ hours: WARNING_HOURS })}
 								>
-									<i class="ph-fill ph-warning"></i>
+									<i aria-hidden="true" class="ph-fill ph-warning"></i>
+									<span class="sr-only">{m.forgottenCheckoutWarning({ hours: WARNING_HOURS })}</span
+									>
 								</span>
 							{/if}
 						</li>

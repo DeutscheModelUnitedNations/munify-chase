@@ -275,7 +275,7 @@
 		<div class="flex flex-wrap items-center gap-x-4 gap-y-2" data-tour="chair-paper.vote-actions">
 			{#if active}
 				<button class="btn btn-sm btn-warning" title={m.resumeVote()} onclick={resumeVote}>
-					<i class="ph-fill ph-arrow-clockwise"></i>
+					<i aria-hidden="true" class="ph-fill ph-arrow-clockwise"></i>
 					{m.resumeVote()}
 				</button>
 			{:else}
@@ -285,12 +285,12 @@
 						title={m.startClauseVote()}
 						onclick={startClauseVote}
 					>
-						<i class="ph-fill ph-check-square-offset"></i>
+						<i aria-hidden="true" class="ph-fill ph-check-square-offset"></i>
 						{m.startClauseVote()}
 					</button>
 				{/if}
 				<button class="btn btn-sm btn-success" title={m.startVote()} onclick={startVote}>
-					<i class="ph-fill ph-gavel"></i>
+					<i aria-hidden="true" class="ph-fill ph-gavel"></i>
 					{m.startVote()}
 				</button>
 			{/if}
@@ -361,7 +361,7 @@
 					>{m.amendmentPhaseSettingsChangeNothing()}</button
 				>
 				<button class="btn btn-primary" disabled={busy} onclick={advanceWithAutoAllow}>
-					{#if busy}<i class="ph-fill ph-spinner-gap animate-spin"></i>{/if}
+					{#if busy}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>{/if}
 					{m.amendmentPhaseSettingsAutoAllow()}
 				</button>
 			</div>
@@ -382,7 +382,7 @@
 			<div class="modal-action">
 				<button class="btn btn-ghost" onclick={() => (revertTarget = null)}>{m.cancel()}</button>
 				<button class="btn btn-warning" disabled={busy} onclick={confirmRevert}>
-					{#if busy}<i class="ph-fill ph-spinner-gap animate-spin"></i>{/if}
+					{#if busy}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>{/if}
 					{m.confirm()}
 				</button>
 			</div>
@@ -408,11 +408,11 @@
 					disabled={busy}
 					onclick={() => advanceToFinal(false)}
 				>
-					{#if busy}<i class="ph-fill ph-spinner-gap animate-spin"></i>{/if}
+					{#if busy}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>{/if}
 					{m.finalizeWithoutConfetti()}
 				</button>
 				<button class="btn btn-success" disabled={busy} onclick={() => advanceToFinal(true)}>
-					{#if busy}<i class="ph-fill ph-spinner-gap animate-spin"></i>{/if}
+					{#if busy}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>{/if}
 					{m.finalizeWithConfetti()}
 				</button>
 			</div>

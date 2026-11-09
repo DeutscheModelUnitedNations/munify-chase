@@ -156,7 +156,8 @@
 			disabled={creating || !committee?.activeAgendaItem}
 			onclick={createPaper}
 		>
-			{#if creating}<i class="ph-fill ph-spinner-gap animate-spin"></i>{:else}<i
+			{#if creating}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>{:else}<i
+					aria-hidden="true"
 					class="ph-fill ph-plus"
 				></i>{/if}
 			{m.newWorkingPaper()}
@@ -169,9 +170,8 @@
 				bind:value={code}
 			/>
 			<button class="btn join-item" disabled={redeeming || !code.trim()} onclick={redeem}>
-				{#if redeeming}<i class="ph-fill ph-spinner-gap animate-spin"></i>{:else}<i
-						class="ph-fill ph-ticket"
-					></i>{/if}
+				{#if redeeming}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"
+					></i>{:else}<i aria-hidden="true" class="ph-fill ph-ticket"></i>{/if}
 				{m.redeem()}
 			</button>
 		</div>
@@ -201,7 +201,7 @@
 						<span class="badge badge-sm {statusBadgeClass(p.status as PaperStatus)}">
 							{statusLabel(p.status as PaperStatus)}
 						</span>
-						<i class="ph-fill ph-caret-right opacity-50"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-right opacity-50"></i>
 					</div>
 				</a>
 			{/each}
@@ -230,12 +230,13 @@
 							{/if}
 						</div>
 						<span class="badge badge-ghost gap-1"
-							><i class="ph-fill ph-handshake"></i>{p.sponsors?.length ?? 0}</span
+							><i aria-hidden="true" class="ph-fill ph-handshake"></i>{p.sponsors?.length ??
+								0}</span
 						>
 						<span class="badge badge-sm {statusBadgeClass(p.status as PaperStatus)}">
 							{statusLabel(p.status as PaperStatus)}
 						</span>
-						<i class="ph-fill ph-caret-right opacity-50"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-right opacity-50"></i>
 					</div>
 				</a>
 			{/each}
@@ -264,12 +265,13 @@
 							{/if}
 						</div>
 						<span class="badge badge-ghost gap-1"
-							><i class="ph-fill ph-handshake"></i>{p.sponsors?.length ?? 0}</span
+							><i aria-hidden="true" class="ph-fill ph-handshake"></i>{p.sponsors?.length ??
+								0}</span
 						>
 						<span class="badge badge-sm {statusBadgeClass(p.status as PaperStatus)}">
 							{statusLabel(p.status as PaperStatus)}
 						</span>
-						<i class="ph-fill ph-caret-right opacity-50"></i>
+						<i aria-hidden="true" class="ph-fill ph-caret-right opacity-50"></i>
 					</div>
 				</a>
 			{/each}

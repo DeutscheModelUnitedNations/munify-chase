@@ -436,7 +436,7 @@
 		>
 			<span class="relative inline-flex">
 				<!-- fallow-ignore-next-line css-token-drift -- daisyUI's dock icon size, relative to the label -->
-				<i class="ph-duotone ph-{item.icon} size-[1.2em]"></i>
+				<i aria-hidden="true" class="ph-duotone ph-{item.icon} size-[1.2em]"></i>
 				{#if item.key === 'requests' && (pendingRequestsForNotifications?.length ?? 0) > 0}
 					<span class="absolute -top-1 -right-1 flex size-2.5">
 						<span
@@ -464,7 +464,7 @@
 				? 'dock-active'
 				: ''}"
 		>
-			<i class="ph-duotone ph-note-pencil size-[1.2em]"></i>
+			<i aria-hidden="true" class="ph-duotone ph-note-pencil size-[1.2em]"></i>
 			<span class="dock-label">{m.activeDraftResolution()}</span>
 		</a>
 	{/if}

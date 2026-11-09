@@ -33,7 +33,7 @@
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -- card text is internal formatted content -->
 				<p class="whitespace-nowrap">{@html text}</p>
 			{:else if icon}
-				<i class="ph-duotone ph-{icon}"></i>
+				<i aria-hidden="true" class="ph-duotone ph-{icon}"></i>
 			{/if}
 		</div>
 		<p class="font-mono text-3xl font-bold">

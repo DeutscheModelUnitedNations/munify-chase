@@ -222,7 +222,7 @@
 			aria-hidden="true"
 		>
 			{m.open()}
-			<i class="ph-fill ph-sign-in"></i>
+			<i aria-hidden="true" class="ph-fill ph-sign-in"></i>
 		</span>
 		<div class="card-body flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-5">
 			<div class="mb-1 flex w-full min-w-0 shrink-0 flex-col gap-1 pr-24">
@@ -264,7 +264,10 @@
 				{#each tile.committees as committee (committee.id)}
 					{#each committee.votingSessions ?? [] as session (session.id)}
 						<div class="flex items-center gap-3">
-							<i class="ph-fill ph-chart-bar text-primary w-7 flex-none text-center"></i>
+							<i
+								aria-hidden="true"
+								class="ph-fill ph-chart-bar text-primary w-7 flex-none text-center"
+							></i>
 							<span class="flex-none font-bold">{committee.abbreviation}</span>
 							<span class="text-base-content/70 truncate">{session.voteName || session.mode}</span>
 						</div>
@@ -286,7 +289,7 @@
 		</MissionControlTile>
 	{:else if tile.kind === 'attendance'}
 		<MissionControlTile center>
-			<i class="ph-fill ph-users text-base-content/40 text-4xl"></i>
+			<i aria-hidden="true" class="ph-fill ph-users text-base-content/40 text-4xl"></i>
 			<p class="text-6xl font-bold tabular-nums">
 				{tile.total > 0 ? Math.round((tile.present / tile.total) * 100) : 0}%
 			</p>
@@ -299,7 +302,8 @@
 			<div class="flex min-h-0 flex-1 flex-col justify-center gap-3 overflow-hidden text-2xl">
 				{#each tile.pulse.recentAdoptions.slice(0, 3) as adoption, idx (idx)}
 					<div class="flex items-center gap-3">
-						<i class="ph-fill ph-gavel text-success w-7 flex-none text-center"></i>
+						<i aria-hidden="true" class="ph-fill ph-gavel text-success w-7 flex-none text-center"
+						></i>
 						<div class="min-w-0 leading-tight">
 							<div class="flex items-baseline gap-2">
 								<span class="flex-none font-bold">{adoption.committeeAbbreviation}</span>
@@ -319,24 +323,24 @@
 		<MissionControlTile title={m.missionControlHeartbeatTitle()}>
 			<div class="grid min-h-0 flex-1 grid-cols-2 gap-3">
 				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-					<i class="ph-fill ph-microphone text-primary text-3xl"></i>
+					<i aria-hidden="true" class="ph-fill ph-microphone text-primary text-3xl"></i>
 					<p class="text-4xl font-bold tabular-nums">{tile.pulse.heartbeat.speechesToday}</p>
 					<p class="text-base-content/60 text-base">{m.missionControlSpeechesCaption()}</p>
 				</div>
 				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-					<i class="ph-fill ph-chart-bar text-primary text-3xl"></i>
+					<i aria-hidden="true" class="ph-fill ph-chart-bar text-primary text-3xl"></i>
 					<p class="text-4xl font-bold tabular-nums">{tile.pulse.heartbeat.votesHeldToday}</p>
 					<p class="text-base-content/60 text-base">{m.missionControlVotesCaption()}</p>
 				</div>
 				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-					<i class="ph-fill ph-gavel text-success text-3xl"></i>
+					<i aria-hidden="true" class="ph-fill ph-gavel text-success text-3xl"></i>
 					<p class="text-4xl font-bold tabular-nums">
 						{tile.pulse.heartbeat.resolutionsAdoptedToday}
 					</p>
 					<p class="text-base-content/60 text-base">{m.missionControlResolutionsCaption()}</p>
 				</div>
 				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-					<i class="ph-fill ph-clock text-info text-3xl"></i>
+					<i aria-hidden="true" class="ph-fill ph-clock text-info text-3xl"></i>
 					<p class="text-3xl font-bold tabular-nums">
 						{fmtDuration(tile.pulse.heartbeat.debateSecondsToday)}
 					</p>
@@ -346,12 +350,12 @@
 		</MissionControlTile>
 	{:else if tile.kind === 'busiestCommittee'}
 		<MissionControlTile title={m.missionControlBusiestCommittee()} center>
-			<i class="ph-fill ph-fire text-warning text-4xl"></i>
+			<i aria-hidden="true" class="ph-fill ph-fire text-warning text-4xl"></i>
 			<p class="truncate text-4xl font-bold">{tile.committeeAbbreviation}</p>
 		</MissionControlTile>
 	{:else if tile.kind === 'closestVote'}
 		<MissionControlTile title={m.missionControlClosestVote()} center>
-			<i class="ph-fill ph-scales text-info text-4xl"></i>
+			<i aria-hidden="true" class="ph-fill ph-scales text-info text-4xl"></i>
 			<p class="truncate text-4xl font-bold">
 				{tile.committeeAbbreviation}
 				<span class="text-base-content/60 text-2xl font-normal tabular-nums"
@@ -396,7 +400,7 @@
 					{@const label = speakerLabel(speaker, representation)}
 					<div class="flex items-center gap-3 {idx === 0 ? 'text-primary' : ''}">
 						{#if idx === 0}
-							<i class="ph-fill ph-microphone w-7 flex-none text-center"></i>
+							<i aria-hidden="true" class="ph-fill ph-microphone w-7 flex-none text-center"></i>
 						{:else}
 							<span class="text-base-content/40 w-7 flex-none text-center font-mono text-xl"
 								>{idx}</span
@@ -412,24 +416,24 @@
 		<MissionControlTile title={m.missionControlConferenceOverview()}>
 			<div class="grid min-h-0 flex-1 grid-cols-2 gap-3">
 				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-					<i class="ph-fill ph-users text-primary text-3xl"></i>
+					<i aria-hidden="true" class="ph-fill ph-users text-primary text-3xl"></i>
 					<p class="text-4xl font-bold tabular-nums">{tile.overview.totalDelegates}</p>
 					<p class="text-base-content/60 text-base">{m.missionControlDelegatesCaption()}</p>
 				</div>
 				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-					<i class="ph-fill ph-building text-primary text-3xl"></i>
+					<i aria-hidden="true" class="ph-fill ph-building text-primary text-3xl"></i>
 					<p class="text-4xl font-bold tabular-nums">{tile.overview.totalCommittees}</p>
 					<p class="text-base-content/60 text-base">{m.missionControlCommitteesCaption()}</p>
 				</div>
 				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-					<i class="ph-fill ph-microphone text-primary text-3xl"></i>
+					<i aria-hidden="true" class="ph-fill ph-microphone text-primary text-3xl"></i>
 					<p class="text-4xl font-bold tabular-nums">{tile.overview.totalSpeechesAllTime}</p>
 					<p class="text-base-content/60 text-base">
 						{m.missionControlSpeechesAllTimeCaption()}
 					</p>
 				</div>
 				<div class="flex flex-col items-center justify-center gap-1 p-3 text-center">
-					<i class="ph-fill ph-gavel text-success text-3xl"></i>
+					<i aria-hidden="true" class="ph-fill ph-gavel text-success text-3xl"></i>
 					<p class="text-4xl font-bold tabular-nums">
 						{tile.overview.totalResolutionsAdoptedAllTime}
 					</p>
@@ -465,7 +469,7 @@
 		</MissionControlTile>
 	{:else if tile.kind === 'longestSpeechToday'}
 		<MissionControlTile title={m.missionControlLongestSpeech()} center>
-			<i class="ph-fill ph-hourglass-medium text-warning text-4xl"></i>
+			<i aria-hidden="true" class="ph-fill ph-hourglass-medium text-warning text-4xl"></i>
 			<p class="truncate text-4xl font-bold">
 				{tile.committeeAbbreviation}
 				<span class="text-base-content/60 text-2xl font-normal"
@@ -516,7 +520,7 @@
 		</MissionControlTile>
 	{:else if tile.kind === 'papersAwaitingVote'}
 		<MissionControlTile title={m.missionControlPapersAwaitingVote()} center>
-			<i class="ph-fill ph-scales text-info text-4xl"></i>
+			<i aria-hidden="true" class="ph-fill ph-scales text-info text-4xl"></i>
 			<p class="text-6xl font-bold tabular-nums">{tile.count}</p>
 		</MissionControlTile>
 	{:else if tile.kind === 'papersPerCommittee'}

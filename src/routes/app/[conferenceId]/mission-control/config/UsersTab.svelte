@@ -377,11 +377,14 @@
 											{m.assignment()}
 										{/if}
 										{#if header.column.getIsSorted() === 'asc'}
-											<i class="ph-fill ph-sort-ascending text-xs"></i>
+											<i aria-hidden="true" class="ph-fill ph-sort-ascending text-xs"></i>
 										{:else if header.column.getIsSorted() === 'desc'}
-											<i class="ph-fill ph-sort-descending text-xs"></i>
+											<i aria-hidden="true" class="ph-fill ph-sort-descending text-xs"></i>
 										{:else if header.column.getCanSort()}
-											<i class="ph-fill ph-arrows-down-up text-base-content/30 text-xs"></i>
+											<i
+												aria-hidden="true"
+												class="ph-fill ph-arrows-down-up text-base-content/30 text-xs"
+											></i>
 										{/if}
 									</div>
 								{/if}
@@ -450,7 +453,7 @@
 										disabled={isSelf}
 										title={isSelf ? m.youCannotEditYourself() : m.edit()}
 									>
-										<i class="ph-fill ph-pen text-sm"></i>
+										<i aria-hidden="true" class="ph-fill ph-pen text-sm"></i>
 									</button>
 									<button
 										class="btn btn-ghost btn-sm text-error"
@@ -459,7 +462,7 @@
 										disabled={isSelf}
 										title={isSelf ? m.youCannotEditYourself() : m.removeMember()}
 									>
-										<i class="ph-fill ph-trash text-sm"></i>
+										<i aria-hidden="true" class="ph-fill ph-trash text-sm"></i>
 									</button>
 								</div>
 							</td>
@@ -486,7 +489,7 @@
 					disabled={!table.getCanPreviousPage()}
 					aria-label={m.back()}
 				>
-					<i class="ph-fill ph-caret-left"></i>
+					<i aria-hidden="true" class="ph-fill ph-caret-left"></i>
 				</button>
 				{#each getVisiblePages(pagination.pageIndex, table.getPageCount()) as item, i (item === 'ellipsis' ? `ellipsis-${i}` : item)}
 					{#if item === 'ellipsis'}
@@ -507,7 +510,7 @@
 					disabled={!table.getCanNextPage()}
 					aria-label={m.forward()}
 				>
-					<i class="ph-fill ph-caret-right"></i>
+					<i aria-hidden="true" class="ph-fill ph-caret-right"></i>
 				</button>
 			</div>
 		</div>
@@ -543,7 +546,7 @@
 					{#if isBulkSubmitting}
 						<span class="loading loading-spinner loading-sm"></span>
 					{:else}
-						<i class="ph-fill ph-plus"></i>
+						<i aria-hidden="true" class="ph-fill ph-plus"></i>
 					{/if}
 					{m.addMember()}
 				</button>

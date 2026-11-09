@@ -19,7 +19,7 @@
 			in:fly={{ x: -20 }}
 			out:fly={{ x: 20 }}
 		>
-			<i class="ph-duotone ph-moon w-6 text-center"></i>
+			<i aria-hidden="true" class="ph-duotone ph-moon w-6 text-center"></i>
 		</div>
 	{:else if getTheme() === 'light'}
 		<div
@@ -27,7 +27,7 @@
 			in:fly={{ x: -20 }}
 			out:fly={{ x: 20 }}
 		>
-			<i class="ph-duotone ph-sun w-6 text-center"></i>
+			<i aria-hidden="true" class="ph-duotone ph-sun w-6 text-center"></i>
 		</div>
 	{:else if getTheme() === 'system'}
 		<div
@@ -35,7 +35,7 @@
 			in:fly={{ x: -20 }}
 			out:fly={{ x: 20 }}
 		>
-			<i class="ph-duotone ph-desktop w-6 text-center"></i>
+			<i aria-hidden="true" class="ph-duotone ph-desktop w-6 text-center"></i>
 		</div>
 	{:else}
 		<div
@@ -43,7 +43,7 @@
 			in:fly={{ x: -20 }}
 			out:fly={{ x: 20 }}
 		>
-			<i class="ph-duotone ph-question w-6 text-center"></i>
+			<i aria-hidden="true" class="ph-duotone ph-question w-6 text-center"></i>
 		</div>
 	{/if}
 </button>

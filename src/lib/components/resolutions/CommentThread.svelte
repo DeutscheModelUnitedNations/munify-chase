@@ -181,7 +181,7 @@
 						<div class="flex items-center gap-1">
 							{#if comment.visibility === 'TEAM_ONLY'}
 								<span class="badge badge-xs badge-warning" title={m.teamOnly()}>
-									<i class="ph-fill ph-shield-star"></i>
+									<i aria-hidden="true" class="ph-fill ph-shield-star"></i>
 								</span>
 							{/if}
 							{#if canDelete(comment.author?.id ?? '')}
@@ -190,7 +190,7 @@
 									aria-label={m.delete()}
 									onclick={() => remove(comment.id)}
 								>
-									<i class="ph-fill ph-trash text-error"></i>
+									<i aria-hidden="true" class="ph-fill ph-trash text-error"></i>
 								</button>
 							{/if}
 						</div>
@@ -217,7 +217,7 @@
 										aria-label={m.delete()}
 										onclick={() => remove(reply.id)}
 									>
-										<i class="ph-fill ph-trash text-error"></i>
+										<i aria-hidden="true" class="ph-fill ph-trash text-error"></i>
 									</button>
 								{/if}
 							</div>
@@ -229,7 +229,7 @@
 						class="btn btn-ghost btn-xs mt-1"
 						onclick={() => (replyTo = replyTo === comment.id ? null : comment.id)}
 					>
-						<i class="ph-fill ph-arrow-bend-up-left"></i>
+						<i aria-hidden="true" class="ph-fill ph-arrow-bend-up-left"></i>
 						{m.reply()}
 					</button>
 				</div>
@@ -246,7 +246,7 @@
 					aria-label={m.cancel()}
 					onclick={() => (replyTo = null)}
 				>
-					<i class="ph-fill ph-x"></i>
+					<i aria-hidden="true" class="ph-fill ph-x"></i>
 				</button>
 			</div>
 		{/if}
@@ -286,7 +286,8 @@
 				<span></span>
 			{/if}
 			<button class="btn btn-primary btn-sm" disabled={sending || !draft.trim()} onclick={send}>
-				{#if sending}<i class="ph-fill ph-spinner-gap animate-spin"></i>{:else}<i
+				{#if sending}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>{:else}<i
+						aria-hidden="true"
 						class="ph-fill ph-paper-plane-tilt"
 					></i>{/if}
 				{m.send()}

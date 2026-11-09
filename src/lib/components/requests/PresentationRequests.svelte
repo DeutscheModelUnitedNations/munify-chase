@@ -44,7 +44,7 @@
 
 <div class="flex h-full min-h-0 w-full flex-col gap-3">
 	<div class="flex shrink-0 items-center gap-3">
-		<i class="ph-duotone ph-hand text-warning text-2xl"></i>
+		<i aria-hidden="true" class="ph-duotone ph-hand text-warning text-2xl"></i>
 		<h2 class="flex-1 text-xl font-bold">{m.requests()}</h2>
 		<span class="badge badge-warning badge-lg font-bold tabular-nums">{requests.length}</span>
 	</div>
@@ -58,7 +58,9 @@
 				in:fly={queueIn}
 				out:fly={queueOut}
 			>
-				<i class="ph-fill ph-{req.requestType?.icon ?? 'flag'} w-6 shrink-0 text-center text-lg"
+				<i
+					aria-hidden="true"
+					class="ph-fill ph-{req.requestType?.icon ?? 'flag'} w-6 shrink-0 text-center text-lg"
 				></i>
 				<Flag representation={req.representation} size="xs" />
 				<div class="flex min-w-0 flex-col leading-tight">

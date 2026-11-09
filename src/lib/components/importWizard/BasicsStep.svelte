@@ -96,7 +96,9 @@
 			<div
 				class="bg-primary/5 border-primary/20 text-base-content/70 flex items-center gap-3 rounded-box border p-3 text-sm"
 			>
-				<span class="text-primary text-lg"><i class="ph-fill ph-{s.icon}"></i></span>
+				<span class="text-primary text-lg"
+					><i aria-hidden="true" class="ph-fill ph-{s.icon}"></i></span
+				>
 				<span>{m.nextUpLabel({ label: s.label() })}</span>
 			</div>
 		{/each}

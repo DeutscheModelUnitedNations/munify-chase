@@ -155,7 +155,7 @@
 		<header class="flex items-center justify-between">
 			<h2 class="text-2xl font-bold">{m.nsaAttendanceScannerTitle()}</h2>
 			<button class="btn btn-ghost btn-sm" onclick={close} aria-label={m.close()}>
-				<i class="ph-fill ph-x text-xl"></i>
+				<i aria-hidden="true" class="ph-fill ph-x text-xl"></i>
 			</button>
 		</header>
 
@@ -201,6 +201,7 @@
 					{#each scanLog as entry (entry.id)}
 						<li class="alert {entry.ok ? 'alert-success' : 'alert-error'} py-2" role="status">
 							<i
+								aria-hidden="true"
 								class="ph-fill {entry.ok
 									? entry.mode === 'IN'
 										? 'ph-sign-in'

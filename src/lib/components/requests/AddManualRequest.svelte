@@ -190,7 +190,7 @@
 			<Flag size="xs" representation={seat.representation} />
 			<span class="flex-1 truncate">{getName(seat)}</span>
 			{#if seat.present === false}
-				<i class="ph-duotone ph-user-minus opacity-60"></i>
+				<i aria-hidden="true" class="ph-duotone ph-user-minus opacity-60"></i>
 			{/if}
 		</button>
 	</li>
@@ -204,7 +204,7 @@
 			aria-pressed={rt.id === selectedTypeId}
 			onclick={() => (selectedTypeId = rt.id)}
 		>
-			<i class="ph-fill ph-{rt.icon ?? 'flag'} w-5 text-center"></i>
+			<i aria-hidden="true" class="ph-fill ph-{rt.icon ?? 'flag'} w-5 text-center"></i>
 			<span class="flex-1 truncate">{rt.name}</span>
 			{#if isPending(rt.id)}
 				<span class="badge badge-ghost badge-sm">{m.requestAlreadyPending()}</span>
@@ -217,7 +217,7 @@
 	<div class="grid gap-4 md:grid-cols-2">
 		<div class="flex min-w-0 flex-col gap-2">
 			<label class="input w-full">
-				<i class="ph-fill ph-magnifying-glass opacity-50"></i>
+				<i aria-hidden="true" class="ph-fill ph-magnifying-glass opacity-50"></i>
 				<input
 					type="search"
 					placeholder={m.searchDelegation()}
@@ -238,7 +238,7 @@
 
 		<div class="flex min-w-0 flex-col gap-2">
 			<label class="input w-full">
-				<i class="ph-fill ph-magnifying-glass opacity-50"></i>
+				<i aria-hidden="true" class="ph-fill ph-magnifying-glass opacity-50"></i>
 				<input
 					type="search"
 					placeholder={m.searchRequestTypes()}
@@ -266,7 +266,7 @@
 			{/if}
 		</p>
 		<button type="button" class="btn btn-primary" disabled={!canAdd} onclick={addRequest}>
-			<i class="ph-fill ph-plus"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus"></i>
 			{m.addRequest()}
 		</button>
 	</div>

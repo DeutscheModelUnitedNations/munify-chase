@@ -39,7 +39,7 @@
 </script>
 
 <div class="flex min-h-dvh flex-col items-center justify-center gap-6 p-8 text-center">
-	<i class="ph-duotone ph-warning text-error text-6xl"></i>
+	<i aria-hidden="true" class="ph-duotone ph-warning text-error text-6xl"></i>
 	<div>
 		<h1 class="text-2xl font-bold">{message}</h1>
 		{#if status}
@@ -49,23 +49,23 @@
 	<div class="flex flex-wrap justify-center gap-3">
 		{#if backHref}
 			<a href={backHref} class="btn btn-primary">
-				<i class="ph-duotone ph-arrow-left"></i>
+				<i aria-hidden="true" class="ph-duotone ph-arrow-left"></i>
 				{backLabel}
 			</a>
 		{/if}
 		<a href="/app" class="btn btn-ghost">
-			<i class="ph-duotone ph-squares-four"></i>
+			<i aria-hidden="true" class="ph-duotone ph-squares-four"></i>
 			My Conferences
 		</a>
 		<button class="btn btn-outline btn-warning" onclick={clearCache} disabled={clearing || cleared}>
 			{#if cleared}
-				<i class="ph-duotone ph-check"></i>
+				<i aria-hidden="true" class="ph-duotone ph-check"></i>
 				Cache Cleared — Reloading…
 			{:else if clearing}
 				<span class="loading loading-spinner loading-sm"></span>
 				Clearing…
 			{:else}
-				<i class="ph-duotone ph-trash"></i>
+				<i aria-hidden="true" class="ph-duotone ph-trash"></i>
 				Clear Offline Cache
 			{/if}
 		</button>

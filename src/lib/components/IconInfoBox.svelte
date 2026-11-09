@@ -85,7 +85,7 @@
 		{#if iconText}
 			<div class="flex-none text-center text-4xl font-bold">{iconText}</div>
 		{:else if icon}
-			<i class="ph-fill ph-{icon} w-6 flex-none text-center"></i>
+			<i aria-hidden="true" class="ph-fill ph-{icon} w-6 flex-none text-center"></i>
 		{/if}
 
 		<div class="flex w-full min-w-0 flex-1 flex-col overflow-hidden">
@@ -131,7 +131,7 @@
 					)}
 				</p>
 			{:else}
-				<i class="ph-fill ph-bell icon-shake"></i>
+				<i aria-hidden="true" class="ph-fill ph-bell icon-shake"></i>
 			{/if}
 		{/if}
 	</div>

@@ -238,7 +238,7 @@
 
 			{#if isGlobalAdmin}
 				<label class="input w-full">
-					<i class="ph-duotone ph-magnifying-glass opacity-60"></i>
+					<i aria-hidden="true" class="ph-duotone ph-magnifying-glass opacity-60"></i>
 					<input
 						type="search"
 						aria-label={m.launcherSearchPlaceholder()}
@@ -300,18 +300,18 @@
 				style="background: linear-gradient(180deg, transparent 0%, var(--color-base-100) 35%);"
 			>
 				<a class="btn btn-primary btn-lg" href={resolve('/app/(launcher)/import')}>
-					<i class="ph-fill ph-plus"></i>
+					<i aria-hidden="true" class="ph-fill ph-plus"></i>
 					{m.createConference()}
 				</a>
 				<a class="btn btn-ghost btn-sm" href={resolve('/app/(launcher)/import')}>
-					<i class="ph-duotone ph-file-arrow-up"></i>
+					<i aria-hidden="true" class="ph-duotone ph-file-arrow-up"></i>
 					{m.launcherImportDelegator()}
 				</a>
 			</footer>
 		{:else}
 			<footer class="mt-8 flex justify-center pt-6">
 				<a class="btn btn-ghost btn-sm" href={resolve('/app/(launcher)/import')}>
-					<i class="ph-fill ph-plus"></i>
+					<i aria-hidden="true" class="ph-fill ph-plus"></i>
 					{m.createConference()}
 				</a>
 			</footer>

@@ -136,7 +136,10 @@
 		in:fly={{ duration: 500, delay: 500, easing: cubicOut, x: 10 }}
 		out:fly={{ duration: 500, easing: cubicIn, x: -10 }}
 	>
-		<i class="ph-fill ph-{getIcon(stage)} icon-beat text-7xl" style="--icon-animation-duration: 2s;"
+		<i
+			aria-hidden="true"
+			class="ph-fill ph-{getIcon(stage)} icon-beat text-7xl"
+			style="--icon-animation-duration: 2s;"
 		></i>
 		<h3 class="text-5xl font-bold">{getText(stage)}</h3>
 	</div>
@@ -176,7 +179,7 @@
 							<div
 								class="card {box.classes} min-w-26 items-center justify-center gap-4 px-10 py-4 shadow-sm"
 							>
-								<i class="ph-fill ph-{box.icon} text-3xl"></i>
+								<i aria-hidden="true" class="ph-fill ph-{box.icon} text-3xl"></i>
 								<h3 class="text-4xl font-bold">{box.value}</h3>
 							</div>
 						{/each}

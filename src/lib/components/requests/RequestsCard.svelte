@@ -117,7 +117,7 @@
 			<ul class="flex flex-col gap-2">
 				{#each sortedMyRequests as req (req.id)}
 					<li class="bg-base-200 flex items-center gap-2 rounded-lg px-3 py-2">
-						<i class="ph-fill ph-{req.requestType?.icon ?? 'flag'}"></i>
+						<i aria-hidden="true" class="ph-fill ph-{req.requestType?.icon ?? 'flag'}"></i>
 						<span class="flex-1 text-sm">{req.requestType?.name}</span>
 						<span class="badge badge-warning badge-sm">{m.pending()}</span>
 						<button
@@ -126,7 +126,7 @@
 							onclick={() => withdraw(req.id)}
 							aria-label={m.withdrawRequestAction()}
 						>
-							<i class="ph-fill ph-x"></i>
+							<i aria-hidden="true" class="ph-fill ph-x"></i>
 						</button>
 					</li>
 				{/each}
@@ -142,7 +142,7 @@
 			aria-describedby={pickableTypes.length === 0 ? 'no-request-types-hint' : undefined}
 			onclick={openPicker}
 		>
-			<i class="ph-fill ph-hand"></i>
+			<i aria-hidden="true" class="ph-fill ph-hand"></i>
 			{m.makeARequest()}
 		</button>
 		{#if sortedTypes.length === 0}
@@ -173,7 +173,7 @@
 					class="btn btn-ghost w-full justify-start gap-2"
 					onclick={() => submitRequest(rt.id)}
 				>
-					<i class="ph-fill ph-{rt.icon ?? 'flag'}"></i>
+					<i aria-hidden="true" class="ph-fill ph-{rt.icon ?? 'flag'}"></i>
 					{rt.name}
 				</button>
 			</li>

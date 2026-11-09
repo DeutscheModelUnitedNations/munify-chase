@@ -171,9 +171,8 @@
 				disabled={creating || !committee?.activeAgendaItem}
 				onclick={createPaper}
 			>
-				{#if creating}<i class="ph-fill ph-spinner-gap animate-spin"></i>{:else}<i
-						class="ph-fill ph-plus"
-					></i>{/if}
+				{#if creating}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"
+					></i>{:else}<i aria-hidden="true" class="ph-fill ph-plus"></i>{/if}
 				{m.createPaper()}
 			</button>
 		</header>
@@ -207,7 +206,7 @@
 		{#if !filteredPapers.length}
 			<BasicCard data-tour="resolutions.list">
 				<div class="flex flex-col items-center gap-2 py-12 text-center opacity-70">
-					<i class="ph-fill ph-file-text text-5xl"></i>
+					<i aria-hidden="true" class="ph-fill ph-file-text text-5xl"></i>
 					<p class="text-lg font-semibold">{m.noPapersYet()}</p>
 					<p>{m.createFirstPaper()}</p>
 				</div>
@@ -250,7 +249,9 @@
 									disabled={promotingId === paper.id}
 									onclick={() => promote(paper.id)}
 								>
-									{#if promotingId === paper.id}<i class="ph-fill ph-spinner-gap animate-spin"
+									{#if promotingId === paper.id}<i
+											aria-hidden="true"
+											class="ph-fill ph-spinner-gap animate-spin"
 										></i>{/if}
 									{m.promoteToDraftResolution()}
 								</button>
@@ -266,13 +267,13 @@
 								onclick={() => setActive(paper.id)}
 							>
 								{#if settingActiveId === paper.id}
-									<i class="ph-fill ph-spinner-gap animate-spin"></i>
+									<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>
 								{:else}
-									<i class="ph-fill ph-star"></i>
+									<i aria-hidden="true" class="ph-fill ph-star"></i>
 								{/if}
 							</button>
 							<a href={paperHref(paper.id)} aria-label={m.open()}>
-								<i class="ph-fill ph-caret-right opacity-50"></i>
+								<i aria-hidden="true" class="ph-fill ph-caret-right opacity-50"></i>
 							</a>
 						</div>
 					</div>

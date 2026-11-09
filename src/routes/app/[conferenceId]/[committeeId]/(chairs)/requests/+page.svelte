@@ -188,7 +188,8 @@
 								class="bg-base-200 flex flex-wrap items-center gap-3 rounded-lg px-4 py-3 sm:flex-nowrap"
 								data-tour="requests.request"
 							>
-								<i class="ph-fill ph-{req.requestType?.icon ?? 'flag'} text-xl"></i>
+								<i aria-hidden="true" class="ph-fill ph-{req.requestType?.icon ?? 'flag'} text-xl"
+								></i>
 								<div class="flex min-w-0 flex-1 items-center gap-2">
 									<Flag representation={requestRepresentation(req)} size="xs" />
 									<div class="flex min-w-0 flex-col">
@@ -196,6 +197,7 @@
 											{req.requestType?.name}
 											{#if !req.conferenceUser}
 												<i
+													aria-hidden="true"
 													class="ph-fill ph-pencil-simple-line text-base-content/40 ml-1 text-xs"
 													title={m.requestAddedByChairs()}
 													aria-label={m.requestAddedByChairs()}
@@ -217,7 +219,7 @@
 									data-tour="requests.withdraw"
 									onclick={() => withdraw(req.id)}
 								>
-									<i class="ph-fill ph-x"></i>
+									<i aria-hidden="true" class="ph-fill ph-x"></i>
 									{m.withdrawRequestAction()}
 								</button>
 								<button
@@ -226,7 +228,7 @@
 									data-tour="requests.resolve"
 									onclick={() => resolve(req.id)}
 								>
-									<i class="ph-fill ph-check"></i>
+									<i aria-hidden="true" class="ph-fill ph-check"></i>
 									{m.resolveRequestAction()}
 								</button>
 							</li>
@@ -242,14 +244,17 @@
 					<summary
 						class="text-base-content/60 hover:text-base-content flex cursor-pointer select-none list-none items-center gap-1 text-sm transition-colors"
 					>
-						<i class="ph-fill ph-caret-right text-xs transition-transform group-open:rotate-90"></i>
+						<i
+							aria-hidden="true"
+							class="ph-fill ph-caret-right text-xs transition-transform group-open:rotate-90"
+						></i>
 						{m.recentRequestHistory({ count: history.length })}
 					</summary>
 					<ul class="mt-2 flex flex-col gap-1">
 						{#each history as req (req.id)}
 							{@const label = requesterLabel(req)}
 							<li class="bg-base-200 flex items-center gap-3 rounded-lg px-4 py-2 text-sm">
-								<i class="ph-fill ph-{req.requestType?.icon ?? 'flag'}"></i>
+								<i aria-hidden="true" class="ph-fill ph-{req.requestType?.icon ?? 'flag'}"></i>
 								<span class="flex-1">{req.requestType?.name}</span>
 								<Flag representation={requestRepresentation(req)} size="xs" />
 								<span class="text-base-content/60">

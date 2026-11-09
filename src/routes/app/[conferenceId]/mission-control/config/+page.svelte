@@ -207,7 +207,7 @@
 	<div class="flex w-full max-w-screen-lg flex-col gap-6">
 		{#if !isAdmin}
 			<div class="alert alert-error">
-				<i class="ph-fill ph-warning"></i>
+				<i aria-hidden="true" class="ph-fill ph-warning"></i>
 				<span>{m.notAuthorized()}</span>
 			</div>
 		{:else if conference}

@@ -172,7 +172,7 @@
 			type="button"
 			onclick={() => (menuVisible = true)}
 		>
-			<i class="ph-duotone ph-list"></i>
+			<i aria-hidden="true" class="ph-duotone ph-list"></i>
 		</button>
 	{/if}
 </div>
@@ -210,7 +210,9 @@
 							class={item.active ? 'menu-active font-semibold' : ''}
 							aria-current={item.active ? 'page' : undefined}
 						>
-							<i class="{item.active ? 'ph-fill' : 'ph-duotone'} w-6 text-center ph-{item.icon}"
+							<i
+								aria-hidden="true"
+								class="{item.active ? 'ph-fill' : 'ph-duotone'} w-6 text-center ph-{item.icon}"
 							></i>
 							<span class="flex-1">{item.title}</span>
 							{#if item.active}
@@ -254,7 +256,7 @@
 				<li>
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route -->
 					<a href={dashboardHref}>
-						<i class="ph-duotone ph-squares-four w-6 text-center"></i>
+						<i aria-hidden="true" class="ph-duotone ph-squares-four w-6 text-center"></i>
 						<span class="flex-1">{m.dashboard()}</span>
 						<i class="ph-duotone ph-arrow-up-right text-base-content/50" aria-hidden="true"></i>
 					</a>
@@ -267,7 +269,7 @@
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					<i class="ph-duotone ph-user w-6 text-center"></i>
+					<i aria-hidden="true" class="ph-duotone ph-user w-6 text-center"></i>
 					<span class="flex-1">{m.myDelegatorAccount()}</span>
 					<i class="ph-fill ph-arrow-up-right text-base-content/50 text-xs" aria-hidden="true"></i>
 				</a>
@@ -288,7 +290,7 @@
 				<li>
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route -->
 					<a href={signOutHref} class="btn btn-sm btn-soft btn-error justify-start">
-						<i class="ph-fill ph-sign-out w-6 text-center"></i>
+						<i aria-hidden="true" class="ph-fill ph-sign-out w-6 text-center"></i>
 						{m.launcherSignOut()}
 					</a>
 				</li>

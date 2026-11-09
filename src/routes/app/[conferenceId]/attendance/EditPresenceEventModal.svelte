@@ -170,7 +170,7 @@
 		<div class="flex justify-end gap-2 pt-2">
 			{#if event}
 				<button class="btn btn-error mr-auto" onclick={deleteEvent}>
-					<i class="ph-fill ph-trash mr-1"></i>{m.deleteEntry()}
+					<i aria-hidden="true" class="ph-fill ph-trash mr-1"></i>{m.deleteEntry()}
 				</button>
 			{/if}
 			<button class="btn btn-ghost" onclick={onClose}>{m.abort()}</button>

@@ -161,7 +161,7 @@
 				}}
 				title={m.jumpToActiveAmendment()}
 			>
-				<i class="ph-fill ph-lightning"></i>
+				<i aria-hidden="true" class="ph-fill ph-lightning"></i>
 				{m.jumpToActiveAmendment()}
 			</button>
 		{/if}
@@ -171,7 +171,7 @@
 				onclick={ondeselect}
 				aria-label={m.deselect()}
 			>
-				<i class="ph-fill ph-x"></i>
+				<i aria-hidden="true" class="ph-fill ph-x"></i>
 			</button>
 		{/if}
 	</div>
@@ -209,7 +209,7 @@
 				title={m.proposeAmendment()}
 				onclick={openComposer}
 			>
-				<i class="ph-fill ph-plus"></i>
+				<i aria-hidden="true" class="ph-fill ph-plus"></i>
 				{m.proposeAmendment()}
 			</button>
 		{/if}

@@ -162,7 +162,7 @@
 										disabled={i === 0}
 										onclick={() => moveRequestType(i, -1)}
 									>
-										<i class="ph-fill ph-caret-up"></i>
+										<i aria-hidden="true" class="ph-fill ph-caret-up"></i>
 									</button>
 									<button
 										type="button"
@@ -171,7 +171,7 @@
 										disabled={i === sorted.length - 1}
 										onclick={() => moveRequestType(i, 1)}
 									>
-										<i class="ph-fill ph-caret-down"></i>
+										<i aria-hidden="true" class="ph-fill ph-caret-down"></i>
 									</button>
 								</div>
 							</td>
@@ -224,7 +224,7 @@
 									onclick={() => requestDelete(rt.id)}
 									aria-label={m.delete()}
 								>
-									<i class="ph-fill ph-trash text-sm"></i>
+									<i aria-hidden="true" class="ph-fill ph-trash text-sm"></i>
 								</button>
 							</td>
 						</tr>
@@ -236,11 +236,11 @@
 
 	<div class="mt-6 flex gap-2">
 		<button class="btn btn-primary" disabled={loadingDefaults} onclick={loadDefaults}>
-			<i class="ph-fill ph-magic-wand"></i>
+			<i aria-hidden="true" class="ph-fill ph-magic-wand"></i>
 			{m.loadDefaultRequestTypes()}
 		</button>
 		<button class="btn btn-ghost" onclick={addRequestType}>
-			<i class="ph-fill ph-plus"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus"></i>
 			{m.addRequestType()}
 		</button>
 	</div>

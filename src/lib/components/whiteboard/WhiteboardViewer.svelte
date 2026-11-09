@@ -14,7 +14,7 @@
 		{@html data}
 	{:else}
 		<p class="text-center opacity-60">
-			<i class="ph-fill ph-text-t-slash mr-2"></i>{m.whiteboardIsEmpty()}
+			<i aria-hidden="true" class="ph-fill ph-text-t-slash mr-2"></i>{m.whiteboardIsEmpty()}
 		</p>
 	{/if}
 </div>

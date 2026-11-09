@@ -51,12 +51,12 @@
 		aria-label={m.help()}
 		data-tip={m.helpButtonTooltip({ shortcut: formatHotkey(PALETTE_SHORTCUT) })}
 	>
-		<i class="ph-duotone ph-question text-lg"></i>
+		<i aria-hidden="true" class="ph-duotone ph-question text-lg"></i>
 	</button>
 	<ul class="dropdown-content menu bg-base-100 rounded-box z-50 mt-2 w-64 p-2 shadow-md">
 		<li>
 			<button type="button" onclick={openCommands}>
-				<i class="ph-duotone ph-magnifying-glass w-5 text-center"></i>
+				<i aria-hidden="true" class="ph-duotone ph-magnifying-glass w-5 text-center"></i>
 				<span class="flex-1">{m.commandPaletteTitle()}</span>
 				<Kbd hotkey={PALETTE_SHORTCUT} size="sm" />
 			</button>
@@ -64,14 +64,14 @@
 		{#if help?.tour}
 			<li>
 				<button type="button" onclick={takeTour}>
-					<i class="ph-duotone ph-path w-5 text-center"></i>
+					<i aria-hidden="true" class="ph-duotone ph-path w-5 text-center"></i>
 					{m.tourStart()}
 				</button>
 			</li>
 		{/if}
 		<li>
 			<a href={manualHref} target="_blank" rel="noopener noreferrer">
-				<i class="ph-duotone ph-book w-5 text-center"></i>
+				<i aria-hidden="true" class="ph-duotone ph-book w-5 text-center"></i>
 				<span class="flex-1">{help ? m.helpManualForPage() : m.helpManual()}</span>
 				<i class="ph-fill ph-arrow-up-right text-base-content/50 text-xs" aria-hidden="true"></i>
 			</a>

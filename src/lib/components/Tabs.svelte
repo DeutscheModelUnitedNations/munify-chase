@@ -35,7 +35,8 @@
 			}}
 		>
 			{#if tab.icon}
-				<i class="ph-fill ph-{tab.icon} {tab.label ? 'sm:mr-2' : ''} text-lg"></i>
+				<i aria-hidden="true" class="ph-fill ph-{tab.icon} {tab.label ? 'sm:mr-2' : ''} text-lg"
+				></i>
 			{/if}
 			{#if tab.label}
 				<span class="tab-label hidden sm:inline">{tab.label}</span>

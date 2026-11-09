@@ -66,7 +66,7 @@
 					placeholder={m.nonStateActor()}
 				/>
 				<div class="btn join-item {memberCount(rep.id) === 0 ? 'btn-error' : ''}">
-					<i class="ph-fill ph-users"></i>
+					<i aria-hidden="true" class="ph-fill ph-users"></i>
 					<span class="ml-2">{memberCount(rep.id)}</span>
 				</div>
 				<button
@@ -75,12 +75,12 @@
 					aria-label="Remove NSA"
 					onclick={() => removeRepresentation(rep.id)}
 				>
-					<i class="ph-fill ph-trash"></i>
+					<i aria-hidden="true" class="ph-fill ph-trash"></i>
 				</button>
 			</div>
 		{/each}
 		<button class="btn btn-sm self-start" onclick={() => addRepresentation('NSA')}>
-			<i class="ph-fill ph-plus"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus"></i>
 			{m.addNonStateActor()}
 		</button>
 	</fieldset>
@@ -105,7 +105,7 @@
 					placeholder={m.unActor()}
 				/>
 				<div class="btn join-item {memberCount(rep.id) === 0 ? 'btn-error' : ''}">
-					<i class="ph-fill ph-users"></i>
+					<i aria-hidden="true" class="ph-fill ph-users"></i>
 					<span class="ml-2">{memberCount(rep.id)}</span>
 				</div>
 				<button
@@ -114,12 +114,12 @@
 					aria-label="Remove UN actor"
 					onclick={() => removeRepresentation(rep.id)}
 				>
-					<i class="ph-fill ph-trash"></i>
+					<i aria-hidden="true" class="ph-fill ph-trash"></i>
 				</button>
 			</div>
 		{/each}
 		<button class="btn btn-sm self-start" onclick={() => addRepresentation('UN')}>
-			<i class="ph-fill ph-plus"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus"></i>
 			{m.addUnActor()}
 		</button>
 	</fieldset>

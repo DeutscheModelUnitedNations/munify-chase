@@ -35,7 +35,7 @@
 {#snippet ButtonContent(button: Button)}
 	{@const { icon, label, shortcut, active } = button}
 	{#if icon}
-		<i class="{active ? 'ph-fill' : 'ph-duotone'} ph-{icon}"></i>
+		<i aria-hidden="true" class="{active ? 'ph-fill' : 'ph-duotone'} ph-{icon}"></i>
 	{/if}
 	<div class="hidden md:block">{label}</div>
 	{#if shortcut && shortcut !== ''}

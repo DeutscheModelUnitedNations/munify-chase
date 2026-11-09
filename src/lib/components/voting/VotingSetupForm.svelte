@@ -112,7 +112,7 @@
 		>
 			{#snippet ListItem(option)}
 				<div class="flex items-center gap-2">
-					<i class="ph-fill ph-box-arrow-down"></i>
+					<i aria-hidden="true" class="ph-fill ph-box-arrow-down"></i>
 					<span>{option.label}</span>
 				</div>
 			{/snippet}
@@ -123,7 +123,7 @@
 					aria-label="Clear selection"
 					onclick={() => (voteName = '')}
 				>
-					<i class="ph-fill ph-trash"></i>
+					<i aria-hidden="true" class="ph-fill ph-trash"></i>
 				</button>
 			{/snippet}
 		</Combobox>
@@ -131,7 +131,7 @@
 	</fieldset>
 
 	<button class="btn btn-primary w-full" onclick={onstart} data-tour={tourAnchor('start')}>
-		<i class="ph-fill ph-box-arrow-down"></i>
+		<i aria-hidden="true" class="ph-fill ph-box-arrow-down"></i>
 		{m.startVote()}
 	</button>
 </div>

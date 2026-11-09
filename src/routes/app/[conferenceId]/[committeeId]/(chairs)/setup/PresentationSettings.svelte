@@ -149,7 +149,7 @@
 	<div class="divider"></div>
 	<div class="flex flex-col gap-4">
 		<div class="flex items-center gap-4">
-			<i class="ph-duotone ph-text-aa text-2xl"></i>
+			<i aria-hidden="true" class="ph-duotone ph-text-aa text-2xl"></i>
 			<input
 				type="range"
 				min="10"
@@ -173,7 +173,7 @@
 	<div class="divider"></div>
 	<div class="flex flex-col gap-4">
 		<div class="flex items-center gap-4">
-			<i class="ph-duotone ph-file-text text-2xl"></i>
+			<i aria-hidden="true" class="ph-duotone ph-file-text text-2xl"></i>
 			<input
 				type="range"
 				min="10"

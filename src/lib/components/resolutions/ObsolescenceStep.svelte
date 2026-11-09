@@ -149,8 +149,8 @@
 							{/if}
 							{#if (item.subjectAmendment?.sponsors?.length ?? 0) > 0}
 								<span class="text-base-content/40">
-									<i class="ph-fill ph-users mr-0.5 text-[0.6rem]"></i>{item.subjectAmendment
-										?.sponsors?.length}
+									<i aria-hidden="true" class="ph-fill ph-users mr-0.5 text-[0.6rem]"></i>{item
+										.subjectAmendment?.sponsors?.length}
 								</span>
 							{/if}
 						</div>

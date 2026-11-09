@@ -168,7 +168,7 @@
 				</BasicCard>
 				<BasicCard className="relative group" data-tour="setup.whiteboard">
 					<button class="btn mb-4" onclick={openWhiteboardEditor}>
-						<i class="ph-fill ph-pencil-simple"></i>
+						<i aria-hidden="true" class="ph-fill ph-pencil-simple"></i>
 						{m.edit()}
 					</button>
 					<WhiteboardViewer data={committee.whiteboardContent} />
@@ -201,7 +201,7 @@
 							class="btn btn-primary btn-lg flex items-center gap-3"
 							onclick={openPresentation}
 						>
-							<i class="ph-fill ph-projector-screen"></i>
+							<i aria-hidden="true" class="ph-fill ph-projector-screen"></i>
 							{m.openPresentation()}
 							<Kbd hotkey="alt+P" class="text-base-content" />
 						</button>
@@ -214,7 +214,7 @@
 								title={presentationOpen() ? m.enterFullscreen() : m.openPresentation()}
 								aria-label={m.enterFullscreen()}
 							>
-								<i class="ph-fill ph-arrows-out"></i>
+								<i aria-hidden="true" class="ph-fill ph-arrows-out"></i>
 								{m.enterFullscreen()}
 							</button>
 						{/if}

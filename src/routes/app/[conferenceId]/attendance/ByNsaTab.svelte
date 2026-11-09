@@ -152,11 +152,11 @@
 			target="_blank"
 			rel="noopener"
 		>
-			<i class="ph-fill ph-printer mr-1"></i>
+			<i aria-hidden="true" class="ph-fill ph-printer mr-1"></i>
 			{m.printAllCards()}
 		</a>
 		<button class="btn btn-ghost btn-sm" onclick={exportCsv}>
-			<i class="ph-fill ph-file-csv mr-1"></i>
+			<i aria-hidden="true" class="ph-fill ph-file-csv mr-1"></i>
 			{m.exportCsv()}
 		</button>
 	</div>
@@ -170,9 +170,9 @@
 					{@const committee = checkedIn ? committeesById.get(latest.committeeId) : null}
 					<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
 						{#if org.icon}
-							<i class="ph-fill ph-{org.icon} text-lg"></i>
+							<i aria-hidden="true" class="ph-fill ph-{org.icon} text-lg"></i>
 						{:else}
-							<i class="ph-fill ph-identification-badge text-lg"></i>
+							<i aria-hidden="true" class="ph-fill ph-identification-badge text-lg"></i>
 						{/if}
 						<span class="flex-1">{user.name ?? user.userEmail}</span>
 						{#if user.attendanceCode}
@@ -182,7 +182,7 @@
 						{/if}
 						{#if checkedIn && committee}
 							<span class="badge badge-success">
-								<i class="ph-fill ph-sign-in mr-1"></i>
+								<i aria-hidden="true" class="ph-fill ph-sign-in mr-1"></i>
 								{committee.abbreviation ?? committee.name}
 							</span>
 						{:else}
@@ -194,7 +194,7 @@
 							aria-label={m.qrCard()}
 							title={m.qrCard()}
 						>
-							<i class="ph-fill ph-qr-code"></i>
+							<i aria-hidden="true" class="ph-fill ph-qr-code"></i>
 						</button>
 					</li>
 				{/each}

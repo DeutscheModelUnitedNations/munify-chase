@@ -14,7 +14,7 @@
 		onclick={() => (value += 1)}
 		disabled={!active}
 	>
-		<i class="ph-fill ph-arrow-up"></i>
+		<i aria-hidden="true" class="ph-fill ph-arrow-up"></i>
 	</button>
 	<!-- <div class="countdown font-mono text-5xl">
 		<span style="--value:{value};" aria-live="polite" aria-label={value.toString()}>{value}</span>
@@ -33,6 +33,6 @@
 		onclick={() => (value -= 1)}
 		disabled={!active}
 	>
-		<i class="ph-fill ph-arrow-down"></i>
+		<i aria-hidden="true" class="ph-fill ph-arrow-down"></i>
 	</button>
 </div>

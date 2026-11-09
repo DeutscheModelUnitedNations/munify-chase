@@ -55,12 +55,12 @@
 			class="card bg-base-100/60 border-base-content/20 items-center border-2 border-dashed p-10 text-center"
 		>
 			<div class="text-primary mb-3 text-5xl">
-				<i class="ph-fill ph-bank"></i>
+				<i aria-hidden="true" class="ph-fill ph-bank"></i>
 			</div>
 			<h3 class="mb-2 text-xl font-bold">{m.noCommitteesYetTitle()}</h3>
 			<p class="text-base-content/65 mx-auto mb-5 max-w-prose">{m.noCommitteesYetBody()}</p>
 			<button class="btn btn-primary btn-lg" onclick={addCommittee}>
-				<i class="ph-fill ph-plus"></i>
+				<i aria-hidden="true" class="ph-fill ph-plus"></i>
 				{m.addFirstCommittee()}
 			</button>
 		</div>
@@ -97,7 +97,7 @@
 							aria-label="Remove committee"
 							onclick={() => removeCommittee(committee.id)}
 						>
-							<i class="ph-fill ph-trash"></i>
+							<i aria-hidden="true" class="ph-fill ph-trash"></i>
 						</button>
 					</div>
 
@@ -125,7 +125,7 @@
 									aria-label="Remove agenda item"
 									onclick={() => removeAgenda(item.id)}
 								>
-									<i class="ph-fill ph-trash"></i>
+									<i aria-hidden="true" class="ph-fill ph-trash"></i>
 								</button>
 							</div>
 						{/each}
@@ -134,7 +134,7 @@
 							class="btn btn-sm self-start"
 							onclick={() => addAgenda(committee.id)}
 						>
-							<i class="ph-fill ph-plus"></i>
+							<i aria-hidden="true" class="ph-fill ph-plus"></i>
 							{m.addAgendaItem()}
 						</button>
 					</fieldset>
@@ -149,7 +149,7 @@
 			{/each}
 
 			<button class="btn btn-outline btn-primary self-start" onclick={addCommittee}>
-				<i class="ph-fill ph-plus"></i>
+				<i aria-hidden="true" class="ph-fill ph-plus"></i>
 				{m.addAnotherCommittee()}
 			</button>
 		</div>

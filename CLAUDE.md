@@ -143,9 +143,10 @@ the high contrast variant, plus the keyboard paths. It needs no database rows or
   system's "increase contrast") sets `data-contrast="more"`, and `app.css` darkens the semantic
   colours and lifts muted text. The default look keeps DMUN's pale shades; this is the one that
   has to pass 4.5:1.
-- Phosphor icons are font glyphs, which a screen reader can read out as a stray character, also
-  inside a button's name. A new icon takes `aria-hidden="true"`; an icon-only control still needs
-  its `aria-label`.
+- **Every Phosphor icon is `aria-hidden="true"`**: they are font glyphs a screen reader would read
+  out as a stray character, also inside a button's name (`src/lib/icons.test.ts` fails otherwise).
+  A control showing only an icon needs an `aria-label`; an icon that means something on its own
+  (a warning badge) sits next to `sr-only` text.
 
 ## Logging and tracing
 

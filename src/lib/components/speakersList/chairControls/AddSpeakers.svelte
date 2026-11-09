@@ -164,7 +164,7 @@
 			{getName(option)}
 		</span>
 		{#if typeof option.present === 'boolean' && !option.present}
-			<i class="ph-duotone ph-user-minus mr-4"></i>
+			<i aria-hidden="true" class="ph-duotone ph-user-minus mr-4"></i>
 		{/if}
 	{/snippet}
 
@@ -174,7 +174,7 @@
 			aria-label="add-speaker"
 			onclick={() => addSpeakerToList()}
 		>
-			<i class="ph-fill ph-plus"></i>
+			<i aria-hidden="true" class="ph-fill ph-plus"></i>
 		</button>
 	{/snippet}
 </Combobox>

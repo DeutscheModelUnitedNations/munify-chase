@@ -15,7 +15,7 @@
 	{#if legend}
 		<legend class="fieldset-legend">
 			{#if icon}
-				<i class="ph-duotone ph-{icon} mr-1"></i>
+				<i aria-hidden="true" class="ph-duotone ph-{icon} mr-1"></i>
 			{/if}
 			{legend}
 		</legend>

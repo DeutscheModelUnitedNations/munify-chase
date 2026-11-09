@@ -73,7 +73,7 @@
 	{#if isDownloading}
 		<span class="loading loading-spinner loading-xs"></span>
 	{:else}
-		<i class="ph-duotone ph-download-simple"></i>
+		<i aria-hidden="true" class="ph-duotone ph-download-simple"></i>
 	{/if}
 	<span class="hidden sm:inline">{m.exportAttendanceData()}</span>
 </button>

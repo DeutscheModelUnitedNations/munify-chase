@@ -128,7 +128,7 @@
 					})}
 					aria-label={m.back()}
 				>
-					<i class="ph-duotone ph-arrow-left"></i>
+					<i aria-hidden="true" class="ph-duotone ph-arrow-left"></i>
 				</a>
 			</div>
 		{/if}
@@ -171,7 +171,7 @@
 			})}
 			class:dock-active={!page.url.pathname.includes('/papers')}
 		>
-			<i class="ph-duotone ph-users size-[1.2em]"></i>
+			<i aria-hidden="true" class="ph-duotone ph-users size-[1.2em]"></i>
 			<span class="dock-label">{m.committee()}</span>
 		</a>
 		{#if !isLocalConferenceActive()}
@@ -183,7 +183,7 @@
 				class:dock-active={page.url.pathname.includes('/papers') &&
 					!page.url.pathname.includes(committee?.activeDraftResolutionId ?? '__none__')}
 			>
-				<i class="ph-duotone ph-file-text size-[1.2em]"></i>
+				<i aria-hidden="true" class="ph-duotone ph-file-text size-[1.2em]"></i>
 				<span class="dock-label">{m.resolutions()}</span>
 			</a>
 			{#if committee?.activeDraftResolutionId}
@@ -195,7 +195,7 @@
 					})}
 					class:dock-active={page.url.pathname.includes(committee.activeDraftResolutionId)}
 				>
-					<i class="ph-duotone ph-note-pencil size-[1.2em]"></i>
+					<i aria-hidden="true" class="ph-duotone ph-note-pencil size-[1.2em]"></i>
 					<span class="dock-label">{m.activeDraftResolution()}</span>
 				</a>
 			{/if}

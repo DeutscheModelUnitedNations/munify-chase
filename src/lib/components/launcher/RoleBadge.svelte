@@ -25,7 +25,7 @@
 </script>
 
 <div class="badge badge-soft {config.variant} text-base-content gap-1.5 whitespace-nowrap py-3">
-	<i class="ph-duotone ph-{config.icon}"></i>
+	<i aria-hidden="true" class="ph-duotone ph-{config.icon}"></i>
 	<span class="font-semibold">{config.label}</span>
 	{#if detail}
 		<span class="font-medium opacity-65">· {detail}</span>

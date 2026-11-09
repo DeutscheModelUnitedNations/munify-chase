@@ -112,6 +112,6 @@
 		{/each}
 	</select>
 	<button class="btn join-item btn-lg" onclick={addAgendaItem} aria-label={m.addAgendaItem()}>
-		<i class="ph-fill ph-plus"></i>
+		<i aria-hidden="true" class="ph-fill ph-plus"></i>
 	</button>
 </div>

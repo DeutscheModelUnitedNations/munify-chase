@@ -163,7 +163,7 @@
 							aria-label={m.delete()}
 							onclick={() => remove(s.id)}
 						>
-							<i class="ph-fill ph-x text-error"></i>
+							<i aria-hidden="true" class="ph-fill ph-x text-error"></i>
 						</button>
 					{/if}
 				</li>
@@ -173,7 +173,7 @@
 
 	{#if !team && myMemberId && !iSponsor && sponsoringAllowed}
 		<button class="btn btn-primary btn-sm" disabled={busy} onclick={() => add()}>
-			<i class="ph-fill ph-handshake"></i>
+			<i aria-hidden="true" class="ph-fill ph-handshake"></i>
 			{m.sponsorThisPaper()}
 		</button>
 	{/if}

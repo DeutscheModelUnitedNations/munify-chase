@@ -41,10 +41,10 @@
 </script>
 
 <button class="btn btn-success btn-soft" onclick={() => setAllPresence(true)}>
-	<i class="ph-fill ph-door mr-2"></i>
+	<i aria-hidden="true" class="ph-fill ph-door mr-2"></i>
 	{m.setAllPresent()}
 </button>
 <button class="btn btn-error btn-soft" onclick={() => setAllPresence(false)}>
-	<i class="ph-fill ph-door-open mr-2"></i>
+	<i aria-hidden="true" class="ph-fill ph-door-open mr-2"></i>
 	{m.setAllAbsent()}
 </button>

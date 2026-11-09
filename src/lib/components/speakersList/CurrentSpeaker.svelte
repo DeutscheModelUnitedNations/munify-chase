@@ -67,7 +67,7 @@
 			in:scale={{ duration: 800, opacity: 0.5, start: 0, easing: bounceOut }}
 			out:scale={{ duration: 500, opacity: 0.5, start: 0 }}
 		>
-			<i class="ph-fill ph-lock"></i>
+			<i aria-hidden="true" class="ph-fill ph-lock"></i>
 		</div>
 	{/if}
 

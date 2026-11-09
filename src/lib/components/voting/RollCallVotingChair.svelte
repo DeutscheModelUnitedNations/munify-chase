@@ -321,7 +321,7 @@
 						syncIndex(newIdx);
 					}}
 				>
-					<i class="ph-fill ph-caret-up"></i>
+					<i aria-hidden="true" class="ph-fill ph-caret-up"></i>
 				</button>
 			</div>
 			<div class="flex flex-row justify-center gap-4">
@@ -331,7 +331,7 @@
 						setVote('CON');
 					}}
 				>
-					<i class="ph-fill ph-minus-circle"></i>
+					<i aria-hidden="true" class="ph-fill ph-minus-circle"></i>
 					{m.con()}
 					<Kbd hotkey="J" />
 				</button>
@@ -342,7 +342,7 @@
 							setVote('ABSTAIN');
 						}}
 					>
-						<i class="ph-fill ph-circle"></i>
+						<i aria-hidden="true" class="ph-fill ph-circle"></i>
 						{m.abstain()}
 						<Kbd hotkey="K" />
 					</button>
@@ -353,7 +353,7 @@
 						setVote('PRO');
 					}}
 				>
-					<i class="ph-fill ph-plus-circle"></i>
+					<i aria-hidden="true" class="ph-fill ph-plus-circle"></i>
 					{m.pro()}
 					<Kbd hotkey="L" />
 				</button>
@@ -367,7 +367,7 @@
 					exit(true);
 				}}
 			>
-				<i class="ph-fill ph-x"></i>
+				<i aria-hidden="true" class="ph-fill ph-x"></i>
 				{m.close()}
 				<Kbd hotkey="esc" />
 			</button>
@@ -382,7 +382,7 @@
 				exit(stage === 'EVALUATION');
 			}}
 		>
-			<i class="ph-duotone ph-x"></i>
+			<i aria-hidden="true" class="ph-duotone ph-x"></i>
 		</button>
 	</div>
 </Modal>

@@ -93,7 +93,8 @@
 
 	{#if isTeam(viewer) && selectedClauseId}
 		<button class="btn btn-secondary btn-sm" disabled={starting} onclick={startVote}>
-			{#if starting}<i class="ph-fill ph-spinner-gap animate-spin"></i>{:else}<i
+			{#if starting}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>{:else}<i
+					aria-hidden="true"
 					class="ph-fill ph-check-square-offset"
 				></i>{/if}
 			{current?.vote ? m.restartVote() : m.startClauseVote()}

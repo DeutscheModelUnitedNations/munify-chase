@@ -139,9 +139,9 @@
 					{@const rep = user.conferenceMember?.representation}
 					<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
 						{#if rep?.icon}
-							<i class="ph-fill ph-{rep.icon} text-lg"></i>
+							<i aria-hidden="true" class="ph-fill ph-{rep.icon} text-lg"></i>
 						{:else}
-							<i class="ph-fill ph-identification-badge text-lg"></i>
+							<i aria-hidden="true" class="ph-fill ph-identification-badge text-lg"></i>
 						{/if}
 						<span class="flex-1">{user.name ?? user.userEmail}</span>
 						{#if rep?.name}
@@ -185,7 +185,7 @@
 											representation={{ type: 'DELEGATION', alpha3Code: member.alpha3Code }}
 										/>
 									{:else}
-										<i class="ph-fill ph-user text-lg"></i>
+										<i aria-hidden="true" class="ph-fill ph-user text-lg"></i>
 									{/if}
 									<span class="flex-1">{member.name}</span>
 								</li>

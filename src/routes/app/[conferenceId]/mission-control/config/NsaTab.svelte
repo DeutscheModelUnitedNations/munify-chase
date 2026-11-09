@@ -107,7 +107,7 @@
 									onclick={() => deleteActor(actor.id)}
 									aria-label={m.deleteRepresentation()}
 								>
-									<i class="ph-fill ph-trash text-sm"></i>
+									<i aria-hidden="true" class="ph-fill ph-trash text-sm"></i>
 								</button>
 							</td>
 						</tr>
@@ -156,7 +156,7 @@
 				{#if isCreating}
 					<span class="loading loading-spinner loading-sm"></span>
 				{:else}
-					<i class="ph-fill ph-plus"></i>
+					<i aria-hidden="true" class="ph-fill ph-plus"></i>
 				{/if}
 				{m.addNonStateActor()}
 			</button>

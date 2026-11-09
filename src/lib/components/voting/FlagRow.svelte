@@ -20,7 +20,7 @@
 >
 	<div class="flex w-26 flex-shrink-0 flex-row items-center gap-2 font-mono text-5xl">
 		{#if icon}
-			<i class="ph-fill ph-{icon} text-{color || 'content'}"></i>
+			<i aria-hidden="true" class="ph-fill ph-{icon} text-{color || 'content'}"></i>
 		{/if}
 		{#if countValue || countValue === 0}
 			<span class="font-mono">

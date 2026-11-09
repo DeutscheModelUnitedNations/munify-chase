@@ -36,17 +36,26 @@
 <div class="relative h-10 w-10 text-2xl">
 	{#if status === 'active'}
 		<div class="absolute inset-0 flex items-center justify-center">
-			<i class="ph-duotone ph-{activeIcon}" in:blur={{ duration: 500 }} out:blur={{ duration: 500 }}
+			<i
+				aria-hidden="true"
+				class="ph-duotone ph-{activeIcon}"
+				in:blur={{ duration: 500 }}
+				out:blur={{ duration: 500 }}
 			></i>
 		</div>
 	{:else if status === 'paused'}
 		<div class="absolute inset-0 flex items-center justify-center">
-			<i class="ph-duotone ph-pause-circle" in:blur={{ duration: 500 }} out:blur={{ duration: 500 }}
+			<i
+				aria-hidden="true"
+				class="ph-duotone ph-pause-circle"
+				in:blur={{ duration: 500 }}
+				out:blur={{ duration: 500 }}
 			></i>
 		</div>
 	{:else if status === 'overtime'}
 		<div class="absolute inset-0 flex items-center justify-center">
 			<i
+				aria-hidden="true"
 				class="ph-fill ph-bell icon-shake text-error"
 				in:blur={{ duration: 500 }}
 				out:blur={{ duration: 500 }}

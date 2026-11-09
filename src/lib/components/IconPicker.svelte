@@ -75,12 +75,12 @@
 		aria-label={m.iconPickerChoose()}
 		title={value ?? fallback}
 	>
-		<i class="ph-fill ph-{value || fallback}"></i>
+		<i aria-hidden="true" class="ph-fill ph-{value || fallback}"></i>
 	</Popover.Trigger>
 	<Popover.Portal>
 		<Popover.Content sideOffset={8} class={contentClass}>
 			<label class="input input-bordered input-sm mb-2 w-full">
-				<i class="ph-duotone ph-magnifying-glass opacity-60"></i>
+				<i aria-hidden="true" class="ph-duotone ph-magnifying-glass opacity-60"></i>
 				<!-- svelte-ignore a11y_autofocus -->
 				<input type="search" bind:value={query} placeholder={m.iconPickerSearch()} autofocus />
 			</label>
@@ -102,7 +102,7 @@
 							aria-label={entry.name}
 							onclick={() => pick(entry.name)}
 						>
-							<i class="ph-fill ph-{entry.name}"></i>
+							<i aria-hidden="true" class="ph-fill ph-{entry.name}"></i>
 						</button>
 					{/each}
 				</div>

@@ -244,7 +244,7 @@
 							: 'btn-ghost'}"
 						onclick={() => (leaderboardMode = 'speaking')}
 					>
-						<i class="ph-fill ph-microphone"></i>
+						<i aria-hidden="true" class="ph-fill ph-microphone"></i>
 						{m.formalSpeeches()}
 					</button>
 					<button
@@ -253,7 +253,7 @@
 							: 'btn-ghost'}"
 						onclick={() => (leaderboardMode = 'comments')}
 					>
-						<i class="ph-fill ph-chat-dots"></i>
+						<i aria-hidden="true" class="ph-fill ph-chat-dots"></i>
 						{m.commentInterventions()}
 					</button>
 				</div>

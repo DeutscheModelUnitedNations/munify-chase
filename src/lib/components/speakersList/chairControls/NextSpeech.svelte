@@ -143,7 +143,7 @@
 	disabled={!speakersList?.speakers?.length}
 	onclick={nextSpeaker}
 >
-	<i class="ph-fill ph-steps"></i>
+	<i aria-hidden="true" class="ph-fill ph-steps"></i>
 	{m.nextSpeaker()}
 	<Kbd hotkey={shortcut} class="text-base-content" />
 </button>

@@ -68,7 +68,7 @@
 			disabled={loading}
 		>
 			<div class="bg-primary/15 text-primary grid h-14 w-14 place-items-center rounded-xl text-2xl">
-				<i class="ph-fill ph-file-arrow-up"></i>
+				<i aria-hidden="true" class="ph-fill ph-file-arrow-up"></i>
 			</div>
 			<div>
 				<h3 class="mb-1 text-xl font-bold">{m.uploadFileTitle()}</h3>
@@ -79,7 +79,7 @@
 					<span class="loading loading-spinner loading-sm"></span>
 				{:else}
 					<span>{m.uploadFileCta()}</span>
-					<i class="ph-fill ph-arrow-right"></i>
+					<i aria-hidden="true" class="ph-fill ph-arrow-right"></i>
 				{/if}
 			</div>
 		</button>
@@ -93,7 +93,7 @@
 			<div
 				class="bg-accent/25 text-accent-content grid h-14 w-14 place-items-center rounded-xl text-2xl"
 			>
-				<i class="ph-fill ph-sparkle"></i>
+				<i aria-hidden="true" class="ph-fill ph-sparkle"></i>
 			</div>
 			<div>
 				<h3 class="mb-1 text-xl font-bold">{m.startFreshTitle()}</h3>
@@ -101,7 +101,7 @@
 			</div>
 			<div class="text-accent-content mt-auto flex items-center gap-2 text-sm font-semibold">
 				<span>{m.startFreshCta()}</span>
-				<i class="ph-fill ph-arrow-right"></i>
+				<i aria-hidden="true" class="ph-fill ph-arrow-right"></i>
 			</div>
 		</button>
 	</div>
@@ -110,13 +110,13 @@
 		class="text-base-content/60 flex w-full max-w-4xl items-center justify-center gap-3 rounded-box border-2 border-dashed p-5 text-sm transition
 			{dragActive ? 'border-primary bg-primary/10' : 'border-base-content/20 bg-base-100/60'}"
 	>
-		<i class="ph-fill ph-cloud-arrow-up"></i>
+		<i aria-hidden="true" class="ph-fill ph-cloud-arrow-up"></i>
 		<span>{m.dropJsonHint()}</span>
 	</div>
 
 	{#if !isAdmin}
 		<div role="alert" class="alert alert-warning w-full max-w-4xl">
-			<i class="ph-fill ph-warning"></i>
+			<i aria-hidden="true" class="ph-fill ph-warning"></i>
 			<div>
 				<h3 class="font-semibold">{m.nonAdminImportWarningTitle()}</h3>
 				<div class="text-sm">{m.nonAdminImportWarning()}</div>

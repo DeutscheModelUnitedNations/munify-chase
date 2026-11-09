@@ -1,5 +1,5 @@
-import { m } from '$lib/paraglide/messages';
-import type { Tour } from '$lib/tours/types';
+import { m } from '#lib/paraglide/messages';
+import type { Tour } from '#lib/tours/types';
 
 /** Chair setup page. Anchors live in the setup +page.svelte. */
 export const tour: Tour = {

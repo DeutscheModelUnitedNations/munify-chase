@@ -10,7 +10,7 @@
 		AmendmentOverlay,
 		OperativeClause
 	} from '@deutschemodelunitednations/munify-resolution-editor';
-	import { createPaperYjsClient, type PaperYjsClient } from '$lib/api/yjs/createPaperYjs.svelte';
+	import { createPaperYjsClient, type PaperYjsClient } from '#lib/api/yjs/createPaperYjs.svelte';
 	import { onDestroy, type Snippet } from 'svelte';
 	import SyncBadge from './SyncBadge.svelte';
 

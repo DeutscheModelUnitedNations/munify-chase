@@ -1,5 +1,6 @@
-import { configPrivate } from '$config/private';
-import { type LatestRelease, pickInstallers, RELEASES_API_URL } from '$lib/helpers/downloads';
+import { GITHUB_TOKEN } from '$app/env/private';
+import { type LatestRelease, pickInstallers, RELEASES_API_URL } from '#lib/helpers/downloads';
+import { logger } from '#lib/logger';
 
 // GitHub allows 60 unauthenticated API requests per hour and IP, so the latest
 // release is cached in memory and revalidated with its ETag (a 304 does not
@@ -50,7 +51,7 @@ export function createReleaseCache({
 		try {
 			entry = await request();
 		} catch (e) {
-			console.warn('Could not fetch the latest release from GitHub:', e);
+			logger.warn('Fetching the latest release from GitHub failed', e);
 			// Keep serving the last known release, it is still downloadable
 			entry = { release: entry?.release ?? null, etag: entry?.etag, expiresAt: now() + RETRY_MS };
 		}
@@ -95,7 +96,7 @@ const ttlFor = (release: LatestRelease | null) =>
 
 let instance: ReturnType<typeof createReleaseCache> | undefined;
 
-const releaseCache = () => (instance ??= createReleaseCache({ token: configPrivate.GITHUB_TOKEN }));
+const releaseCache = () => (instance ??= createReleaseCache({ token: GITHUB_TOKEN }));
 
 export const getLatestRelease = () => releaseCache().get();
 

@@ -1,5 +1,5 @@
-import { m } from '$lib/paraglide/messages';
-import { baseLocale, type Locale } from '$lib/paraglide/runtime';
+import { m } from '#lib/paraglide/messages';
+import { baseLocale, type Locale } from '#lib/paraglide/runtime';
 import { parseFrontmatter, renderDoc, type RenderedDoc } from './render';
 
 // Markdown sources live in `docs/<locale>/` at the repo root, bundled into the server build

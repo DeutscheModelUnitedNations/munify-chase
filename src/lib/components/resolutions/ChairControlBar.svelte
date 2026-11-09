@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import { client } from '$lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import { PAPER_STATUS_ORDER, statusLabel, type PaperStatus } from './paperContext';
-	import { openVotingModal, resumeVotingModal } from '$lib/components/voting/votingModal';
+	import { openVotingModal, resumeVotingModal } from '#lib/components/voting/votingModal';
 
 	interface Props {
 		paper: { id: string; status: PaperStatus; title: string };

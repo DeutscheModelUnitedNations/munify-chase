@@ -12,6 +12,7 @@ import { onNavigate } from '$app/navigation';
  */
 export function enableViewTransitionApi() {
 	onNavigate((navigation) => {
+		if (navigation.shallow && navigation.type === 'goto') return;
 		if (!document.startViewTransition) return;
 
 		return new Promise((resolve) => {

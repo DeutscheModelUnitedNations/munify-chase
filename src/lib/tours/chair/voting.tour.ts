@@ -1,5 +1,5 @@
-import { m } from '$lib/paraglide/messages';
-import type { Tour } from '$lib/tours/types';
+import { m } from '#lib/paraglide/messages';
+import type { Tour } from '#lib/tours/types';
 
 /**
  * Chair voting page. Anchors live in VotingSetup and VotingSetupForm. While a vote

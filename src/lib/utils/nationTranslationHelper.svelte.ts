@@ -1,6 +1,6 @@
 // world-countries
 
-import { getLocale, locales } from '$lib/paraglide/runtime';
+import { getLocale, locales } from '#lib/paraglide/runtime';
 import { SvelteMap } from 'svelte/reactivity';
 import allNations from 'world-countries';
 

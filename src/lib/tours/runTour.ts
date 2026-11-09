@@ -1,6 +1,6 @@
 import { driver, type DriveStep } from 'driver.js';
 import 'driver.js/dist/driver.css';
-import { m } from '$lib/paraglide/messages';
+import { m } from '#lib/paraglide/messages';
 import type { Tour } from './types';
 
 function anchorSelector(anchor: string) {

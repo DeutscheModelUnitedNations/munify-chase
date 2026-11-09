@@ -1,8 +1,9 @@
-import { schemaBuilder } from '$api/rumble';
-import { db, schema } from '$api/db/db';
+import { schemaBuilder } from '#api/rumble';
+import { db, schema } from '#api/db/db';
 import { and, count, desc, eq, gte, isNotNull, sql } from 'drizzle-orm';
-import { building } from '$app/environment';
-import { refreshMaterializedViewsWithLock } from '$api/db/refreshMaterializedViews';
+import { building } from '$app/env';
+import { refreshMaterializedViewsWithLock } from '#api/db/refreshMaterializedViews';
+import { logger } from '#lib/logger';
 
 // Mission control is a near-live dashboard (client polls every 60s, see
 // mission-control/+page.svelte) so these views refresh more often than the
@@ -18,7 +19,7 @@ const MISSION_CONTROL_VIEWS = [
 if (!building) {
 	setInterval(() => {
 		refreshMaterializedViewsWithLock('refresh_mission_control_pulse', MISSION_CONTROL_VIEWS).catch(
-			(err) => console.error('Failed to refresh mission control materialized views', err)
+			(err) => logger.error('Refreshing the mission control materialized views failed', err)
 		);
 	}, MISSION_CONTROL_REFRESH_INTERVAL_MS);
 }
@@ -343,7 +344,8 @@ schemaBuilder.queryFields((t) => ({
 			const { conferenceId } = args;
 
 			const conference = await db.query.conference.findFirst(
-				ctx.abilities.conference.filter('read').merge({ where: { id: conferenceId } }).query.single
+				(await ctx.abilities.conference.filter('read')).merge({ where: { id: conferenceId } }).query
+					.single
 			);
 			if (!conference) return null;
 

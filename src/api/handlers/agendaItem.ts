@@ -1,8 +1,8 @@
-import { db, schema } from '$api/db/db';
-import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
-import { nanoid, nanoidValidation } from '$lib/helpers/nanoid';
+import { db, schema } from '#api/db/db';
+import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '#api/rumble';
+import { nanoid, nanoidValidation } from '#lib/helpers/nanoid';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { isParticipantInConference } from '$api/services/authHelper';
+import { isParticipantInConference } from '#api/services/authHelper';
 
 abilityBuilder.agendaItem.allow('read').when((ctx) => {
 	return {
@@ -49,7 +49,7 @@ schemaBuilder.mutationFields((t) => {
 			resolve: async (query, root, args, ctx) => {
 				await db.query.committee
 					.findFirst(
-						ctx.abilities.committee.filter('update').merge({
+						(await ctx.abilities.committee.filter('update')).merge({
 							where: { id: args.committeeId }
 						}).query.single
 					)
@@ -85,7 +85,7 @@ schemaBuilder.mutationFields((t) => {
 					return await tx.query.agendaItem
 						.findFirst(
 							query(
-								ctx.abilities.agendaItem.filter('read').merge({
+								(await ctx.abilities.agendaItem.filter('read')).merge({
 									where: { id: res.id }
 								}).query.single
 							)

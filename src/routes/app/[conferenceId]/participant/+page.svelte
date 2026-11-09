@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
-	import CommitteeGrid, { type ConferenceData } from '$lib/components/CommitteeGrid.svelte';
-	import ThemeSwitcher from '$lib/components/ThemeSwitcher.svelte';
-	import HelpButton from '$lib/tours/HelpButton.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { getCurrentUser } from '#lib/state/currentUser.svelte';
+	import CommitteeGrid, { type ConferenceData } from '#lib/components/CommitteeGrid.svelte';
+	import ThemeSwitcher from '#lib/components/ThemeSwitcher.svelte';
+	import HelpButton from '#lib/tours/HelpButton.svelte';
 	import ParticipantIdentityCard from './ParticipantIdentityCard.svelte';
 	import MyAttendanceTab from './MyAttendanceTab.svelte';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 
 	const currentUser = await getCurrentUser();
 	const [conferenceUser] =

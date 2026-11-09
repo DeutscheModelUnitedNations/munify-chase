@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import type { LauncherBadge } from '$lib/helpers/launcher';
+	import { m } from '#lib/paraglide/messages';
+	import type { LauncherBadge } from '#lib/helpers/launcher';
 
 	interface Props {
 		role: LauncherBadge;

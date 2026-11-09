@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
-	import BasicCard from '$lib/components/BasicCard.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import BasicCard from '#lib/components/BasicCard.svelte';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import DownloadPresenceData from './DownloadPresenceData.svelte';
 	import DelegatePresenceChart from '../statistics/DelegatePresenceChart.svelte';

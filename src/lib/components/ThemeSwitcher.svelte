@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getTheme, toggleTheme } from '$lib/utils/theme.svelte';
+	import { getTheme, toggleTheme } from '#lib/utils/theme.svelte';
 	import { fly } from 'svelte/transition';
 </script>
 

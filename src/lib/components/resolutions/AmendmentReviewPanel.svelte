@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
+	import { client } from '#lib/api/rumbleClient/client';
 	import { SvelteSet } from 'svelte/reactivity';
-	import { classifyObsolescence, evaluateAndSuggestRewrite } from '$lib/ai/amendments';
-	import { getAiPreference, preferenceToMode } from '$lib/ai/aiPreference.svelte';
-	import AiSpinner from '$lib/components/AiSpinner.svelte';
+	import { classifyObsolescence, evaluateAndSuggestRewrite } from '#lib/ai/amendments';
+	import { getAiPreference, preferenceToMode } from '#lib/ai/aiPreference.svelte';
+	import AiSpinner from '#lib/components/AiSpinner.svelte';
 	import ObsolescenceStep from './ObsolescenceStep.svelte';
 	import RewriteStep from './RewriteStep.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import {
 		OperativeParagraphPreview,
 		serializeClause

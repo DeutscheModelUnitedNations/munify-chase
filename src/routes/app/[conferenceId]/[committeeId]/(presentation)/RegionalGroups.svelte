@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { RegionalgroupEnum } from '$lib/api/rumbleClient/client';
-	import Flag from '$lib/components/Flag.svelte';
-	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
+	import type { RegionalgroupEnum } from '#lib/api/rumbleClient/client';
+	import Flag from '#lib/components/Flag.svelte';
+	import { translateRegionalGroupEnum } from '#lib/utils/enumTranslationHelper';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 

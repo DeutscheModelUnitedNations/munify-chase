@@ -1,16 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { client } from '$lib/api/rumbleClient/client';
-	import CurrentTime from '$lib/components/CurrentTime.svelte';
-	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
-	import NavbarSpeakersWidget from '$lib/components/speakersList/NavbarSpeakersWidget.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import CurrentTime from '#lib/components/CurrentTime.svelte';
+	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
+	import NavbarSpeakersWidget from '#lib/components/speakersList/NavbarSpeakersWidget.svelte';
 	import {
 		buildConferenceNavItems,
 		roleBadgeClassFor,
 		roleLabelFor
-	} from '$lib/components/navbar/conferenceNavItems';
+	} from '#lib/components/navbar/conferenceNavItems';
 
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	import { getCurrentUser, getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
+	import { displayNameOf } from '#lib/helpers/displayName';
 
 	type SpeakersList =
 		| {
@@ -63,11 +64,7 @@
 
 	const currentUser = await getCurrentUser();
 	const userId = currentUser.id ?? '';
-	const userDisplayName =
-		[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
-		currentUser.preferredUsername ||
-		currentUser.email ||
-		'';
+	const userDisplayName = displayNameOf(currentUser);
 
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
 		__args: {
@@ -92,7 +89,7 @@
 		}
 	});
 
-	const isGlobalAdmin = await client.query.isGlobalAdmin();
+	const isGlobalAdmin = await getIsGlobalAdmin();
 
 	let menubarItems = $derived(
 		buildConferenceNavItems({

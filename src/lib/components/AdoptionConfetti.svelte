@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { onMount } from 'svelte';
 	import { Confetti } from 'svelte-confetti';
 	import Marquee from 'svelte-fast-marquee';

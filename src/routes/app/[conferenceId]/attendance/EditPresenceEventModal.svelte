@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
-	import Modal from '$lib/components/Modal.svelte';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import Modal from '#lib/components/Modal.svelte';
+	import { promiseToastStrings } from '#lib/utils/toast';
 	import toast from 'svelte-french-toast';
 
 	interface Props {

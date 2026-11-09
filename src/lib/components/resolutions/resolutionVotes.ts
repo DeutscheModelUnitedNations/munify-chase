@@ -1,5 +1,5 @@
-import { client } from '$lib/api/rumbleClient/client';
-import { nanoid } from '$lib/helpers/nanoid';
+import { client } from '#lib/api/rumbleClient/client';
+import { nanoid } from '#lib/helpers/nanoid';
 
 /**
  * Start (or resume) a committee voting session and link it to an operative

@@ -1,5 +1,5 @@
-import { getLatestRelease } from '$api/services/releases';
-import { isDownloadPlatform, RELEASES_PAGE_URL } from '$lib/helpers/downloads';
+import { getLatestRelease } from '#api/services/releases';
+import { RELEASES_PAGE_URL } from '#lib/helpers/downloads';
 import type { RequestHandler } from './$types';
 
 // Stable link to the newest installer, e.g. /download/windows. The file itself
@@ -7,7 +7,7 @@ import type { RequestHandler } from './$types';
 // a fresh release are still building or GitHub cannot be reached.
 export const GET: RequestHandler = async ({ params }) => {
 	const release = await getLatestRelease();
-	const asset = isDownloadPlatform(params.platform) ? release?.assets[params.platform] : undefined;
+	const asset = release?.assets[params.platform];
 	return new Response(null, {
 		status: 302,
 		// The target changes with every release

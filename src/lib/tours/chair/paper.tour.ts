@@ -1,5 +1,5 @@
-import { m } from '$lib/paraglide/messages';
-import type { Tour } from '$lib/tours/types';
+import { m } from '#lib/paraglide/messages';
+import type { Tour } from '#lib/tours/types';
 
 /**
  * Chair view of a paper. Anchors live in PaperPage, ChairControlBar and AmendmentList

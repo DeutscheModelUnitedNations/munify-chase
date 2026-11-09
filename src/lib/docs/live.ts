@@ -1,4 +1,4 @@
-import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
+import { LOCAL_CONFERENCE_ID } from '#lib/state/localDemo.svelte';
 
 /**
  * Pages of the offline demo conference that manual pages can embed with

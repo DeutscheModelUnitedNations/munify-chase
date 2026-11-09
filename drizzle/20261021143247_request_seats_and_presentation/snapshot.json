@@ -1,0 +1,336 @@
+{
+	"deltas": [
+		{
+			"op": "create",
+			"row": {
+				"default": "true",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "presentation_show_requests",
+				"notNull": true,
+				"schema": "public",
+				"table": "committee",
+				"type": "boolean",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "committee_member_id",
+				"notNull": false,
+				"schema": "public",
+				"table": "request",
+				"type": "text",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": null,
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "conference_member_id",
+				"notNull": false,
+				"schema": "public",
+				"table": "request",
+				"type": "text",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"default": "true",
+				"dimensions": 0,
+				"entityType": "columns",
+				"generated": null,
+				"identity": null,
+				"name": "show_on_presentation",
+				"notNull": true,
+				"schema": "public",
+				"table": "request_type",
+				"type": "boolean",
+				"typeSchema": null
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"columns": [
+					{
+						"asc": true,
+						"isExpression": false,
+						"nullsFirst": false,
+						"opclass": null,
+						"value": "committee_id"
+					},
+					{
+						"asc": true,
+						"isExpression": false,
+						"nullsFirst": false,
+						"opclass": null,
+						"value": "committee_member_id"
+					},
+					{
+						"asc": true,
+						"isExpression": false,
+						"nullsFirst": false,
+						"opclass": null,
+						"value": "request_type_id"
+					}
+				],
+				"concurrently": false,
+				"entityType": "indexes",
+				"isUnique": true,
+				"method": "btree",
+				"name": "request_pending_committee_member_unique",
+				"nameExplicit": true,
+				"schema": "public",
+				"table": "request",
+				"where": "\"status\" = 'PENDING'",
+				"with": ""
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"columns": [
+					{
+						"asc": true,
+						"isExpression": false,
+						"nullsFirst": false,
+						"opclass": null,
+						"value": "committee_id"
+					},
+					{
+						"asc": true,
+						"isExpression": false,
+						"nullsFirst": false,
+						"opclass": null,
+						"value": "conference_member_id"
+					},
+					{
+						"asc": true,
+						"isExpression": false,
+						"nullsFirst": false,
+						"opclass": null,
+						"value": "request_type_id"
+					}
+				],
+				"concurrently": false,
+				"entityType": "indexes",
+				"isUnique": true,
+				"method": "btree",
+				"name": "request_pending_conference_member_unique",
+				"nameExplicit": true,
+				"schema": "public",
+				"table": "request",
+				"where": "\"status\" = 'PENDING'",
+				"with": ""
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"columns": ["committee_member_id"],
+				"columnsTo": ["id"],
+				"entityType": "fks",
+				"name": "request_committee_member_id_committee_member_id_fkey",
+				"nameExplicit": false,
+				"onDelete": "CASCADE",
+				"onUpdate": "NO ACTION",
+				"schema": "public",
+				"schemaTo": "public",
+				"table": "request",
+				"tableTo": "committee_member"
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"columns": ["conference_member_id"],
+				"columnsTo": ["id"],
+				"entityType": "fks",
+				"name": "request_conference_member_id_conference_member_id_fkey",
+				"nameExplicit": false,
+				"onDelete": "CASCADE",
+				"onUpdate": "NO ACTION",
+				"schema": "public",
+				"schemaTo": "public",
+				"table": "request",
+				"tableTo": "conference_member"
+			}
+		},
+		{
+			"op": "create",
+			"row": {
+				"entityType": "checks",
+				"name": "request_has_requester",
+				"schema": "public",
+				"table": "request",
+				"value": "num_nonnulls(\"conference_user_id\", \"committee_member_id\", \"conference_member_id\") >= 1"
+			}
+		},
+		{
+			"key": "columns\u0000[\"public\",\"request\",\"conference_user_id\"]",
+			"op": "alter",
+			"set": {
+				"notNull": false
+			}
+		}
+	],
+	"dialect": "postgres",
+	"footprints": [
+		{
+			"reads": ["n|tbl|public.committee", "n|sch|public"],
+			"statementTarget": ["column", "public", "committee", "presentation_show_requests"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.committee.presentation_show_requests",
+				"n|col|public.committee.presentation_show_requests",
+				"e|col|public.committee.presentation_show_requests"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.request", "n|sch|public"],
+			"statementTarget": ["column", "public", "request", "committee_member_id"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.request.committee_member_id",
+				"n|col|public.request.committee_member_id",
+				"e|col|public.request.committee_member_id"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.request", "n|sch|public"],
+			"statementTarget": ["column", "public", "request", "conference_member_id"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.request.conference_member_id",
+				"n|col|public.request.conference_member_id",
+				"e|col|public.request.conference_member_id"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.request_type", "n|sch|public"],
+			"statementTarget": ["column", "public", "request_type", "show_on_presentation"],
+			"statementType": "add_column",
+			"writes": [
+				"s|col|public.request_type.show_on_presentation",
+				"n|col|public.request_type.show_on_presentation",
+				"e|col|public.request_type.show_on_presentation"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.request", "n|sch|public", "n|col|public.request.conference_user_id"],
+			"sqlHash": "9a3dd60a383de6a7",
+			"statementTarget": ["column", "public", "request", "conference_user_id"],
+			"statementType": "alter_column",
+			"writes": ["s|colprop|public.request.conference_user_id.notNull"]
+		},
+		{
+			"reads": [
+				"n|tbl|public.request",
+				"n|sch|public",
+				"n|col|public.request.committee_id",
+				"n|col|public.request.committee_member_id",
+				"n|col|public.request.request_type_id"
+			],
+			"statementTarget": ["index", "public", "request", "request_pending_committee_member_unique"],
+			"statementType": "create_index",
+			"writes": [
+				"s|idx|public.request_pending_committee_member_unique",
+				"n|idx|public.request_pending_committee_member_unique",
+				"e|idx|public.request_pending_committee_member_unique",
+				"n|rel|public.request_pending_committee_member_unique"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.request",
+				"n|sch|public",
+				"n|col|public.request.committee_id",
+				"n|col|public.request.conference_member_id",
+				"n|col|public.request.request_type_id"
+			],
+			"statementTarget": ["index", "public", "request", "request_pending_conference_member_unique"],
+			"statementType": "create_index",
+			"writes": [
+				"s|idx|public.request_pending_conference_member_unique",
+				"n|idx|public.request_pending_conference_member_unique",
+				"e|idx|public.request_pending_conference_member_unique",
+				"n|rel|public.request_pending_conference_member_unique"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.request",
+				"n|sch|public",
+				"n|tbl|public.committee_member",
+				"n|sch|public",
+				"n|col|public.request.committee_member_id",
+				"n|col|public.committee_member.id",
+				"e|uniqueness|public.committee_member.id"
+			],
+			"statementTarget": ["table", "public", "request"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.request.request_committee_member_id_committee_member_id_fkey",
+				"n|fk|public.request.request_committee_member_id_committee_member_id_fkey",
+				"e|fk|public.request.request_committee_member_id_committee_member_id_fkey",
+				"n|con|public.request.request_committee_member_id_committee_member_id_fkey"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.request",
+				"n|sch|public",
+				"n|tbl|public.conference_member",
+				"n|sch|public",
+				"n|col|public.request.conference_member_id",
+				"n|col|public.conference_member.id",
+				"e|uniqueness|public.conference_member.id"
+			],
+			"statementTarget": ["table", "public", "request"],
+			"statementType": "create_fk",
+			"writes": [
+				"s|fk|public.request.request_conference_member_id_conference_member_id_fkey",
+				"n|fk|public.request.request_conference_member_id_conference_member_id_fkey",
+				"e|fk|public.request.request_conference_member_id_conference_member_id_fkey",
+				"n|con|public.request.request_conference_member_id_conference_member_id_fkey"
+			]
+		},
+		{
+			"reads": [
+				"n|tbl|public.request",
+				"n|sch|public",
+				"n|col|public.request.conference_user_id",
+				"n|col|public.request.committee_member_id",
+				"n|col|public.request.conference_member_id"
+			],
+			"statementTarget": ["table", "public", "request"],
+			"statementType": "add_check",
+			"writes": [
+				"s|ck|public.request.request_has_requester",
+				"n|ck|public.request.request_has_requester",
+				"e|ck|public.request.request_has_requester",
+				"n|con|public.request.request_has_requester"
+			]
+		}
+	],
+	"id": "b92f0a3b-9786-4c13-91b8-47c413cafee2",
+	"prevIds": ["6bb73e8d-b520-4a97-bf5c-74f6696ccd60", "f5521f47-4823-4d3e-975f-8ea2033b13b0"],
+	"type": "diff",
+	"version": "9"
+}

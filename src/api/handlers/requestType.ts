@@ -1,10 +1,10 @@
-import { db, schema } from '$api/db/db';
-import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '$api/rumble';
-import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
+import { db, schema } from '#api/db/db';
+import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } from '#api/rumble';
+import { isAdminInConference, isParticipantInConference } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { count, eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
-import { nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '#lib/helpers/nanoid';
 
 abilityBuilder.requestType.allow('read').when((ctx) => ({
 	where: isParticipantInConference(ctx)
@@ -27,13 +27,15 @@ schemaBuilder.mutationFields((t) => ({
 			conferenceId: t.arg.id({ required: true }),
 			name: t.arg.string({ required: true }),
 			faIcon: t.arg.string(),
-			delegatesOnly: t.arg.boolean()
+			delegatesOnly: t.arg.boolean(),
+			showOnPresentation: t.arg.boolean()
 		},
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.conference
 				.findFirst(
-					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
-						.query.single
+					(await ctx.abilities.conference.filter('update')).merge({
+						where: { id: args.conferenceId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -54,7 +56,8 @@ schemaBuilder.mutationFields((t) => ({
 						name: args.name,
 						faIcon: args.faIcon ?? undefined,
 						priority,
-						delegatesOnly: args.delegatesOnly ?? undefined
+						delegatesOnly: args.delegatesOnly ?? undefined,
+						showOnPresentation: args.showOnPresentation ?? undefined
 					})
 					.returning()
 					.then(assertFirstEntryExists);
@@ -65,8 +68,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.requestType
 				.findFirst(
 					query(
-						ctx.abilities.requestType.filter('read').merge({ where: { id: result.id } }).query
-							.single
+						(await ctx.abilities.requestType.filter('read')).merge({ where: { id: result.id } })
+							.query.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -81,12 +84,14 @@ schemaBuilder.mutationFields((t) => ({
 			faIcon: t.arg.string(),
 			priority: t.arg.int(),
 			enabled: t.arg.boolean(),
-			delegatesOnly: t.arg.boolean()
+			delegatesOnly: t.arg.boolean(),
+			showOnPresentation: t.arg.boolean()
 		},
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.requestType
 				.findFirst(
-					ctx.abilities.requestType.filter('update').merge({ where: { id: args.id } }).query.single
+					(await ctx.abilities.requestType.filter('update')).merge({ where: { id: args.id } }).query
+						.single
 				)
 				.then(assertFindFirstExists);
 
@@ -97,6 +102,8 @@ schemaBuilder.mutationFields((t) => ({
 			if (args.enabled !== undefined && args.enabled !== null) updateSet.enabled = args.enabled;
 			if (args.delegatesOnly !== undefined && args.delegatesOnly !== null)
 				updateSet.delegatesOnly = args.delegatesOnly;
+			if (args.showOnPresentation !== undefined && args.showOnPresentation !== null)
+				updateSet.showOnPresentation = args.showOnPresentation;
 
 			if (Object.keys(updateSet).length > 0) {
 				await db
@@ -110,7 +117,8 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.requestType
 				.findFirst(
 					query(
-						ctx.abilities.requestType.filter('read').merge({ where: { id: args.id } }).query.single
+						(await ctx.abilities.requestType.filter('read')).merge({ where: { id: args.id } }).query
+							.single
 					)
 				)
 				.then(assertFindFirstExists);
@@ -125,7 +133,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (_root, args, ctx) => {
 			const requestType = await db.query.requestType
 				.findFirst(
-					ctx.abilities.requestType.filter('delete').merge({ where: { id: args.id } }).query.single
+					(await ctx.abilities.requestType.filter('delete')).merge({ where: { id: args.id } }).query
+						.single
 				)
 				.then(assertFindFirstExists);
 

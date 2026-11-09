@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
-	import BasicCard from '$lib/components/BasicCard.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import BasicCard from '#lib/components/BasicCard.svelte';
 
 	interface Props {
 		conferenceUserId: string;
@@ -10,7 +10,7 @@
 
 	const events = await client.liveQuery.presenceEvents({
 		__args: {
-			where: { conferenceUserId },
+			where: { conferenceUserId: { eq: conferenceUserId } },
 			orderBy: { timestamp: 'desc' }
 		},
 		id: true,

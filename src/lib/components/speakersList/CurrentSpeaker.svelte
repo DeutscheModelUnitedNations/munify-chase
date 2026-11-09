@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Flag from '../Flag.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import { m } from '#lib/paraglide/messages';
 	import Timer from './Timer.svelte';
 	import { scale } from 'svelte/transition';
 	import { bounceOut } from 'svelte/easing';
-	import { compareSpeakers } from '$lib/helpers/speakerSort';
+	import { compareSpeakers } from '#lib/helpers/speakerSort';
 
 	interface Props {
 		speakersList?: {

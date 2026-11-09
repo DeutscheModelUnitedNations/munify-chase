@@ -1,5 +1,5 @@
-import { abilityBuilder, schemaBuilder, object, query } from '$api/rumble';
-import { isAdmin, isGlobalAdmin, isTeamInConference } from '$api/services/authHelper';
+import { abilityBuilder, schemaBuilder, object, query } from '#api/rumble';
+import { isAdmin, isGlobalAdmin, isTeamInConference } from '#api/services/authHelper';
 
 abilityBuilder.user.allow('read').when(({ oidc }) => {
 	if (oidc?.user) {

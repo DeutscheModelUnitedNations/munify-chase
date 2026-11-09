@@ -12,16 +12,20 @@ import { Redis as RedisExtension } from '@hocuspocus/extension-redis';
 import { Redis } from 'ioredis';
 import * as Y from 'yjs';
 import { db, schema } from '../db/db';
-import { configPrivate } from '$config/private';
-import { context, type Context } from '$api/context';
+import { REDIS_URL } from '$app/env/private';
+import { context, type Context } from '#api/context';
 import {
 	isParticipantInConference,
 	isPaperEditor,
 	isTeamInConference
-} from '$api/services/authHelper';
-import { nativeToRequestEvent } from '$api/services/auth';
-import { OIDC } from '$api/services/OIDC';
-import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from '$lib/api/yjs/statelessMessages';
+} from '#api/services/authHelper';
+import { nativeToRequestEvent } from '#api/services/auth';
+import { OIDC } from '#api/services/OIDC';
+import { READ_ONLY_DOWNGRADE_STATELESS_MESSAGE } from '#lib/api/yjs/statelessMessages';
+import { logger } from '#lib/logger';
+
+/** The Yjs backend's lines, under `name: yjs` */
+export const yjsLogger = logger.child({ name: 'yjs' });
 
 const PERSIST_DEBOUNCE_MS = 1500;
 
@@ -125,7 +129,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 				try {
 					Y.applyUpdate(new Y.Doc(), existing.state);
 				} catch (err) {
-					console.error('[yjs] corrupt paper_yjs_doc.state — hard failing', {
+					yjsLogger.error('Corrupt paper_yjs_doc.state, failing hard', {
 						paperId,
 						byteLength: existing.state.byteLength,
 						err
@@ -144,7 +148,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 					});
 			}
 		}),
-		...(configPrivate.REDIS_URL
+		...(REDIS_URL
 			? [
 					new RedisExtension({
 						// The extension bundles its own older ioredis whose types are
@@ -153,7 +157,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 						createClient: () =>
 							// protocol: 2 — see the matching comment in rumble.ts; keeps ioredis v6 on
 							// the RESP2 wire format the extension's bundled (older) ioredis expects.
-							new Redis(configPrivate.REDIS_URL as string, {
+							new Redis(REDIS_URL as string, {
 								protocol: 2
 							}) as unknown as ReturnType<
 								NonNullable<ConstructorParameters<typeof RedisExtension>[0]['createClient']>
@@ -192,14 +196,14 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 				event: syntheticEvent,
 				resolve: (event) => {
 					syntheticEvent = event;
-					return new Response();
+					return Promise.resolve(new Response());
 				}
 			});
 			const ctx = context(syntheticEvent);
 			ctx.mustBeLoggedIn();
 			connContext.ctx = ctx;
 		} catch (err) {
-			console.error('[yjs] in-band authentication failed', err);
+			yjsLogger.error('In-band authentication failed', err);
 			throw { code: 4401, reason: 'unauthorized' };
 		}
 
@@ -244,7 +248,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 					return;
 				}
 			} catch (err) {
-				console.error('[yjs] session liveness check failed', { paperId, err });
+				yjsLogger.error('Checking the session liveness failed', { paperId, err });
 				return;
 			}
 
@@ -252,7 +256,7 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 			try {
 				next = await authorize(paperId, ctx);
 			} catch (err) {
-				console.error('[yjs] re-authorize failed', { paperId, err });
+				yjsLogger.error('Re-authorizing failed', { paperId, err });
 				return;
 			}
 			if (!next.allowed) {
@@ -273,7 +277,10 @@ export const hocuspocus = new Hocuspocus<YjsConnectionContext>({
 				try {
 					connection.sendStateless(READ_ONLY_DOWNGRADE_STATELESS_MESSAGE);
 				} catch (err) {
-					console.error('[yjs] failed to notify client of read-only downgrade', { paperId, err });
+					yjsLogger.error('Notifying the client of the read-only downgrade failed', {
+						paperId,
+						err
+					});
 				}
 			}
 			connection.readOnly = !next.canWrite;

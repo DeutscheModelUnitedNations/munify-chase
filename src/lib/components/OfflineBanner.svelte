@@ -1,12 +1,15 @@
 <script lang="ts">
-	import { getWsConnected, justReconnected } from '$lib/state/connection.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { getWsConnected, justReconnected } from '#lib/state/connection.svelte';
+	import { m } from '#lib/paraglide/messages';
 	import { page } from '$app/state';
 	import toast from 'svelte-french-toast';
 	import { fly } from 'svelte/transition';
 
 	// Presentation view sits at /app/{conferenceId}/{committeeId} with no further segments.
 	let isPresentation = $derived(/^\/app\/[^/]+\/[^/]+\/?$/.test(page.url.pathname));
+
+	// Home page and conference selection don't need the offline hint.
+	let isHomeOrSelection = $derived(/^\/(app(\/import)?)?\/?$/.test(page.url.pathname));
 
 	// Only show offline banner once we have a confirmed disconnected state — not while
 	// the initial WS handshake is still in progress (null).

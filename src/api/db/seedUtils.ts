@@ -1,4 +1,4 @@
-import type { RegionalgroupEnum, RepresentationtypeEnum } from '$lib/api/rumbleClient/client';
+import type { RegionalgroupEnum, RepresentationtypeEnum } from '#lib/api/rumbleClient/client';
 import worldCountries from 'world-countries';
 
 const regionalGroupMapping: Record<

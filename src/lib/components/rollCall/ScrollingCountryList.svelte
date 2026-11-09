@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import Flag from '../Flag.svelte';
 	import { scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';

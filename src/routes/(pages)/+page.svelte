@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { configPublic } from '$config/public';
+	import { m } from '#lib/paraglide/messages';
+	import { PUBLIC_CONTACT_EMAIL } from '$app/env/public';
 	import LandingHero from './LandingHero.svelte';
 	import CardSection from './CardSection.svelte';
 	import TextSection from './TextSection.svelte';
@@ -8,7 +8,7 @@
 	import SplitSection from './SplitSection.svelte';
 	import DownloadSection from './DownloadSection.svelte';
 	import { resolve } from '$app/paths';
-	import { LOCAL_CONFERENCE_ID } from '$lib/state/localDemo.svelte';
+	import { LOCAL_CONFERENCE_ID } from '#lib/state/localDemo.svelte';
 
 	let { data } = $props();
 
@@ -99,6 +99,14 @@
 		>
 			{m.homeDocsAdminLabel()}
 		</a>
+		<a
+			class="btn btn-outline w-full sm:w-auto"
+			href="https://munify.cloud/chase/selfhost/getting-started"
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			{m.homeDocsTechnicalLabel()}
+		</a>
 	</div>
 </SplitSection>
 
@@ -120,8 +128,8 @@
 			</a>
 		</TextSection>
 		<TextSection title={m.homeHostingTitle()} text={m.homeHostingText()}>
-			{#if configPublic.PUBLIC_CONTACT_EMAIL}
-				<a class="link link-primary font-bold" href="mailto:{configPublic.PUBLIC_CONTACT_EMAIL}">
+			{#if PUBLIC_CONTACT_EMAIL}
+				<a class="link link-primary font-bold" href="mailto:{PUBLIC_CONTACT_EMAIL}">
 					{m.homeHostingButtonLabel()}
 				</a>
 			{/if}

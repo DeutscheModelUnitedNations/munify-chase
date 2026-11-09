@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import { flip } from 'svelte/animate';
 	import Flag from '../Flag.svelte';
 	import { cubicInOut, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import StripesAlert from './StripesAlert.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
-	import { compareSpeakers } from '$lib/helpers/speakerSort';
+	import { promiseToastStrings } from '#lib/utils/toast';
+	import { compareSpeakers } from '#lib/helpers/speakerSort';
 
 	type Speaker = {
 		id: string;

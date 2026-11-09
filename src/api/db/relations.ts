@@ -530,7 +530,17 @@ export const relations = defineRelations(schema, (r) => ({
 		conferenceUser: r.one.conferenceUser({
 			from: r.request.conferenceUserId,
 			to: r.conferenceUser.id,
-			optional: false
+			optional: true
+		}),
+		committeeMember: r.one.committeeMember({
+			from: r.request.committeeMemberId,
+			to: r.committeeMember.id,
+			optional: true
+		}),
+		conferenceMember: r.one.conferenceMember({
+			from: r.request.conferenceMemberId,
+			to: r.conferenceMember.id,
+			optional: true
 		}),
 		resolvedBy: r.one.conferenceUser({
 			from: r.request.resolvedByConferenceUserId,

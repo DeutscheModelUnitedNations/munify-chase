@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { resolve } from '$app/paths';
 	import {
 		ARCH_BUILD_URL,
@@ -8,8 +8,8 @@
 		platformLabel,
 		RELEASES_PAGE_URL,
 		type DownloadPlatform
-	} from '$lib/helpers/downloads';
-	import { getDownloads } from '$api/downloads.remote';
+	} from '#lib/helpers/downloads';
+	import { getDownloads } from '#api/downloads.remote';
 	import SplitSection from './SplitSection.svelte';
 
 	const { platform, version } = $derived(await getDownloads());

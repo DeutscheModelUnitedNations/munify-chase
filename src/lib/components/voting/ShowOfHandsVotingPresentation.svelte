@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { latchWhileDisconnected } from '$lib/state/connection.svelte';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
 	import { type VotingStage } from './votingModal';
-	import { m } from '$lib/paraglide/messages';
+	import { m } from '#lib/paraglide/messages';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import ResultChart from './ResultChart.svelte';
-	import { calculateMajority } from '$lib/utils/majorities';
+	import { calculateMajority } from '#lib/utils/majorities';
 
 	interface Props {
 		committeeId: string;

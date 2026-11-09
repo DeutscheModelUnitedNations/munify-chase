@@ -1,5 +1,5 @@
 import { getRequestEvent, query } from '$app/server';
-import { detectPlatform } from '$lib/helpers/downloads';
+import { detectPlatform } from '#lib/helpers/downloads';
 import { peekLatestRelease } from './services/releases';
 
 // Data for the landing page downloads section. Lives in src/api so the

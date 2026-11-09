@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Flag from '$lib/components/Flag.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 
 	interface Props {
 		representation?: {

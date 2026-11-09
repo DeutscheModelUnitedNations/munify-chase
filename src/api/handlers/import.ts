@@ -1,11 +1,11 @@
-import { db, schema } from '$api/db/db';
-import { enum_, schemaBuilder } from '$api/rumble';
-import { importDataSchema } from '$lib/utils/import';
+import { db, schema } from '#api/db/db';
+import { enum_, schemaBuilder } from '#api/rumble';
+import { importDataSchema } from '#lib/utils/import';
 import { ConferenceRef } from './conference';
 import { GraphQLError } from 'graphql';
-import { isGlobalAdmin } from '$api/services/authHelper';
+import { isGlobalAdmin } from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
-import { attendanceCode as generateAttendanceCode } from '$lib/helpers/attendanceCode';
+import { attendanceCode as generateAttendanceCode } from '#lib/helpers/attendanceCode';
 
 const Input = schemaBuilder.inputType('ImportData', {
 	description: 'Import data. You can find the JSON schema here: /api/schema/import',
@@ -272,7 +272,7 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.conference
 				.findFirst(
 					query(
-						ctx.abilities.conference.filter('read').merge({
+						(await ctx.abilities.conference.filter('read')).merge({
 							where: {
 								id: data.id
 							}

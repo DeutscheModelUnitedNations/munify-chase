@@ -28,7 +28,7 @@ Full documentation — setup guides, self-hosting, user manual, and FAQs — liv
 
 - [Self-hosting guide](https://munify.cloud/chase/selfhost/getting-started)
 - [FAQ](https://munify.cloud/chase/faq)
-- [User manual](https://munify.cloud/chase/user-manual/introduction)
+- User manual: built into the app at `/docs` (sources in [`docs/`](docs))
 
 ## Dependencies
 

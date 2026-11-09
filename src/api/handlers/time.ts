@@ -1,5 +1,5 @@
-import { schemaBuilder } from '$api/rumble';
-import type { Context } from '$api/context';
+import { schemaBuilder } from '#api/rumble';
+import type { Context } from '#api/context';
 
 schemaBuilder.queryFields((t) => {
 	return {

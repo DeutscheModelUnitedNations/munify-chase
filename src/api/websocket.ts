@@ -1,16 +1,19 @@
 // make sure we register all handlers before generating the schema later
-import '$api/handlers/register';
+import '#api/handlers/register';
 
 import { WebSocketServer } from 'ws';
 import type { WebSocket } from 'ws';
 import type { Socket } from 'node:net';
 import { useServer } from 'graphql-ws/use/ws';
-import { createWs } from '$api/rumble';
+import { createWs } from '#api/rumble';
 import type { IncomingMessage } from 'node:http';
 import { openYjsRoom } from './yjs/wss';
 import { nativeToRequestEvent } from './services/auth';
 import { OIDC } from './services/OIDC';
 import { context, type Context } from './context';
+import { logger } from '#lib/logger';
+
+const wsLogger = logger.child({ name: 'wss' });
 
 const gqlWSS = new WebSocketServer({ noServer: true });
 const yjsWSS = new WebSocketServer({ noServer: true });
@@ -60,7 +63,7 @@ createWs(
 					event: syntheticEvent,
 					resolve: (event) => {
 						syntheticEvent = event;
-						return new Response();
+						return Promise.resolve(new Response());
 					}
 				});
 				const ctx = context(syntheticEvent);
@@ -69,7 +72,7 @@ createWs(
 				const socket = (req as unknown as Record<string, unknown>)[UPGRADE_SOCKET_FIELD] as Socket;
 				startWSValidityChecker(ctx, socket);
 			} catch (err) {
-				console.error('[wss] failed to validate connection_init Bearer token', err);
+				wsLogger.error('Validating the connection_init Bearer token failed', err);
 				return false;
 			}
 		}
@@ -116,7 +119,7 @@ yjsWSS.on('headers', setHeaders);
 			event: syntheticSvelteRequestEvent,
 			resolve: (event) => {
 				syntheticSvelteRequestEvent = event;
-				return new Response();
+				return Promise.resolve(new Response());
 			}
 		});
 		const authedCtx = context(syntheticSvelteRequestEvent);
@@ -160,7 +163,7 @@ function startWSValidityChecker(ctx: Context, socket: Socket) {
 		} catch (err) {
 			// A transient failure (e.g. the introspection call itself erroring
 			// out) fails open — only a definitive "not live" result disconnects.
-			console.error('[wss] failed to check websocket session liveness', err);
+			wsLogger.error('Checking the session liveness failed', err);
 		}
 	}, SESSION_LIVENESS_CHECK_INTERVAL_MS);
 	socket.once('close', () => clearInterval(interval));

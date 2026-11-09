@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
-	import { client } from '$lib/api/rumbleClient/client';
+	import { client } from '#lib/api/rumbleClient/client';
 	import {
 		ResolutionPreview,
 		OperativeParagraphPreview,
@@ -13,12 +13,12 @@
 		englishPreamblePhrases,
 		englishOperativePhrases
 	} from '@deutschemodelunitednations/munify-resolution-editor/phrases';
-	import { createPaperYjsClient, type PaperYjsClient } from '$lib/api/yjs/createPaperYjs.svelte';
+	import { createPaperYjsClient, type PaperYjsClient } from '#lib/api/yjs/createPaperYjs.svelte';
 	import { toAmendmentOverlays } from './paperContext';
-	import { svgToDataUrl } from '$lib/utils/svgToDataUrl';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { svgToDataUrl } from '#lib/utils/svgToDataUrl';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import { m } from '#lib/paraglide/messages';
 
 	interface ActiveAmendment {
 		id: string;

@@ -1,4 +1,4 @@
-import { db, schema } from '$api/db/db';
+import { db, schema } from '#api/db/db';
 import {
 	abilityBuilder,
 	enum_,
@@ -6,11 +6,11 @@ import {
 	object,
 	pubsub as rumblePubsub,
 	query
-} from '$api/rumble';
-import { isAdminInConference, isParticipantInConference } from '$api/services/authHelper';
+} from '#api/rumble';
+import { isAdminInConference, isParticipantInConference } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { eq } from 'drizzle-orm';
-import { nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '#lib/helpers/nanoid';
 
 abilityBuilder.representation.allow('read').when((ctx) => {
 	return {
@@ -46,8 +46,9 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			await db.query.conference
 				.findFirst(
-					ctx.abilities.conference.filter('update').merge({ where: { id: args.conferenceId } })
-						.query.single
+					(await ctx.abilities.conference.filter('update')).merge({
+						where: { id: args.conferenceId }
+					}).query.single
 				)
 				.then(assertFindFirstExists);
 
@@ -90,7 +91,7 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.representation
 				.findFirst(
 					query(
-						ctx.abilities.representation.filter('read').merge({
+						(await ctx.abilities.representation.filter('read')).merge({
 							where: { id: result.id }
 						}).query.single
 					)
@@ -106,8 +107,8 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (_root, args, ctx) => {
 			await db.query.representation
 				.findFirst(
-					ctx.abilities.representation.filter('delete').merge({ where: { id: args.id } }).query
-						.single
+					(await ctx.abilities.representation.filter('delete')).merge({ where: { id: args.id } })
+						.query.single
 				)
 				.then(assertFindFirstExists);
 

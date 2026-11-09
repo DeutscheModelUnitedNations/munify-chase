@@ -1,16 +1,17 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
-	import { m } from '$lib/paraglide/messages';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 	import { page } from '$app/state';
-	import Tabs from '$lib/components/Tabs.svelte';
-	import NavbarBurgerMenu from '$lib/components/NavbarBurgerMenu.svelte';
+	import Tabs from '#lib/components/Tabs.svelte';
+	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
 	import {
 		buildConferenceNavItems,
 		roleBadgeClassFor,
 		roleLabelFor
-	} from '$lib/components/navbar/conferenceNavItems';
-	import { getCurrentUser } from '$lib/state/currentUser.svelte';
+	} from '#lib/components/navbar/conferenceNavItems';
+	import { getCurrentUser } from '#lib/state/currentUser.svelte';
+	import { loadConferenceViewer } from '#lib/state/conferenceViewer';
+	import { displayNameOf } from '#lib/helpers/displayName';
 	import ByCommitteeTab from './ByCommitteeTab.svelte';
 	import ByNsaTab from './ByNsaTab.svelte';
 	import NotCheckedInTab from './NotCheckedInTab.svelte';
@@ -19,34 +20,12 @@
 	const conferenceId = page.params.conferenceId!;
 	const currentUser = await getCurrentUser();
 	const userId = currentUser.id ?? '';
-	const userDisplayName =
-		[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
-		currentUser.preferredUsername ||
-		currentUser.email ||
-		'';
+	const userDisplayName = displayNameOf(currentUser);
 
-	const conferenceMeta = await client.liveQuery.conference({
-		__args: { id: conferenceId },
-		title: true,
-		committees: {
-			id: true,
-			name: true,
-			abbreviation: true
-		}
-	});
-
-	const conferenceUsers = await client.liveQuery.conferenceUsers({
-		__args: {
-			where: {
-				conference: { id: { eq: conferenceId } },
-				user: { id: { eq: userId } }
-			}
-		},
-		id: true,
-		conferenceUserType: true
-	});
-
-	const isGlobalAdmin = await client.query.isGlobalAdmin();
+	const { conferenceMeta, conferenceUsers, isGlobalAdmin } = await loadConferenceViewer(
+		conferenceId,
+		userId
+	);
 
 	let role = $derived(conferenceUsers?.[0]?.conferenceUserType);
 	let allowed = $derived(isGlobalAdmin || role === 'ADMIN' || role === 'TEAM');

@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { client, type SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
-	import { registerCommands } from '$lib/commands/registry.svelte';
-	import { nanoid } from '$lib/helpers/nanoid';
-	import Combobox from '$lib/components/Combobox.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import type { MergeWithUndefined } from '$lib/helpers/utilityTypes';
-	import { m } from '$lib/paraglide/messages';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import { client, type SpeakerslistcategoryEnum } from '#lib/api/rumbleClient/client';
+	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { nanoid } from '#lib/helpers/nanoid';
+	import Combobox from '#lib/components/Combobox.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import type { MergeWithUndefined } from '#lib/helpers/utilityTypes';
+	import { m } from '#lib/paraglide/messages';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import { promiseToastStrings } from '#lib/utils/toast';
 	import Fuse, { type IFuseOptions } from 'fuse.js';
 	import toast from 'svelte-french-toast';
 	import { listCommandScope } from './listCommands';

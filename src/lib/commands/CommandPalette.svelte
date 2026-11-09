@@ -2,8 +2,8 @@
 	import { Command, computeCommandScore } from 'bits-ui';
 	import { tick } from 'svelte';
 	import type { Attachment } from 'svelte/attachments';
-	import Kbd from '$lib/components/Kbd.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import Kbd from '#lib/components/Kbd.svelte';
+	import { m } from '#lib/paraglide/messages';
 	import { bindCommandShortcuts, getCommands, isEnabled } from './registry.svelte';
 	import { commandPalette, recentCommandIds, rememberCommand } from './palette.svelte';
 	import { COMMAND_GROUPS, type Command as AppCommand, type CommandGroup } from './types';

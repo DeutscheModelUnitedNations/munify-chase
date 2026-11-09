@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { m } from '$lib/paraglide/messages';
-	import { client } from '$lib/api/rumbleClient/client';
-	import { nanoid } from '$lib/helpers/nanoid';
+	import { m } from '#lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
+	import { nanoid } from '#lib/helpers/nanoid';
 	import {
 		parseClauseFragment,
 		serializeClause
@@ -17,10 +17,10 @@
 		OperativeParagraphEditor
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import { englishOperativePhrases } from '@deutschemodelunitednations/munify-resolution-editor/phrases';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import { getResolutionLabels } from '$lib/utils/resolutionEditorLabels';
-	import Combobox from '$lib/components/Combobox.svelte';
-	import Flag from '$lib/components/Flag.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import { getResolutionLabels } from '#lib/utils/resolutionEditorLabels';
+	import Combobox from '#lib/components/Combobox.svelte';
+	import Flag from '#lib/components/Flag.svelte';
 
 	interface Props {
 		open: boolean;

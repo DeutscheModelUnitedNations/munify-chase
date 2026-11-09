@@ -1,15 +1,9 @@
 {
 	"compilerOptions": {
-		"allowJs": true,
-		"checkJs": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"moduleResolution": "bundler",
-		"resolveJsonModule": true,
 		"rootDirs": [".", "./.svelte-kit/types"],
-		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true
 	},
-	"extends": "./.svelte-kit/tsconfig.json"
+	"extends": "$app/tsconfig",
+	"include": ["src", "scripts", "vite.config.ts"]
 }

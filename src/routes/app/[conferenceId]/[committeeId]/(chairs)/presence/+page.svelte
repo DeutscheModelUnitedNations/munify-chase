@@ -1,28 +1,28 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { registerCommands } from '$lib/commands/registry.svelte';
+	import { m } from '#lib/paraglide/messages';
+	import { registerCommands } from '#lib/commands/registry.svelte';
 	import { page } from '$app/state';
-	import { client } from '$lib/api/rumbleClient/client';
-	import BasicCard from '$lib/components/BasicCard.svelte';
-	import Majorities from '$lib/components/Majorities.svelte';
-	import UndrawError from '$lib/components/UndrawError.svelte';
-	import emptyStreet from '$assets/undraw/empty_street.svg';
+	import { client } from '#lib/api/rumbleClient/client';
+	import BasicCard from '#lib/components/BasicCard.svelte';
+	import Majorities from '#lib/components/Majorities.svelte';
+	import UndrawError from '#lib/components/UndrawError.svelte';
+	import emptyStreet from '#assets/undraw/empty_street.svg';
 	import PresenceActions from './PresenceActions.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import Tabs from '$lib/components/Tabs.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import Tabs from '#lib/components/Tabs.svelte';
 	import toast from 'svelte-french-toast';
-	import { promiseToastStrings } from '$lib/utils/toast';
+	import { promiseToastStrings } from '#lib/utils/toast';
 	import {
 		getTranslatedCountryNameFromAlpha3Code,
 		sortTranslatedCountries
-	} from '$lib/utils/nationTranslationHelper.svelte';
-	import ChairRollCall from '$lib/components/rollCall/ChairRollCall.svelte';
+	} from '#lib/utils/nationTranslationHelper.svelte';
+	import ChairRollCall from '#lib/components/rollCall/ChairRollCall.svelte';
 	import dayjs from 'dayjs';
 	import StatusWidget from '../StatusWidget.svelte';
-	import { isDelegationMember, isUNMember } from '$lib/helpers/distinguishConferenceMembers';
-	import { translateRegionalGroupEnum } from '$lib/utils/enumTranslationHelper';
+	import { isDelegationMember, isUNMember } from '#lib/helpers/distinguishConferenceMembers';
+	import { translateRegionalGroupEnum } from '#lib/utils/enumTranslationHelper';
 	import NsaAttendanceCard from './NsaAttendanceCard.svelte';
-	import { isLocalConferenceActive } from '$lib/state/localDemo.svelte';
+	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },

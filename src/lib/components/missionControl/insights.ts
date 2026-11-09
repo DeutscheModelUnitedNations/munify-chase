@@ -1,6 +1,6 @@
-import type { CommitteestatusEnum, VotingmodeEnum } from '$lib/api/rumbleClient/client';
-import { compareSpeakers } from '$lib/helpers/speakerSort';
-import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+import type { CommitteestatusEnum, VotingmodeEnum } from '#lib/api/rumbleClient/client';
+import { compareSpeakers } from '#lib/helpers/speakerSort';
+import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 
 export interface InsightRepresentation {
 	name?: string | null;
@@ -24,6 +24,9 @@ export interface InsightCommittee {
 	name: string;
 	status: CommitteestatusEnum;
 	statusUntil: Date;
+	// Set by the chairs: a custom status text and the state of debate
+	statusHeadline?: string | null;
+	stateOfDebate?: string | null;
 	totalPresent?: number | null;
 	members?: Array<{ present: boolean; representation?: { type?: string | null } | null }> | null;
 	activeAgendaItem?: {

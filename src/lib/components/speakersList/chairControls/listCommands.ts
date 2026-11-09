@@ -1,5 +1,5 @@
-import type { SpeakerslistcategoryEnum } from '$lib/api/rumbleClient/client';
-import { m } from '$lib/paraglide/messages';
+import type { SpeakerslistcategoryEnum } from '#lib/api/rumbleClient/client';
+import { m } from '#lib/paraglide/messages';
 
 /**
  * The chair controls exist once per list (main list and Point of Information), so their

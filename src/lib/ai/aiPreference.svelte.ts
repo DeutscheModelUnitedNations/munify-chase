@@ -1,4 +1,4 @@
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import type { AiMode } from './call';
 
 export type AiPreference = 'backend' | 'local' | 'off';

@@ -1,8 +1,8 @@
-import { db, schema } from '$api/db/db';
-import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '$api/rumble';
-import { isParticipantInConference, isTeamInConference } from '$api/services/authHelper';
+import { db, schema } from '#api/db/db';
+import { abilityBuilder, object, query, pubsub as rumblePubsub, schemaBuilder } from '#api/rumble';
+import { isParticipantInConference, isTeamInConference } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
-import { nanoidValidation } from '$lib/helpers/nanoid';
+import { nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 
 abilityBuilder.paperSponsor.allow('read').when((ctx) => {
@@ -40,7 +40,7 @@ schemaBuilder.mutationFields((t) => ({
 		resolve: async (query, _root, args, ctx) => {
 			const paper = await db.query.resolutionPaper
 				.findFirst(
-					ctx.abilities.resolutionPaper.filter('read').merge({
+					(await ctx.abilities.resolutionPaper.filter('read')).merge({
 						where: { id: args.paperId }
 					}).query.single
 				)
@@ -106,7 +106,7 @@ schemaBuilder.mutationFields((t) => ({
 			return db.query.paperSponsor
 				.findFirst(
 					query(
-						ctx.abilities.paperSponsor.filter('read').merge({
+						(await ctx.abilities.paperSponsor.filter('read')).merge({
 							where: { id: createdId }
 						}).query.single
 					)
@@ -139,7 +139,8 @@ schemaBuilder.mutationFields((t) => ({
 			await db
 				.delete(schema.paperSponsor)
 				.where(
-					ctx.abilities.paperSponsor.filter('delete').merge({ where: { id: args.id } }).sql.where
+					(await ctx.abilities.paperSponsor.filter('delete')).merge({ where: { id: args.id } }).sql
+						.where
 				);
 			pubsub.removed();
 			return true;

@@ -34,7 +34,7 @@ jobs:
     env:
       SYNC_BRANCH: sync/main-into-native-client
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: native-client
           fetch-depth: 0
@@ -104,7 +104,6 @@ jobs:
             src/routes/api \
             src/routes/download \
             'src/routes/(pages)/DownloadSection.svelte' \
-            src/params/downloadPlatform.ts \
             src/routes/logout \
             src/routes/app/+layout.server.ts \
             src/hooks.server.ts \

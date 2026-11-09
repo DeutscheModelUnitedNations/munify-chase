@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import { client } from '$lib/api/rumbleClient/client';
+	import { m } from '#lib/paraglide/messages';
+	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import {
 		isTeam,
@@ -11,17 +11,17 @@
 		type AmendmentStatus,
 		type ResolutionViewer
 	} from './paperContext';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
-	import Flag from '$lib/components/Flag.svelte';
-	import { openVotingModal, type VotingResult } from '$lib/components/voting/votingModal';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import Flag from '#lib/components/Flag.svelte';
+	import { openVotingModal, type VotingResult } from '#lib/components/voting/votingModal';
 	import AmendmentSponsorPanel from './AmendmentSponsorPanel.svelte';
 	import AmendmentReviewPanel from './AmendmentReviewPanel.svelte';
-	import AiSpinner from '$lib/components/AiSpinner.svelte';
-	import AiIcon from '$lib/components/AiIcon.svelte';
+	import AiSpinner from '#lib/components/AiSpinner.svelte';
+	import AiIcon from '#lib/components/AiIcon.svelte';
 	import { slide } from 'svelte/transition';
 	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
-	import { rankAmendmentsByImpact } from '$lib/ai/amendments';
-	import { getAiPreference, preferenceToMode } from '$lib/ai/aiPreference.svelte';
+	import { rankAmendmentsByImpact } from '#lib/ai/amendments';
+	import { getAiPreference, preferenceToMode } from '#lib/ai/aiPreference.svelte';
 
 	interface Props {
 		paperId: string;

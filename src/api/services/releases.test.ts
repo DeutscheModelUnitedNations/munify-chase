@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('$config/private', () => ({ configPrivate: {} }));
+vi.mock('$app/env/private', () => ({ GITHUB_TOKEN: undefined }));
+vi.mock('#lib/logger', () => ({ logger: { warn: vi.fn() } }));
 
 const { createReleaseCache } = await import('./releases');
 
@@ -20,7 +21,6 @@ function setup(...responses: (Response | Error)[]) {
 		const next = responses.shift() ?? new Error('no more responses');
 		return next instanceof Error ? Promise.reject(next) : Promise.resolve(next);
 	});
-	vi.spyOn(console, 'warn').mockImplementation(() => {});
 	const { get, peek } = createReleaseCache({
 		fetch: fetch as typeof globalThis.fetch,
 		now: () => time

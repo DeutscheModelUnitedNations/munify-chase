@@ -1,7 +1,7 @@
 <script lang="ts">
-	import IconInfoBox from '$lib/components/IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '$lib/utils/committeeStatus';
-	import type { CommitteestatusEnum } from '$lib/api/rumbleClient/client';
+	import IconInfoBox from '#lib/components/IconInfoBox.svelte';
+	import { getCommitteeStatusIcon, getCommitteeStatusText } from '#lib/utils/committeeStatus';
+	import type { CommitteestatusEnum } from '#lib/api/rumbleClient/client';
 
 	interface Props {
 		committee?: {

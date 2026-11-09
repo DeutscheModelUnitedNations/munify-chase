@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { client } from '$lib/api/rumbleClient/client';
+	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
-	import AiSpinner from '$lib/components/AiSpinner.svelte';
-	import AiIcon from '$lib/components/AiIcon.svelte';
+	import AiSpinner from '#lib/components/AiSpinner.svelte';
+	import AiIcon from '#lib/components/AiIcon.svelte';
 	import AiResultBadge from './AiResultBadge.svelte';
-	import Flag from '$lib/components/Flag.svelte';
+	import Flag from '#lib/components/Flag.svelte';
 	import ThreeWayDiffPreview from './ThreeWayDiffPreview.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '$lib/utils/nationTranslationHelper.svelte';
+	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import {
 		OperativeParagraphPreview,
 		serializeClause

@@ -15,6 +15,13 @@ export function isAdminEmail(email: string) {
 export const NO_ROWS = { RAW: sql`false` };
 
 /**
+ * A filter every row matches, for a global admin. Not `{}`: inside an `OR` (the paper's update
+ * rule) an empty filter is dropped rather than counted as true, which left global admins matching
+ * nothing.
+ */
+const ANY_ROW = { RAW: sql`true` };
+
+/**
  * The signed-in person's user id. The linked DELEGATOR calls without a session, so a rule that
  * needs one grants it nothing (`undefined`) rather than failing the whole query, which would also
  * fail the link's own rules; anybody else without a session gets "Must be logged in" as before.
@@ -38,7 +45,7 @@ export function isGlobalAdmin(ctx: Context) {
 
 export function isTeamInConference(ctx: Context) {
 	if (isGlobalAdmin(ctx)) {
-		return {};
+		return ANY_ROW;
 	}
 
 	const userId = sessionUserId(ctx);
@@ -82,7 +89,7 @@ export function isAdminInConference(ctx: Context) {
 
 export function isAdmin(ctx: Context) {
 	if (isGlobalAdmin(ctx)) {
-		return {};
+		return ANY_ROW;
 	}
 
 	const userId = sessionUserId(ctx);
@@ -100,7 +107,7 @@ export function isAdmin(ctx: Context) {
 
 export function isParticipant(ctx: Context) {
 	if (isGlobalAdmin(ctx)) {
-		return {};
+		return ANY_ROW;
 	}
 
 	const userId = sessionUserId(ctx);

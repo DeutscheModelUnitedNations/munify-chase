@@ -84,13 +84,29 @@ function runWorker() {
 		});
 		cleanups.push(() => remote.dispose());
 
+		// One sync per conference at a time: a big conference takes a while to read, and two at once
+		// would both create what is new. A change meanwhile asks for one more pass afterwards.
+		const syncing = new Set<string>();
+		const again = new Set<string>();
+		const sync = (conferenceId: string) => {
+			if (syncing.has(conferenceId)) {
+				again.add(conferenceId);
+				return;
+			}
+			syncing.add(conferenceId);
+			void syncConference({ remote, linkId: link.id, conferenceId }).finally(() => {
+				syncing.delete(conferenceId);
+				if (again.delete(conferenceId) && !stopped) sync(conferenceId);
+			});
+		};
+
 		const schedule = (conferenceId: string) => {
 			clearTimeout(timers.get(conferenceId));
 			timers.set(
 				conferenceId,
 				setTimeout(() => {
 					timers.delete(conferenceId);
-					if (!stopped) void syncConference({ remote, linkId: link.id, conferenceId });
+					if (!stopped) sync(conferenceId);
 				}, DEBOUNCE_MS)
 			);
 		};
@@ -101,7 +117,7 @@ function runWorker() {
 		// on the link and retried on the next (re)connect, never left to crash the app.
 		const failed = (error: unknown) => void recordError({ linkId: link.id, error });
 		// Set up again on every (re)connect: a first answer that failed (the other side was away)
-		// leaves no watch behind otherwise.
+		// leaves no watch behind otherwise, and a broken stream ends the subscriptions it carried.
 		let unwatchConferences: (() => void) | undefined;
 		const watchConferences = () => {
 			unwatchConferences?.();
@@ -128,7 +144,17 @@ function runWorker() {
 				}
 			});
 		};
-		reconnected = watchConferences;
+		// A stream that broke takes the subscriptions on it along, so every watch starts afresh
+		reconnected = () => {
+			for (const [conferenceId, unwatch] of watchers) {
+				unwatch();
+				watchers.set(
+					conferenceId,
+					watchConference({ remote, conferenceId, onChange: schedule, onError: failed })
+				);
+			}
+			watchConferences();
+		};
 		watchConferences();
 		cleanups.push(() => unwatchConferences?.());
 	})().catch((error) => {

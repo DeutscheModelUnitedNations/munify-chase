@@ -18,7 +18,7 @@ presence export and delegator's presence import) with a live link between the tw
 | Team roles                   | `PROJECT_MANAGEMENT` and `TEAM_COORDINATOR` (delegator's team admins) → chase `ADMIN`; every other team member → `TEAM`.                                                                                                                                                                                                                                                                                                                                           |
 | Custom roles                 | Every custom role (press, judges, …) is a spectator in CHASE.                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Supervisors                  | `SPECTATOR`, as today.                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| Presence → delegator         | A live view of chase's records on the attendance import page, scored as today (`scoreDelegates` / `scoreNsas`). **The team applies it**; nothing is written automatically.                                                                                                                                                                                                                                                                                         |
+| Presence → delegator         | Read from chase when the attendance import page opens (its `chasePresence` query asks chase's own `conferenceUsers` with seats and presence events), scored as today (`scoreDelegates` / `scoreNsas`). Nothing is copied into delegator. **The team applies it**; nothing is written automatically.                                                                                                                                                                |
 | Adopted resolutions          | Automatic: chase records a resolution as ADOPTED, delegator renders the adopted text in its own header and stores it as a `resolution` in that committee. Adopting it again replaces it.                                                                                                                                                                                                                                                                           |
 | Working papers               | ACCEPTED working papers appear in chase as drafts and **stay in sync** with delegator's newer versions until chase starts editing them.                                                                                                                                                                                                                                                                                                                            |
 | NSA check-in                 | NSAs only. Chase's NSA scanner accepts delegator's digital nametag (the rotating `MUN1…` code) and a new printed card, both verified offline, plus a search by name. The 6-character `attendanceCode` goes.                                                                                                                                                                                                                                                        |
@@ -79,7 +79,7 @@ stored about the link but its state: it is configuration, the same variables on 
   per table and page of 1000 rows (`liveTable.ts`). Every answer holds the rows as they are, so
   the worker keeps the remote's tables in memory and reads nothing twice: chase works out the
   mirror from them and writes only the rows that differ from its own, announcing only those;
-  delegator works out presence and adopted resolutions, reading a text only to render it.
+  delegator works out the adopted resolutions, reading a text only to render it.
 - **A list hears changes to the rows it shows, not of a row coming into its filter.** Tables are
   filtered only where they would be large: the members of seated delegations, the participant
   rows and users by the ids the other tables name, the final papers. Delegations and single
@@ -130,21 +130,24 @@ tested (`mirror.ts` in chase).
 
 ### Sync, chase → delegator (delegator's worker pulls)
 
-The same pattern the other way: chase gets read rules for the link on its presence events,
-conference users and adopted resolution papers, and delegator's worker watches them with live
-queries through the generated chase client. Delegator renders the adopted resolution's PDF itself
+The same pattern the other way for resolutions: chase gets read rules for the link on its
+presence events, conference users and adopted resolution papers, and delegator's worker watches
+the papers with live queries through the generated chase client. Delegator renders the adopted resolution's PDF itself
 (typst and the resolution editor are in both apps), so it prints in delegator's header: the
 conference's emblem and the committee's resolution headline. Chase's `/api/pdf` is not involved.
 
-- **Presence:** delegator keeps the latest `linkPresence` per conference in memory and in a
-  `chasePresenceSnapshot` row (JSON, `fetchedAt`), and publishes it. The attendance import page
-  shows it live, scored by the existing `scoreDelegates` / `scoreNsas`, and the team applies it
-  with the existing buttons. The file upload stays below, under "advanced".
+- **Presence is not copied.** The attendance import page asks for it when it opens, and again on
+  "Read again": delegator's `chasePresence` query (participant care) calls chase's own
+  `conferenceUsers` query of the conference, with each person's seat, representation and
+  presence events nested, a page of 1000 at a time, and answers it in the shape of chase's
+  presence export (`fetchChasePresence`). It is scored by the existing `scoreDelegates` /
+  `scoreNsas`, and the team applies it with the existing buttons. The file upload stays below,
+  under "advanced".
 - **Resolutions:** chase lets the link read FINAL papers, their `VOTE_CONCLUDED` snapshots and
   the votes' outcomes, of synced conferences only, and its conclude and delete mutations now
   publish the snapshot table too. Delegator's worker watches the concluding snapshots per
   conference (nested `paper { vote { outcome } }`, so a later outcome reaches it as well), on its
-  own debounce, so presence never triggers a compile; syncs run one at a time. A paper counts when
+  own debounce; syncs run one at a time. A paper counts when
   its vote is ADOPTED; its text is the latest concluding snapshot (`adoptedResolutions.ts`). The
   worker renders the new ones and those with a newer snapshot (`#api/services/typst`, shared with
   `/api/pdf`), stores the PDF without an uploader (`storeGeneratedFile`) and upserts `resolution`

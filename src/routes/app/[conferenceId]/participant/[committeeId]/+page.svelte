@@ -1,22 +1,20 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
 	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { nanoid } from '#lib/helpers/nanoid';
-	import { getCurrentUser } from '#lib/state/currentUser.svelte';
 	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
-	import IconInfoBox from '#lib/components/IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '#lib/utils/committeeStatus';
-	import WhiteboardViewer from '#lib/components/whiteboard/WhiteboardViewer.svelte';
-	import Majorities from '#lib/components/Majorities.svelte';
 	import ParticipantIdentityCard from '../ParticipantIdentityCard.svelte';
-	import DeviceVoteModal from '#lib/components/voting/DeviceVoteModal.svelte';
 	import RequestsCard from '#lib/components/requests/RequestsCard.svelte';
 	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
 	import { registerCommands } from '#lib/commands/registry.svelte';
-	import { editableSpeakersListSelection, participantSelection } from '../../selections';
+	import { editableSpeakersListSelection } from '../../selections';
+	import { loadParticipantUser, participantRepresentation } from '../participantUser';
 	import ParticipantListCard from './ParticipantListCard.svelte';
+	import CommitteeOverviewCards from './CommitteeOverviewCards.svelte';
+	import ResolutionsLinkCard from './ResolutionsLinkCard.svelte';
+	import WhiteboardCard from './WhiteboardCard.svelte';
+	import ParticipantDeviceVote from './ParticipantDeviceVote.svelte';
 	import {
 		isParticipantRole,
 		positionOnList,
@@ -25,17 +23,7 @@
 		showsDeviceVote
 	} from './participantCommittee';
 
-	const currentUser = await getCurrentUser();
-	const [conferenceUser] =
-		(await client.liveQuery.conferenceUsers({
-			__args: {
-				where: {
-					conference: { id: { eq: page.params.conferenceId } },
-					user: { id: { eq: currentUser?.id ?? '' } }
-				}
-			},
-			...participantSelection
-		})) ?? [];
+	const conferenceUser = await loadParticipantUser(page.params.conferenceId);
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -68,19 +56,18 @@
 		}
 	});
 
+	const conferenceId = $derived(page.params.conferenceId!);
 	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
 	let role = $derived(conferenceUser?.conferenceUserType);
 	let isParticipant = $derived(isParticipantRole(role));
+	const showsRequests = $derived(isParticipant && !!committee?.allowRequests);
 
 	// Determine what member IDs we have for self-add detection
 	let myCommitteeMemberId = $derived(conferenceUser?.committeeMemberId);
 	let myConferenceMemberId = $derived(conferenceUser?.conferenceMemberId);
 	let myPresent = $derived(conferenceUser?.committeeMember?.present ?? false);
-	let representation = $derived(
-		conferenceUser?.committeeMember?.representation ??
-			conferenceUser?.conferenceMember?.representation
-	);
+	let representation = $derived(participantRepresentation(conferenceUser));
 
 	// Freeze the last-known agenda item while the WS is confirmed disconnected, so a
 	// transient network blip doesn't reset the active speaker's timer.
@@ -144,12 +131,32 @@
 	}
 
 	const lists = $derived([
-		{ list: speakersList, label: m.speakersList, myPosition: myPositionOnSpeakers, key: 'speakers' },
+		{
+			list: speakersList,
+			label: m.speakersList,
+			myPosition: myPositionOnSpeakers,
+			key: 'speakers'
+		},
 		{ list: commentList, label: m.commentList, myPosition: myPositionOnComments, key: 'poi' }
 	]);
 
+	// The lists the caller sees, the first of both carrying the tour's anchors
+	const shownLists = $derived(
+		seesSpeakersLists(role)
+			? lists.flatMap((entry, i) =>
+					entry.list ? [{ ...entry, list: entry.list, tour: i === 0 }] : []
+				)
+			: []
+	);
+
 	/** What the caller can do about a list, null while they cannot add themselves at all. */
-	function selfAddFor({ list, myPosition }: { list: typeof speakersList; myPosition: number | null }) {
+	function selfAddFor({
+		list,
+		myPosition
+	}: {
+		list: typeof speakersList;
+		myPosition: number | null;
+	}) {
 		if (!list || !seesSpeakersLists(role) || !canSelfAdd) return null;
 		return selfAddState({ myPosition, isClosed: list.isClosed, role, present: myPresent });
 	}
@@ -194,104 +201,47 @@
 			<ParticipantIdentityCard {representation} />
 		</div>
 
-		<!-- Committee Status Card -->
-		<div class="card bg-base-100 shadow-sm" data-tour="committee.status">
-			<div class="card-body gap-2 p-4">
-				<IconInfoBox text={activeAgendaItem?.title ?? '—'} icon="lectern" />
-				<IconInfoBox
-					text={getCommitteeStatusText(committee.status)}
-					icon={getCommitteeStatusIcon(committee.status)}
-					committeeStatus={committee.status}
-					until={new Date(committee.statusUntil)}
-				/>
-				{#if committee.statusHeadline}
-					<div class="text-sm opacity-70">{committee.statusHeadline}</div>
-				{/if}
-			</div>
-		</div>
-		<div class="card bg-base-100 shadow-sm" data-tour="committee.majorities">
-			<div class="card-body gap-2 p-4">
-				<h2 class="card-title text-lg">{m.majorities()}</h2>
-				<Majorities
-					totalPresent={committee.totalPresent}
-					simpleMajority={committee.simpleMajority}
-					twoThirdsMajority={committee.twoThirdsMajority}
-					{minAmendmentSponsors}
-				/>
-			</div>
-		</div>
+		<CommitteeOverviewCards
+			{committee}
+			agendaItemTitle={activeAgendaItem?.title}
+			{minAmendmentSponsors}
+		/>
 
 		<!-- Speakers List Card -->
-		{#if seesSpeakersLists(role)}
-			{#each lists as entry, i (entry.key)}
-				{#if entry.list}
-					{@const list = entry.list}
-					<ParticipantListCard
-						{list}
-						label={entry.label()}
-						myPosition={entry.myPosition}
-						selfAdd={selfAddFor(entry)}
-						tour={i === 0}
-						onAdd={() => handleSelfAdd(list.id)}
-						onRemove={() => handleSelfRemove(list.id)}
-					/>
-				{/if}
-			{/each}
-		{/if}
+		{#each shownLists as entry (entry.key)}
+			<ParticipantListCard
+				list={entry.list}
+				label={entry.label()}
+				myPosition={entry.myPosition}
+				selfAdd={selfAddFor(entry)}
+				tour={entry.tour}
+				onAdd={() => handleSelfAdd(entry.list.id)}
+				onRemove={() => handleSelfRemove(entry.list.id)}
+			/>
+		{/each}
 
 		<!-- Requests Card -->
-		{#if isParticipant && committee.allowRequests}
+		{#if showsRequests}
 			<div class="grid" data-tour="committee.requests">
-				<RequestsCard
-					conferenceId={page.params.conferenceId!}
-					committeeId={committee.id}
-					isDelegate={role === 'DELEGATE'}
-				/>
+				<RequestsCard {conferenceId} committeeId={committee.id} isDelegate={role === 'DELEGATE'} />
 			</div>
 		{/if}
 
 		<!-- Resolutions Card -->
 		{#if !isLocalConferenceActive()}
-			<a
-				data-tour="committee.resolutions"
-				class="card bg-base-100 shadow-sm transition hover:shadow-md"
-				href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
-					conferenceId: page.params.conferenceId!,
-					committeeId: page.params.committeeId!
-				})}
-			>
-				<div class="card-body flex-row items-center gap-3 p-4">
-					<i aria-hidden="true" class="ph-duotone ph-file-text text-2xl"></i>
-					<div class="flex-1">
-						<h2 class="card-title text-lg">{m.resolutions()}</h2>
-						<p class="text-base-content/60 text-sm">{m.resolutionsCardHint()}</p>
-					</div>
-					<i aria-hidden="true" class="ph-fill ph-caret-right opacity-50"></i>
-				</div>
-			</a>
+			<ResolutionsLinkCard {conferenceId} committeeId={page.params.committeeId!} />
 		{/if}
 
 		<!-- Whiteboard Card -->
 		{#if committee.showWhiteboard && committee.whiteboardContent}
-			<div class="card bg-base-100 shadow-sm" data-tour="committee.whiteboard">
-				<div class="card-body p-4">
-					<h2 class="card-title text-lg">{m.whiteboard()}</h2>
-					<WhiteboardViewer data={committee.whiteboardContent} />
-				</div>
-			</div>
+			<WhiteboardCard data={committee.whiteboardContent} />
 		{/if}
 	</div>
 {/if}
 
-{#if showDeviceVoteModal && activeVotingSession?.deviceVotingStartedAt && activeVotingSession?.deviceVotingWindowSeconds && myCommitteeMemberId}
-	<DeviceVoteModal
-		active={showDeviceVoteModal}
-		sessionId={activeVotingSession.id}
-		voteName={activeVotingSession.voteName}
-		withAbstentions={activeVotingSession.withAbstentions}
-		deviceVotingStartedAt={activeVotingSession.deviceVotingStartedAt}
-		deviceVotingWindowSeconds={activeVotingSession.deviceVotingWindowSeconds}
-		{myVote}
-		{myCommitteeMemberId}
-	/>
-{/if}
+<ParticipantDeviceVote
+	show={showDeviceVoteModal}
+	session={activeVotingSession}
+	{myVote}
+	{myCommitteeMemberId}
+/>

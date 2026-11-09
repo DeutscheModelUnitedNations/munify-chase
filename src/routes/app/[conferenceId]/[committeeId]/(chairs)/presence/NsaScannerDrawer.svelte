@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { m } from '#lib/paraglide/messages';
 	import Modal from '#lib/components/Modal.svelte';
@@ -8,6 +9,7 @@
 	import { identifyNsa, type NsaScanFailure } from '#lib/helpers/nsaScan';
 	import { nsaOfUser, searchNsas } from '#lib/helpers/nsaSearch';
 	import NsaScanLog, { type ScanLogEntry } from './NsaScanLog.svelte';
+	import { beep, nsaPersonLabel, nsaScanMessage } from './nsaAttendance';
 
 	interface Props {
 		open: boolean;
@@ -61,28 +63,6 @@
 		{ id: 'OUT' as const, label: m.checkOut(), icon: 'sign-out' }
 	];
 
-	function beep(ok: boolean) {
-		// Tiny sine ping; ok = higher pitch, error = lower. Skipped if AudioContext
-		// is unavailable (older Safari etc.) — visual feedback is the source of truth.
-		try {
-			const Ctx =
-				window.AudioContext ??
-				(window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-			if (!Ctx) return;
-			const ctx: AudioContext = new Ctx();
-			const osc = ctx.createOscillator();
-			const gain = ctx.createGain();
-			osc.frequency.value = ok ? 880 : 220;
-			gain.gain.value = 0.05;
-			osc.connect(gain).connect(ctx.destination);
-			osc.start();
-			osc.stop(ctx.currentTime + 0.12);
-			osc.onended = () => ctx.close();
-		} catch {
-			/* ignore */
-		}
-	}
-
 	function pushLog(entry: Omit<ScanLogEntry, 'id' | 'timestamp'>) {
 		const id = crypto.randomUUID();
 		scanLog = [{ id, timestamp: new Date(), ...entry }, ...scanLog].slice(0, 10);
@@ -119,6 +99,38 @@
 
 	const modeLabel = $derived(mode === 'IN' ? m.checkIn() : m.checkOut());
 
+	const scannedUser = {
+		id: true,
+		userEmail: true,
+		name: true,
+		conferenceMember: {
+			representation: { name: true, icon: true }
+		}
+	} as const;
+
+	/** Records the check-in or check-out the drawer is set to */
+	function record(args: { committeeId: string; conferenceUserId: string; code?: string }) {
+		if (mode === 'IN') {
+			return client.mutate.recordNsaCheckIn({
+				__args: args,
+				id: true,
+				type: true,
+				committeeId: true,
+				timestamp: true,
+				note: true,
+				conferenceUser: scannedUser
+			});
+		}
+		return client.mutate.recordNsaCheckOut({
+			__args: args,
+			id: true,
+			type: true,
+			committeeId: true,
+			timestamp: true,
+			conferenceUser: scannedUser
+		});
+	}
+
 	/** Checks the NSA in or out; a scanned code goes along for the server to check again. */
 	async function runMutation({
 		conferenceUserId,
@@ -132,62 +144,19 @@
 		if (busy) return;
 		busy = true;
 
-		const args = { committeeId, conferenceUserId, code };
 		try {
-			const event =
-				mode === 'IN'
-					? await client.mutate.recordNsaCheckIn({
-							__args: args,
-							id: true,
-							type: true,
-							committeeId: true,
-							timestamp: true,
-							note: true,
-							conferenceUser: {
-								id: true,
-								userEmail: true,
-								name: true,
-								conferenceMember: {
-									representation: { name: true, icon: true }
-								}
-							}
-						})
-					: await client.mutate.recordNsaCheckOut({
-							__args: args,
-							id: true,
-							type: true,
-							committeeId: true,
-							timestamp: true,
-							conferenceUser: {
-								id: true,
-								userEmail: true,
-								name: true,
-								conferenceMember: {
-									representation: { name: true, icon: true }
-								}
-							}
-						});
-
-			const personLabel =
-				event.conferenceUser?.name ??
-				event.conferenceUser?.conferenceMember?.representation?.name ??
-				event.conferenceUser?.userEmail ??
-				label;
-
-			let message: string;
-			if (mode === 'IN') {
-				message = m.nsaCheckInSuccess({ name: personLabel });
-			} else if (event.committeeId !== committeeId) {
-				message = m.nsaCheckOutFromOther({ name: personLabel });
-			} else {
-				message = m.nsaCheckOutSuccess({ name: personLabel });
-			}
-
-			pushLog({ ok: true, mode, label: personLabel, message });
+			const event = await record({ committeeId, conferenceUserId, code });
+			const name = nsaPersonLabel(event.conferenceUser, label);
+			const message = nsaScanMessage({
+				mode,
+				name,
+				eventCommitteeId: event.committeeId,
+				committeeId
+			});
+			pushLog({ ok: true, mode, label: name, message });
 			beep(true);
 		} catch (err) {
-			const msg = err instanceof Error ? err.message : String(err);
-			pushLog({ ok: false, mode, label, message: msg });
+			pushLog({ ok: false, mode, label, message: errorMessage(err) });
 			beep(false);
 		} finally {
 			busy = false;

@@ -566,7 +566,7 @@ function findLocalDemoSpeakersList(
  * Speakers' new positions after moving the one at `from` to `to`, mirroring
  * optimistic.moveSpeakerToPosition: the ones in between close the gap it leaves.
  */
-export function shiftedSpeakerPositions<T extends { id: unknown; position: number }>({
+function shiftedSpeakerPositions<T extends { id: unknown; position: number }>({
 	speakers,
 	id,
 	from,
@@ -1074,7 +1074,7 @@ function computeFieldKind(typename: string, fieldName: string): FieldKind {
  * (needs `writeFragment`) or a to-many list (needs list-append semantics, e.g. addToList —
  * committing it here would overwrite the list instead of growing it, so it's left alone). */
 const FIELD_KIND_CACHE = new Map<string, FieldKind>();
-export function fieldKind(typename: string, fieldName: string): FieldKind {
+function fieldKind(typename: string, fieldName: string): FieldKind {
 	const cacheKey = `${typename}.${fieldName}`;
 	const kind = FIELD_KIND_CACHE.get(cacheKey) ?? computeFieldKind(typename, fieldName);
 	FIELD_KIND_CACHE.set(cacheKey, kind);
@@ -1094,7 +1094,7 @@ type CommitPlan = { scalars: string[]; relations: string[]; emptyLists: string[]
  * entity from cache and, offline, never gets a network round trip to fill the gap either, so
  * the new entity silently never appears anywhere.
  */
-export function planCommit({
+function planCommit({
 	typename,
 	fields
 }: {

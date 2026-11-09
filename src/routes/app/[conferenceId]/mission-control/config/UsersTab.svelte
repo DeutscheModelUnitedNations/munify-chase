@@ -6,6 +6,7 @@
 	import { promiseToastStrings } from '#lib/utils/toast';
 	import EditConferenceUserModal from './EditConferenceUserModal.svelte';
 	import UserRow from './UserRow.svelte';
+	import SortableHeaderCell from './SortableHeaderCell.svelte';
 	import TablePagination from './TablePagination.svelte';
 	import AddMembersForm from './AddMembersForm.svelte';
 	import {
@@ -136,10 +137,9 @@
 		assignment: m.assignment
 	};
 
-	const sortIcons = {
-		asc: 'ph-sort-ascending',
-		desc: 'ph-sort-descending'
-	} as const;
+	function columnLabel(columnId: string) {
+		return columnLabels[columnId]?.() ?? '';
+	}
 
 	const columns: ColumnDef<Features, ConferenceUserRow>[] = [
 		{ accessorKey: 'userEmail', header: 'Email' },
@@ -236,25 +236,13 @@
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 					<tr>
 						{#each headerGroup.headers as header (header.id)}
-							{@const sorted = header.column.getIsSorted()}
-							<th
-								class={header.column.getCanSort() ? 'cursor-pointer select-none' : ''}
+							<SortableHeaderCell
+								label={columnLabel(header.id)}
+								sorted={header.column.getIsSorted()}
+								canSort={header.column.getCanSort()}
+								isPlaceholder={header.isPlaceholder}
 								onclick={header.column.getToggleSortingHandler()}
-							>
-								{#if !header.isPlaceholder}
-									<div class="flex items-center gap-1">
-										{columnLabels[header.id]?.() ?? ''}
-										{#if sorted}
-											<i aria-hidden="true" class="ph-fill {sortIcons[sorted]} text-xs"></i>
-										{:else if header.column.getCanSort()}
-											<i
-												aria-hidden="true"
-												class="ph-fill ph-arrows-down-up text-base-content/30 text-xs"
-											></i>
-										{/if}
-									</div>
-								{/if}
-							</th>
+							/>
 						{/each}
 					</tr>
 				{/each}

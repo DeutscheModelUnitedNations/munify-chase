@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { browser } from '$app/env';
 	import { m } from '#lib/paraglide/messages';
 	import { client } from '#lib/api/rumbleClient/client';
@@ -6,7 +7,6 @@
 	import toast from 'svelte-french-toast';
 	import { isTeam, type ResolutionViewer } from './paperContext';
 	import { commentAuthorDisplay, newCommentArgs, sendsOnKey } from './commentThread';
-	import { errorMessage } from './sponsors';
 	import CommentItem from './CommentItem.svelte';
 
 	interface Props {

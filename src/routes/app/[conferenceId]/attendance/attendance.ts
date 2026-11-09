@@ -137,7 +137,7 @@ type CommitteeWithMembers = {
 		| null;
 };
 
-export type AbsentMember = {
+type AbsentMember = {
 	id: string;
 	name: string;
 	alpha3Code: string | null;

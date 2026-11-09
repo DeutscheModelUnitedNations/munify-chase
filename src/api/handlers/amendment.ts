@@ -16,7 +16,7 @@ import {
 import { assertFindFirstExists } from '@m1212e/rumble';
 import { nanoid, nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
-import { and, count, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { applyServerMutation, readPaperJson } from '#api/yjs/server';
 import {
 	yDocToJson,
@@ -25,6 +25,7 @@ import {
 import { paperWithAbility, type ResolverContext } from './helpers/paperAccess';
 import { acceptedStatus, amendmentTargets, applyAmendment } from './helpers/amendmentRules';
 import { requiredSponsors } from './helpers/paperRules';
+import { countPresentDelegations } from './helpers/scopedLookups';
 
 abilityBuilder.amendment.allow('read').when((ctx) => {
 	return {
@@ -120,21 +121,7 @@ async function assertEnoughSponsors({ id, committeeId }: { id: string; committee
 	const committee = await db.query.committee
 		.findFirst({ where: { id: committeeId } })
 		.then(assertFindFirstExists);
-	const presentDelegations = await db
-		.select({ count: count() })
-		.from(schema.committeeMember)
-		.innerJoin(
-			schema.representation,
-			eq(schema.committeeMember.representationId, schema.representation.id)
-		)
-		.where(
-			and(
-				eq(schema.committeeMember.committeeId, committeeId),
-				eq(schema.committeeMember.present, true),
-				eq(schema.representation.type, 'DELEGATION')
-			)
-		)
-		.then(([r]) => r?.count ?? 0);
+	const presentDelegations = await countPresentDelegations(committeeId);
 	const required = requiredSponsors({
 		presentDelegations,
 		thresholdPercent: committee.paperSupportThreshold

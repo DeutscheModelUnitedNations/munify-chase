@@ -16,43 +16,11 @@
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import Kbd from '#lib/components/Kbd.svelte';
 	import { compareSpeakers } from '#lib/helpers/speakerSort';
+	import type { SpeakersListData } from './types';
 
+	/** The list as the navbar reads it: no closed flag, but the speech/question/answer phase */
 	type SpeakersList =
-		| {
-				id: string;
-				type: string;
-				speakingTime: number;
-				startTimestamp?: Date | null;
-				timeLeft: number;
-				phase?: string | null;
-				speakers: Array<{
-					id: string;
-					position: number;
-					overwriteName?: string | null;
-					committeeMember?: {
-						id: string;
-						representation?: {
-							name?: string | null;
-							alpha2Code?: string | null;
-							alpha3Code?: string | null;
-							icon?: string | null;
-							type?: string | null;
-						} | null;
-					} | null;
-					conferenceMember?: {
-						id: string;
-						representation?: {
-							name?: string | null;
-							alpha2Code?: string | null;
-							alpha3Code?: string | null;
-							icon?: string | null;
-							type?: string | null;
-						} | null;
-					} | null;
-				}>;
-		  }
-		| null
-		| undefined;
+		(Omit<SpeakersListData, 'isClosed'> & { phase?: string | null }) | null | undefined;
 
 	interface Props {
 		speakersList?: SpeakersList;

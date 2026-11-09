@@ -6,7 +6,7 @@
 	import type { InsightPulse } from '#lib/components/missionControl/insights';
 	import CurrentTime from '#lib/components/CurrentTime.svelte';
 	import * as m from '#lib/paraglide/messages';
-	import ConferenceMenu from '../ConferenceMenu.svelte';
+	import ConferenceNavbar from '../ConferenceNavbar.svelte';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { page } from '$app/state';
 	import AdoptionConfetti from '#lib/components/AdoptionConfetti.svelte';
@@ -229,22 +229,17 @@
 	<title>{m.missionControl()} - MUNify CHASE</title>
 </svelte:head>
 
-<div class="navbar bg-base-100 shadow-sm">
-	<h1 class=" ml-4 flex-1 text-3xl font-bold">{m.missionControl()}</h1>
-	<div class="flex-none">
-		<CurrentTime />
-	</div>
-	<div class="flex-none">
-		<ConferenceMenu
-			{role}
-			conferenceId={page.params.conferenceId!}
-			conferenceTitle={conference?.title}
-			committees={conference?.committees}
-			isGlobalAdmin={!!isGlobalAdmin}
-			user={currentUser}
-		/>
-	</div>
-</div>
+<ConferenceNavbar
+	title={m.missionControl()}
+	{role}
+	conferenceId={page.params.conferenceId!}
+	conferenceTitle={conference?.title}
+	committees={conference?.committees}
+	isGlobalAdmin={!!isGlobalAdmin}
+	user={currentUser}
+>
+	<CurrentTime />
+</ConferenceNavbar>
 
 <AdoptionConfetti
 	lastAdoptionDate={mostRecentAdoption}

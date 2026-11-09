@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
 	import { registerCommands } from '#lib/commands/registry.svelte';
-	import ConferenceMenu from '../../ConferenceMenu.svelte';
+	import ConferenceNavbar from '../../ConferenceNavbar.svelte';
 	import ConfigTabPanel, { type ConfigTab } from './ConfigTabPanel.svelte';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { page } from '$app/state';
@@ -153,19 +153,15 @@
 	<title>{m.configuration()} - MUNify CHASE</title>
 </svelte:head>
 
-<div class="navbar bg-base-100 shadow-sm">
-	<h1 class="ml-4 flex-1 text-3xl font-bold">{m.configuration()}</h1>
-	<div class="flex-none">
-		<ConferenceMenu
-			{role}
-			conferenceId={page.params.conferenceId!}
-			conferenceTitle={conference?.title}
-			committees={conference?.committees}
-			isGlobalAdmin={!!isGlobalAdmin}
-			user={currentUser}
-		/>
-	</div>
-</div>
+<ConferenceNavbar
+	title={m.configuration()}
+	{role}
+	conferenceId={page.params.conferenceId!}
+	conferenceTitle={conference?.title}
+	committees={conference?.committees}
+	isGlobalAdmin={!!isGlobalAdmin}
+	user={currentUser}
+/>
 
 <div class="flex h-full w-full items-start justify-center p-6">
 	<div class="flex w-full max-w-screen-lg flex-col gap-6">
@@ -190,7 +186,11 @@
 				{/each}
 			</div>
 
-			<ConfigTabPanel tab={isTabAvailable(activeTab) ? activeTab : undefined} {conference} {currentUserEmail} />
+			<ConfigTabPanel
+				tab={isTabAvailable(activeTab) ? activeTab : undefined}
+				{conference}
+				{currentUserEmail}
+			/>
 		{:else}
 			<div class="flex items-center justify-center">
 				<span class="loading loading-spinner loading-lg"></span>

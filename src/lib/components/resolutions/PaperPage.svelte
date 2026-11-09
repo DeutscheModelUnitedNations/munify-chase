@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
 	import { m } from '#lib/paraglide/messages';
@@ -51,7 +52,6 @@
 	import SponsorPanel from './SponsorPanel.svelte';
 	import {
 		canEditPaper,
-		errorMessage,
 		isTeam,
 		statusLabel,
 		PAPER_STATUS_ORDER,

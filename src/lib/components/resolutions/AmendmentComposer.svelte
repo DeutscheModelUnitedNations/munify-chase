@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import DialogBackdrop from '../DialogBackdrop.svelte';
 	import { modalFocus } from '#lib/helpers/modalFocus';
 	import { untrack } from 'svelte';
@@ -15,7 +16,7 @@
 	import { englishOperativePhrases } from '@deutschemodelunitednations/munify-resolution-editor/phrases';
 	import { getResolutionLabels } from '#lib/utils/resolutionEditorLabels';
 	import { fetchCommitteeMembers } from './committeeMembers';
-	import { errorMessage, representationName } from './sponsors';
+	import { representationName } from './sponsors';
 	import {
 		type AmendmentDraft,
 		amendmentNeeds,

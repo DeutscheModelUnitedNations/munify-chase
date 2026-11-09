@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { m } from '#lib/paraglide/messages';
 	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
-	import { errorMessage, isTeam, type ResolutionViewer } from './paperContext';
+	import { isTeam, type ResolutionViewer } from './paperContext';
 	import { launchClauseVote } from './resolutionVotes';
 
 	interface Props {

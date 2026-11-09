@@ -188,8 +188,3 @@ export function toAmendmentOverlays(rows: readonly AmendmentRow[]): AmendmentOve
 	}
 	return overlays;
 }
-
-/** The message of a thrown error, else the fallback. */
-export function errorMessage(err: unknown, fallback: string): string {
-	return err instanceof Error ? err.message : fallback;
-}

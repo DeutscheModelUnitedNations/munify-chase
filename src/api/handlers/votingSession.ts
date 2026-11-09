@@ -18,12 +18,11 @@ import { eq } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import {
-	findOwnConferenceUser,
 	findUpdatableCommittee,
 	type HandlerContext,
 	type Transaction
 } from './helpers/scopedLookups';
-import { setActiveSession } from './helpers/committeeSessions';
+import { sessionStartColumns, setActiveSession } from './helpers/committeeSessions';
 import { givenFields, hasFields } from './helpers/givenFields';
 import {
 	assertActiveSession,
@@ -80,6 +79,21 @@ async function readableSession(ctx: HandlerContext, id: string) {
 
 async function readableVote(ctx: HandlerContext, id: string) {
 	return (await ctx.abilities.votingVote.filter('read')).merge({ where: { id } }).query.single;
+}
+
+/** Tells subscribers about a cast vote; returns the filter that reads it back for the caller. */
+function announceVote({
+	ctx,
+	sessionId,
+	voteId
+}: {
+	ctx: HandlerContext;
+	sessionId: string;
+	voteId: string;
+}) {
+	sessionPubsub.updated(sessionId);
+	votePubsub.updated(voteId);
+	return readableVote(ctx, voteId);
 }
 
 /** A session still open and the one its committee is running; anything else takes no votes. */
@@ -169,15 +183,13 @@ schemaBuilder.mutationFields((t) => ({
 					.then(assertFindFirstExists);
 			}
 
-			const startedBy = await findOwnConferenceUser(ctx, committee.conferenceId);
+			const start = await sessionStartColumns({ ctx, id: args.id, committee });
 
 			const result = await db.transaction(async (tx) => {
 				const inserted = await tx
 					.insert(schema.votingSession)
 					.values({
-						id: args.id,
-						committeeId: args.committeeId,
-						startedByConferenceUserId: startedBy?.id ?? null,
+						...start,
 						mode: args.mode,
 						majority: args.majority,
 						majorityAmount: args.majorityAmount,
@@ -255,11 +267,8 @@ schemaBuilder.mutationFields((t) => ({
 				return upsertVote({ tx, ...args });
 			});
 
-			sessionPubsub.updated(args.sessionId);
-			votePubsub.updated(resultId);
-
 			return db.query.votingVote
-				.findFirst(q(await readableVote(ctx, resultId)))
+				.findFirst(q(await announceVote({ ctx, sessionId: args.sessionId, voteId: resultId })))
 				.then(assertFindFirstExists);
 		}
 	}),
@@ -301,11 +310,8 @@ schemaBuilder.mutationFields((t) => ({
 				});
 			});
 
-			sessionPubsub.updated(args.sessionId);
-			votePubsub.updated(resultId);
-
 			return db.query.votingVote
-				.findFirst(q(await readableVote(ctx, resultId)))
+				.findFirst(q(await announceVote({ ctx, sessionId: args.sessionId, voteId: resultId })))
 				.then(assertFindFirstExists);
 		}
 	}),

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -8,12 +9,13 @@
 	import { getCurrentUser } from '#lib/state/currentUser.svelte';
 	import PaperListSection from './PaperListSection.svelte';
 	import {
-		errorMessage,
 		paperLabel,
 		paperListSelection,
 		paperTitle,
-		participantPaperGroups
+		participantPaperGroups,
+		createPaperAndOpen
 	} from '../../../papers';
+	import CreatePaperButton from '../../../CreatePaperButton.svelte';
 	import toast from 'svelte-french-toast';
 	import { registerCommands } from '#lib/commands/registry.svelte';
 
@@ -61,24 +63,18 @@
 	}
 
 	let creating = $state(false);
-	async function createPaper() {
-		if (!committee?.activeAgendaItem) {
-			toast.error(m.selectActiveAgendaItemFirst());
-			return;
-		}
-		creating = true;
-		try {
-			const id = nanoid();
-			const created = await client.mutate.createResolutionPaper({
-				__args: { id, committeeId, agendaItemId: committee.activeAgendaItem.id },
-				id: true
-			});
-			if (created) await goto(paperHref(created.id));
-		} catch (err) {
-			toast.error(errorMessage({ err, fallback: 'Failed to create paper' }));
-		} finally {
-			creating = false;
-		}
+	function createPaper() {
+		return createPaperAndOpen({
+			agendaItemId: committee?.activeAgendaItem?.id,
+			create: (agendaItemId) =>
+				client.mutate.createResolutionPaper({
+					__args: { id: nanoid(), committeeId, agendaItemId },
+					id: true
+				}),
+			open: (paperId) => goto(paperHref(paperId)),
+			setCreating: (value) => (creating = value),
+			onError: (message) => toast.error(message)
+		});
 	}
 
 	let code = $state('');
@@ -93,7 +89,7 @@
 			toast.success(m.codeRedeemed());
 			code = '';
 		} catch (err) {
-			toast.error(errorMessage({ err, fallback: 'Invalid code' }));
+			toast.error(errorMessage(err, 'Invalid code'));
 		} finally {
 			redeeming = false;
 		}
@@ -124,18 +120,13 @@
 <div class="flex flex-col gap-4 p-4">
 	<!-- Create + redeem -->
 	<div class="grid gap-3 sm:grid-cols-2">
-		<button
-			class="btn btn-primary"
+		<CreatePaperButton
+			label={m.newWorkingPaper()}
 			data-tour="papers.new"
-			disabled={creating || !committee?.activeAgendaItem}
+			{creating}
+			hasAgendaItem={!!committee?.activeAgendaItem}
 			onclick={createPaper}
-		>
-			{#if creating}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"></i>{:else}<i
-					aria-hidden="true"
-					class="ph-fill ph-plus"
-				></i>{/if}
-			{m.newWorkingPaper()}
-		</button>
+		/>
 		<div class="join" data-tour="papers.redeem">
 			<input
 				class="input input-bordered join-item w-full font-mono uppercase"

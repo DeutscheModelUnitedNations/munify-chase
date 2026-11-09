@@ -802,28 +802,11 @@ export const optimistic: OptimisticMutationConfig = {
 		}
 
 		// Mirror server auto-clear semantics for role transitions.
-		const type = args.conferenceUserType as string;
-		if (type !== 'DELEGATE') {
-			result.committeeMemberId = null;
-			result.committeeMember = null;
-		} else if (args.committeeMemberId !== undefined) {
-			result.committeeMemberId = args.committeeMemberId ?? null;
-			result.committeeMember = args.committeeMemberId
-				? { __typename: 'Committeemember', id: args.committeeMemberId as string }
-				: null;
-		}
-
-		if (type !== 'NON_STATE_ACTOR') {
-			result.conferenceMemberId = null;
-			result.conferenceMember = null;
-		} else if (args.conferenceMemberId !== undefined) {
-			result.conferenceMemberId = args.conferenceMemberId ?? null;
-			result.conferenceMember = args.conferenceMemberId
-				? { __typename: 'Conferencemember', id: args.conferenceMemberId as string }
-				: null;
-		}
-
-		return result;
+		return {
+			...result,
+			...roleMemberLink(args, 'DELEGATE', 'committeeMember', 'Committeemember'),
+			...roleMemberLink(args, 'NON_STATE_ACTOR', 'conferenceMember', 'Conferencemember')
+		};
 	},
 	deleteConferenceUser: () => true,
 
@@ -901,43 +884,16 @@ export const optimistic: OptimisticMutationConfig = {
 	deletePresenceEvent: (args, cache) => {
 		// Return a placeholder for the deleted entity. The real removal from list fields
 		// happens in `updates.Mutation.deletePresenceEvent`.
-		const existing = readEntity<{
-			id: string;
-			conferenceUserId: string;
-			committeeId: string;
-			present: boolean;
-			type: string;
-			timestamp: Date | string;
-			note: string | null;
-		}>(
-			cache,
-			gql`
-				fragment DeletePresenceEventSnapshot on Presenceevent {
-					id
-					conferenceUserId
-					committeeId
-					present
-					type
-					timestamp
-					note
-				}
-			`,
-			{ __typename: 'Presenceevent', id: args.id as string }
-		);
+		const snapshot = deletedPresenceEventSnapshot(cache, args.id as string);
 		return {
 			__typename: 'Presenceevent',
 			id: args.id,
-			conferenceUserId: existing?.conferenceUserId ?? 'unknown',
-			committeeId: existing?.committeeId ?? 'unknown',
-			present: existing?.present ?? false,
-			type: existing?.type ?? 'MANUAL',
-			timestamp: existing?.timestamp ? new Date(existing.timestamp) : getServerTime().toDate(),
-			note: existing?.note ?? null,
+			...snapshot,
 			rollCallSessionId: null,
 			rollCallSession: null,
 			triggeredBy: null,
-			conferenceUser: { __typename: 'Conferenceuser', id: existing?.conferenceUserId ?? 'unknown' },
-			committee: { __typename: 'Committee', id: existing?.committeeId ?? 'unknown' }
+			conferenceUser: { __typename: 'Conferenceuser', id: snapshot.conferenceUserId },
+			committee: { __typename: 'Committee', id: snapshot.committeeId }
 		};
 	},
 
@@ -1564,6 +1520,68 @@ function speakersListTimerFields(
 	const elapsedSec =
 		(getServerTime().valueOf() - new Date(current.startTimestamp).getTime()) / 1000;
 	return { startTimestamp: null, timeLeft: Math.round(current.timeLeft - elapsedSec) };
+}
+
+/**
+ * A conference user's member link after updateConferenceUser, like the server sets it: cleared
+ * unless the user has `role`, else the given id (left as is when the args omit it).
+ */
+function roleMemberLink(
+	args: Record<string, unknown>,
+	role: string,
+	link: 'committeeMember' | 'conferenceMember',
+	typename: string
+): Record<string, unknown> {
+	const idField = `${link}Id`;
+	if (args.conferenceUserType !== role) return { [idField]: null, [link]: null };
+	if (args[idField] === undefined) return {};
+	return { [idField]: args[idField] ?? null, [link]: refOrNull(typename, args[idField]) };
+}
+
+type PresenceEventSnapshot = {
+	conferenceUserId: string;
+	committeeId: string;
+	present: boolean;
+	type: string;
+	note: string | null;
+};
+
+/** What a deleted presence event's placeholder shows for fields the cache does not know */
+const UNKNOWN_PRESENCE_EVENT: PresenceEventSnapshot = {
+	conferenceUserId: 'unknown',
+	committeeId: 'unknown',
+	present: false,
+	type: 'MANUAL',
+	note: null
+};
+
+/** A presence event about to be deleted, as cached, with placeholders where it is not */
+function deletedPresenceEventSnapshot(cache: Cache, id: string) {
+	const existing = readEntity<PresenceEventSnapshot & { id: string; timestamp: Date | string }>(
+		cache,
+		gql`
+			fragment DeletePresenceEventSnapshot on Presenceevent {
+				id
+				conferenceUserId
+				committeeId
+				present
+				type
+				timestamp
+				note
+			}
+		`,
+		{ __typename: 'Presenceevent', id }
+	);
+	const known = Object.fromEntries(
+		Object.entries(UNKNOWN_PRESENCE_EVENT).map(([field, fallback]) => [
+			field,
+			existing?.[field as keyof PresenceEventSnapshot] ?? fallback
+		])
+	) as PresenceEventSnapshot;
+	return {
+		...known,
+		timestamp: existing?.timestamp ? new Date(existing.timestamp) : getServerTime().toDate()
+	};
 }
 
 const PHASE_AFTER_STOP: Record<string, string> = { SPEECH: 'SPEECH_DONE', ANSWER: 'ANSWER_DONE' };

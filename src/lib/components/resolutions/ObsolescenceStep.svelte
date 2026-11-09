@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import AiSpinner from '#lib/components/AiSpinner.svelte';
@@ -6,7 +7,6 @@
 	import { englishLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
 	import ReviewItemHeader from './ReviewItemHeader.svelte';
 	import { obsoleteBadge, type ReviewItem } from './amendmentReview';
-	import { errorMessage } from './sponsors';
 
 	interface Props {
 		items: ReviewItem[];

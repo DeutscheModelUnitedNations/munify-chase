@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
 	import Modal from '#lib/components/Modal.svelte';
+	import CommitteeSeatSelect from './CommitteeSeatSelect.svelte';
 	import {
 		seatOptionLabel,
 		userEditForm,
@@ -84,6 +85,13 @@
 		if (user) form = userEditForm(user);
 	});
 
+	function conferenceSeatLabel(member: ConferenceMemberOption) {
+		return seatOptionLabel({
+			representation: member.representation,
+			assigned: conferenceMemberAssignmentCounts.get(member.id) ?? 0
+		});
+	}
+
 	function handleSave() {
 		onsave(userEditResult(form));
 		open = false;
@@ -127,30 +135,11 @@
 		</div>
 
 		{#if form.role === 'DELEGATE'}
-			<div class="form-control mb-4">
-				<label class="label" for="edit-committee-member-select">
-					<span class="label-text">{m.committeeMember()}</span>
-				</label>
-				<select
-					id="edit-committee-member-select"
-					class="select select-bordered w-full"
-					bind:value={form.committeeMemberId}
-				>
-					<option value={null}>{m.selectCommitteeMember()}</option>
-					{#each committees as committee (committee.id)}
-						<optgroup label="{committee.abbreviation} — {committee.name}">
-							{#each committee.members as member (member.id)}
-								<option value={member.id}>
-									{seatOptionLabel({
-										representation: member.representation,
-										assigned: committeeMemberAssignmentCounts.get(member.id) ?? 0
-									})}
-								</option>
-							{/each}
-						</optgroup>
-					{/each}
-				</select>
-			</div>
+			<CommitteeSeatSelect
+				bind:value={form.committeeMemberId}
+				{committees}
+				assignmentCounts={committeeMemberAssignmentCounts}
+			/>
 		{:else if form.role === 'NON_STATE_ACTOR'}
 			<div class="form-control mb-4">
 				<label class="label" for="edit-conference-member-select">
@@ -164,10 +153,7 @@
 					<option value={null}>{m.selectConferenceMember()}</option>
 					{#each conferenceMembers as member (member.id)}
 						<option value={member.id}>
-							{seatOptionLabel({
-								representation: member.representation,
-								assigned: conferenceMemberAssignmentCounts.get(member.id) ?? 0
-							})}
+							{conferenceSeatLabel(member)}
 						</option>
 					{/each}
 				</select>

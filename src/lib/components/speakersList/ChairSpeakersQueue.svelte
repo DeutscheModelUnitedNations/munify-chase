@@ -10,32 +10,9 @@
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '#lib/utils/toast';
 	import { compareSpeakers } from '#lib/helpers/speakerSort';
+	import type { ListSpeaker } from './types';
 
-	type Speaker = {
-		id: string;
-		position: number;
-		overwriteName?: string | null;
-		committeeMember?: {
-			id: string;
-			representation?: {
-				name?: string | null;
-				alpha2Code?: string | null;
-				alpha3Code?: string | null;
-				icon?: string | null;
-				type?: string | null;
-			} | null;
-		} | null;
-		conferenceMember?: {
-			id: string;
-			representation?: {
-				name?: string | null;
-				alpha2Code?: string | null;
-				alpha3Code?: string | null;
-				icon?: string | null;
-				type?: string | null;
-			} | null;
-		} | null;
-	};
+	type Speaker = ListSpeaker;
 
 	interface Props {
 		rawSpeakers?: Speaker[];

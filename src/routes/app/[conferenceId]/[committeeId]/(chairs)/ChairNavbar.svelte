@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { ComponentProps } from 'svelte';
 	import { page } from '$app/state';
 	import { client } from '#lib/api/rumbleClient/client';
 	import CurrentTime from '#lib/components/CurrentTime.svelte';
@@ -7,42 +8,7 @@
 
 	import { getCurrentUser, getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
 
-	type SpeakersList =
-		| {
-				id: string;
-				type: string;
-				speakingTime: number;
-				startTimestamp?: Date | null;
-				timeLeft: number;
-				phase?: string | null;
-				speakers: Array<{
-					id: string;
-					position: number;
-					overwriteName?: string | null;
-					committeeMember?: {
-						id: string;
-						representation?: {
-							name?: string | null;
-							alpha2Code?: string | null;
-							alpha3Code?: string | null;
-							icon?: string | null;
-							type?: string | null;
-						} | null;
-					} | null;
-					conferenceMember?: {
-						id: string;
-						representation?: {
-							name?: string | null;
-							alpha2Code?: string | null;
-							alpha3Code?: string | null;
-							icon?: string | null;
-							type?: string | null;
-						} | null;
-					} | null;
-				}>;
-		  }
-		| null
-		| undefined;
+	type SpeakersList = ComponentProps<typeof NavbarSpeakersWidget>['speakersList'];
 
 	interface Props {
 		title?: string;

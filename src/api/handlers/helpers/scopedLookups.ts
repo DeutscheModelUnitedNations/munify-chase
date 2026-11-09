@@ -1,4 +1,5 @@
-import { db } from '#api/db/db';
+import { db, schema } from '#api/db/db';
+import { and, count, eq } from 'drizzle-orm';
 import type { schemaBuilder } from '#api/rumble';
 import { assertFindFirstExists } from '@m1212e/rumble';
 
@@ -40,4 +41,23 @@ export async function findOwnConferenceUser(ctx: HandlerContext, conferenceId: s
 	return db.query.conferenceUser.findFirst({
 		where: { userEmail: ctx.mustBeLoggedIn().email!, conferenceId }
 	});
+}
+
+/** How many delegations (not NSAs or observers) are present in a committee. */
+export function countPresentDelegations(committeeId: string) {
+	return db
+		.select({ count: count() })
+		.from(schema.committeeMember)
+		.innerJoin(
+			schema.representation,
+			eq(schema.committeeMember.representationId, schema.representation.id)
+		)
+		.where(
+			and(
+				eq(schema.committeeMember.committeeId, committeeId),
+				eq(schema.committeeMember.present, true),
+				eq(schema.representation.type, 'DELEGATION')
+			)
+		)
+		.then(([r]) => r?.count ?? 0);
 }

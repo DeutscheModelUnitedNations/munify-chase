@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { m } from '#lib/paraglide/messages';
 	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
@@ -12,7 +13,6 @@
 	import AiIcon from '#lib/components/AiIcon.svelte';
 	import { rankAmendmentsByImpact } from '#lib/ai/amendments';
 	import { getAiPreference, preferenceToMode } from '#lib/ai/aiPreference.svelte';
-	import { errorMessage } from './sponsors';
 	import {
 		amendmentVoteName,
 		canRankByImpact,

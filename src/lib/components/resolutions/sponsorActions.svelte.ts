@@ -1,5 +1,5 @@
 import toast from 'svelte-french-toast';
-import { errorMessage } from './sponsors';
+import { errorMessage } from '#lib/helpers/errorMessage';
 
 /**
  * Adding and removing sponsors with a shared busy flag; failures become

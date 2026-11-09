@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { m } from '#lib/paraglide/messages';
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
-	import { PAPER_STATUS_ORDER, errorMessage, statusLabel, type PaperStatus } from './paperContext';
+	import { PAPER_STATUS_ORDER, statusLabel, type PaperStatus } from './paperContext';
 	import { advanceAction, resumeVoteOptions, stepBubble, stepKind } from './chairLifecycle';
 	import { openVotingModal, resumeVotingModal } from '#lib/components/voting/votingModal';
 

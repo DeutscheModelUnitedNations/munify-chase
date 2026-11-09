@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
-	import Grid, { GridItem } from 'svelte-grid-extended';
+	import Grid from 'svelte-grid-extended';
 	import {
 		getPresentationLayoutPreset,
 		type PresentationLayoutPresetOptions
@@ -10,20 +10,19 @@
 	import RegionalGroups from './RegionalGroups.svelte';
 	import PresentationInfoTiles from './PresentationInfoTiles.svelte';
 	import SpeakersListTile from './SpeakersListTile.svelte';
+	import PresentationPaperTiles from './PresentationPaperTiles.svelte';
 	import { resolutionPreviewState } from './presentation';
 	import { speakersListSelection } from '../../selections';
 	import PresentationRollCall from '#lib/components/rollCall/PresentationRollCall.svelte';
 	import ShowOfHandsVotingPresentation from '#lib/components/voting/ShowOfHandsVotingPresentation.svelte';
 	import RollCallVotingPresentation from '#lib/components/voting/RollCallVotingPresentation.svelte';
 	import DeviceBasedVotingPresentation from '#lib/components/voting/DeviceBasedVotingPresentation.svelte';
-	import PresentationResolutionPreview from '#lib/components/resolutions/PresentationResolutionPreview.svelte';
 	import AdoptionConfetti from '#lib/components/AdoptionConfetti.svelte';
 	import { sortTranslatedCountries } from '#lib/utils/nationTranslationHelper.svelte';
 	import { browser } from '$app/env';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
 	import { page } from '$app/state';
-	import PresentationRequests from '#lib/components/requests/PresentationRequests.svelte';
 	import { compareRequests, requestRepresentation } from '#lib/helpers/requests';
 
 	const committeeId = page.params.committeeId!;
@@ -148,6 +147,13 @@
 	// disappears, not on every queue update
 	const hasPresentationRequests = $derived(presentationRequests.length > 0);
 
+	// The delegations, in the order the roll call goes through them
+	const rollCallMembers = $derived(
+		(committee?.members ?? [])
+			.filter((x) => x.representation?.type === 'DELEGATION')
+			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))
+	);
+
 	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
 	const activePaperId = $derived(committee?.activeDraftResolutionId ?? null);
@@ -246,22 +252,13 @@
 				/>
 			{/if}
 
-			{#if layout.resolutionPreview && activePaperId}
-				{@const gridProps = layout.resolutionPreview}
-				<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
-					<PresentationResolutionPreview
-						paperId={activePaperId}
-						resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
-						{...resolutionPreviewState(committee)}
-					/>
-				</GridItem>
-			{/if}
-			{#if layout.requests}
-				{@const gridProps = layout.requests}
-				<GridItem {...gridProps} class="card bg-base-100 overflow-hidden p-4" id="requests">
-					<PresentationRequests requests={presentationRequests} />
-				</GridItem>
-			{/if}
+			<PresentationPaperTiles
+				{layout}
+				{activePaperId}
+				resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
+				preview={resolutionPreviewState(committee)}
+				requests={presentationRequests}
+			/>
 		</Grid>
 	</main>
 
@@ -275,12 +272,7 @@
 		committeeMembers={committee.members}
 	/>
 
-	<PresentationRollCall
-		{committeeId}
-		members={committee.members
-			.filter((x) => x.representation?.type === 'DELEGATION')
-			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}
-	/>
+	<PresentationRollCall {committeeId} members={rollCallMembers} />
 
 	<ShowOfHandsVotingPresentation {committeeId} />
 	<RollCallVotingPresentation {committeeId} {committee} />

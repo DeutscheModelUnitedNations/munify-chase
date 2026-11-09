@@ -4,7 +4,7 @@
 	import { resolve } from '$app/paths';
 	import BasicCard from '#lib/components/BasicCard.svelte';
 	import NsaQrCardModal from './NsaQrCardModal.svelte';
-	import NsaRow from './NsaRow.svelte';
+	import NsaUserRow from './NsaUserRow.svelte';
 	import {
 		groupNsaUsersByOrg,
 		latestEventByUser,
@@ -58,6 +58,12 @@
 	let committeesById = $derived(new Map((conference?.committees ?? []).map((c) => [c.id, c])));
 	let latestByUser = $derived(latestEventByUser(allEvents));
 	let groupedByOrg = $derived(groupNsaUsersByOrg({ users: nsaUsers, unknownName: m.unknown() }));
+
+	/** The committee the user is checked in to right now, if any. */
+	function checkedInCommittee(userId: string) {
+		const latest = latestByUser.get(userId);
+		return latest?.present ? committeesById.get(latest.committeeId) : undefined;
+	}
 
 	let qrModalOpen = $state(false);
 	let qrCard = $state<{
@@ -126,29 +132,12 @@
 		<BasicCard title={org.name}>
 			<ul class="flex flex-col gap-1">
 				{#each org.users as user (user.id)}
-					{@const latest = latestByUser.get(user.id)}
-					{@const checkedIn = latest?.present}
-					{@const committee = checkedIn ? committeesById.get(latest.committeeId) : null}
-					<NsaRow icon={org.icon} name={user.name ?? user.userEmail}>
-						{#if checkedIn && committee}
-							<span class="badge badge-success">
-								<i aria-hidden="true" class="ph-fill ph-sign-in mr-1"></i>
-								{committee.abbreviation ?? committee.name}
-							</span>
-						{:else}
-							<span class="badge badge-ghost">{m.notCheckedIn()}</span>
-						{/if}
-						{#if !conference?.managedByDelegator}
-							<button
-								class="btn btn-ghost btn-sm"
-								onclick={() => openQrFor(user)}
-								aria-label={m.qrCard()}
-								title={m.qrCard()}
-							>
-								<i aria-hidden="true" class="ph-fill ph-qr-code"></i>
-							</button>
-						{/if}
-					</NsaRow>
+					<NsaUserRow
+						icon={org.icon}
+						name={user.name ?? user.userEmail}
+						committee={checkedInCommittee(user.id)}
+						onQr={conference?.managedByDelegator ? undefined : () => openQrFor(user)}
+					/>
 				{/each}
 			</ul>
 		</BasicCard>

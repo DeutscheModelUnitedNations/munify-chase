@@ -9,7 +9,6 @@ const {
 	canSponsorAmendment,
 	canSponsorPaper,
 	createMemberFilter,
-	errorMessage,
 	ownSponsorship,
 	representationName,
 	sortSponsors
@@ -28,13 +27,6 @@ describe('representationName', () => {
 	it('reads N/A without a known country code, as the translation helper answers', () => {
 		expect(representationName({ name: 'Amnesty' })).toBe('N/A');
 		expect(representationName(null, '?')).toBe('N/A');
-	});
-});
-
-describe('errorMessage', () => {
-	it('uses the message of an Error and the fallback otherwise', () => {
-		expect(errorMessage(new Error('boom'), 'Failed')).toBe('boom');
-		expect(errorMessage('nope', 'Failed')).toBe('Failed');
 	});
 });
 

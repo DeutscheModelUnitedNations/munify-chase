@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
 	import RewriteItem from './RewriteItem.svelte';
 	import type { ReviewItem } from './amendmentReview';
-	import { errorMessage } from './sponsors';
 
 	interface Props {
 		items: ReviewItem[];

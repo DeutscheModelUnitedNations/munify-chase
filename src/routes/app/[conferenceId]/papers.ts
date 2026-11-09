@@ -1,4 +1,6 @@
 /** Helpers both the chairs' and the participants' resolution lists use. */
+import { m } from '#lib/paraglide/messages';
+import { errorMessage } from '#lib/helpers/errorMessage';
 import { workingPaperName } from '#lib/helpers/paperName';
 import type { PaperStatus } from '#lib/components/resolutions/paperContext';
 import { seatRepresentation } from './selections';
@@ -25,9 +27,36 @@ export function paperLabel(paper: PaperNames) {
 	return paper.documentNumber || paperTitle(paper);
 }
 
-/** An error's own message, else the fallback. */
-export function errorMessage({ err, fallback }: { err: unknown; fallback: string }) {
-	return err instanceof Error ? err.message : fallback;
+/**
+ * Creates a paper on the active agenda item and opens it. Without an active agenda item,
+ * or when creating fails, it reports why instead.
+ */
+export async function createPaperAndOpen({
+	agendaItemId,
+	create,
+	open,
+	setCreating,
+	onError
+}: {
+	agendaItemId: string | null | undefined;
+	create: (agendaItemId: string) => Promise<{ id: string } | null | undefined>;
+	open: (paperId: string) => Promise<unknown>;
+	setCreating: (creating: boolean) => void;
+	onError: (message: string) => void;
+}) {
+	if (!agendaItemId) {
+		onError(m.selectActiveAgendaItemFirst());
+		return;
+	}
+	setCreating(true);
+	try {
+		const created = await create(agendaItemId);
+		if (created) await open(created.id);
+	} catch (err) {
+		onError(errorMessage(err, 'Failed to create paper'));
+	} finally {
+		setCreating(false);
+	}
 }
 
 const PUBLISHED: readonly string[] = [

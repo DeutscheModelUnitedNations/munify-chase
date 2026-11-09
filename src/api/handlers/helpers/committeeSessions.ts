@@ -1,6 +1,6 @@
 import { schema } from '#api/db/db';
 import { eq } from 'drizzle-orm';
-import type { Transaction } from './scopedLookups';
+import { findOwnConferenceUser, type HandlerContext, type Transaction } from './scopedLookups';
 
 type ActiveSession = Partial<
 	Pick<typeof schema.committee.$inferInsert, 'activeVotingSessionId' | 'activeRollCallSessionId'>
@@ -20,4 +20,18 @@ export async function setActiveSession({
 	active: ActiveSession;
 }) {
 	await tx.update(schema.committee).set(active).where(eq(schema.committee.id, committeeId));
+}
+
+/** The columns every new vote or roll call starts with: its id, committee and who started it. */
+export async function sessionStartColumns<Id>({
+	ctx,
+	id,
+	committee
+}: {
+	ctx: HandlerContext;
+	id: Id;
+	committee: { id: string; conferenceId: string };
+}) {
+	const startedBy = await findOwnConferenceUser(ctx, committee.conferenceId);
+	return { id, committeeId: committee.id, startedByConferenceUserId: startedBy?.id ?? null };
 }

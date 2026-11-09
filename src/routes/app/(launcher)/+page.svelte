@@ -5,13 +5,17 @@
 	import DeleteConferenceModal from '#lib/components/DeleteConferenceModal.svelte';
 	import AvatarMenu from '#lib/components/launcher/AvatarMenu.svelte';
 	import ConferenceHeroCard from '#lib/components/launcher/ConferenceHeroCard.svelte';
-	import AdminConferenceRow from '#lib/components/launcher/AdminConferenceRow.svelte';
 	import EmptyLauncher from '#lib/components/launcher/EmptyLauncher.svelte';
 	import DelegatorLinkCard from '#lib/components/launcher/DelegatorLinkCard.svelte';
-	import { badgeFor, deriveStatus } from '#lib/helpers/launcher';
-	import type { LauncherConference } from '#lib/components/launcher/types';
 	import { client } from '#lib/api/rumbleClient/client';
-	import type { ConferenceusertypeEnum } from '#lib/api/rumbleClient/client';
+	import AdminConferenceList from './AdminConferenceList.svelte';
+	import LauncherFooter from './LauncherFooter.svelte';
+	import {
+		greetingSuffix,
+		launcherHeadingKind,
+		toAdminConference,
+		toUserConference
+	} from './launcherConferences';
 	import { getCurrentUser, getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
 
 	const user = await getCurrentUser();
@@ -86,130 +90,26 @@
 	let deleteModalOpen = $state(false);
 	let deleteTarget = $state<{ id: string; title: string } | null>(null);
 
-	function getUrl(
-		type: ConferenceusertypeEnum,
-		id: string,
-		committeeMember?: { committeeId: string } | null
-	): string {
-		if (type === 'ADMIN' || type === 'TEAM') {
-			return `/app/${id}/mission-control`;
-		}
-		if (type === 'DELEGATE' && committeeMember?.committeeId) {
-			return `/app/${id}/participant/${committeeMember.committeeId}`;
-		}
-		return `/app/${id}/participant`;
-	}
+	let userConferences = $derived((conferenceUserData ?? []).map(toUserConference));
+	let adminConferences = $derived((allConferences ?? []).map(toAdminConference));
 
-	function buildRoleDetail(
-		type: ConferenceusertypeEnum,
-		representationName: string | null | undefined,
-		committeeAbbreviation: string | null | undefined
-	): string | null {
-		if (type === 'DELEGATE' || type === 'NON_STATE_ACTOR') {
-			return [representationName, committeeAbbreviation].filter(Boolean).join(' · ') || null;
-		}
-		if (type === 'TEAM') {
-			return committeeAbbreviation || null;
-		}
-		return null;
-	}
+	const headings = {
+		all: m.launcherTitleAll,
+		one: m.launcherTitleOne,
+		many: m.launcherTitleMany
+	};
+	let h1 = $derived(headings[launcherHeadingKind(!!isGlobalAdmin, userConferences.length)]());
 
-	function toIsoDate(d: Date | string | null | undefined): string | null {
-		if (!d) return null;
-		if (typeof d === 'string') return d;
-		return d.toISOString().slice(0, 10);
-	}
-
-	let userConferences = $derived<LauncherConference[]>(
-		(conferenceUserData ?? []).map((cu): LauncherConference => {
-			const rep = cu.conferenceMember?.representation ?? cu.committeeMember?.representation;
-			return {
-				id: cu.conference.id,
-				title: cu.conference.title,
-				location: cu.conference.location,
-				startDate: toIsoDate(cu.conference.startDate),
-				endDate: toIsoDate(cu.conference.endDate),
-				committees: cu.conference.committees ?? [],
-				role: badgeFor(cu.conferenceUserType),
-				roleDetail: buildRoleDetail(
-					cu.conferenceUserType,
-					rep?.name,
-					cu.committeeMember?.committee?.abbreviation
-				),
-				representation: rep,
-				href: getUrl(cu.conferenceUserType, cu.conference.id, cu.committeeMember),
-				committeeId: cu.committeeMember?.committeeId ?? null
-			};
-		})
+	let greeting = $derived(
+		isGlobalAdmin
+			? m.launcherGreetingAdmin()
+			: `${m.launcherGreetingUser()}${greetingSuffix(user.givenName)}`
 	);
-
-	let adminConferences = $derived<LauncherConference[]>(
-		(allConferences ?? []).map((c): LauncherConference => ({
-			id: c.id,
-			title: c.title,
-			location: c.location,
-			startDate: toIsoDate(c.startDate),
-			endDate: toIsoDate(c.endDate),
-			committees: c.committees ?? [],
-			role: 'ADMIN' as const,
-			roleDetail: null,
-			representation: null,
-			href: `/app/${c.id}/mission-control`
-		}))
-	);
-
-	let filteredAdminConferences = $derived.by(() => {
-		const q = searchQuery.trim().toLowerCase();
-		if (!q) return adminConferences;
-		return adminConferences.filter(
-			(c) => c.title.toLowerCase().includes(q) || (c.location ?? '').toLowerCase().includes(q)
-		);
-	});
-
-	let groupedAdmin = $derived.by(() => {
-		const now = new Date();
-		const groups: {
-			active: LauncherConference[];
-			upcoming: LauncherConference[];
-			past: LauncherConference[];
-		} = {
-			active: [],
-			upcoming: [],
-			past: []
-		};
-		for (const c of filteredAdminConferences) {
-			groups[deriveStatus(c, now)].push(c);
-		}
-		const dateAsc = (a: LauncherConference, b: LauncherConference) =>
-			new Date(a.endDate ?? 0).getTime() - new Date(b.endDate ?? 0).getTime();
-		const startAsc = (a: LauncherConference, b: LauncherConference) =>
-			new Date(a.startDate ?? 0).getTime() - new Date(b.startDate ?? 0).getTime();
-		const endDesc = (a: LauncherConference, b: LauncherConference) =>
-			new Date(b.endDate ?? 0).getTime() - new Date(a.endDate ?? 0).getTime();
-		groups.active.sort(dateAsc);
-		groups.upcoming.sort(startAsc);
-		groups.past.sort(endDesc);
-		return groups;
-	});
-
-	let h1 = $derived.by(() => {
-		if (isGlobalAdmin) return m.launcherTitleAll();
-		if (userConferences.length === 1) return m.launcherTitleOne();
-		return m.launcherTitleMany();
-	});
-
-	let firstName = $derived(user.givenName ?? '');
 
 	function openDelete(target: { id: string; title: string }) {
 		deleteTarget = target;
 		deleteModalOpen = true;
 	}
-
-	const sections = $derived([
-		{ key: 'active' as const, items: groupedAdmin.active, label: m.launcherStatusActive() },
-		{ key: 'upcoming' as const, items: groupedAdmin.upcoming, label: m.launcherStatusUpcoming() },
-		{ key: 'past' as const, items: groupedAdmin.past, label: m.launcherStatusPast() }
-	]);
 </script>
 
 <svelte:head>
@@ -234,13 +134,7 @@
 	>
 		<header class="mb-6 flex flex-col gap-4">
 			<div>
-				<p class="text-base-content/60 m-0 text-sm">
-					{#if isGlobalAdmin}
-						{m.launcherGreetingAdmin()}
-					{:else}
-						{m.launcherGreetingUser()}{firstName ? `, ${firstName}` : ''}
-					{/if}
-				</p>
+				<p class="text-base-content/60 m-0 text-sm">{greeting}</p>
 				<h1 class="m-0 mt-0.5 text-3xl font-bold tracking-tight sm:text-4xl">{h1}</h1>
 			</div>
 
@@ -259,43 +153,7 @@
 
 		{#if isGlobalAdmin}
 			<DelegatorLinkCard />
-		{/if}
-
-		{#if isGlobalAdmin}
-			{#if adminConferences.length === 0}
-				<EmptyLauncher />
-			{:else if filteredAdminConferences.length === 0}
-				<div class="flex flex-col items-center gap-2 px-4 py-12 text-center">
-					<h2 class="m-0 text-xl font-bold">{m.launcherNoSearchResultsHeadline()}</h2>
-					<p class="text-base-content/70 m-0 text-sm">{m.launcherNoSearchResultsBody()}</p>
-				</div>
-			{:else}
-				<div class="flex flex-col gap-6">
-					{#each sections as section (section.key)}
-						{#if section.items.length > 0}
-							<section class:opacity-85={section.key === 'past'}>
-								<div
-									class="text-base-content/55 mb-3 flex items-baseline gap-2 text-xs font-bold uppercase tracking-widest"
-								>
-									<span>{section.label}</span>
-									<span
-										class="bg-base-content/10 text-base-content/70 rounded-full px-2 py-0.5 text-xs font-semibold tracking-normal"
-									>
-										{section.items.length}
-									</span>
-								</div>
-								<div class="card bg-base-200 p-0">
-									{#each section.items as c, i (c.id)}
-										<div class:is-first={i === 0} class:is-last={i === section.items.length - 1}>
-											<AdminConferenceRow conference={c} onDelete={openDelete} />
-										</div>
-									{/each}
-								</div>
-							</section>
-						{/if}
-					{/each}
-				</div>
-			{/if}
+			<AdminConferenceList conferences={adminConferences} {searchQuery} onDelete={openDelete} />
 		{:else if userConferences.length === 0}
 			<EmptyLauncher />
 		{:else}
@@ -306,36 +164,7 @@
 			</div>
 		{/if}
 
-		{#if delegatorUrl}
-			<footer class="mt-8 flex flex-col items-center gap-2 pt-6 text-center">
-				<p class="text-base-content/70 m-0 text-sm">{m.delegatorLinkConferencesFromDelegator()}</p>
-				<a class="btn btn-ghost btn-sm" href={delegatorUrl} target="_blank" rel="noopener">
-					<i aria-hidden="true" class="ph-duotone ph-arrow-square-out"></i>
-					{m.delegatorLinkOpen()}
-				</a>
-			</footer>
-		{:else if isGlobalAdmin}
-			<footer
-				class="from-base-100 sticky bottom-0 mt-8 flex flex-col gap-2 bg-gradient-to-b from-35% to-transparent py-4 [&>.btn]:w-full"
-				style="background: linear-gradient(180deg, transparent 0%, var(--color-base-100) 35%);"
-			>
-				<a class="btn btn-primary btn-lg" href={resolve('/app/(launcher)/import')}>
-					<i aria-hidden="true" class="ph-fill ph-plus"></i>
-					{m.createConference()}
-				</a>
-				<a class="btn btn-ghost btn-sm" href={resolve('/app/(launcher)/import')}>
-					<i aria-hidden="true" class="ph-duotone ph-file-arrow-up"></i>
-					{m.launcherImportDelegator()}
-				</a>
-			</footer>
-		{:else}
-			<footer class="mt-8 flex justify-center pt-6">
-				<a class="btn btn-ghost btn-sm" href={resolve('/app/(launcher)/import')}>
-					<i aria-hidden="true" class="ph-fill ph-plus"></i>
-					{m.createConference()}
-				</a>
-			</footer>
-		{/if}
+		<LauncherFooter {delegatorUrl} isGlobalAdmin={!!isGlobalAdmin} />
 	</main>
 
 	<Footer />
@@ -348,17 +177,3 @@
 		conferenceName={deleteTarget.title}
 	/>
 {/if}
-
-<style>
-	/* Round only the first/last row of each grouped admin section so the ellipsis
-	   dropdown can escape (no overflow:hidden on the container). */
-	.is-first :global(> div) {
-		border-top-left-radius: var(--radius-box);
-		border-top-right-radius: var(--radius-box);
-	}
-	.is-last :global(> div) {
-		border-bottom-left-radius: var(--radius-box);
-		border-bottom-right-radius: var(--radius-box);
-		border-bottom: none;
-	}
-</style>

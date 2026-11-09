@@ -2,7 +2,7 @@ import type { ChartConfiguration } from 'chart.js';
 
 export type MissionControlChartKind = 'doughnut' | 'pie' | 'polarArea' | 'bar';
 
-export interface ChartTheme {
+interface ChartTheme {
 	baseContent: string;
 	base100: string;
 	gridColor: string;

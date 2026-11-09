@@ -11,34 +11,11 @@
 	import { onMount } from 'svelte';
 	import { compareSpeakers } from '#lib/helpers/speakerSort';
 	import { prefersReducedMotion } from 'svelte/motion';
+	import type { ListSpeaker } from './types';
 
 	interface Props {
 		// speaker on list
-		rawSpeakers?: Array<{
-			id: string;
-			position: number;
-			overwriteName?: string | null;
-			committeeMember?: {
-				id: string;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					icon?: string | null;
-					type?: string | null;
-				} | null;
-			} | null;
-			conferenceMember?: {
-				id: string;
-				representation?: {
-					name?: string | null;
-					alpha2Code?: string | null;
-					alpha3Code?: string | null;
-					icon?: string | null;
-					type?: string | null;
-				} | null;
-			} | null;
-		}>;
+		rawSpeakers?: ListSpeaker[];
 		closed?: boolean;
 		resizeFn?: () => void;
 	}
@@ -48,7 +25,7 @@
 
 	let speakers = $derived(rawSpeakers?.toSorted(compareSpeakers).toSpliced(0, 1));
 
-	type Speaker = NonNullable<Props['rawSpeakers']>[number];
+	type Speaker = ListSpeaker;
 
 	let container = $state<HTMLElement | null>(null);
 	let overflowContainer = $state<HTMLElement | null>(null);

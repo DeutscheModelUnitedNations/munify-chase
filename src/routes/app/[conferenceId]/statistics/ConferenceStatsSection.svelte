@@ -136,48 +136,55 @@
 		| null
 		| undefined;
 
-	const hasTimeline = $derived(hasRows(stats?.speakingTimeline));
-	const hasVoting = $derived(hasRows(stats?.mostContrarian) || hasRows(stats?.votingAlignment));
-	const hasPaperStats = $derived(
-		hasRows(stats?.amendmentSuccessRate) || hasRows(stats?.paperSponsorLeaderboard)
-	);
+	// Every section shows only with rows, so a missing result reads as empty lists
+	const speakingTimeline = stats?.speakingTimeline ?? [];
+	const speakingLeaderboard = stats?.speakingLeaderboard ?? [];
+	const nsaLeaderboard = stats?.nsaLeaderboard ?? [];
+	const committeeActivity = stats?.committeeActivity ?? [];
+	const attendanceTrend = stats?.attendanceTrend ?? [];
+	const hasVoting = hasRows(stats?.mostContrarian) || hasRows(stats?.votingAlignment);
+	const hasPaperStats =
+		hasRows(stats?.amendmentSuccessRate) || hasRows(stats?.paperSponsorLeaderboard);
 </script>
 
+{#if hasRows(speakingTimeline)}
+	<BasicCard title="Conference Speaking Activity" data-tour="statistics.timeline">
+		<SpeakingActivityChart buckets={speakingTimeline} />
+	</BasicCard>
+{/if}
+
+{#if hasRows(speakingLeaderboard)}
+	<SpeakingLeaderboardCard
+		speaking={speakingLeaderboard}
+		comments={stats?.commentLeaderboard ?? []}
+	/>
+{/if}
+
+{#if hasRows(nsaLeaderboard)}
+	<NsaActivityCard rows={nsaLeaderboard} />
+{/if}
+
 {#if stats}
-	{#if hasTimeline}
-		<BasicCard title="Conference Speaking Activity" data-tour="statistics.timeline">
-			<SpeakingActivityChart buckets={stats.speakingTimeline ?? []} />
-		</BasicCard>
-	{/if}
-
-	{#if hasRows(stats.speakingLeaderboard)}
-		<SpeakingLeaderboardCard
-			speaking={stats.speakingLeaderboard ?? []}
-			comments={stats.commentLeaderboard ?? []}
-		/>
-	{/if}
-
-	{#if hasRows(stats.nsaLeaderboard)}
-		<NsaActivityCard rows={stats.nsaLeaderboard ?? []} />
-	{/if}
-
 	<FairnessSection regions={stats.speakingByRegion} fairness={stats.speakingFairness} />
+{/if}
 
-	{#if hasRows(stats.committeeActivity)}
-		<CommitteeActivityCard rows={stats.committeeActivity ?? []} />
-	{/if}
+{#if hasRows(committeeActivity)}
+	<CommitteeActivityCard rows={committeeActivity} />
+{/if}
 
-	{#if hasVoting}
-		<VotingSection contrarian={stats.mostContrarian} alignment={stats.votingAlignment} />
-	{/if}
+{#if hasVoting}
+	<VotingSection contrarian={stats?.mostContrarian} alignment={stats?.votingAlignment} />
+{/if}
 
-	{#if hasPaperStats}
-		<PapersSection amendments={stats.amendmentSuccessRate} sponsors={stats.paperSponsorLeaderboard} />
-	{/if}
+{#if hasPaperStats}
+	<PapersSection
+		amendments={stats?.amendmentSuccessRate}
+		sponsors={stats?.paperSponsorLeaderboard}
+	/>
+{/if}
 
-	{#if hasRows(stats.attendanceTrend)}
-		<BasicCard title={m.attendanceTrend()} data-tour="statistics.attendance">
-			<AttendanceTrendChart points={stats.attendanceTrend ?? []} />
-		</BasicCard>
-	{/if}
+{#if hasRows(attendanceTrend)}
+	<BasicCard title={m.attendanceTrend()} data-tour="statistics.attendance">
+		<AttendanceTrendChart points={attendanceTrend} />
+	</BasicCard>
 {/if}

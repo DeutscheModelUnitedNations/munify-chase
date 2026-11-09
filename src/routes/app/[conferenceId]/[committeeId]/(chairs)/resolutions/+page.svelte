@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
@@ -9,7 +10,8 @@
 	import BasicCard from '#lib/components/BasicCard.svelte';
 	import CommitteePhaseToggles from '#lib/components/resolutions/CommitteePhaseToggles.svelte';
 	import ChairPaperCard from './ChairPaperCard.svelte';
-	import { chairPaperList, errorMessage, paperListSelection } from '../../../papers';
+	import { chairPaperList, createPaperAndOpen, paperListSelection } from '../../../papers';
+	import CreatePaperButton from '../../../CreatePaperButton.svelte';
 	import {
 		statusLabel,
 		PAPER_STATUS_ORDER,
@@ -43,7 +45,7 @@
 				activeDraftResolutionId: true
 			});
 		} catch (err) {
-			toast.error(errorMessage({ err, fallback: 'Failed' }));
+			toast.error(errorMessage(err, 'Failed'));
 		} finally {
 			settingActiveId = null;
 		}
@@ -100,21 +102,14 @@
 		});
 	}
 
-	async function createPaper() {
-		const agendaItemId = committee?.activeAgendaItem?.id;
-		if (!agendaItemId) {
-			toast.error(m.selectActiveAgendaItemFirst());
-			return;
-		}
-		creating = true;
-		try {
-			const created = await createWorkingPaper(agendaItemId);
-			if (created) await goto(paperHref(created.id));
-		} catch (err) {
-			toast.error(errorMessage({ err, fallback: 'Failed to create paper' }));
-		} finally {
-			creating = false;
-		}
+	function createPaper() {
+		return createPaperAndOpen({
+			agendaItemId: committee?.activeAgendaItem?.id,
+			create: createWorkingPaper,
+			open: (paperId) => goto(paperHref(paperId)),
+			setCreating: (value) => (creating = value),
+			onError: (message) => toast.error(message)
+		});
 	}
 
 	registerCommands(() => [
@@ -141,7 +136,7 @@
 			});
 			toast.success(m.promotedToDr());
 		} catch (err) {
-			toast.error(errorMessage({ err, fallback: 'Failed to promote' }));
+			toast.error(errorMessage(err, 'Failed to promote'));
 		} finally {
 			promotingId = null;
 		}
@@ -152,16 +147,13 @@
 	<div class="flex w-full max-w-screen-xl flex-col gap-6 p-6">
 		<header class="flex flex-wrap items-center justify-between gap-4">
 			<h1 class="text-3xl font-bold">{m.resolutions()}</h1>
-			<button
-				class="btn btn-primary"
+			<CreatePaperButton
+				label={m.createPaper()}
 				data-tour="resolutions.create"
-				disabled={creating || !committee?.activeAgendaItem}
+				{creating}
+				hasAgendaItem={!!committee?.activeAgendaItem}
 				onclick={createPaper}
-			>
-				{#if creating}<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin"
-					></i>{:else}<i aria-hidden="true" class="ph-fill ph-plus"></i>{/if}
-				{m.createPaper()}
-			</button>
+			/>
 		</header>
 
 		{#if committee}

@@ -14,7 +14,8 @@
 	import BellIcon from '#lib/components/toast/BellIcon.svelte';
 	import RequestNotificationToast from '#lib/components/requests/RequestNotificationToast.svelte';
 	import { notificationRequesterLabel } from './requesters';
-	import { alertTick, requestToastChanges, type AlertState, type ChairAlert } from './chairAlerts';
+	import { alertTick, type AlertState, type ChairAlert } from './chairAlerts';
+	import { syncRequestToasts } from './requestToasts';
 	import ChairDock from './ChairDock.svelte';
 	import { speakersListSelection } from '../../selections';
 	import { getServerTime } from '#lib/state/serverTime.svelte';
@@ -305,26 +306,14 @@
 	}
 
 	$effect(() => {
-		const pending = pendingRequestsForNotifications ?? [];
-
-		if (!requestNotificationsInitialized) {
-			// Don't retroactively toast for requests that were already pending
-			// before this chair opened the committee.
-			for (const req of pending) notifiedRequestIds.add(req.id);
-			requestNotificationsInitialized = true;
-			return;
-		}
-
-		const changes = requestToastChanges({
-			pending,
+		requestNotificationsInitialized = syncRequestToasts({
+			pending: pendingRequestsForNotifications ?? [],
 			notified: notifiedRequestIds,
-			open: openRequestToastIds
+			open: openRequestToastIds,
+			initialized: requestNotificationsInitialized,
+			show: showRequestToast,
+			dismiss: (toastId) => toast.dismiss(toastId)
 		});
-		for (const req of changes.show) showRequestToast(req);
-		for (const [id, toastId] of changes.dismiss) {
-			toast.dismiss(toastId);
-			openRequestToastIds.delete(id);
-		}
 	});
 </script>
 

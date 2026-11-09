@@ -4,25 +4,18 @@
 	import { page } from '$app/state';
 	import { client } from '#lib/api/rumbleClient/client';
 	import BasicCard from '#lib/components/BasicCard.svelte';
-	import Majorities from '#lib/components/Majorities.svelte';
-	import UndrawError from '#lib/components/UndrawError.svelte';
-	import emptyStreet from '#assets/undraw/empty_street.svg';
 	import PresenceActions from './PresenceActions.svelte';
 	import Flag from '#lib/components/Flag.svelte';
-	import Tabs from '#lib/components/Tabs.svelte';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '#lib/utils/toast';
-	import {
-		getTranslatedCountryNameFromAlpha3Code,
-		sortTranslatedCountries
-	} from '#lib/utils/nationTranslationHelper.svelte';
+	import { sortTranslatedCountries } from '#lib/utils/nationTranslationHelper.svelte';
 	import ChairRollCall from '#lib/components/rollCall/ChairRollCall.svelte';
-	import dayjs from 'dayjs';
-	import StatusWidget from '../StatusWidget.svelte';
 	import { isDelegationMember, isUNMember } from '#lib/helpers/distinguishConferenceMembers';
-	import { translateRegionalGroupEnum } from '#lib/utils/enumTranslationHelper';
 	import NsaAttendanceCard from './NsaAttendanceCard.svelte';
 	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
+	import ChairPage from '../ChairPage.svelte';
+	import RollCallCard from './RollCallCard.svelte';
+	import DelegationPresenceRow from './DelegationPresenceRow.svelte';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -74,8 +67,6 @@
 		}
 	});
 
-	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
-
 	let countries = $derived(
 		committee?.members
 			.filter(isDelegationMember)
@@ -112,19 +103,6 @@
 
 	let rollCallActive = $state(false);
 
-	const presenceTabs = [
-		{
-			id: false,
-			name: m.absent(),
-			icon: 'x'
-		},
-		{
-			id: true,
-			name: m.present(),
-			icon: 'check'
-		}
-	];
-
 	function openRollCall() {
 		rollCallActive = true;
 	}
@@ -152,174 +130,42 @@
 	};
 </script>
 
-{#if committee}
-	<div class="flex h-full w-full items-center justify-center">
-		<div class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row">
-			<div class="top-22 flex h-full flex-col gap-4 lg:sticky lg:w-lg">
-				<BasicCard>
-					<StatusWidget {committee} />
-				</BasicCard>
-				<BasicCard>
-					<Majorities
-						totalPresent={committee.totalPresent}
-						simpleMajority={committee.simpleMajority}
-						twoThirdsMajority={committee.twoThirdsMajority}
-						{minAmendmentSponsors}
-					/>
-				</BasicCard>
-				<BasicCard data-tour="presence.roll-call">
-					<div class="flex flex-col gap-2">
-						{#if activeSession}
-							<div class="alert alert-info p-2 text-sm">
-								<i aria-hidden="true" class="ph-fill ph-info"></i>
-								<span>
-									{m.rollCallActiveAt({
-										index: activeSession.currentMemberIndex + 1,
-										total: countries.length
-									})}
-								</span>
-							</div>
-							<button class="btn btn-warning btn-xl" onclick={openRollCall}>
-								<i aria-hidden="true" class="ph-fill ph-arrow-clockwise mr-2"></i>
-								{m.resumeRollCall()}
-							</button>
-						{:else}
-							<button class="btn btn-primary btn-xl" onclick={openRollCall}>
-								<i aria-hidden="true" class="ph-fill ph-user-focus mr-2"></i>
-								{m.rollCall()}
-							</button>
-						{/if}
-
-						{#if pastSessions && pastSessions.length > 0}
-							<details class="group">
-								<summary
-									class="text-base-content/60 hover:text-base-content flex cursor-pointer select-none list-none items-center gap-1 text-sm transition-colors"
-								>
-									<i
-										aria-hidden="true"
-										class="ph-fill ph-caret-right text-xs transition-transform group-open:rotate-90"
-									></i>
-									{m.pastRollCalls({ count: pastSessions.length })}
-								</summary>
-								<div class="mt-2 flex flex-col gap-1">
-									{#each pastSessions as session (session.id)}
-										{@const presentCount = session.presenceEvents.filter((e) => e.present).length}
-										{@const totalCount = session.presenceEvents.length}
-										<div class="bg-base-200 rounded-lg p-2 text-sm">
-											<div class="flex items-center justify-between gap-2">
-												<span class="font-medium">
-													{dayjs(session.createdAt).format('DD.MM. HH:mm')}
-												</span>
-												<span class="text-base-content/60 text-xs">
-													<span class="text-success font-medium">{presentCount}</span>
-													<span class="text-base-content/40">/{totalCount}</span>
-												</span>
-											</div>
-											<div
-												class="text-base-content/50 mt-0.5 flex items-center justify-between gap-2 text-xs"
-											>
-												<span>
-													<i aria-hidden="true" class="ph-fill ph-flag-checkered mr-1"></i>
-													{dayjs(session.completedAt).format('HH:mm')}
-												</span>
-												{#if session.startedBy}
-													<span class="truncate">
-														<i aria-hidden="true" class="ph-fill ph-user mr-1"></i>
-														{session.startedBy.name ?? session.startedBy.userEmail}
-													</span>
-												{/if}
-											</div>
-										</div>
-									{/each}
-								</div>
-							</details>
-						{/if}
-					</div>
-				</BasicCard>
-				<BasicCard data-tour="presence.bulk-actions">
-					<PresenceActions memberIds={committee.members.map((x) => x.id)} />
-				</BasicCard>
-			</div>
-			<div class="flex h-full w-full flex-3 flex-col gap-4">
-				{#if !isLocalConferenceActive()}
-					<NsaAttendanceCard conferenceId={committee.conference!.id} committeeId={committee.id} />
-				{/if}
-				<BasicCard title={m.delegations()}>
-					{#each countries as member, index (member.id)}
-						{@const rep = member.representation}
-						<div
-							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
-							data-tour={index === 0 ? 'presence.delegations' : undefined}
-						>
-							<Flag representation={rep} size="sm" />
-							<h3 class="flex-1 text-lg">
-								{#if rep && (rep.name || rep.alpha3Code)}
-									{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code!)}
-								{:else}
-									{m.unknown()}
-								{/if}
-							</h3>
-							{#if member.representation?.regionalGroup}
-								{@const group = member.representation.regionalGroup}
-								<div
-									class="tooltip tooltip-left text-xl"
-									data-tip={translateRegionalGroupEnum(group)}
-								>
-									{#if group === 'AFRICA'}
-										<i aria-hidden="true" class="ph-fill ph-globe-hemisphere-east text-blue-500"
-										></i>
-									{:else if group === 'ASIA_PACIFIC'}
-										<i aria-hidden="true" class="ph-fill ph-globe-hemisphere-east text-green-500"
-										></i>
-									{:else if group === 'EASTERN_EUROPE'}
-										<i aria-hidden="true" class="ph-fill ph-globe-hemisphere-east text-red-500"></i>
-									{:else if group === 'LATIN_AMERICA_CARIBBEAN'}
-										<i aria-hidden="true" class="ph-fill ph-globe-hemisphere-west text-pink-500"
-										></i>
-									{:else if group === 'WESTERN_EUROPE_OTHERS'}
-										<i aria-hidden="true" class="ph-fill ph-globe-hemisphere-east text-yellow-500"
-										></i>
-									{/if}
-								</div>
-							{/if}
-							<Tabs
-								activeTab={member.present}
-								tabs={presenceTabs}
-								onTabChange={(tab) => {
-									setPresence(tab, member.id);
-								}}
-							/>
-						</div>
-					{/each}
-				</BasicCard>
-				<BasicCard title={m.unActors()} data-tour="presence.un-actors">
-					{#each un as member (member.id)}
-						{@const rep = member.representation}
-						<div
-							class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
-						>
-							<Flag representation={member.representation} size="sm" />
-							<h3 class="flex-1 text-lg">
-								{#if rep && rep.name}
-									{rep.name}
-								{:else}
-									{m.unknown()}
-								{/if}
-							</h3>
-						</div>
-					{/each}
-				</BasicCard>
-			</div>
-		</div>
-	</div>
-{:else}
-	<UndrawError
-		undrawImage={emptyStreet}
-		title={m.committeeDoesNotExist()}
-		buttonText={m.back()}
-		buttonLink="/app"
-	/>
-{/if}
+<ChairPage {committee}>
+	{#snippet sidebar(committee)}
+		<RollCallCard {activeSession} total={countries.length} {pastSessions} onOpen={openRollCall} />
+		<BasicCard data-tour="presence.bulk-actions">
+			<PresenceActions memberIds={committee.members.map((x) => x.id)} />
+		</BasicCard>
+	{/snippet}
+	{#snippet children(committee)}
+		{#if !isLocalConferenceActive()}
+			<NsaAttendanceCard conferenceId={committee.conference!.id} committeeId={committee.id} />
+		{/if}
+		<BasicCard title={m.delegations()}>
+			{#each countries as member, index (member.id)}
+				<DelegationPresenceRow
+					{member}
+					first={index === 0}
+					onPresenceChange={(tab) => {
+						setPresence(tab, member.id);
+					}}
+				/>
+			{/each}
+		</BasicCard>
+		<BasicCard title={m.unActors()} data-tour="presence.un-actors">
+			{#each un as member (member.id)}
+				<div
+					class="hover:bg-base-200 card flex w-full flex-row items-center gap-4 p-2 transition-all duration-300"
+				>
+					<Flag representation={member.representation} size="sm" />
+					<h3 class="flex-1 text-lg">
+						{member.representation?.name || m.unknown()}
+					</h3>
+				</div>
+			{/each}
+		</BasicCard>
+	{/snippet}
+</ChairPage>
 
 <ChairRollCall
 	bind:active={rollCallActive}

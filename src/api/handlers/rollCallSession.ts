@@ -3,12 +3,8 @@ import { abilityBuilder, schemaBuilder, object, pubsub as rumblePubsub, query } 
 import { isTeamInConference, isParticipantInConference } from '#api/services/authHelper';
 import { assertFindFirstExists, assertFirstEntryExists } from '@m1212e/rumble';
 import { nanoidValidation } from '#lib/helpers/nanoid';
-import {
-	findOwnConferenceUser,
-	findUpdatableCommittee,
-	type HandlerContext
-} from './helpers/scopedLookups';
-import { setActiveSession } from './helpers/committeeSessions';
+import { findUpdatableCommittee, type HandlerContext } from './helpers/scopedLookups';
+import { sessionStartColumns, setActiveSession } from './helpers/committeeSessions';
 
 abilityBuilder.rollCallSession.allow('read').when((ctx) => ({
 	where: { committee: isParticipantInConference(ctx) }
@@ -48,17 +44,15 @@ schemaBuilder.mutationFields((t) => {
 						.then(assertFindFirstExists);
 				}
 
-				const startedBy = await findOwnConferenceUser(ctx, committee.conferenceId);
+				const values = {
+					...(await sessionStartColumns({ ctx, id: args.id, committee })),
+					currentMemberIndex: 0
+				};
 
 				const result = await db.transaction(async (tx) => {
 					const inserted = await tx
 						.insert(schema.rollCallSession)
-						.values({
-							id: args.id,
-							committeeId: args.committeeId,
-							startedByConferenceUserId: startedBy?.id ?? null,
-							currentMemberIndex: 0
-						})
+						.values(values)
 						.returning()
 						.then(assertFirstEntryExists);
 					await setActiveSession({

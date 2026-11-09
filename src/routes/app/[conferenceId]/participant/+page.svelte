@@ -4,7 +4,6 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { client } from '#lib/api/rumbleClient/client';
-	import { getCurrentUser } from '#lib/state/currentUser.svelte';
 	import CommitteeGrid, { type ConferenceData } from '#lib/components/CommitteeGrid.svelte';
 	import ThemeSwitcher from '#lib/components/ThemeSwitcher.svelte';
 	import HelpButton from '#lib/tours/HelpButton.svelte';
@@ -12,19 +11,9 @@
 	import MyAttendanceTab from './MyAttendanceTab.svelte';
 	import NametagLink from '#lib/components/delegatorLink/NametagLink.svelte';
 	import { registerCommands } from '#lib/commands/registry.svelte';
-	import { participantSelection } from '../selections';
+	import { loadParticipantUser, participantRepresentation } from './participantUser';
 
-	const currentUser = await getCurrentUser();
-	const [conferenceUser] =
-		(await client.liveQuery.conferenceUsers({
-			__args: {
-				where: {
-					conference: { id: { eq: page.params.conferenceId } },
-					user: { id: { eq: currentUser?.id ?? '' } }
-				}
-			},
-			...participantSelection
-		})) ?? [];
+	const conferenceUser = await loadParticipantUser(page.params.conferenceId);
 
 	const conference = await client.liveQuery.conference({
 		__args: { id: page.params.conferenceId! },
@@ -46,10 +35,7 @@
 
 	let role = $derived(conferenceUser?.conferenceUserType);
 	let myCommitteeId = $derived(conferenceUser?.committeeMember?.committeeId);
-	let representation = $derived(
-		conferenceUser?.committeeMember?.representation ??
-			conferenceUser?.conferenceMember?.representation
-	);
+	let representation = $derived(participantRepresentation(conferenceUser));
 
 	// Delegate with assigned committee: auto-redirect
 	$effect(() => {

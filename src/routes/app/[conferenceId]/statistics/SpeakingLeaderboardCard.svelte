@@ -2,6 +2,8 @@
 	import { m } from '#lib/paraglide/messages';
 	import BasicCard from '#lib/components/BasicCard.svelte';
 	import RepCell from './RepCell.svelte';
+	import SpeakingCells from './SpeakingCells.svelte';
+	import SpeakingHeadCells from './SpeakingHeadCells.svelte';
 	import { commentLeaders, fmtTime, type SpeakingRow } from './conferenceStats';
 
 	interface Props {
@@ -42,9 +44,7 @@
 				<tr>
 					<th class="w-8">#</th>
 					<th>{m.delegation()}</th>
-					<th class="text-right">{m.totalSpeakingTime()}</th>
-					<th class="text-right">{m.formalSpeeches()}</th>
-					<th class="text-right">{m.commentInterventions()}</th>
+					<SpeakingHeadCells />
 				</tr>
 			</thead>
 			<tbody>
@@ -52,9 +52,7 @@
 					<tr>
 						<td class="text-base-content/40 tabular-nums">{i + 1}</td>
 						<RepCell {row} />
-						<td class="text-right font-mono text-sm tabular-nums">{fmtTime(row.totalSeconds)}</td>
-						<td class="text-right tabular-nums">{row.speechCount}</td>
-						<td class="text-right tabular-nums">{row.commentCount}</td>
+						<SpeakingCells {row} />
 					</tr>
 				{/each}
 			</tbody>

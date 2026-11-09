@@ -5,7 +5,6 @@ import {
 	amendmentStatusLabel,
 	amendmentTypeLabel,
 	canEditPaper,
-	errorMessage,
 	isTeam,
 	statusBadgeClass,
 	statusLabel,
@@ -133,12 +132,5 @@ describe('toAmendmentOverlays', () => {
 			{ id: '3', type: 'DELETE', status: 'SUBMITTED', proposer: { representation: {} } }
 		]).map((o) => o.proposerName);
 		expect(names).toEqual(['🇩🇪 Germany', 'WHO', undefined]);
-	});
-});
-
-describe('errorMessage', () => {
-	it('prefers the error message', () => {
-		expect(errorMessage(new Error('boom'), 'fallback')).toBe('boom');
-		expect(errorMessage('nope', 'fallback')).toBe('fallback');
 	});
 });

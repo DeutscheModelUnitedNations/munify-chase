@@ -19,13 +19,14 @@ import {
 	assertFirstEntryExists,
 	mapNullFieldsToUndefined
 } from '@m1212e/rumble';
-import { and, count, eq, isNull, type InferSelectModel } from 'drizzle-orm';
+import { and, eq, isNull, type InferSelectModel } from 'drizzle-orm';
 import { calculateMajority } from '#lib/utils/majorities';
 import { nanoidValidation } from '#lib/helpers/nanoid';
 import { GraphQLError } from 'graphql';
 import { NOT_MANAGED_BY_DELEGATOR } from '#api/services/link/managedRows';
 import { assertNotManagedByDelegator } from '#api/services/link/managedRows';
 import {
+	countPresentDelegations,
 	findCommittee,
 	findUpdatableConference,
 	type HandlerContext
@@ -69,23 +70,7 @@ const getTotalPresentCount = async (parent: CommitteeParentWithOptionalMembers) 
 	) {
 		return parent.members.filter((x) => x.present && x.representation.type === 'DELEGATION').length;
 	}
-	return (
-		await db
-			.select({ count: count() })
-			.from(schema.committeeMember)
-			.innerJoin(
-				schema.representation,
-				eq(schema.committeeMember.representationId, schema.representation.id)
-			)
-			.where(
-				and(
-					eq(schema.committeeMember.committeeId, parent.id),
-					eq(schema.committeeMember.present, true),
-					eq(schema.representation.type, 'DELEGATION')
-				)
-			)
-			.then(assertFirstEntryExists)
-	).count;
+	return await countPresentDelegations(parent.id);
 };
 
 const ref = object({

@@ -18,11 +18,6 @@ export function representationName(
 	);
 }
 
-/** The error's message for a toast, or `fallback` for anything that is not an Error. */
-export function errorMessage(err: unknown, fallback: string): string {
-	return err instanceof Error ? err.message : fallback;
-}
-
 /** Sorts a copy of `items` by the name `getName` gives each. */
 function sortByName<T>(items: readonly T[], getName: (item: T) => string): T[] {
 	return [...items].sort((a, b) => getName(a).localeCompare(getName(b)));

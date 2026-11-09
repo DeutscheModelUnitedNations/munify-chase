@@ -32,12 +32,12 @@ export async function findUpdatableCommittee(ctx: HandlerContext, committeeId: s
 }
 
 /** The committee, regardless of the caller; NOT_FOUND when there is none. */
-export async function findCommittee(committeeId: string) {
+export function findCommittee(committeeId: string) {
 	return db.query.committee.findFirst({ where: { id: committeeId } }).then(assertFindFirstExists);
 }
 
 /** The caller's own seat in a conference, if they have one there. */
-export async function findOwnConferenceUser(ctx: HandlerContext, conferenceId: string) {
+export function findOwnConferenceUser(ctx: HandlerContext, conferenceId: string) {
 	return db.query.conferenceUser.findFirst({
 		where: { userEmail: ctx.mustBeLoggedIn().email!, conferenceId }
 	});

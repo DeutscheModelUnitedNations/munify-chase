@@ -9,7 +9,7 @@
 
 	let { status }: Props = $props();
 
-	let activeIcon = $state('fa-hourglass-start');
+	let activeIcon = $state('hourglass-high');
 
 	$effect(() => {
 		if (status !== 'active') {
@@ -17,16 +17,16 @@
 		}
 		const animation = setInterval(() => {
 			setTimeout(() => {
-				activeIcon = 'fa-hourglass-half';
+				activeIcon = 'hourglass-medium';
 			}, 500);
 			setTimeout(() => {
-				activeIcon = 'fa-hourglass-end';
+				activeIcon = 'hourglass-low';
 			}, 1000);
 			setTimeout(() => {
 				activeIcon += ' hourglass-animation';
 			}, 1500);
 			setTimeout(() => {
-				activeIcon = 'fa-hourglass-start';
+				activeIcon = 'hourglass-high';
 			}, 2000);
 		}, 2000);
 		return () => clearInterval(animation);
@@ -36,18 +36,18 @@
 <div class="relative h-10 w-10 text-2xl">
 	{#if status === 'active'}
 		<div class="absolute inset-0 flex items-center justify-center">
-			<i class="fa-duotone {activeIcon}" in:blur={{ duration: 500 }} out:blur={{ duration: 500 }}
+			<i class="ph-duotone ph-{activeIcon}" in:blur={{ duration: 500 }} out:blur={{ duration: 500 }}
 			></i>
 		</div>
 	{:else if status === 'paused'}
 		<div class="absolute inset-0 flex items-center justify-center">
-			<i class="fa-duotone fa-circle-pause" in:blur={{ duration: 500 }} out:blur={{ duration: 500 }}
+			<i class="ph-duotone ph-pause-circle" in:blur={{ duration: 500 }} out:blur={{ duration: 500 }}
 			></i>
 		</div>
 	{:else if status === 'overtime'}
 		<div class="absolute inset-0 flex items-center justify-center">
 			<i
-				class="fas fa-bell fa-shake text-error"
+				class="ph-fill ph-bell icon-shake text-error"
 				in:blur={{ duration: 500 }}
 				out:blur={{ duration: 500 }}
 			></i>

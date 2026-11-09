@@ -16,13 +16,13 @@
 	let { committee }: Props = $props();
 </script>
 
-<IconInfoBox text={committee?.activeAgendaItem?.title || '—'} faIcon="podium" />
-<IconInfoBox text={committee?.stateOfDebate || '—'} faIcon="diagram-next" />
+<IconInfoBox text={committee?.activeAgendaItem?.title || '—'} icon="lectern" />
+<IconInfoBox text={committee?.stateOfDebate || '—'} icon="steps" />
 <IconInfoBox
 	text={(committee?.statusHeadline.length || 0) > 0
 		? committee!.statusHeadline
 		: getCommitteeStatusText(committee?.status || 'FORMAL')}
-	faIcon={getCommitteeStatusIcon(committee?.status || 'FORMAL')}
+	icon={getCommitteeStatusIcon(committee?.status || 'FORMAL')}
 	committeeStatus={committee?.status}
 	until={new Date(committee?.statusUntil || Date.now())}
 />

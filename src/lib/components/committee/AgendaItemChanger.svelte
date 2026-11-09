@@ -88,7 +88,7 @@
 			context: () => item.title,
 			keywords: [item.title],
 			group: 'page' as const,
-			icon: 'list-ol',
+			icon: 'list-numbers',
 			visible: () => item.id !== activeAgendaItem?.id,
 			run: () => selectAgendaItem(item.id)
 		}))
@@ -107,6 +107,6 @@
 		{/each}
 	</select>
 	<button class="btn join-item btn-lg" onclick={addAgendaItem} aria-label={m.addAgendaItem()}>
-		<i class="fas fa-plus"></i>
+		<i class="ph-fill ph-plus"></i>
 	</button>
 </div>

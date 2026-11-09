@@ -98,7 +98,7 @@ export interface SeedData {
 			/**
 			 * Font Awesome icon class for the custom representation
 			 */
-			faIcon?: string;
+			icon?: string;
 		}[];
 	}[];
 }

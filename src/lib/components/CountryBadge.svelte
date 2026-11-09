@@ -26,7 +26,7 @@
 			aria-label="Remove"
 			onclick={onRemove}
 		>
-			<i class="fa-solid fa-trash text-xs"></i>
+			<i class="ph-fill ph-trash text-xs"></i>
 		</button>
 	{/if}
 </div>

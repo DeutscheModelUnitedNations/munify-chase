@@ -31,7 +31,7 @@
 			<h2 class="text-2xl font-bold">{m.qrCard()}</h2>
 			<div class="flex gap-2">
 				<button class="btn btn-primary" onclick={openPrint}>
-					<i class="fas fa-print mr-1"></i>{m.print()}
+					<i class="ph-fill ph-printer mr-1"></i>{m.print()}
 				</button>
 				<button class="btn btn-ghost" onclick={() => (open = false)}>{m.close()}</button>
 			</div>

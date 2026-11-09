@@ -6,7 +6,7 @@ export type ConferenceUserRole =
 
 export interface NavItem {
 	key: string;
-	faIcon: string;
+	icon: string;
 	title: string;
 	href: string;
 	active: boolean;
@@ -65,7 +65,7 @@ export function buildConferenceNavItems({
 
 		items.push({
 			key: 'mission-control',
-			faIcon: 'fa-rocket-launch',
+			icon: 'rocket-launch',
 			title: m.missionControl(),
 			href: `/app/${conferenceId}/mission-control`,
 			active: onMissionControl
@@ -74,7 +74,7 @@ export function buildConferenceNavItems({
 		if (!isLocalDemo) {
 			items.push({
 				key: 'attendance',
-				faIcon: 'fa-user-tag',
+				icon: 'identification-badge',
 				title: m.attendance(),
 				href: `/app/${conferenceId}/attendance`,
 				active:
@@ -84,7 +84,7 @@ export function buildConferenceNavItems({
 
 			items.push({
 				key: 'statistics',
-				faIcon: 'fa-chart-column',
+				icon: 'chart-bar',
 				title: m.statistics(),
 				href: `/app/${conferenceId}/statistics`,
 				active:
@@ -97,7 +97,7 @@ export function buildConferenceNavItems({
 	if (isParticipant && !isLocalDemo) {
 		items.push({
 			key: 'statistics',
-			faIcon: 'fa-chart-column',
+			icon: 'chart-bar',
 			title: m.statistics(),
 			href: `/app/${conferenceId}/statistics`,
 			active:
@@ -109,7 +109,7 @@ export function buildConferenceNavItems({
 	if (isAdmin) {
 		items.push({
 			key: 'configuration',
-			faIcon: 'fa-gear',
+			icon: 'gear',
 			title: m.configuration(),
 			href: `/app/${conferenceId}/mission-control/config`,
 			active:

@@ -1,0 +1,47 @@
+{
+	"deltas": [
+		{
+			"key": "columns\u0000[\"public\",\"representation\",\"fa_icon\"]",
+			"op": "rename",
+			"set": {
+				"name": "icon"
+			}
+		},
+		{
+			"key": "columns\u0000[\"public\",\"request_type\",\"fa_icon\"]",
+			"op": "rename",
+			"set": {
+				"name": "icon"
+			}
+		}
+	],
+	"dialect": "postgres",
+	"footprints": [
+		{
+			"reads": ["n|tbl|public.representation", "n|sch|public"],
+			"statementTarget": ["column", "public", "representation", "fa_icon"],
+			"statementType": "rename_column",
+			"writes": [
+				"s|col|public.representation.fa_icon",
+				"n|col|public.representation.fa_icon",
+				"s|col|public.representation.icon",
+				"n|col|public.representation.icon"
+			]
+		},
+		{
+			"reads": ["n|tbl|public.request_type", "n|sch|public"],
+			"statementTarget": ["column", "public", "request_type", "fa_icon"],
+			"statementType": "rename_column",
+			"writes": [
+				"s|col|public.request_type.fa_icon",
+				"n|col|public.request_type.fa_icon",
+				"s|col|public.request_type.icon",
+				"n|col|public.request_type.icon"
+			]
+		}
+	],
+	"id": "51f867c0-7faf-4bd6-a059-1fc5aa8d460a",
+	"prevIds": ["b92f0a3b-9786-4c13-91b8-47c413cafee2"],
+	"type": "diff",
+	"version": "9"
+}

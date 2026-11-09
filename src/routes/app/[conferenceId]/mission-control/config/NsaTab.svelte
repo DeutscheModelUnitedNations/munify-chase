@@ -2,6 +2,7 @@
 	import { m } from '#lib/paraglide/messages';
 	import BasicCard from '#lib/components/BasicCard.svelte';
 	import Flag from '#lib/components/Flag.svelte';
+	import IconPicker from '#lib/components/IconPicker.svelte';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { nanoid } from '#lib/helpers/nanoid';
 	import toast from 'svelte-french-toast';
@@ -13,7 +14,7 @@
 		alpha2Code: string | null;
 		alpha3Code: string | null;
 		type: string;
-		faIcon: string | null;
+		icon: string | null;
 	}
 
 	interface Props {
@@ -27,7 +28,7 @@
 
 	let newName = $state('');
 	let newType = $state<'NSA' | 'UN'>('NSA');
-	let newFaIcon = $state('');
+	let newIcon = $state('megaphone-simple');
 	let isCreating = $state(false);
 
 	async function createActor() {
@@ -41,14 +42,14 @@
 						conferenceId,
 						type: newType,
 						name: newName.trim(),
-						faIcon: newFaIcon.trim() || null
+						icon: newIcon.trim() || null
 					},
 					id: true
 				}),
 				promiseToastStrings(newType === 'NSA' ? m.nonStateActor() : m.unActor(), 'create')
 			);
 			newName = '';
-			newFaIcon = '';
+			newIcon = 'megaphone-simple';
 		} finally {
 			isCreating = false;
 		}
@@ -106,7 +107,7 @@
 									onclick={() => deleteActor(actor.id)}
 									aria-label={m.deleteRepresentation()}
 								>
-									<i class="fas fa-trash text-sm"></i>
+									<i class="ph-fill ph-trash text-sm"></i>
 								</button>
 							</td>
 						</tr>
@@ -140,11 +141,10 @@
 			</div>
 			<div class="flex flex-col gap-1">
 				<span class="text-sm">{m.icon()}</span>
-				<input
-					type="text"
-					class="input input-bordered w-32"
-					placeholder="building-ngo"
-					bind:value={newFaIcon}
+				<IconPicker
+					bind:value={newIcon}
+					fallback="megaphone-simple"
+					triggerClass="btn btn-square text-lg"
 				/>
 			</div>
 			<button
@@ -156,7 +156,7 @@
 				{#if isCreating}
 					<span class="loading loading-spinner loading-sm"></span>
 				{:else}
-					<i class="fas fa-plus"></i>
+					<i class="ph-fill ph-plus"></i>
 				{/if}
 				{m.addNonStateActor()}
 			</button>

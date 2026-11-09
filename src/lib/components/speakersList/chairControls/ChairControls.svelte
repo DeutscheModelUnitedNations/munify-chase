@@ -22,7 +22,7 @@
 					name?: string | null;
 					alpha2Code?: string | null;
 					alpha3Code?: string | null;
-					faIcon?: string | null;
+					icon?: string | null;
 					type?: string | null;
 				} | null;
 			} | null;
@@ -32,7 +32,7 @@
 					name?: string | null;
 					alpha2Code?: string | null;
 					alpha3Code?: string | null;
-					faIcon?: string | null;
+					icon?: string | null;
 					type?: string | null;
 				} | null;
 			} | null;
@@ -46,7 +46,7 @@
 			name?: string | null;
 			alpha2Code?: string | null;
 			alpha3Code?: string | null;
-			faIcon?: string | null;
+			icon?: string | null;
 			type?: string | null;
 		} | null;
 	};

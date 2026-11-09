@@ -26,10 +26,10 @@ export const STAGE = {
 	commentSpeakers: ['US', 'AR'],
 	// Named like the app's default set, in the language being captured
 	requestTypes: [
-		{ message: 'requestTypeRightToInformation', faIcon: 'fa-circle-info', delegatesOnly: false },
-		{ message: 'requestTypeRollCallVote', faIcon: 'fa-bullhorn', delegatesOnly: false },
-		{ message: 'requestTypeInformalSession', faIcon: 'fa-comments', delegatesOnly: false },
-		{ message: 'requestTypeEndDebate', faIcon: 'fa-flag-checkered', delegatesOnly: true }
+		{ message: 'requestTypeRightToInformation', icon: 'info', delegatesOnly: false },
+		{ message: 'requestTypeRollCallVote', icon: 'megaphone', delegatesOnly: false },
+		{ message: 'requestTypeInformalSession', icon: 'chats', delegatesOnly: false },
+		{ message: 'requestTypeEndDebate', icon: 'flag-checkered', delegatesOnly: true }
 	],
 	// country -> index into requestTypes
 	pendingRequests: [

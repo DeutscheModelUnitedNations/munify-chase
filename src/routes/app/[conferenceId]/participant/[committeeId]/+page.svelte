@@ -40,7 +40,7 @@
 					alpha2Code: true,
 					alpha3Code: true,
 					type: true,
-					faIcon: true
+					icon: true
 				}
 			},
 			conferenceMember: {
@@ -51,7 +51,7 @@
 					alpha2Code: true,
 					alpha3Code: true,
 					type: true,
-					faIcon: true
+					icon: true
 				}
 			}
 		})) ?? [];
@@ -111,7 +111,7 @@
 							name: true,
 							alpha3Code: true,
 							type: true,
-							faIcon: true
+							icon: true
 						}
 					},
 					conferenceMember: {
@@ -121,7 +121,7 @@
 							name: true,
 							alpha3Code: true,
 							type: true,
-							faIcon: true
+							icon: true
 						}
 					}
 				}
@@ -266,10 +266,10 @@
 		<!-- Committee Status Card -->
 		<div class="card bg-base-100 shadow-sm" data-tour="committee.status">
 			<div class="card-body gap-2 p-4">
-				<IconInfoBox text={activeAgendaItem?.title ?? '—'} faIcon="podium" />
+				<IconInfoBox text={activeAgendaItem?.title ?? '—'} icon="lectern" />
 				<IconInfoBox
 					text={getCommitteeStatusText(committee.status)}
-					faIcon={getCommitteeStatusIcon(committee.status)}
+					icon={getCommitteeStatusIcon(committee.status)}
 					committeeStatus={committee.status}
 					until={new Date(committee.statusUntil)}
 				/>
@@ -324,23 +324,23 @@
 												class="btn btn-outline btn-error btn-sm w-full"
 												onclick={() => handleSelfRemove(list.id)}
 											>
-												<i class="fas fa-minus mr-1"></i>
+												<i class="ph-fill ph-minus mr-1"></i>
 												{m.removeFromList()}
 											</button>
 										</div>
 									{:else if list.isClosed}
 										<div class="text-sm opacity-50">
-											<i class="fas fa-lock mr-1"></i>
+											<i class="ph-fill ph-lock mr-1"></i>
 											{m.listClosedCannotAdd()}
 										</div>
 									{:else if role === 'DELEGATE' && !myPresent}
 										<div class="text-sm opacity-50">
-											<i class="fas fa-exclamation-triangle mr-1"></i>
+											<i class="ph-fill ph-warning mr-1"></i>
 											{m.notPresentCannotAdd()}
 										</div>
 									{:else}
 										<button class="btn btn-primary btn-sm" onclick={() => handleSelfAdd(list.id)}>
-											<i class="fas fa-plus mr-1"></i>
+											<i class="ph-fill ph-plus mr-1"></i>
 											{m.addMeToList()}
 										</button>
 									{/if}
@@ -374,12 +374,12 @@
 				})}
 			>
 				<div class="card-body flex-row items-center gap-3 p-4">
-					<i class="fa-duotone fa-file-lines text-2xl"></i>
+					<i class="ph-duotone ph-file-text text-2xl"></i>
 					<div class="flex-1">
 						<h2 class="card-title text-lg">{m.resolutions()}</h2>
 						<p class="text-base-content/60 text-sm">{m.resolutionsCardHint()}</p>
 					</div>
-					<i class="fas fa-chevron-right opacity-50"></i>
+					<i class="ph-fill ph-caret-right opacity-50"></i>
 				</div>
 			</a>
 		{/if}

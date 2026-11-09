@@ -12,7 +12,7 @@
 	const config = $derived.by(() => {
 		switch (role) {
 			case 'ADMIN':
-				return { label: m.launcherRoleAdmin(), icon: 'shield-halved', variant: 'badge-neutral' };
+				return { label: m.launcherRoleAdmin(), icon: 'shield-check', variant: 'badge-neutral' };
 			case 'CHAIR':
 				return { label: m.launcherRoleChair(), icon: 'gavel', variant: 'badge-accent' };
 			case 'SPECTATOR':
@@ -25,7 +25,7 @@
 </script>
 
 <div class="badge badge-soft {config.variant} text-base-content gap-1.5 whitespace-nowrap py-3">
-	<i class="fa-duotone fa-{config.icon}"></i>
+	<i class="ph-duotone ph-{config.icon}"></i>
 	<span class="font-semibold">{config.label}</span>
 	{#if detail}
 		<span class="font-medium opacity-65">· {detail}</span>

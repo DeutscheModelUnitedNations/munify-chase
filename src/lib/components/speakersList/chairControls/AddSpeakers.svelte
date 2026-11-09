@@ -19,7 +19,7 @@
 			name?: string | null;
 			alpha2Code?: string | null;
 			alpha3Code?: string | null;
-			faIcon?: string | null;
+			icon?: string | null;
 			type?: string | null;
 		} | null;
 	};
@@ -164,7 +164,7 @@
 			{getName(option)}
 		</span>
 		{#if typeof option.present === 'boolean' && !option.present}
-			<i class="fa-duotone fa-user-xmark mr-4"></i>
+			<i class="ph-duotone ph-user-minus mr-4"></i>
 		{/if}
 	{/snippet}
 
@@ -174,7 +174,7 @@
 			aria-label="add-speaker"
 			onclick={() => addSpeakerToList()}
 		>
-			<i class="fas fa-plus"></i>
+			<i class="ph-fill ph-plus"></i>
 		</button>
 	{/snippet}
 </Combobox>

@@ -104,7 +104,7 @@
 					<div class="flex items-start justify-between">
 						<p class="text-base-content/60 text-sm font-medium">{m.totalAttendanceTime()}</p>
 						<div class="bg-info/10 rounded-lg p-2">
-							<i class="fa-duotone fa-clock text-info text-lg"></i>
+							<i class="ph-duotone ph-clock text-info text-lg"></i>
 						</div>
 					</div>
 					<p class="font-mono text-3xl font-bold tabular-nums">
@@ -123,7 +123,7 @@
 						<div class="flex items-start justify-between">
 							<p class="text-base-content/60 text-sm font-medium">{m.avgWaitTime()}</p>
 							<div class="bg-warning/10 rounded-lg p-2">
-								<i class="fa-duotone fa-hourglass-half text-warning text-lg"></i>
+								<i class="ph-duotone ph-hourglass-medium text-warning text-lg"></i>
 							</div>
 						</div>
 						<p class="font-mono text-3xl font-bold tabular-nums">
@@ -192,7 +192,7 @@
 						<div class="flex items-start justify-between">
 							<p class="text-base-content/60 text-sm font-medium">{m.totalSpeakingTime()}</p>
 							<div class="bg-primary/10 rounded-lg p-2">
-								<i class="fa-duotone fa-microphone text-primary text-lg"></i>
+								<i class="ph-duotone ph-microphone text-primary text-lg"></i>
 							</div>
 						</div>
 						<p class="font-mono text-3xl font-bold tabular-nums">
@@ -209,7 +209,7 @@
 						<div class="flex items-start justify-between">
 							<p class="text-base-content/60 text-sm font-medium">{m.formalSpeeches()}</p>
 							<div class="rounded-lg bg-success/10 p-2">
-								<i class="fa-duotone fa-podium text-success text-lg"></i>
+								<i class="ph-duotone ph-lectern text-success text-lg"></i>
 							</div>
 						</div>
 						<p class="font-mono text-3xl font-bold tabular-nums">
@@ -226,7 +226,7 @@
 						<div class="flex items-start justify-between">
 							<p class="text-base-content/60 text-sm font-medium">{m.commentInterventions()}</p>
 							<div class="bg-secondary/10 rounded-lg p-2">
-								<i class="fa-duotone fa-comment-dots text-secondary text-lg"></i>
+								<i class="ph-duotone ph-chat-dots text-secondary text-lg"></i>
 							</div>
 						</div>
 						<p class="font-mono text-3xl font-bold tabular-nums">
@@ -248,7 +248,7 @@
 						<div class="flex items-start justify-between">
 							<p class="text-base-content/60 text-sm font-medium">{m.papersSponsored()}</p>
 							<div class="bg-primary/10 rounded-lg p-2">
-								<i class="fa-duotone fa-file-lines text-primary text-lg"></i>
+								<i class="ph-duotone ph-file-text text-primary text-lg"></i>
 							</div>
 						</div>
 						<p class="font-mono text-3xl font-bold tabular-nums">
@@ -262,7 +262,7 @@
 						<div class="flex items-start justify-between">
 							<p class="text-base-content/60 text-sm font-medium">{m.proposed()}</p>
 							<div class="rounded-lg bg-warning/10 p-2">
-								<i class="fa-duotone fa-pen-to-square text-warning text-lg"></i>
+								<i class="ph-duotone ph-note-pencil text-warning text-lg"></i>
 							</div>
 						</div>
 						<p class="font-mono text-3xl font-bold tabular-nums">
@@ -277,7 +277,7 @@
 						<div class="flex items-start justify-between">
 							<p class="text-base-content/60 text-sm font-medium">{m.amendmentStatusAccepted()}</p>
 							<div class="rounded-lg bg-success/10 p-2">
-								<i class="fa-duotone fa-circle-check text-success text-lg"></i>
+								<i class="ph-duotone ph-check-circle text-success text-lg"></i>
 							</div>
 						</div>
 						<p class="font-mono text-3xl font-bold text-success tabular-nums">

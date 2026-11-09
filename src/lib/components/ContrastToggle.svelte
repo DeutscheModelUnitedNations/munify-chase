@@ -54,5 +54,5 @@
 	aria-pressed={more}
 	onclick={toggle}
 >
-	<i class="fa-duotone fa-circle-half-stroke w-6 text-center"></i>
+	<i class="ph-duotone ph-circle-half w-6 text-center"></i>
 </button>

@@ -30,7 +30,7 @@
 
 <Modal bind:open={modalOpen}>
 	<h3 class="mb-4 text-lg font-bold">
-		<i class="fa-solid fa-earth-europe mr-2"></i>{m.language()}
+		<i class="ph-fill ph-globe-hemisphere-east mr-2"></i>{m.language()}
 	</h3>
 	<div class="flex flex-col gap-2">
 		{#each locales as l (l)}

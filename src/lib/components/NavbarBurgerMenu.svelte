@@ -21,7 +21,7 @@
 
 	interface Item {
 		key?: string;
-		faIcon: string;
+		icon: string;
 		title: string;
 		href: string;
 		active?: boolean;
@@ -87,7 +87,7 @@
 			id: `navigation.${item.key ?? item.href}`,
 			title: () => item.title,
 			group: 'navigation' as const,
-			icon: item.faIcon.replace('fa-', ''),
+			icon: item.icon,
 			visible: () => !item.active,
 			// eslint-disable-next-line svelte/no-navigation-without-resolve -- hrefs come resolved from buildConferenceNavItems
 			run: () => goto(item.href)
@@ -111,7 +111,7 @@
 			id: 'navigation.dashboard',
 			title: m.dashboard,
 			group: 'navigation',
-			icon: 'grid-2',
+			icon: 'squares-four',
 			visible: () => !!dashboardHref,
 			// eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route
 			run: () => goto(dashboardHref!)
@@ -120,14 +120,14 @@
 			id: 'global.theme',
 			title: m.commandToggleTheme,
 			group: 'global',
-			icon: 'circle-half-stroke',
+			icon: 'circle-half',
 			run: toggleTheme
 		},
 		...locales.map((locale) => ({
 			id: `global.language.${locale}`,
 			title: localeLabels[locale] ?? (() => locale),
 			group: 'global' as const,
-			icon: 'language',
+			icon: 'translate',
 			visible: () => getLocale() !== locale,
 			run: () => setLocale(locale)
 		})),
@@ -142,7 +142,7 @@
 			id: 'global.sign-out',
 			title: m.launcherSignOut,
 			group: 'global',
-			icon: 'arrow-right-from-bracket',
+			icon: 'sign-out',
 			visible: () => !!signOutHref,
 			run: () => (window.location.href = signOutHref!)
 		}
@@ -172,7 +172,7 @@
 			type="button"
 			onclick={() => (menuVisible = true)}
 		>
-			<i class="fa-duotone fa-bars"></i>
+			<i class="ph-duotone ph-list"></i>
 		</button>
 	{/if}
 </div>
@@ -210,15 +210,11 @@
 							class={item.active ? 'menu-active font-semibold' : ''}
 							aria-current={item.active ? 'page' : undefined}
 						>
-							<i
-								class="{item.active ? 'fas' : 'fa-duotone'} w-6 text-center fa-{item.faIcon.replace(
-									'fa-',
-									''
-								)}"
+							<i class="{item.active ? 'ph-fill' : 'ph-duotone'} w-6 text-center ph-{item.icon}"
 							></i>
 							<span class="flex-1">{item.title}</span>
 							{#if item.active}
-								<i class="fa-solid fa-circle text-primary text-[0.5rem]" aria-hidden="true"></i>
+								<i class="ph-fill ph-circle text-primary text-[0.5rem]" aria-hidden="true"></i>
 							{/if}
 						</a>
 						<!-- eslint-enable svelte/no-navigation-without-resolve -->
@@ -258,9 +254,9 @@
 				<li>
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route -->
 					<a href={dashboardHref}>
-						<i class="fa-duotone fa-grid-2 w-6 text-center"></i>
+						<i class="ph-duotone ph-squares-four w-6 text-center"></i>
 						<span class="flex-1">{m.dashboard()}</span>
-						<i class="fa-duotone fa-arrow-up-right text-base-content/50" aria-hidden="true"></i>
+						<i class="ph-duotone ph-arrow-up-right text-base-content/50" aria-hidden="true"></i>
 					</a>
 				</li>
 			{/if}
@@ -271,9 +267,9 @@
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					<i class="fa-duotone fa-user w-6 text-center"></i>
+					<i class="ph-duotone ph-user w-6 text-center"></i>
 					<span class="flex-1">{m.myDelegatorAccount()}</span>
-					<i class="fa-solid fa-arrow-up-right text-base-content/50 text-xs" aria-hidden="true"></i>
+					<i class="ph-fill ph-arrow-up-right text-base-content/50 text-xs" aria-hidden="true"></i>
 				</a>
 			</li>
 		</ul>
@@ -292,7 +288,7 @@
 				<li>
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- fixed app-level route -->
 					<a href={signOutHref} class="btn btn-sm btn-soft btn-error justify-start">
-						<i class="fas fa-arrow-right-from-bracket w-6 text-center"></i>
+						<i class="ph-fill ph-sign-out w-6 text-center"></i>
 						{m.launcherSignOut()}
 					</a>
 				</li>

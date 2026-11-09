@@ -258,13 +258,13 @@ export const SHOTS: Shot[] = [
 		id: 'participant/speakers-list-card',
 		role: 'delegate',
 		path: participant(),
-		clip: '.card:has(i.fa-minus)'
+		clip: '.card:has(i.ph-minus)'
 	},
 	{
 		id: 'participant/requests-card',
 		role: 'delegate',
 		path: participant(),
-		clip: '.card:has(i.fa-hand)'
+		clip: '.card:has(i.ph-hand)'
 	},
 	{
 		id: 'participant/make-request',
@@ -309,7 +309,7 @@ export const SHOTS: Shot[] = [
 		role: 'delegate',
 		path: (ids) => participant(`/papers/${ids.submittedPaperId}`)(ids),
 		prepare: async ({ page }) => {
-			await page.locator('button:has(i.fa-users-gear)').first().click();
+			await page.locator('button:has(i.ph-user-gear)').first().click();
 			await page.locator(MODAL).first().waitFor();
 		},
 		clip: MODAL

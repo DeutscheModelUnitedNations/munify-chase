@@ -143,7 +143,9 @@ the high contrast variant, plus the keyboard paths. It needs no database rows or
   system's "increase contrast") sets `data-contrast="more"`, and `app.css` darkens the semantic
   colours and lifts muted text. The default look keeps DMUN's pale shades; this is the one that
   has to pass 4.5:1.
-- `app.css` gives Font Awesome 6 glyphs empty alternative text, so plain `<i>` icons are silent.
+- Phosphor icons are font glyphs, which a screen reader can read out as a stray character, also
+  inside a button's name. A new icon takes `aria-hidden="true"`; an icon-only control still needs
+  its `aria-label`.
 
 ## Logging and tracing
 

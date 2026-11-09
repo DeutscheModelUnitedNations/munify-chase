@@ -24,7 +24,7 @@
 					name?: string | null;
 					alpha2Code?: string | null;
 					alpha3Code?: string | null;
-					faIcon?: string | null;
+					icon?: string | null;
 					type?: string | null;
 				} | null;
 			} | null;
@@ -34,7 +34,7 @@
 					name?: string | null;
 					alpha2Code?: string | null;
 					alpha3Code?: string | null;
-					faIcon?: string | null;
+					icon?: string | null;
 					type?: string | null;
 				} | null;
 			} | null;
@@ -150,7 +150,7 @@
 					<StripesAlert
 						badgeColor="error"
 						stripeColor="error"
-						faIcon="lock"
+						icon="lock"
 						badgeText={m.listClosed()}
 					/>
 				{/if}
@@ -160,6 +160,6 @@
 		<StripesAlert badgeText={m.listEmpty()} />
 	{/if}
 	{#if closed && (speakers?.length || 0) <= visibleCount}
-		<StripesAlert badgeColor="error" stripeColor="error" faIcon="lock" badgeText={m.listClosed()} />
+		<StripesAlert badgeColor="error" stripeColor="error" icon="lock" badgeText={m.listClosed()} />
 	{/if}
 </div>

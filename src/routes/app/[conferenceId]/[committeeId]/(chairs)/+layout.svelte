@@ -72,7 +72,7 @@
 							regionalGroup: true,
 							alpha2Code: true,
 							alpha3Code: true,
-							faIcon: true
+							icon: true
 						},
 						present: true
 					},
@@ -85,7 +85,7 @@
 							regionalGroup: true,
 							alpha2Code: true,
 							alpha3Code: true,
-							faIcon: true
+							icon: true
 						}
 					}
 				}
@@ -105,7 +105,7 @@
 				regionalGroup: true,
 				alpha2Code: true,
 				alpha3Code: true,
-				faIcon: true
+				icon: true
 			}
 		},
 		lastResolutionAdoptionDate: true,
@@ -121,7 +121,7 @@
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true,
-					faIcon: true
+					icon: true
 				}
 			}
 		}
@@ -136,7 +136,7 @@
 			orderBy: { createdAt: 'asc' }
 		},
 		id: true,
-		requestType: { name: true, faIcon: true },
+		requestType: { name: true, icon: true },
 		conferenceUser: {
 			name: true,
 			userEmail: true,
@@ -150,7 +150,7 @@
 
 	const dockItems = $derived([
 		{
-			icon: 'fa-gears',
+			icon: 'gear-six',
 			label: () => m.setup(),
 			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/setup', {
 				conferenceId,
@@ -159,7 +159,7 @@
 			key: 'setup'
 		},
 		{
-			icon: 'fa-users',
+			icon: 'users',
 			label: () => m.presence(),
 			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/presence', {
 				conferenceId,
@@ -168,7 +168,7 @@
 			key: 'presence'
 		},
 		{
-			icon: 'fa-podium',
+			icon: 'lectern',
 			label: () => m.speakersList(),
 			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/speakers-list', {
 				conferenceId,
@@ -177,7 +177,7 @@
 			key: 'speakers-list'
 		},
 		{
-			icon: 'fa-box-ballot',
+			icon: 'box-arrow-down',
 			label: () => m.voting(),
 			href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/voting', {
 				conferenceId,
@@ -190,7 +190,7 @@
 		...(committee?.allowRequests
 			? [
 					{
-						icon: 'fa-hand',
+						icon: 'hand',
 						label: () => m.requests(),
 						href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/requests', {
 							conferenceId,
@@ -206,7 +206,7 @@
 			? []
 			: [
 					{
-						icon: 'fa-file-lines',
+						icon: 'file-text',
 						label: () => m.resolutions(),
 						href: resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions', {
 							conferenceId,
@@ -239,7 +239,7 @@
 			id: `navigation.chair.${item.key}`,
 			title: item.label,
 			group: 'navigation' as const,
-			icon: item.icon.replace('fa-', ''),
+			icon: item.icon,
 			shortcut: `alt+${i + 1}`,
 			visible: () => !isActive(item.key),
 			run: () => goto(item.href)
@@ -248,7 +248,7 @@
 			id: 'navigation.chair.active-draft',
 			title: m.activeDraftResolution,
 			group: 'navigation',
-			icon: 'file-pen',
+			icon: 'note-pencil',
 			visible: () => !!committee?.activeDraftResolutionId && !isLocalConferenceActive(),
 			run: () =>
 				goto(
@@ -263,7 +263,7 @@
 			id: 'chair.presentation',
 			title: m.openPresentation,
 			group: 'global',
-			icon: 'presentation-screen',
+			icon: 'presentation',
 			shortcut: 'alt+p',
 			run: openPresentation
 		}
@@ -436,7 +436,7 @@
 		>
 			<span class="relative inline-flex">
 				<!-- fallow-ignore-next-line css-token-drift -- daisyUI's dock icon size, relative to the label -->
-				<i class="fa-duotone {item.icon} size-[1.2em]"></i>
+				<i class="ph-duotone ph-{item.icon} size-[1.2em]"></i>
 				{#if item.key === 'requests' && (pendingRequestsForNotifications?.length ?? 0) > 0}
 					<span class="absolute -top-1 -right-1 flex size-2.5">
 						<span
@@ -464,7 +464,7 @@
 				? 'dock-active'
 				: ''}"
 		>
-			<i class="fa-duotone fa-file-pen size-[1.2em]"></i>
+			<i class="ph-duotone ph-note-pencil size-[1.2em]"></i>
 			<span class="dock-label">{m.activeDraftResolution()}</span>
 		</a>
 	{/if}

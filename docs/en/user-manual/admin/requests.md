@@ -13,7 +13,7 @@ With requests, delegates and NSAs can send points and motions (for example a Rig
 Open **Configuration** and switch to the **Requests** tab. Every request type is one row:
 
 - **Move up** / **Move down** arrows set the order. Chairs see pending requests sorted in this order, so put the most urgent types at the top.
-- **Icon**: a Font Awesome icon name, such as `fa-flag`.
+- **Icon**: click it to open the icon picker. Search by name or keyword (the keywords are in English) and click an icon to choose it.
 - **Name**: what delegates see on the button.
 - **Enabled**: switch a type off to hide it without deleting it.
 - **Delegates only**: when on, NSAs can't file this request.

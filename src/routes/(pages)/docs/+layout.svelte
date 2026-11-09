@@ -18,7 +18,7 @@
 
 	<div class="drawer-content min-w-0 pb-16 lg:pl-10">
 		<label for="docs-drawer" class="btn btn-sm btn-ghost mb-4 lg:hidden">
-			<i class="fa-duotone fa-bars"></i>
+			<i class="ph-duotone ph-list"></i>
 			{m.docsMenu()}
 		</label>
 		{@render children()}

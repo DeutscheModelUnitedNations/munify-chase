@@ -91,7 +91,7 @@
 			id: 'navigation.participant.papers',
 			title: m.resolutions,
 			group: 'navigation',
-			icon: 'file-lines',
+			icon: 'file-text',
 			visible: () => !isLocalConferenceActive() && !page.url.pathname.endsWith('/papers'),
 			run: () => goto(papersHref)
 		},
@@ -99,7 +99,7 @@
 			id: 'navigation.participant.active-draft',
 			title: m.activeDraftResolution,
 			group: 'navigation',
-			icon: 'file-pen',
+			icon: 'note-pencil',
 			visible: () =>
 				!isLocalConferenceActive() &&
 				!!committee?.activeDraftResolutionId &&
@@ -128,7 +128,7 @@
 					})}
 					aria-label={m.back()}
 				>
-					<i class="fa-duotone fa-arrow-left"></i>
+					<i class="ph-duotone ph-arrow-left"></i>
 				</a>
 			</div>
 		{/if}
@@ -171,7 +171,7 @@
 			})}
 			class:dock-active={!page.url.pathname.includes('/papers')}
 		>
-			<i class="fa-duotone fa-users size-[1.2em]"></i>
+			<i class="ph-duotone ph-users size-[1.2em]"></i>
 			<span class="dock-label">{m.committee()}</span>
 		</a>
 		{#if !isLocalConferenceActive()}
@@ -183,7 +183,7 @@
 				class:dock-active={page.url.pathname.includes('/papers') &&
 					!page.url.pathname.includes(committee?.activeDraftResolutionId ?? '__none__')}
 			>
-				<i class="fa-duotone fa-file-lines size-[1.2em]"></i>
+				<i class="ph-duotone ph-file-text size-[1.2em]"></i>
 				<span class="dock-label">{m.resolutions()}</span>
 			</a>
 			{#if committee?.activeDraftResolutionId}
@@ -195,7 +195,7 @@
 					})}
 					class:dock-active={page.url.pathname.includes(committee.activeDraftResolutionId)}
 				>
-					<i class="fa-duotone fa-file-pen size-[1.2em]"></i>
+					<i class="ph-duotone ph-note-pencil size-[1.2em]"></i>
 					<span class="dock-label">{m.activeDraftResolution()}</span>
 				</a>
 			{/if}

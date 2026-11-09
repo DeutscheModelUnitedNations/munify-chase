@@ -152,20 +152,101 @@
 	display: none;
 }
 
+/* Phosphor icons render inline-block so transforms
+   (animate-spin, the icon-* animations below) apply to the glyph. */
+.ph,
+.ph-fill,
+.ph-duotone {
+	display: inline-block;
+}
+
+@keyframes icon-beat {
+	0%,
+	90% {
+		transform: scale(1);
+	}
+	45% {
+		transform: scale(1.25);
+	}
+}
+
+@keyframes icon-fade {
+	50% {
+		opacity: 0.4;
+	}
+}
+
+@keyframes icon-beat-fade {
+	0%,
+	100% {
+		opacity: 0.4;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1.125);
+	}
+}
+
+@keyframes icon-shake {
+	0% {
+		transform: rotate(-15deg);
+	}
+	4% {
+		transform: rotate(15deg);
+	}
+	8%,
+	24% {
+		transform: rotate(-18deg);
+	}
+	12%,
+	28% {
+		transform: rotate(18deg);
+	}
+	16% {
+		transform: rotate(-22deg);
+	}
+	20% {
+		transform: rotate(22deg);
+	}
+	32% {
+		transform: rotate(-12deg);
+	}
+	36% {
+		transform: rotate(12deg);
+	}
+	40%,
+	100% {
+		transform: rotate(0deg);
+	}
+}
+
+.icon-beat {
+	animation: icon-beat var(--icon-animation-duration, 1s) ease-in-out infinite;
+}
+
+.icon-fade {
+	animation: icon-fade var(--icon-animation-duration, 1s) cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.icon-beat-fade {
+	animation: icon-beat-fade var(--icon-animation-duration, 1s) cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.icon-shake {
+	animation: icon-shake var(--icon-animation-duration, 1s) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.icon-beat,
+	.icon-fade,
+	.icon-beat-fade,
+	.icon-shake {
+		animation: none;
+	}
+}
+
 /* --- ACCESSIBILITY --- */
-
-/*
- * Font Awesome 6 draws each glyph as generated content, which screen readers read out as an
- * unpronounceable character, also inside a button's name. `/ ""` gives it empty alternative text
- * (as Font Awesome 7 does itself); browsers without that syntax keep Font Awesome's own rule.
- */
-:is(.fa, .fas, .far, .fab, .fad, .fa-solid, .fa-regular, .fa-brands, .fa-duotone)::before {
-	content: var(--fa) / '';
-}
-
-:is(.fad, .fa-duotone)::after {
-	content: var(--fa--fa) / '';
-}
 
 /*
  * High contrast (`#lib/helpers/contrast`, the toggle next to the theme switch, or the system's

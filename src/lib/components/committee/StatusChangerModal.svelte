@@ -22,7 +22,7 @@
 			id: 'chair.status',
 			title: m.setStatus,
 			group: 'page',
-			icon: 'traffic-light',
+			icon: 'traffic-signal',
 			shortcut: 'alt+s',
 			run: () => (open = !open)
 		}

@@ -8,7 +8,7 @@ description: Nichtstaatliche Akteure und UN-Akteure einrichten
 
 Der Reiter **Nichtstaatliche Akteure** listet alle NAs und UN-Akteure der Konferenz mit Icon und Rollentyp.
 
-Um einen hinzuzufügen, trage einen **Name** ein, wähle die **Rolle** (**Nichtstaatlicher Akteur** oder **UN-Akteur**) und optional ein **Icon**, also einen Font-Awesome-Iconnamen wie `building-ngo`, der statt einer Flagge angezeigt wird. Klicke auf **NA hinzufügen**, um zu speichern.
+Um einen hinzuzufügen, trage einen **Name** ein, wähle die **Rolle** (**Nichtstaatlicher Akteur** oder **UN-Akteur**) und ein **Icon**, das statt einer Flagge angezeigt wird. Ein Klick auf den Icon-Button öffnet die Auswahl. Suche mit englischen Stichwörtern (zum Beispiel "health" oder "building") und klicke auf ein Icon, um es zu wählen. Klicke auf **NA hinzufügen**, um zu speichern.
 
 Einträge lassen sich nicht bearbeiten. Um einen zu ändern, entferne ihn mit dem Papierkorb-Symbol (mit Rückfrage) und lege ihn neu an.
 

@@ -39,7 +39,7 @@ function delegationRepresentation(alpha2Code: string) {
 		name: null,
 		alpha2Code: country.cca2.toLowerCase(),
 		alpha3Code: country.cca3.toLowerCase(),
-		faIcon: null,
+		icon: null,
 		regionalGroup: regionalGroupMapping[country.unRegionalGroup]
 	};
 }
@@ -68,7 +68,7 @@ type LocalDemoRepresentation = {
 	name: string | null;
 	alpha2Code: string | null;
 	alpha3Code: string | null;
-	faIcon: string | null;
+	icon: string | null;
 	regionalGroup: string | null | undefined;
 } & Record<string, unknown>;
 
@@ -91,7 +91,7 @@ const localDemoNsaRepresentation: LocalDemoRepresentation = {
 	name: 'ICRC',
 	alpha2Code: null,
 	alpha3Code: null,
-	faIcon: 'kit-medical',
+	icon: 'first-aid-kit',
 	regionalGroup: null
 };
 
@@ -102,7 +102,7 @@ const localDemoUnRepresentation: LocalDemoRepresentation = {
 	name: 'UN Secretariat',
 	alpha2Code: null,
 	alpha3Code: null,
-	faIcon: 'globe',
+	icon: 'globe',
 	regionalGroup: null
 };
 

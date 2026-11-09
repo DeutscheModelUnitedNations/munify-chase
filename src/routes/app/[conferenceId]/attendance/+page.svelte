@@ -33,11 +33,11 @@
 	type TabId = 'BY_COMMITTEE' | 'BY_NSA' | 'NOT_CHECKED_IN' | 'HISTORY';
 	let activeTab = $state<TabId>('NOT_CHECKED_IN');
 
-	const tabs: { id: TabId; label: string; faIcon: string }[] = [
-		{ id: 'NOT_CHECKED_IN', label: m.nsaAttendanceTabNotCheckedIn(), faIcon: 'fa-user-clock' },
-		{ id: 'BY_COMMITTEE', label: m.nsaAttendanceTabByCommittee(), faIcon: 'fa-building-columns' },
-		{ id: 'BY_NSA', label: m.nsaAttendanceTabByNsa(), faIcon: 'fa-people-group' },
-		{ id: 'HISTORY', label: m.nsaAttendanceTabHistory(), faIcon: 'fa-clock-rotate-left' }
+	const tabs: { id: TabId; label: string; icon: string }[] = [
+		{ id: 'NOT_CHECKED_IN', label: m.nsaAttendanceTabNotCheckedIn(), icon: 'clock-user' },
+		{ id: 'BY_COMMITTEE', label: m.nsaAttendanceTabByCommittee(), icon: 'bank' },
+		{ id: 'BY_NSA', label: m.nsaAttendanceTabByNsa(), icon: 'users-three' },
+		{ id: 'HISTORY', label: m.nsaAttendanceTabHistory(), icon: 'clock-counter-clockwise' }
 	];
 
 	const tabTitles: Record<TabId, () => string> = {
@@ -53,7 +53,7 @@
 			title: m.commandShowTab,
 			context: tabTitles[tab.id],
 			group: 'page' as const,
-			icon: tab.faIcon.replace('fa-', ''),
+			icon: tab.icon,
 			visible: () => allowed && activeTab !== tab.id,
 			run: () => (activeTab = tab.id)
 		}))

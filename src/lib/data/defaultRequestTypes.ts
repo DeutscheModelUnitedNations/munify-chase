@@ -9,7 +9,7 @@ import * as m from '#lib/paraglide/messages';
  */
 export type DefaultRequestType = {
 	name: string;
-	faIcon: string;
+	icon: string;
 	// Per DMUN's reference sheet, only personal rights, roll-call votes and
 	// informal sessions are open to NSAs - the rest of the procedural motions
 	// are delegate-only.
@@ -19,33 +19,37 @@ export type DefaultRequestType = {
 export function getDefaultRequestTypes(): DefaultRequestType[] {
 	return [
 		// Personal requests
-		{ name: m.requestTypeRightToInformation(), faIcon: 'fa-circle-info', delegatesOnly: false },
-		{ name: m.requestTypeRestoreOrder(), faIcon: 'fa-gavel', delegatesOnly: false },
+		{ name: m.requestTypeRightToInformation(), icon: 'info', delegatesOnly: false },
+		{ name: m.requestTypeRestoreOrder(), icon: 'gavel', delegatesOnly: false },
 		{
 			name: m.requestTypeClarifyMisunderstanding(),
-			faIcon: 'fa-circle-question',
+			icon: 'question',
 			delegatesOnly: false
 		},
 		// Motions regarding the rules of procedure
-		{ name: m.requestTypeRollCallVote(), faIcon: 'fa-bullhorn', delegatesOnly: false },
-		{ name: m.requestTypeAppealChairDecision(), faIcon: 'fa-scale-balanced', delegatesOnly: true },
-		{ name: m.requestTypeInformalSession(), faIcon: 'fa-comments', delegatesOnly: false },
-		{ name: m.requestTypeNewAgendaItem(), faIcon: 'fa-list-check', delegatesOnly: true },
-		{ name: m.requestTypeReturnDraftResolution(), faIcon: 'fa-rotate-left', delegatesOnly: true },
+		{ name: m.requestTypeRollCallVote(), icon: 'megaphone', delegatesOnly: false },
+		{ name: m.requestTypeAppealChairDecision(), icon: 'scales', delegatesOnly: true },
+		{ name: m.requestTypeInformalSession(), icon: 'chats', delegatesOnly: false },
+		{ name: m.requestTypeNewAgendaItem(), icon: 'list-checks', delegatesOnly: true },
+		{
+			name: m.requestTypeReturnDraftResolution(),
+			icon: 'arrow-counter-clockwise',
+			delegatesOnly: true
+		},
 		{
 			name: m.requestTypePostponeAgendaItem(),
-			faIcon: 'fa-clock-rotate-left',
+			icon: 'clock-counter-clockwise',
 			delegatesOnly: true
 		},
-		{ name: m.requestTypeReturnGeneralDebate(), faIcon: 'fa-arrows-rotate', delegatesOnly: true },
-		{ name: m.requestTypeEndDebate(), faIcon: 'fa-flag-checkered', delegatesOnly: true },
+		{ name: m.requestTypeReturnGeneralDebate(), icon: 'arrows-clockwise', delegatesOnly: true },
+		{ name: m.requestTypeEndDebate(), icon: 'flag-checkered', delegatesOnly: true },
 		{
 			name: m.requestTypeImmediateVote(),
-			faIcon: 'fa-square-poll-vertical',
+			icon: 'chart-bar',
 			delegatesOnly: true
 		},
-		{ name: m.requestTypeCloseReopenSpeakersList(), faIcon: 'fa-list-ol', delegatesOnly: true },
-		{ name: m.requestTypeChangeSpeakingTime(), faIcon: 'fa-stopwatch', delegatesOnly: true },
-		{ name: m.requestTypeGuestSpeech(), faIcon: 'fa-user-tie', delegatesOnly: true }
+		{ name: m.requestTypeCloseReopenSpeakersList(), icon: 'list-numbers', delegatesOnly: true },
+		{ name: m.requestTypeChangeSpeakingTime(), icon: 'timer', delegatesOnly: true },
+		{ name: m.requestTypeGuestSpeech(), icon: 'user-sound', delegatesOnly: true }
 	];
 }

@@ -40,11 +40,11 @@
 	const closeListTabs = [
 		{
 			id: false,
-			faIcon: 'lock-open'
+			icon: 'lock-open'
 		},
 		{
 			id: true,
-			faIcon: 'lock'
+			icon: 'lock'
 		}
 	];
 
@@ -167,7 +167,7 @@
 				context,
 				keywords,
 				group: 'page',
-				icon: 'pencil',
+				icon: 'pencil-simple',
 				enabled: () => !!speakersList?.speakers?.length,
 				run: openChangeSpeakersNameModal
 			},
@@ -209,7 +209,7 @@
 <Popover bind:open={isOpen}>
 	{#snippet Trigger({ props })}
 		<button {...props} class="btn btn-lg" aria-label="More options">
-			<i class="fas fa-gears"> </i>
+			<i class="ph-fill ph-gear-six"> </i>
 		</button>
 	{/snippet}
 	{#snippet Content()}
@@ -224,15 +224,15 @@
 				disabled={!speakersList?.speakers?.length}
 				onclick={openChangeSpeakersNameModal}
 			>
-				<i class="fas fa-pencil"></i>
+				<i class="ph-fill ph-pencil-simple"></i>
 				{m.changeSpeakersName()}
 			</button>
 			<button class="btn" onclick={openChangeSpeakingTimeModal}>
-				<i class="fas fa-timer"></i>
+				<i class="ph-fill ph-timer"></i>
 				{m.changeSpeakersTime()}
 			</button>
 			<button class="btn btn-error" onclick={clearList}>
-				<i class="fas fa-trash"></i>
+				<i class="ph-fill ph-trash"></i>
 				{m.clearList()}
 			</button>
 		</div>

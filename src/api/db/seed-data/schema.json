@@ -77,8 +77,8 @@
 						"items": {
 							"additionalProperties": false,
 							"properties": {
-								"faIcon": {
-									"description": "Font Awesome icon class for the custom representation",
+								"icon": {
+									"description": "Phosphor icon name (e.g. `first-aid-kit`) for the custom representation",
 									"type": "string"
 								},
 								"name": {

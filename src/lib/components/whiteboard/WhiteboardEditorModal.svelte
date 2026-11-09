@@ -47,10 +47,10 @@
 		</div>
 		<div class="modal-action sticky bottom-0 justify-between">
 			<button class="btn btn-error" onclick={() => close()}
-				><i class="fas fa-xmark"></i>{m.abort()}</button
+				><i class="ph-fill ph-x"></i>{m.abort()}</button
 			>
 			<button class="btn btn-primary" onclick={publishChanges}
-				><i class="fas fa-paper-plane"></i>{m.publishChanges()}</button
+				><i class="ph-fill ph-paper-plane-tilt"></i>{m.publishChanges()}</button
 			>
 		</div>
 	</div>

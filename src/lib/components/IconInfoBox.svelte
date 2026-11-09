@@ -12,7 +12,7 @@
 
 	interface Props {
 		text: string;
-		faIcon?: string;
+		icon?: string;
 		iconText?: string;
 		committeeStatus?: CommitteestatusEnum;
 		until?: Date;
@@ -27,7 +27,7 @@
 
 	let {
 		text,
-		faIcon,
+		icon,
 		iconText,
 		committeeStatus,
 		until,
@@ -84,8 +84,8 @@
 	<div class="flex h-full w-full min-w-0 flex-1 flex-row items-center gap-4 overflow-hidden py-2">
 		{#if iconText}
 			<div class="flex-none text-center text-4xl font-bold">{iconText}</div>
-		{:else if faIcon}
-			<i class="fas fa-{faIcon.replace('fa-', '')} w-6 flex-none text-center"></i>
+		{:else if icon}
+			<i class="ph-fill ph-{icon} w-6 flex-none text-center"></i>
 		{/if}
 
 		<div class="flex w-full min-w-0 flex-1 flex-col overflow-hidden">
@@ -131,7 +131,7 @@
 					)}
 				</p>
 			{:else}
-				<i class="fas fa-bell fa-shake"></i>
+				<i class="ph-fill ph-bell icon-shake"></i>
 			{/if}
 		{/if}
 	</div>

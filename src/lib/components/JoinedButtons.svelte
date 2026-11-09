@@ -6,7 +6,7 @@
 	}
 
 	export interface Button {
-		faIcon?: string;
+		icon?: string;
 		label: string;
 		shortcut?: string;
 		action?: () => void;
@@ -33,9 +33,9 @@
 </script>
 
 {#snippet ButtonContent(button: Button)}
-	{@const { faIcon, label, shortcut, active } = button}
-	{#if faIcon}
-		<i class="fa-{active ? 'solid' : 'duotone'} fa-{faIcon.replace('fa-', '')}"></i>
+	{@const { icon, label, shortcut, active } = button}
+	{#if icon}
+		<i class="{active ? 'ph-fill' : 'ph-duotone'} ph-{icon}"></i>
 	{/if}
 	<div class="hidden md:block">{label}</div>
 	{#if shortcut && shortcut !== ''}

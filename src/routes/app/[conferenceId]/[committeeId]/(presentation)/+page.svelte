@@ -95,7 +95,7 @@
 							regionalGroup: true,
 							alpha2Code: true,
 							alpha3Code: true,
-							faIcon: true
+							icon: true
 						},
 						present: true
 					},
@@ -108,7 +108,7 @@
 							regionalGroup: true,
 							alpha2Code: true,
 							alpha3Code: true,
-							faIcon: true
+							icon: true
 						}
 					}
 				}
@@ -124,7 +124,7 @@
 				alpha2Code: true,
 				alpha3Code: true,
 				regionalGroup: true,
-				faIcon: true
+				icon: true
 			}
 		},
 		conference: {
@@ -139,7 +139,7 @@
 					name: true,
 					alpha2Code: true,
 					alpha3Code: true,
-					faIcon: true
+					icon: true
 				}
 			}
 		}
@@ -149,7 +149,7 @@
 		name: true,
 		alpha2Code: true,
 		alpha3Code: true,
-		faIcon: true,
+		icon: true,
 		type: true
 	} as const;
 
@@ -160,7 +160,7 @@
 		},
 		id: true,
 		createdAt: true,
-		requestType: { id: true, name: true, faIcon: true, priority: true, showOnPresentation: true },
+		requestType: { id: true, name: true, icon: true, priority: true, showOnPresentation: true },
 		committeeMember: { id: true, representation: requesterRepresentationFields },
 		conferenceMember: { id: true, representation: requesterRepresentationFields },
 		conferenceUser: {
@@ -282,7 +282,7 @@
 						text={committee.statusHeadline.length > 0
 							? committee.statusHeadline
 							: getCommitteeStatusText(committee.status)}
-						faIcon={getCommitteeStatusIcon(committee.status)}
+						icon={getCommitteeStatusIcon(committee.status)}
 						committeeStatus={committee.status}
 						until={new Date(committee.statusUntil)}
 						fullHeight
@@ -297,7 +297,7 @@
 					class="card bg-base-100 gap-2 overflow-hidden p-4"
 					id="agenda-item"
 				>
-					<IconInfoBox text={activeAgendaItem?.title || '—'} faIcon="podium" fullHeight />
+					<IconInfoBox text={activeAgendaItem?.title || '—'} icon="lectern" fullHeight />
 				</GridItem>
 			{/if}
 			{#if layout.majorities}

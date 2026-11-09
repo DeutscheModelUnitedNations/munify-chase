@@ -84,13 +84,13 @@
 	function triggerIcon(t: Trigger): string {
 		switch (t) {
 			case 'SUBMITTED':
-				return 'fa-paper-plane';
+				return 'paper-plane-tilt';
 			case 'AMENDMENT_APPLIED':
-				return 'fa-edit';
+				return 'pencil-simple';
 			case 'VOTE_CONCLUDED':
-				return 'fa-circle-check';
+				return 'check-circle';
 			case 'MANUAL':
-				return 'fa-bookmark';
+				return 'bookmark-simple';
 		}
 	}
 
@@ -133,7 +133,7 @@
 	<div class="modal-box bg-base-200 max-h-[85vh] w-full max-w-2xl">
 		<div class="mb-4 flex items-center justify-between">
 			<h3 class="text-lg font-bold">
-				<i class="fas fa-clock-rotate-left mr-2"></i>
+				<i class="ph-fill ph-clock-counter-clockwise mr-2"></i>
 				{m.documentHistory()}
 			</h3>
 			<button
@@ -143,9 +143,9 @@
 				title={m.saveCurrentState()}
 			>
 				{#if saving}
-					<i class="fas fa-spinner fa-spin"></i>
+					<i class="ph-fill ph-spinner-gap animate-spin"></i>
 				{:else}
-					<i class="fas fa-bookmark"></i>
+					<i class="ph-fill ph-bookmark-simple"></i>
 				{/if}
 				{m.saveCurrentState()}
 			</button>
@@ -154,7 +154,7 @@
 		<div class="bg-base-100 max-h-[55vh] overflow-y-auto rounded-lg p-2">
 			{#if !snapshots || snapshots.length === 0}
 				<div class="flex flex-col items-center gap-2 py-12 text-center opacity-60">
-					<i class="fas fa-folder-open text-4xl"></i>
+					<i class="ph-fill ph-folder-open text-4xl"></i>
 					<p class="max-w-sm">{m.noSnapshotsYet()}</p>
 				</div>
 			{:else}
@@ -163,7 +163,7 @@
 						{@const t = snap.trigger as Trigger}
 						<li class="hover:bg-base-200 flex items-center gap-3 rounded p-2 transition">
 							<div class="badge badge-md gap-1 {triggerBadgeClass(t)}" title={triggerLabel(t)}>
-								<i class="fas {triggerIcon(t)}"></i>
+								<i class="ph-fill ph-{triggerIcon(t)}"></i>
 								{triggerLabel(t)}
 							</div>
 							<div class="flex-1">
@@ -178,9 +178,9 @@
 								disabled={restoringId !== null}
 							>
 								{#if restoringId === snap.id}
-									<i class="fas fa-spinner fa-spin"></i>
+									<i class="ph-fill ph-spinner-gap animate-spin"></i>
 								{:else}
-									<i class="fas fa-rotate-left"></i>
+									<i class="ph-fill ph-arrow-counter-clockwise"></i>
 								{/if}
 								{m.restoreSnapshot()}
 							</button>
@@ -192,7 +192,7 @@
 
 		<div class="modal-action">
 			<button class="btn btn-ghost" onclick={() => close()}>
-				<i class="fas fa-xmark"></i>
+				<i class="ph-fill ph-x"></i>
 				{m.close()}
 			</button>
 		</div>
@@ -209,9 +209,9 @@
 				<button class="btn btn-ghost" onclick={() => (confirmSnap = null)}>{m.cancel()}</button>
 				<button class="btn btn-warning" disabled={restoringId !== null} onclick={doRestore}>
 					{#if restoringId !== null}
-						<i class="fas fa-spinner fa-spin"></i>
+						<i class="ph-fill ph-spinner-gap animate-spin"></i>
 					{:else}
-						<i class="fas fa-rotate-left"></i>
+						<i class="ph-fill ph-arrow-counter-clockwise"></i>
 					{/if}
 					{m.restoreSnapshot()}
 				</button>

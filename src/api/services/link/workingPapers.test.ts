@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { committeeMemberId } from './mirror';
-import { workingPaperChanges, type DelegatorWorkingPaper } from './workingPapers';
+import {
+	readableResolution,
+	workingPaperChanges,
+	type DelegatorWorkingPaper
+} from './workingPapers';
 
-const content = { committeeName: 'GA', preamble: [], operative: [] };
 const seat = committeeMemberId({ roleId: 'deu', committeeId: 'ga' });
 const seats = new Set([seat]);
 
@@ -11,20 +14,20 @@ const paper = (overrides: Partial<DelegatorWorkingPaper> = {}): DelegatorWorking
 	agendaItem: { id: 'climate', committeeId: 'ga' },
 	delegation: { assignedRoleId: 'deu' },
 	versions: [
-		{ version: 1, content },
-		{ version: 3, content: { ...content, committeeName: 'GA v3' } }
+		{ id: 'v1', version: 1 },
+		{ id: 'v3', version: 3 }
 	],
 	...overrides
 });
 
 describe('workingPaperChanges', () => {
 	it("takes a paper over with its latest accepted version, by its delegation's seat", () => {
-		const { create } = workingPaperChanges({ papers: [paper()], existing: [], seats });
-		expect(create).toEqual([
+		const { takeOver } = workingPaperChanges({ papers: [paper()], existing: [], seats });
+		expect(takeOver).toEqual([
 			{
 				delegatorPaperId: 'paper',
+				versionId: 'v3',
 				version: 3,
-				content: { ...content, committeeName: 'GA v3' },
 				committeeId: 'ga',
 				agendaItemId: 'climate',
 				creatorCommitteeMemberId: seat
@@ -32,33 +35,34 @@ describe('workingPaperChanges', () => {
 		]);
 	});
 
-	it('leaves a paper behind without an agenda item, a seat or a readable text', () => {
+	it('leaves a paper behind without an agenda item, a seat or a version', () => {
 		const papers = [
 			paper({ id: 'a', agendaItem: null }),
 			paper({ id: 'b', delegation: { assignedRoleId: 'fra' } }),
-			paper({ id: 'c', versions: [{ version: 1, content: { text: 'tiptap' } }] })
+			paper({ id: 'c', versions: [] })
 		];
 		expect(workingPaperChanges({ papers, existing: [], seats }).leftBehind).toEqual([
 			{ paperId: 'a', reason: 'noAgendaItem' },
 			{ paperId: 'b', reason: 'noSeat' },
-			{ paperId: 'c', reason: 'unreadable' }
+			{ paperId: 'c', reason: 'noVersion' }
 		]);
 	});
 
-	it('follows a newer version until CHASE changed the draft', () => {
+	it('follows a newer version until CHASE changed the draft, and leaves a current one alone', () => {
 		const draft = { id: 'd', delegatorPaperId: 'paper', delegatorVersion: 1, detachedAt: null };
 		const followed = workingPaperChanges({ papers: [paper()], existing: [draft], seats });
-		expect(followed.update.map((u) => [u.draftId, u.version])).toEqual([['d', 3]]);
-		expect(followed.create).toEqual([]);
+		expect(followed.takeOver.map((u) => [u.draftId, u.versionId])).toEqual([['d', 'v3']]);
 
 		const detached = { ...draft, detachedAt: new Date() };
-		expect(workingPaperChanges({ papers: [paper()], existing: [detached], seats }).update).toEqual(
-			[]
-		);
+		expect(
+			workingPaperChanges({ papers: [paper()], existing: [detached], seats }).takeOver
+		).toEqual([]);
 		const current = { ...draft, delegatorVersion: 3 };
-		expect(workingPaperChanges({ papers: [paper()], existing: [current], seats }).update).toEqual(
-			[]
-		);
+		expect(workingPaperChanges({ papers: [paper()], existing: [current], seats })).toEqual({
+			takeOver: [],
+			remove: [],
+			leftBehind: []
+		});
 	});
 
 	it('removes a draft whose paper is gone, unless CHASE changed it', () => {
@@ -67,5 +71,13 @@ describe('workingPaperChanges', () => {
 			{ id: 'd2', delegatorPaperId: 'kept', delegatorVersion: 1, detachedAt: new Date() }
 		];
 		expect(workingPaperChanges({ papers: [], existing: drafts, seats }).remove).toEqual(['d1']);
+	});
+});
+
+describe('readableResolution', () => {
+	it('takes a resolution and refuses anything else', () => {
+		const content = { committeeName: 'GA', preamble: [], operative: [] };
+		expect(readableResolution(content)).toEqual(content);
+		expect(readableResolution({ text: 'tiptap' })).toBeUndefined();
 	});
 });

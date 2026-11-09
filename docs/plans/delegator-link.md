@@ -63,13 +63,22 @@ presence export and delegator's presence import) with a live link between the tw
   Postgres advisory lock on a dedicated connection, so another instance takes over when its
   holder dies, without retrying on a timer.
 - It runs **ordinary live queries** through the typed client generated from the remote's schema
-  (`bun run link:client`, from the `schema.graphql` each app writes on dev start and build). Their
-  updates only trigger: the worker then reads the conference afresh (debounced) and reconciles it,
-  which makes a lost, doubled or partial update harmless.
-- It runs a **full reconcile on every (re)connect**, and otherwise only on what the subscriptions
-  report. There is no timer: a subscription that has gone quiet is noticed by the transport's
-  keep-alive (graphql-ws pings, graphql-sse's stream), which drops the connection, and the
-  reconnect reconciles everything.
+  (`bun run link:client`, from the `schema.graphql` each app writes on dev start and build), one
+  per table and page of 1000 rows (`liveTable.ts`). Every answer holds the rows as they are, so
+  the worker keeps the remote's tables in memory and reads nothing twice: chase works out the
+  mirror from them and writes only the rows that differ from its own, announcing only those;
+  delegator works out presence and adopted resolutions, reading a text only to render it.
+- **A list hears changes to the rows it shows, not of a row coming into its filter.** Tables are
+  filtered only where they would be large: the members of seated delegations, the participant
+  rows and users by the ids the other tables name, the final papers. Delegations and single
+  participants are watched whole, so a seat change is heard and the filtered tables are asked
+  again; a row named but not held (a new person, a paper turning final) asks its table again.
+- A row missing across pages is asked for by id before it counts as gone; a page whose first
+  answer failed is asked again with backoff; at most four first answers are awaited at once, so
+  starting up is no burst of heavy queries.
+- **Every (re)connect asks every table again.** There is no timer: a subscription that has gone
+  quiet is noticed by the transport's keep-alive (graphql-ws pings, graphql-sse's stream), which
+  drops the connection, and the reconnect catches up.
 - It reconnects with backoff. The state (`lastEventAt`, `lastReconcileAt`, `lastError`) is
   written to `instanceLink` and shown on both status cards.
 - Clients: delegator → chase over `graphql-ws`; chase → delegator over `graphql-sse` (distinct

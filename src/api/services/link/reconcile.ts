@@ -1,14 +1,15 @@
 import { db, schema } from '#api/db/db';
 import { pubsub } from '#api/rumble';
-import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
-import type { AnyPgColumn } from 'drizzle-orm/pg-core';
+import { eq, inArray, sql } from 'drizzle-orm';
 import type { Mirror } from './mirror';
+import { rowChanges } from './rowChanges';
 
 /**
- * Writes one DELEGATOR conference into CHASE (`docs/plans/delegator-link.md`): upserts every
- * mirrored row by its id and deletes the managed rows DELEGATOR no longer has (with what hangs on
- * them). Local extras stay, but one sharing an address with a mirrored person gives way to them.
- * One transaction, so a conference never shows half a sync.
+ * Writes one DELEGATOR conference into CHASE (`docs/plans/delegator-link.md`): compares the mirror
+ * with the rows CHASE holds and writes only the rows that are new or differ, deletes the managed
+ * rows DELEGATOR no longer has (with what hangs on them), and announces only those. Local extras
+ * stay, but one sharing an address with a mirrored person gives way to them. One transaction, so a
+ * conference never shows half a sync.
  */
 
 const pubsubs = {
@@ -21,150 +22,206 @@ const pubsubs = {
 	conferenceUser: pubsub({ table: 'conferenceUser' })
 };
 
+/** Rows written per statement, well below Postgres' limit of parameters. */
+const CHUNK = 1000;
+
+function chunks<T>(rows: readonly T[]) {
+	const result: T[][] = [];
+	for (let start = 0; start < rows.length; start += CHUNK) {
+		result.push(rows.slice(start, start + CHUNK));
+	}
+	return result;
+}
+
 /** `excluded.<column>` for an upsert's `set`, which takes the inserted value. */
 function excluded(column: { name: string }) {
 	return sql.raw(`excluded."${column.name}"`);
 }
 
-/** The rows not among `rows`: all of them when `rows` is empty (`NOT IN ()` is no valid SQL). */
-function notAmong(column: AnyPgColumn, rows: readonly { id: string }[]) {
-	return rows.length > 0
-		? notInArray(
-				column,
-				rows.map((row) => row.id)
-			)
-		: sql`true`;
-}
+const MANAGED = { managedByDelegator: true } as const;
 
 export async function reconcileConference(mirror: Mirror) {
 	const conferenceId = mirror.conference.id;
-	const managed = { managedByDelegator: true };
+	const ofConference = { conferenceId };
+	const ofCommittees = { committee: { conferenceId } };
 
 	const changes = await db.transaction(async (tx) => {
-		const conference = schema.conference;
-		await tx
-			.insert(conference)
-			.values({ ...mirror.conference, ...managed })
-			.onConflictDoUpdate({
-				target: conference.id,
-				set: {
-					title: excluded(conference.title),
-					location: excluded(conference.location),
-					startDate: excluded(conference.startDate),
-					endDate: excluded(conference.endDate),
+		const [
+			conference,
+			committees,
+			agendaItems,
+			representations,
+			committeeMembers,
+			conferenceMembers,
+			users
+		] = await Promise.all([
+			tx.query.conference.findMany({
+				where: { id: conferenceId },
+				columns: {
+					id: true,
+					title: true,
+					location: true,
+					startDate: true,
+					endDate: true,
 					managedByDelegator: true
 				}
-			});
+			}),
+			tx.query.committee.findMany({
+				where: ofConference,
+				columns: { id: true, name: true, abbreviation: true, managedByDelegator: true }
+			}),
+			tx.query.agendaItem.findMany({
+				where: ofCommittees,
+				columns: { id: true, title: true, committeeId: true, managedByDelegator: true }
+			}),
+			tx.query.representation.findMany({
+				where: ofConference,
+				columns: {
+					id: true,
+					type: true,
+					alpha2Code: true,
+					alpha3Code: true,
+					regionalGroup: true,
+					name: true,
+					faIcon: true,
+					managedByDelegator: true
+				}
+			}),
+			tx.query.committeeMember.findMany({
+				where: ofCommittees,
+				columns: { id: true, committeeId: true, representationId: true, managedByDelegator: true }
+			}),
+			tx.query.conferenceMember.findMany({
+				where: ofConference,
+				columns: { id: true, representationId: true, managedByDelegator: true }
+			}),
+			tx.query.conferenceUser.findMany({
+				where: ofConference,
+				columns: {
+					id: true,
+					conferenceUserType: true,
+					userEmail: true,
+					name: true,
+					delegatorUserId: true,
+					cardNumber: true,
+					conferenceMemberId: true,
+					committeeMemberId: true,
+					managedByDelegator: true
+				}
+			})
+		]);
+
+		const c = {
+			conference: rowChanges({
+				current: conference,
+				wanted: [mirror.conference],
+				fields: ['title', 'location', 'startDate', 'endDate']
+			}),
+			committees: rowChanges({
+				current: committees,
+				wanted: mirror.committees,
+				fields: ['name', 'abbreviation']
+			}),
+			agendaItems: rowChanges({
+				current: agendaItems,
+				wanted: mirror.agendaItems,
+				fields: ['title', 'committeeId']
+			}),
+			representations: rowChanges({
+				current: representations,
+				wanted: mirror.representations,
+				fields: ['type', 'alpha2Code', 'alpha3Code', 'regionalGroup', 'name', 'faIcon']
+			}),
+			committeeMembers: rowChanges({
+				current: committeeMembers,
+				wanted: mirror.committeeMembers,
+				fields: ['committeeId', 'representationId']
+			}),
+			conferenceMembers: rowChanges({
+				current: conferenceMembers,
+				wanted: mirror.conferenceMembers,
+				fields: ['representationId']
+			}),
+			users: rowChanges({
+				current: users,
+				wanted: mirror.conferenceUsers,
+				fields: [
+					'conferenceUserType',
+					'userEmail',
+					'name',
+					'delegatorUserId',
+					'cardNumber',
+					'conferenceMemberId',
+					'committeeMemberId'
+				]
+			})
+		};
+		// a local extra with the address of someone DELEGATOR now has gives way to them
+		const mirroredEmails = new Set(mirror.conferenceUsers.map((user) => user.userEmail));
+		const mirroredIds = new Set(mirror.conferenceUsers.map((user) => user.id));
+		const replacedExtras = users
+			.filter(
+				(user) =>
+					!user.managedByDelegator &&
+					!mirroredIds.has(user.id) &&
+					mirroredEmails.has(user.userEmail)
+			)
+			.map((user) => user.id);
+		const removedUsers = [...c.users.remove, ...replacedExtras];
 
 		// --- removals first, children before parents, so renames and moves do not collide
-		const committeeIdsOfConference = tx
-			.select({ id: schema.committee.id })
-			.from(schema.committee)
-			.where(eq(schema.committee.conferenceId, conferenceId));
+		const remove = async (table: RemovableTable, ids: readonly string[]) => {
+			for (const chunk of chunks(ids)) await tx.delete(table).where(inArray(table.id, chunk));
+		};
+		await remove(schema.conferenceUser, removedUsers);
+		await remove(schema.conferenceMember, c.conferenceMembers.remove);
+		await remove(schema.committeeMember, c.committeeMembers.remove);
+		await remove(schema.representation, c.representations.remove);
+		await remove(schema.agendaItem, c.agendaItems.remove);
+		await remove(schema.committee, c.committees.remove);
 
-		const removedUsers = await tx
-			.delete(schema.conferenceUser)
-			.where(
-				and(
-					eq(schema.conferenceUser.conferenceId, conferenceId),
-					eq(schema.conferenceUser.managedByDelegator, true),
-					notAmong(schema.conferenceUser.id, mirror.conferenceUsers)
-				)
-			)
-			.returning({ id: schema.conferenceUser.id });
-		// a local extra with the address of someone DELEGATOR now has gives way to them
-		const replacedExtras = mirror.conferenceUsers.length
-			? await tx
-					.delete(schema.conferenceUser)
-					.where(
-						and(
-							eq(schema.conferenceUser.conferenceId, conferenceId),
-							eq(schema.conferenceUser.managedByDelegator, false),
-							inArray(
-								schema.conferenceUser.userEmail,
-								mirror.conferenceUsers.map((u) => u.userEmail)
-							)
-						)
-					)
-					.returning({ id: schema.conferenceUser.id })
-			: [];
-		const removedConferenceMembers = await tx
-			.delete(schema.conferenceMember)
-			.where(
-				and(
-					eq(schema.conferenceMember.conferenceId, conferenceId),
-					eq(schema.conferenceMember.managedByDelegator, true),
-					notAmong(schema.conferenceMember.id, mirror.conferenceMembers)
-				)
-			)
-			.returning({ id: schema.conferenceMember.id });
-		const removedCommitteeMembers = await tx
-			.delete(schema.committeeMember)
-			.where(
-				and(
-					inArray(schema.committeeMember.committeeId, committeeIdsOfConference),
-					eq(schema.committeeMember.managedByDelegator, true),
-					notAmong(schema.committeeMember.id, mirror.committeeMembers)
-				)
-			)
-			.returning({ id: schema.committeeMember.id });
-		const removedRepresentations = await tx
-			.delete(schema.representation)
-			.where(
-				and(
-					eq(schema.representation.conferenceId, conferenceId),
-					eq(schema.representation.managedByDelegator, true),
-					notAmong(schema.representation.id, mirror.representations)
-				)
-			)
-			.returning({ id: schema.representation.id });
-		const removedAgendaItems = await tx
-			.delete(schema.agendaItem)
-			.where(
-				and(
-					inArray(schema.agendaItem.committeeId, committeeIdsOfConference),
-					eq(schema.agendaItem.managedByDelegator, true),
-					notAmong(schema.agendaItem.id, mirror.agendaItems)
-				)
-			)
-			.returning({ id: schema.agendaItem.id });
-		const removedCommittees = await tx
-			.delete(schema.committee)
-			.where(
-				and(
-					eq(schema.committee.conferenceId, conferenceId),
-					eq(schema.committee.managedByDelegator, true),
-					notAmong(schema.committee.id, mirror.committees)
-				)
-			)
-			.returning({ id: schema.committee.id });
-
-		// --- upserts, parents before children
-		if (mirror.committees.length) {
+		// --- writes, parents before children
+		if (c.conference.write.length) {
+			const t = schema.conference;
+			await tx
+				.insert(t)
+				.values({ ...mirror.conference, ...MANAGED })
+				.onConflictDoUpdate({
+					target: t.id,
+					set: {
+						title: excluded(t.title),
+						location: excluded(t.location),
+						startDate: excluded(t.startDate),
+						endDate: excluded(t.endDate),
+						...MANAGED
+					}
+				});
+		}
+		for (const rows of chunks(c.committees.write)) {
 			const t = schema.committee;
 			await tx
 				.insert(t)
-				.values(mirror.committees.map((c) => ({ ...c, conferenceId, ...managed })))
+				.values(rows.map((row) => ({ ...row, conferenceId, ...MANAGED })))
 				.onConflictDoUpdate({
 					target: t.id,
-					set: { name: excluded(t.name), abbreviation: excluded(t.abbreviation), ...managed }
+					set: { name: excluded(t.name), abbreviation: excluded(t.abbreviation), ...MANAGED }
 				});
 		}
-		if (mirror.agendaItems.length) {
+		for (const rows of chunks(c.agendaItems.write)) {
 			const t = schema.agendaItem;
 			await tx
 				.insert(t)
-				.values(mirror.agendaItems.map((a) => ({ ...a, ...managed })))
+				.values(rows.map((row) => ({ ...row, ...MANAGED })))
 				.onConflictDoUpdate({
 					target: t.id,
-					set: { title: excluded(t.title), committeeId: excluded(t.committeeId), ...managed }
+					set: { title: excluded(t.title), committeeId: excluded(t.committeeId), ...MANAGED }
 				});
 		}
-		if (mirror.representations.length) {
+		for (const rows of chunks(c.representations.write)) {
 			const t = schema.representation;
 			await tx
 				.insert(t)
-				.values(mirror.representations.map((r) => ({ ...r, conferenceId, ...managed })))
+				.values(rows.map((row) => ({ ...row, conferenceId, ...MANAGED })))
 				.onConflictDoUpdate({
 					target: t.id,
 					set: {
@@ -174,32 +231,39 @@ export async function reconcileConference(mirror: Mirror) {
 						regionalGroup: excluded(t.regionalGroup),
 						name: excluded(t.name),
 						faIcon: excluded(t.faIcon),
-						...managed
+						...MANAGED
 					}
 				});
 		}
-		if (mirror.committeeMembers.length) {
+		for (const rows of chunks(c.committeeMembers.write)) {
 			const t = schema.committeeMember;
 			await tx
 				.insert(t)
-				.values(mirror.committeeMembers.map((m) => ({ ...m, ...managed })))
-				.onConflictDoNothing({ target: t.id });
+				.values(rows.map((row) => ({ ...row, ...MANAGED })))
+				.onConflictDoUpdate({
+					target: t.id,
+					set: {
+						committeeId: excluded(t.committeeId),
+						representationId: excluded(t.representationId),
+						...MANAGED
+					}
+				});
 		}
-		if (mirror.conferenceMembers.length) {
+		for (const rows of chunks(c.conferenceMembers.write)) {
 			const t = schema.conferenceMember;
 			await tx
 				.insert(t)
-				.values(mirror.conferenceMembers.map((m) => ({ ...m, conferenceId, ...managed })))
+				.values(rows.map((row) => ({ ...row, conferenceId, ...MANAGED })))
 				.onConflictDoUpdate({
 					target: t.id,
-					set: { representationId: excluded(t.representationId), ...managed }
+					set: { representationId: excluded(t.representationId), ...MANAGED }
 				});
 		}
-		if (mirror.conferenceUsers.length) {
+		for (const rows of chunks(c.users.write)) {
 			const t = schema.conferenceUser;
 			await tx
 				.insert(t)
-				.values(mirror.conferenceUsers.map((u) => ({ ...u, conferenceId, ...managed })))
+				.values(rows.map((row) => ({ ...row, conferenceId, ...MANAGED })))
 				.onConflictDoUpdate({
 					target: t.id,
 					set: {
@@ -210,72 +274,48 @@ export async function reconcileConference(mirror: Mirror) {
 						cardNumber: excluded(t.cardNumber),
 						conferenceMemberId: excluded(t.conferenceMemberId),
 						committeeMemberId: excluded(t.committeeMemberId),
-						...managed
+						...MANAGED
 					}
 				});
 		}
 
-		return {
-			removedUsers: [...removedUsers, ...replacedExtras],
-			removedConferenceMembers,
-			removedCommitteeMembers,
-			removedRepresentations,
-			removedAgendaItems,
-			removedCommittees
-		};
+		return { ...c, users: { ...c.users, remove: removedUsers } };
 	});
 
-	pubsubs.conference.updated(conferenceId);
-	announce({
-		pubsub: pubsubs.committee,
-		rows: mirror.committees,
-		removed: changes.removedCommittees
-	});
-	announce({
-		pubsub: pubsubs.agendaItem,
-		rows: mirror.agendaItems,
-		removed: changes.removedAgendaItems
-	});
-	announce({
-		pubsub: pubsubs.representation,
-		rows: mirror.representations,
-		removed: changes.removedRepresentations
-	});
-	announce({
-		pubsub: pubsubs.committeeMember,
-		rows: mirror.committeeMembers,
-		removed: changes.removedCommitteeMembers
-	});
-	announce({
-		pubsub: pubsubs.conferenceMember,
-		rows: mirror.conferenceMembers,
-		removed: changes.removedConferenceMembers
-	});
-	announce({
-		pubsub: pubsubs.conferenceUser,
-		rows: mirror.conferenceUsers,
-		removed: changes.removedUsers
-	});
+	if (changes.conference.write.length) pubsubs.conference.updated(conferenceId);
+	announce({ pubsub: pubsubs.committee, changes: changes.committees });
+	announce({ pubsub: pubsubs.agendaItem, changes: changes.agendaItems });
+	announce({ pubsub: pubsubs.representation, changes: changes.representations });
+	announce({ pubsub: pubsubs.committeeMember, changes: changes.committeeMembers });
+	announce({ pubsub: pubsubs.conferenceMember, changes: changes.conferenceMembers });
+	announce({ pubsub: pubsubs.conferenceUser, changes: changes.users });
+	return {
+		/** Something was written or removed; a sync that found everything as it was is false. */
+		changed: Object.values(changes).some(
+			(table) => table.write.length > 0 || table.remove.length > 0
+		)
+	};
 }
 
-/**
- * Tells open lists and rows what the sync did. A row the sync wrote may be new, so lists hear of
- * it too; an upsert does not say which it was.
- */
+type RemovableTable =
+	| typeof schema.conferenceUser
+	| typeof schema.conferenceMember
+	| typeof schema.committeeMember
+	| typeof schema.representation
+	| typeof schema.agendaItem
+	| typeof schema.committee;
+
+/** Tells open lists and rows what the sync changed, and nothing more. */
 function announce({
 	pubsub,
-	rows,
-	removed
+	changes
 }: {
 	pubsub: { created(): void; removed(): void; updated(ids?: string[]): void };
-	rows: readonly { id: string }[];
-	removed: readonly { id: string }[];
+	changes: { write: readonly { id: string }[]; created: boolean; remove: readonly string[] };
 }) {
-	if (rows.length) {
-		pubsub.created();
-		pubsub.updated(rows.map((r) => r.id));
-	}
-	if (removed.length) pubsub.removed();
+	if (changes.created) pubsub.created();
+	if (changes.write.length) pubsub.updated(changes.write.map((row) => row.id));
+	if (changes.remove.length) pubsub.removed();
 }
 
 /** Takes a conference out of the sync when DELEGATOR stops offering it (over, or deleted there). */

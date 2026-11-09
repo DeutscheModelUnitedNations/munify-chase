@@ -1,25 +1,51 @@
 import { db, schema } from '#api/db/db';
 import { and, eq, sql } from 'drizzle-orm';
+import { watchConferenceTables, type ConferenceTables } from './conferenceTables';
 import { createDelegatorClient, type DelegatorClient } from './delegatorRemote';
+import { joinTables } from './joinTables';
 import { instanceLinkPubsub } from './linkPubsub';
 import { openLinkToken } from './linkTokens';
+import { createGate, handled, listen } from './liveTable';
 import { mirrorConference } from './mirror';
 import { reconcileConference, releaseConference } from './reconcile';
 import { syncWorkingPapers } from './workingPaperSync';
-import { readAll } from './readAll';
 
 /**
  * The link worker (`docs/plans/delegator-link.md`): mirrors every DELEGATOR conference that has not
- * ended. It runs in one app process at a time (a Postgres advisory lock), subscribes to DELEGATOR's
- * live queries, and on any change reads the conference afresh and reconciles it. The stream's
- * (re)connect reconciles everything, since events may have been missed while it was down. There is
- * no timer: a dead stream is noticed by the transport, and the reconnect catches up.
+ * ended. It runs in one app process at a time (a Postgres advisory lock) and keeps DELEGATOR's
+ * tables of each conference in memory through live queries (`conferenceTables.ts`): a change
+ * answers with the rows of the table it touched, the mirror is worked out from memory, and only the
+ * rows that differ from CHASE's are written. The stream's (re)connect asks every table again,
+ * since changes may have been missed while it was down. There is no timer: a dead stream is
+ * noticed by the transport, and the reconnect catches up.
  */
 
 /** pg advisory lock key for the worker, any constant no other lock uses. */
 const LEADER_LOCK_KEY = 4_812_771;
-/** A change usually touches several tables at once; one read after it is enough. */
+/** A change usually touches several tables at once; one write after it is enough. */
 const DEBOUNCE_MS = 400;
+/** First answers awaited at once, so starting up does not ask DELEGATOR for everything at once. */
+const FIRST_ANSWERS_AT_ONCE = 4;
+
+const CONFERENCE = {
+	id: true,
+	title: true,
+	location: true,
+	startConference: true,
+	endConference: true,
+	state: true,
+	assignmentReleased: true
+} as const;
+
+interface ConferenceRow {
+	id: string;
+	title: string;
+	location?: string | null;
+	startConference: Date;
+	endConference: Date;
+	state: string;
+	assignmentReleased: boolean;
+}
 
 let running: { stop: () => void } | undefined;
 
@@ -65,11 +91,14 @@ function runWorker() {
 		const link = await db.query.instanceLink.findFirst({ where: { status: 'ACTIVE' } });
 		if (!link) return stop();
 
-		const watchers = new Map<string, () => void>();
+		const conferences = new Map<string, ConferenceRow>();
+		const watches = new Map<string, ConferenceTables>();
+		/** Per conference, the ids rows pointed at that were missing and have been asked for again. */
+		const askedAgain = new Map<string, Set<string>>();
 		const timers = new Map<string, ReturnType<typeof setTimeout>>();
 		cleanups.push(() => {
 			for (const timer of timers.values()) clearTimeout(timer);
-			for (const unwatch of watchers.values()) unwatch();
+			for (const watch of watches.values()) watch.stop();
 		});
 
 		let reconnected = () => {};
@@ -79,24 +108,64 @@ function runWorker() {
 			onConnected: () => {
 				void storeIdentityKey({ remote, linkId: link.id });
 				reconnected();
-				for (const conferenceId of watchers.keys()) schedule(conferenceId);
 			}
 		});
 		cleanups.push(() => remote.dispose());
 
-		// One sync per conference at a time: a big conference takes a while to read, and two at once
-		// would both create what is new. A change meanwhile asks for one more pass afterwards.
-		const syncing = new Set<string>();
+		// A live query's first answer may fail (DELEGATOR unreachable, a rule refusing): that is noted
+		// on the link and asked again on the next (re)connect, never left to crash the app.
+		const failed = (error: unknown) => void recordError({ linkId: link.id, error });
+
+		/** Brings one conference's mirror up to what the tables hold, once they all answered. */
+		const apply = async (conferenceId: string) => {
+			const watch = watches.get(conferenceId);
+			const conference = conferences.get(conferenceId);
+			if (!watch || !conference || !watch.ready()) return;
+			const { source, papers, missing } = joinTables({ conference, tables: watch.tables() });
+
+			// a row pointing at one its table does not hold yet: that table is asked again once, and
+			// the mirror waits for the answer rather than dropping the person meanwhile
+			const asked = askedAgain.get(conferenceId) ?? new Set<string>();
+			const again = (ids: string[]) => ids.some((id) => !asked.has(id));
+			const stale = [
+				...(again(missing.users) ? (['users'] as const) : []),
+				...(again(missing.participants) ? (['participants'] as const) : []),
+				...(again(missing.delegations) ? (['delegations'] as const) : [])
+			];
+			const stillMissing = [...missing.users, ...missing.participants, ...missing.delegations];
+			askedAgain.set(conferenceId, new Set(stillMissing));
+			if (stale.length > 0) {
+				watch.refresh(stale);
+				return;
+			}
+
+			try {
+				await reconcileConference(mirrorConference(source));
+				// after the mirror: a draft needs its committee, agenda item and seat in place
+				await syncWorkingPapers({ remote, conferenceId, papers });
+				await db
+					.update(schema.instanceLink)
+					.set({ lastEventAt: new Date(), lastReconcileAt: new Date(), lastError: null })
+					.where(eq(schema.instanceLink.id, link.id));
+				instanceLinkPubsub.updated(link.id);
+			} catch (error) {
+				await recordError({ linkId: link.id, error });
+			}
+		};
+
+		// One write per conference at a time: two at once would both create what is new. A change
+		// meanwhile asks for one more pass afterwards.
+		const applying = new Set<string>();
 		const again = new Set<string>();
-		const sync = (conferenceId: string) => {
-			if (syncing.has(conferenceId)) {
+		const run = (conferenceId: string) => {
+			if (applying.has(conferenceId)) {
 				again.add(conferenceId);
 				return;
 			}
-			syncing.add(conferenceId);
-			void syncConference({ remote, linkId: link.id, conferenceId }).finally(() => {
-				syncing.delete(conferenceId);
-				if (again.delete(conferenceId) && !stopped) sync(conferenceId);
+			applying.add(conferenceId);
+			void apply(conferenceId).finally(() => {
+				applying.delete(conferenceId);
+				if (again.delete(conferenceId) && !stopped) run(conferenceId);
 			});
 		};
 
@@ -106,53 +175,72 @@ function runWorker() {
 				conferenceId,
 				setTimeout(() => {
 					timers.delete(conferenceId);
-					if (!stopped) sync(conferenceId);
+					if (!stopped) run(conferenceId);
 				}, DEBOUNCE_MS)
 			);
 		};
 
-		// DELEGATOR shows the link the conferences it mirrors; a public one that has ended may
-		// still be readable, so the state decides
-		// A live query's first answer may fail (DELEGATOR unreachable, a rule refusing): that is noted
-		// on the link and retried on the next (re)connect, never left to crash the app.
-		const failed = (error: unknown) => void recordError({ linkId: link.id, error });
-		// Set up again on every (re)connect: a first answer that failed (the other side was away)
-		// leaves no watch behind otherwise, and a broken stream ends the subscriptions it carried.
+		const gate = createGate(FIRST_ANSWERS_AT_ONCE);
+		const watch = (conferenceId: string) =>
+			watchConferenceTables({
+				remote,
+				conferenceId,
+				onChange: () => schedule(conferenceId),
+				onError: failed,
+				gate
+			});
+
+		// DELEGATOR shows the link the conferences it mirrors; a public one that has ended may still be
+		// readable, so the state decides. Set up again on every (re)connect: a first answer that failed
+		// (the other side was away) leaves no watch behind otherwise.
 		let unwatchConferences: (() => void) | undefined;
 		const watchConferences = () => {
 			unwatchConferences?.();
-			const conferences = handled(remote.liveQuery.conferences({ id: true, state: true }), failed);
-			unwatchConferences = listen(conferences, (list) => {
-				if (!list || stopped) return;
-				const current = new Set(list.filter((c) => c.state !== 'POST').map((c) => c.id));
-				for (const [conferenceId, unwatch] of watchers) {
+			const list = handled(remote.liveQuery.conferences(CONFERENCE), failed);
+			unwatchConferences = listen(list, (rows) => {
+				if (!rows || stopped) return;
+				const current = new Map(
+					Array.from(rows)
+						.filter((row) => row.state !== 'POST')
+						.map((row): [string, ConferenceRow] => [
+							row.id,
+							{
+								id: row.id,
+								title: row.title,
+								location: row.location,
+								startConference: row.startConference,
+								endConference: row.endConference,
+								state: row.state,
+								assignmentReleased: row.assignmentReleased
+							}
+						])
+				);
+				for (const [conferenceId, tables] of watches) {
 					if (current.has(conferenceId)) continue;
-					unwatch();
-					watchers.delete(conferenceId);
+					tables.stop();
+					watches.delete(conferenceId);
+					conferences.delete(conferenceId);
 					void releaseConference(conferenceId).catch((error) =>
 						recordError({ linkId: link.id, error })
 					);
 				}
-				for (const conferenceId of current) {
-					if (!watchers.has(conferenceId)) {
-						watchers.set(
-							conferenceId,
-							watchConference({ remote, conferenceId, onChange: schedule, onError: failed })
-						);
+				for (const [conferenceId, row] of current) {
+					const before = conferences.get(conferenceId);
+					conferences.set(conferenceId, row);
+					const tables = watches.get(conferenceId);
+					if (!tables) {
+						watches.set(conferenceId, watch(conferenceId));
+						continue;
 					}
-					schedule(conferenceId);
+					// what the link may read follows the release, without the tables changing
+					if (before && before.assignmentReleased !== row.assignmentReleased) tables.refresh();
+					if (!before || !sameConference(before, row)) schedule(conferenceId);
 				}
 			});
 		};
-		// A stream that broke takes the subscriptions on it along, so every watch starts afresh
+		// A stream that broke takes the subscriptions on it along, so every table is asked again
 		reconnected = () => {
-			for (const [conferenceId, unwatch] of watchers) {
-				unwatch();
-				watchers.set(
-					conferenceId,
-					watchConference({ remote, conferenceId, onChange: schedule, onError: failed })
-				);
-			}
+			for (const tables of watches.values()) tables.refresh();
 			watchConferences();
 		};
 		watchConferences();
@@ -166,219 +254,15 @@ function runWorker() {
 	return { stop };
 }
 
-/**
- * Subscribes to a live query and answers how to stop. rumble types `subscribe` as answering an
- * unsubscribe function, but its observable answers `{ unsubscribe }`: calling that threw and
- * stopped the worker hearing of changes. Both shapes are handled.
- */
-function listen<T>(
-	result: { subscribe: (next: (value: T) => void) => unknown },
-	next: (value: T) => void
-) {
-	const subscription: unknown = result.subscribe(next);
-	return () => {
-		if (typeof subscription === 'function') subscription();
-		else if (
-			typeof subscription === 'object' &&
-			subscription !== null &&
-			'unsubscribe' in subscription &&
-			typeof subscription.unsubscribe === 'function'
-		)
-			subscription.unsubscribe();
-	};
-}
-
-/** Lets a live query's first answer fail without an unhandled rejection; it still subscribes. */
-function handled<T extends PromiseLike<unknown>>(result: T, onError: (error: unknown) => void): T {
-	Promise.resolve(result).then(undefined, onError);
-	return result;
-}
-
-/**
- * Subscribes to everything a conference's mirror is made of. The results only say that something
- * changed; `syncConference` reads the conference afresh, so a change arriving in pieces is read
- * whole.
- */
-function watchConference({
-	remote,
-	conferenceId,
-	onChange,
-	onError
-}: {
-	remote: DelegatorClient;
-	conferenceId: string;
-	onChange: (conferenceId: string) => void;
-	onError: (error: unknown) => void;
-}) {
-	const inConference = { where: { conferenceId: { eq: conferenceId } } };
-	const ofConference = { where: { conference: { id: { eq: conferenceId } } } };
-	const changed = () => onChange(conferenceId);
-
-	const live = [
-		remote.liveQuery.committees({
-			__args: inConference,
-			id: true,
-			name: true,
-			abbreviation: true,
-			roles: { id: true }
-		}),
-		remote.liveQuery.committeeAgendaItems({
-			__args: { where: { committee: { conferenceId: { eq: conferenceId } } } },
-			id: true,
-			title: true
-		}),
-		remote.liveQuery.conferenceRoles({
-			__args: inConference,
-			id: true,
-			name: true,
-			fontAwesomeIcon: true,
-			chaseAccess: true
-		}),
-		remote.liveQuery.teamMembers({ __args: inConference, id: true, role: true, user: PERSON }),
-		remote.liveQuery.delegations({ __args: inConference, id: true, assignedRole: { id: true } }),
-		remote.liveQuery.delegationMembers({
-			__args: ofConference,
-			id: true,
-			assignedCommittee: { id: true },
-			participant: { id: true, nsaCardNumber: true },
-			user: PERSON
-		}),
-		remote.liveQuery.singleParticipants({
-			__args: ofConference,
-			id: true,
-			assignedRole: { id: true },
-			user: PERSON
-		}),
-		remote.liveQuery.conferenceSupervisors({ __args: ofConference, id: true, user: PERSON }),
-		// the accepted working papers; a new accepted version arrives in `versions`
-		remote.liveQuery.papers({
-			__args: {
-				where: { type: 'WORKING_PAPER', delegation: { conferenceId: { eq: conferenceId } } }
-			},
-			id: true,
-			versions: { id: true }
-		})
-	];
-	const unsubscribes = live.map((result) => listen<unknown>(handled(result, onError), changed));
-	return () => {
-		for (const unsubscribe of unsubscribes) unsubscribe();
-	};
-}
-
-const PERSON = { id: true, email: true, givenName: true, familyName: true } as const;
-
-/** Reads one conference from DELEGATOR as it is now and writes it into CHASE. */
-async function syncConference({
-	remote,
-	linkId,
-	conferenceId
-}: {
-	remote: DelegatorClient;
-	linkId: string;
-	conferenceId: string;
-}) {
-	try {
-		const inConference = { where: { conferenceId: { eq: conferenceId } } };
-		const ofConference = { where: { conference: { id: { eq: conferenceId } } } };
-		const [
-			conference,
-			committees,
-			roles,
-			teamMembers,
-			delegationMembers,
-			singleParticipants,
-			supervisors
-		] = await Promise.all([
-			remote.query.conference({
-				__args: { id: conferenceId },
-				title: true,
-				location: true,
-				startConference: true,
-				endConference: true
-			}),
-			readAll((page) =>
-				remote.query.committees({
-					__args: { ...inConference, ...page },
-					id: true,
-					name: true,
-					abbreviation: true,
-					agendaItems: { id: true, title: true },
-					roles: { id: true }
-				})
-			),
-			readAll((page) =>
-				remote.query.conferenceRoles({
-					__args: { ...inConference, ...page },
-					id: true,
-					kind: true,
-					name: true,
-					fontAwesomeIcon: true,
-					chaseAccess: true,
-					nation: { alpha2Code: true }
-				})
-			),
-			readAll((page) =>
-				remote.query.teamMembers({
-					__args: { ...inConference, ...page },
-					id: true,
-					role: true,
-					user: PERSON
-				})
-			),
-			readAll((page) =>
-				remote.query.delegationMembers({
-					__args: { ...ofConference, ...page },
-					id: true,
-					assignedCommittee: { id: true },
-					delegation: { id: true, assignedRole: { id: true } },
-					participant: { id: true, nsaCardNumber: true },
-					user: PERSON
-				})
-			),
-			readAll((page) =>
-				remote.query.singleParticipants({
-					__args: { ...ofConference, ...page },
-					id: true,
-					assignedRole: { id: true },
-					user: PERSON
-				})
-			),
-			readAll((page) =>
-				remote.query.conferenceSupervisors({
-					__args: { ...ofConference, ...page },
-					id: true,
-					user: PERSON
-				})
-			)
-		]);
-
-		await reconcileConference(
-			mirrorConference({
-				conference: {
-					id: conferenceId,
-					title: conference.title,
-					location: conference.location,
-					startConference: conference.startConference,
-					endConference: conference.endConference
-				},
-				committees,
-				roles,
-				teamMembers,
-				delegationMembers,
-				singleParticipants,
-				supervisors
-			})
-		);
-		// after the reconcile: a draft needs its committee, agenda item and seat in place
-		await syncWorkingPapers({ remote, conferenceId });
-		await db
-			.update(schema.instanceLink)
-			.set({ lastEventAt: new Date(), lastReconcileAt: new Date(), lastError: null })
-			.where(eq(schema.instanceLink.id, linkId));
-		instanceLinkPubsub.updated(linkId);
-	} catch (error) {
-		await recordError({ linkId, error });
-	}
+function sameConference(a: ConferenceRow, b: ConferenceRow) {
+	return (
+		a.title === b.title &&
+		(a.location ?? null) === (b.location ?? null) &&
+		a.startConference.getTime() === b.startConference.getTime() &&
+		a.endConference.getTime() === b.endConference.getTime() &&
+		a.state === b.state &&
+		a.assignmentReleased === b.assignmentReleased
+	);
 }
 
 /**

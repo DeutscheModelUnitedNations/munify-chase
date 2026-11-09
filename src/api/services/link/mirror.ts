@@ -14,7 +14,6 @@ interface Person {
 }
 
 type RoleKind = 'NATION' | 'NON_STATE_ACTOR' | 'CUSTOM';
-type ChaseAccess = 'SPECTATOR' | 'TEAM' | 'NONE';
 
 export interface MirrorSource {
 	conference: {
@@ -38,7 +37,6 @@ export interface MirrorSource {
 		name?: string | null;
 		/** A Phosphor icon name, as both instances store them. */
 		icon?: string | null;
-		chaseAccess: ChaseAccess;
 		nation?: { alpha2Code: string } | null;
 	}[];
 	teamMembers: readonly { id: string; role: string; user: Person }[];
@@ -84,7 +82,6 @@ interface MirroredUser {
 	conferenceUserType: ConferenceUserType;
 	userEmail: string;
 	name: string | null;
-	delegatorUserId: string;
 	conferenceMemberId: string | null;
 	committeeMemberId: string | null;
 	cardNumber: number;
@@ -162,18 +159,22 @@ export function mirrorConference(source: MirrorSource) {
 		(row) => row.id
 	);
 
+	/** Everybody the mirror names, by their account id, which is the same in both instances. */
+	const people = new Map<string, Person>();
 	const user = (
 		person: Person,
-		row: Omit<MirroredUser, 'userEmail' | 'name' | 'delegatorUserId' | 'cardNumber'> & {
+		row: Omit<MirroredUser, 'userEmail' | 'name' | 'cardNumber'> & {
 			cardNumber?: number;
 		}
-	): MirroredUser => ({
-		cardNumber: 1,
-		...row,
-		userEmail: person.email.toLowerCase(),
-		name: nameOf(person),
-		delegatorUserId: person.id
-	});
+	): MirroredUser => {
+		people.set(person.id, person);
+		return {
+			cardNumber: 1,
+			...row,
+			userEmail: person.email.toLowerCase(),
+			name: nameOf(person)
+		};
+	};
 
 	const users: MirroredUser[] = [
 		...source.teamMembers.map((member) =>
@@ -218,11 +219,11 @@ export function mirrorConference(source: MirrorSource) {
 		}),
 		...source.singleParticipants.flatMap((participant) => {
 			const role = participant.assignedRole && roleById.get(participant.assignedRole.id);
-			if (!role || role.chaseAccess === 'NONE') return [];
+			if (!role) return [];
 			return [
 				user(participant.user, {
 					id: participant.id,
-					conferenceUserType: role.chaseAccess === 'TEAM' ? 'TEAM' : 'SPECTATOR',
+					conferenceUserType: 'SPECTATOR',
 					conferenceMemberId: null,
 					committeeMemberId: null
 				})
@@ -254,7 +255,18 @@ export function mirrorConference(source: MirrorSource) {
 		committeeMembers,
 		conferenceMembers,
 		// a conference has each address once; DELEGATOR's one-part rule makes doubles impossible
-		conferenceUsers: uniqueBy(users, (row) => row.userEmail)
+		conferenceUsers: uniqueBy(users, (row) => row.userEmail),
+		/**
+		 * Their accounts: both instances sign people in at the same provider, so a person's id there is
+		 * the same here, and the codes DELEGATOR signs name it. Written ahead of the first sign-in.
+		 */
+		accounts: [...people.values()].map((person) => ({
+			id: person.id,
+			email: person.email.toLowerCase(),
+			givenName: person.givenName,
+			familyName: person.familyName,
+			preferredUsername: person.email.toLowerCase()
+		}))
 	};
 }
 

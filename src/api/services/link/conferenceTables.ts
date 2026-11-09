@@ -62,7 +62,6 @@ export function watchConferenceTables({
 		kind: true,
 		name: true,
 		icon: true,
-		chaseAccess: true,
 		nation: { alpha2Code: true }
 	} as const;
 	const TEAM_MEMBER = { role: true, userId: true } as const;

@@ -10,7 +10,8 @@ import { watchConferenceTables, type ConferenceTables } from './conferenceTables
 import { createDelegatorClient, type DelegatorClient } from './delegatorRemote';
 import { joinTables } from './joinTables';
 import { instanceLinkPubsub } from './linkPubsub';
-import { openLinkToken } from './linkTokens';
+import { linkAccessToken, linkConfig } from './linkAuth';
+import { syncLinkRow } from './linkState';
 import { createGate, handled } from './liveTable';
 import { mirrorConference } from './mirror';
 import { reconcileConference, releaseConference } from './reconcile';
@@ -53,13 +54,9 @@ export function stopLinkWorker() {
 	running = undefined;
 }
 
-/** On server start: picks the link up again when this instance is linked. */
+/** On server start: brings the link's row in line with the configuration and starts syncing. */
 export async function resumeLinkWorker() {
-	const link = await db.query.instanceLink.findFirst({
-		where: { status: 'ACTIVE' },
-		columns: { id: true }
-	});
-	if (link) startLinkWorker();
+	if (await syncLinkRow()) startLinkWorker();
 }
 
 function runWorker() {
@@ -83,8 +80,9 @@ function runWorker() {
 		await leadership.query('select pg_advisory_lock($1)', [LEADER_LOCK_KEY]);
 		if (stopped) return;
 
-		const link = await db.query.instanceLink.findFirst({ where: { status: 'ACTIVE' } });
-		if (!link) return stop();
+		const config = linkConfig();
+		const link = await db.query.instanceLink.findFirst({ columns: { id: true } });
+		if (!config || !link) return stop();
 
 		const conferences = new Map<string, ConferenceRow>();
 		const watches = new Map<string, ConferenceTables>();
@@ -102,8 +100,8 @@ function runWorker() {
 
 		let reconnected = () => {};
 		const remote: DelegatorClient = createDelegatorClient({
-			url: link.remoteUrl,
-			token: openLinkToken(link.outboundToken),
+			url: config.remoteUrl,
+			token: () => linkAccessToken(config),
 			onError: failed,
 			onConnected: () => {
 				void storeIdentityKey({ remote, linkId: link.id });

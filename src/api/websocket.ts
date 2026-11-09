@@ -11,8 +11,8 @@ import { openYjsRoom } from './yjs/wss';
 import { nativeToRequestEvent } from './services/auth';
 import { OIDC } from './services/OIDC';
 import { context, type Context } from './context';
-import { findLinkCaller } from './services/link/linkCaller';
-import { LINK_TOKEN_HEADER } from './services/link/linkTokens';
+import { isLinkCall } from './services/link/linkCaller';
+import { LINK_TOKEN_HEADER } from './services/link/linkAuth';
 import { logger } from '#lib/logger';
 
 const wsLogger = logger.child({ name: 'wss' });
@@ -47,12 +47,13 @@ createWs(
 			// The linked DELEGATOR's link worker sends its link token instead of a session.
 			const linkToken = params?.[LINK_TOKEN_HEADER];
 			if (typeof linkToken === 'string') {
-				const caller = await findLinkCaller(linkToken);
-				if (caller?.status !== 'ACTIVE') return false;
+				if (!(await isLinkCall(linkToken))) return false;
 				const linkReq = Object.create(req) as IncomingMessage;
 				linkReq.headers = { ...req.headers, [LINK_TOKEN_HEADER]: linkToken };
-				(req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] =
-					nativeToRequestEvent(linkReq);
+				const linkEvent = nativeToRequestEvent(linkReq);
+				// checked once, here: the token may expire while the connection stays open
+				linkEvent.locals.linkCaller = true;
+				(req as unknown as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] = linkEvent;
 				return;
 			}
 

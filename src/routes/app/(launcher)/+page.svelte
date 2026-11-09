@@ -65,10 +65,8 @@
 
 	// While linked to a DELEGATOR, conferences come from there (`docs/plans/delegator-link.md`)
 	const activeLinks = await client.liveQuery.instanceLinks({
-		__args: { where: { status: 'ACTIVE' } },
 		id: true,
-		remoteUrl: true,
-		status: true
+		remoteUrl: true
 	});
 	const delegatorUrl = $derived((activeLinks ?? []).at(0)?.remoteUrl);
 

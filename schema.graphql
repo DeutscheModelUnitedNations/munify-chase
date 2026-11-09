@@ -759,7 +759,6 @@ type Conferenceuser {
   createdAt: DateTime!
   currentCheckedInSince: DateTime
   currentCommitteeId: String
-  delegatorUserId: ID
   id: ID!
   isCheckedIn: Boolean!
   managedByDelegator: Boolean!
@@ -791,7 +790,6 @@ input ConferenceuserOrderInputArgument {
   conferenceMemberId: SortingParameter
   conferenceUserType: SortingParameter
   createdAt: SortingParameter
-  delegatorUserId: SortingParameter
   id: SortingParameter
   managedByDelegator: SortingParameter
   name: SortingParameter
@@ -813,7 +811,6 @@ input ConferenceuserWhereInputArgument {
   conferenceMemberId: IDWhereInputArgument
   conferenceUserType: ConferenceusertypeEnum
   createdAt: DateTimeWhereInputArgument
-  delegatorUserId: IDWhereInputArgument
   id: IDWhereInputArgument
   managedByDelegator: BooleanWhereInputArgument
   name: StringWhereInputArgument
@@ -1042,34 +1039,24 @@ input ImportDataRequestType {
 }
 
 type Instancelink {
-  confirmationCode: String!
   createdAt: DateTime!
   id: ID!
-  inboundTokenHash: String
   lastError: String
   lastEventAt: DateTime
   lastReconcileAt: DateTime
-  linkedAt: DateTime
-  outboundToken: String!
   remoteSigningKeys: JSON
   remoteUrl: String!
-  status: InstancelinkstatusEnum!
   updatedAt: DateTime
 }
 
 input InstancelinkOrderInputArgument {
-  confirmationCode: SortingParameter
   createdAt: SortingParameter
   id: SortingParameter
-  inboundTokenHash: SortingParameter
   lastError: SortingParameter
   lastEventAt: SortingParameter
   lastReconcileAt: SortingParameter
-  linkedAt: SortingParameter
-  outboundToken: SortingParameter
   remoteSigningKeys: SortingParameter
   remoteUrl: SortingParameter
-  status: SortingParameter
   updatedAt: SortingParameter
 }
 
@@ -1077,25 +1064,14 @@ input InstancelinkWhereInputArgument {
   AND: [InstancelinkWhereInputArgument!]
   NOT: InstancelinkWhereInputArgument
   OR: [InstancelinkWhereInputArgument!]
-  confirmationCode: StringWhereInputArgument
   createdAt: DateTimeWhereInputArgument
   id: IDWhereInputArgument
-  inboundTokenHash: StringWhereInputArgument
   lastError: StringWhereInputArgument
   lastEventAt: DateTimeWhereInputArgument
   lastReconcileAt: DateTimeWhereInputArgument
-  linkedAt: DateTimeWhereInputArgument
-  outboundToken: StringWhereInputArgument
   remoteSigningKeys: JSONWhereInputArgument
   remoteUrl: StringWhereInputArgument
-  status: InstancelinkstatusEnum
   updatedAt: DateTimeWhereInputArgument
-}
-
-enum InstancelinkstatusEnum {
-  ACTIVE
-  FROZEN
-  PENDING
 }
 
 input IntWhereInputArgument {
@@ -1190,11 +1166,6 @@ type Mutation {
   addPaperEditor(conferenceUserId: ID!, id: ID, paperId: ID!): Papereditor!
   addPaperSponsor(committeeMemberId: ID, id: ID, paperId: ID!): Papersponsor!
   addSpeakerOnList(committeeMemberId: ID, conferenceMemberId: ID, id: ID, position: Int, speakersListId: ID!): Speakeronlist!
-
-  """
-  Approves the pending link request once the code matches the one DELEGATOR shows. Every DELEGATOR conference that has not ended then appears here.
-  """
-  approveDelegatorLink(confirmationCode: String!): Boolean!
   castDeviceVote(committeeMemberId: ID, id: ID, sessionId: ID!, vote: VotechoiceEnum!): Votingvote!
   clearSpeakersList(id: ID!): Speakerslist!
   completeRollCallSession(id: ID!): Boolean!
@@ -1255,9 +1226,6 @@ type Mutation {
   ): Presenceevent!
   redeemPaperShareCode(code: String!): Boolean!
   rejectAmendment(id: ID!): Amendment!
-
-  """Discards the pending link request."""
-  rejectDelegatorLink: Boolean!
   removeAmendmentSponsor(id: ID!): Boolean!
   removePaperEditor(id: ID!): Boolean!
   removePaperSponsor(id: ID!): Boolean!
@@ -1267,11 +1235,6 @@ type Mutation {
   A new card for a lost one: raises the NSA's card number, so the earlier cards stop scanning (admins).
   """
   reprintNsaCard(conferenceId: ID!, conferenceUserId: ID!): NsaCard!
-
-  """
-  Called by a MUNify DELEGATOR instance to ask for a link. It stays pending until a global admin approves it here.
-  """
-  requestDelegatorLink(confirmationCode: String!, delegatorUrl: String!, token: String!): Boolean!
   resolveRequest(id: ID!): Request!
   restorePaperFromSnapshot(snapshotId: ID!): Papercontentsnapshot!
   selfAddToSpeakersList(id: ID, speakersListId: ID!): Speakeronlist!
@@ -1285,11 +1248,6 @@ type Mutation {
   startRollCallSession(committeeId: ID!, id: ID): Rollcallsession!
   startVotingSession(committeeId: ID!, currentStage: VotingstageEnum, deviceVotingWindowSeconds: Int, id: ID, majority: VotingmajoritytypeEnum!, majorityAmount: Int!, mode: VotingmodeEnum!, voteName: String, withAbstentions: Boolean!): Votingsession!
   submitAmendment(id: ID!): Amendment!
-
-  """
-  Ends the link and freezes both sides: what was synced stays, as rows of this instance. Called by a global admin here, or by DELEGATOR when it unlinks.
-  """
-  unlinkDelegator: Boolean!
   unlinkOperativeClauseVote(clauseId: String!, paperId: ID!): Boolean!
   updateAmendmentReviewItem(aiObsolete: Boolean, aiObsoleteReason: String, aiRewriteReason: String, aiRewriteSuggestion: String, phase: AmendmentreviewphaseEnum, reviewItemId: ID!, verdictObsolete: Boolean, verdictRewrite: String): Boolean!
   updateCommittee(abbreviation: String, activeAgendaItemId: ID, allowDelegationsToAddThemselvesToSpeakersList: Boolean, allowRequests: Boolean, displayRegionalGroups: Boolean, id: ID!, name: String, presentationLayout: String, presentationResolutionFontSize: Int, presentationRootFontSize: Int, presentationShowRequests: Boolean, showWhiteboard: Boolean, stateOfDebate: String, status: CommitteestatusEnum, statusHeadline: String, statusUntil: DateTime, whiteboardContent: String): Committee!

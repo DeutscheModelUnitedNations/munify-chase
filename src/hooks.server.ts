@@ -10,6 +10,8 @@ import { locales, baseLocale, cookieName, cookieMaxAge } from '#lib/paraglide/ru
 import { isLocalConferencePath } from '#lib/state/localDemo.svelte';
 import { building } from '$app/env';
 import { resumeLinkWorker } from '#api/services/link/linkWorker';
+import { LINK_TOKEN_HEADER } from '#api/services/link/linkAuth';
+import { isLinkCall } from '#api/services/link/linkCaller';
 
 /** Picks the DELEGATOR link up again (`docs/plans/delegator-link.md`). */
 export const init: ServerInit = async () => {
@@ -76,8 +78,17 @@ const localeRedirect: Handle = ({ event, resolve }) => {
 	return resolve(event);
 };
 
+// The linked DELEGATOR calls with a token of its own instead of a session; whether it grants the
+// `delegator` role is checked once here, and the context hands it on as that role.
+const linkHandle: Handle = async ({ event, resolve }) => {
+	const token = event.request.headers.get(LINK_TOKEN_HEADER);
+	if (token) event.locals.linkCaller = await isLinkCall(token);
+	return resolve(event);
+};
+
 export const handle: Handle = sequence(
 	tauriCors,
+	linkHandle,
 	oidcOrLocalDemoBypass,
 	localeRedirect,
 	({ event, resolve }) =>

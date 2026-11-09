@@ -20,7 +20,7 @@ Ao contrário das delegações, os ANE e os atores da ONU não estão ligados a 
 
 Para dar acesso a alguém como ANE, adicione essa pessoa em [Utilizadores e funções](./users-roles) com a função **Ator Não Estatal** e associe-a ao ANE. A presidência regista a entrada e a saída em cada sessão de comité em que a pessoa participa (consulte [Chamada e presença](../chair/roll-call-attendance)): através do cartão de ANE impresso, numa conferência vinda do MUNify DELEGATOR também através do crachá digital, ou procurando a pessoa pelo nome.
 
-Os cartões imprimem-se em **Presença**, no separador **Por ANE**. Este lista cada pessoa ANE com o seu comité atual. Use **Cartão QR** para um único cartão, **Imprimir todos os cartões** para o conjunto completo ou **Exportar CSV** para uma lista. Cada cartão tem o nome da pessoa e um código assinado válido até ao dia seguinte ao fim da conferência, por isso defina primeiro a data de fim da conferência. Para imprimir, o servidor precisa de ter `LINK_SECRET` definido.
+Os cartões imprimem-se em **Presença**, no separador **Por ANE**. Este lista cada pessoa ANE com o seu comité atual. Use **Cartão QR** para um único cartão, **Imprimir todos os cartões** para o conjunto completo ou **Exportar CSV** para uma lista. Cada cartão tem o nome da pessoa e um código assinado válido até ao dia seguinte ao fim da conferência, por isso defina primeiro a data de fim da conferência. Para imprimir, o servidor precisa de ter `SIGNED_CODE_SECRET` definido.
 
 Se alguém perder o cartão, abra o seu **Cartão QR** e escolha **Novo cartão**. O novo cartão recebe o número seguinte e os leitores recusam os anteriores.
 

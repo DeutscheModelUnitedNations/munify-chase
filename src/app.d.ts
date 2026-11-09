@@ -5,9 +5,13 @@
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {
-		// 	user?: Awaited<ReturnType<typeof applyAuth>>;
-		// }
+		interface Locals {
+			/**
+			 * Whether the linked DELEGATOR is calling: set by `linkHandle` (`hooks.server.ts`) and the
+			 * WebSocket's connect (`websocket.ts`) when its link token grants the `delegator` role.
+			 */
+			linkCaller?: boolean;
+		}
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}

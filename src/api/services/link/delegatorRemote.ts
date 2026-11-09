@@ -9,7 +9,7 @@ import {
 } from '@m1212e/rumble/client';
 import { schema } from './delegatorClient/schema';
 import type { Mutation, Query, Subscription } from './delegatorClient/client';
-import { LINK_TOKEN_HEADER } from './linkTokens';
+import { LINK_TOKEN_HEADER } from './linkAuth';
 
 /** The subscriptions DELEGATOR's schema offers, which a live query subscribes to by name. */
 const availableSubscriptions = new Set(
@@ -20,8 +20,9 @@ const availableSubscriptions = new Set(
 
 /**
  * A typed client of a DELEGATOR instance (`docs/plans/delegator-link.md`), generated from its
- * schema (`bun run link:client`). Calls carry the link token when given one; subscriptions share
- * one stream to DELEGATOR's `/api/graphql/stream`. No cache: the link worker reads current state.
+ * schema (`bun run link:client`). Calls carry a fresh link token when given a source of them
+ * (`linkAccessToken`); subscriptions share one stream to DELEGATOR's `/api/graphql/stream`. No
+ * cache: the link worker reads current state.
  */
 export function createDelegatorClient({
 	url,
@@ -30,13 +31,20 @@ export function createDelegatorClient({
 	onError
 }: {
 	url: string;
-	token?: string;
+	/** The current link token, asked for every call: tokens expire. */
+	token?: () => Promise<string>;
 	/** Every (re)connect of the subscription stream, when updates may have been missed. */
 	onConnected?: (reconnected: boolean) => void;
 	/** An update a live query skipped, keeping its last rows. */
 	onError?: (error: CombinedError) => void;
 }) {
-	const headers: Record<string, string> = token ? { [LINK_TOKEN_HEADER]: token } : {};
+	const headers = async (): Promise<Record<string, string>> =>
+		token ? { [LINK_TOKEN_HEADER]: await token() } : {};
+	const linkFetch: typeof fetch = async (input, init) => {
+		const merged = new Headers(init?.headers);
+		for (const [name, value] of Object.entries(await headers())) merged.set(name, value);
+		return fetch(input, { ...init, headers: merged });
+	};
 	const sse = createSSEClient({
 		url: new URL('/api/graphql/stream', url).toString(),
 		headers,
@@ -52,7 +60,7 @@ export function createDelegatorClient({
 	const urqlClient = new Client({
 		url: new URL('/api/graphql', url).toString(),
 		requestPolicy: 'network-only',
-		fetchOptions: () => ({ headers }),
+		fetch: linkFetch,
 		exchanges: [
 			nativeDateExchange,
 			fetchExchange,

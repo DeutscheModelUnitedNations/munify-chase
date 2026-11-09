@@ -51,11 +51,11 @@ No último passo, **Editar**, os administradores globais clicam em **Criar Confe
 
 ## Ligar ao DELEGATOR
 
-Em vez de trocar ficheiros, o CHASE pode ser ligado a uma instância do MUNify DELEGATOR. Um administrador de sistema no DELEGATOR pede a ligação com o endereço desta instância; um Global Admin aprova-a aqui no launcher com o código de confirmação que ambos os lados mostram. A partir daí:
+Em vez de trocar ficheiros, o CHASE pode ser ligado a uma instância do MUNify DELEGATOR. A ligação configura-se no servidor, não na interface: ambas as instâncias autenticam as pessoas no mesmo fornecedor e conhecem-se através dele. Depois de configurada, o launcher mostra aos Global Admins o seu estado. A partir daí:
 
 - Cada conferência do DELEGATOR aparece aqui por si, com os seus comités, pontos da agenda, funções, equipa e, assim que a atribuição for publicada, os participantes. O launcher deixa de criar ou importar conferências.
 - O que vem do DELEGATOR altera-se lá: nomes, siglas, datas e pessoas não podem ser editados nem eliminados aqui. O estado das sessões, as definições de apresentação e tudo o que acrescentar localmente continuam a ser seus.
 - O DELEGATOR lê de volta a presença e as resoluções adotadas, e os documentos de trabalho aceites chegam aqui como rascunhos (marcados com **Do DELEGATOR, versão n**) até alguém os alterar aqui.
-- Desfazer a ligação, de qualquer um dos lados, termina tudo isto. Os registos ficam como registos locais normais.
+- Retirar a ligação da configuração termina tudo isto. Os registos ficam como registos locais normais.
 
 A importação de ficheiros e a exportação de presença continuam disponíveis em "avançado" para quando não há ligação.

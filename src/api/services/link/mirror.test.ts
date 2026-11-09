@@ -27,18 +27,16 @@ function source(overrides: Partial<MirrorSource> = {}): MirrorSource {
 			}
 		],
 		roles: [
-			{ id: 'role-de', kind: 'NATION', chaseAccess: 'SPECTATOR', nation: { alpha2Code: 'DE' } },
-			{ id: 'role-fr', kind: 'NATION', chaseAccess: 'SPECTATOR', nation: { alpha2Code: 'FR' } },
+			{ id: 'role-de', kind: 'NATION', nation: { alpha2Code: 'DE' } },
+			{ id: 'role-fr', kind: 'NATION', nation: { alpha2Code: 'FR' } },
 			{
 				id: 'role-amnesty',
 				kind: 'NON_STATE_ACTOR',
 				name: 'Amnesty',
-				icon: 'bird',
-				chaseAccess: 'SPECTATOR'
+				icon: 'bird'
 			},
-			{ id: 'role-press', kind: 'CUSTOM', name: 'Press', chaseAccess: 'SPECTATOR' },
-			{ id: 'role-judge', kind: 'CUSTOM', name: 'Judge', chaseAccess: 'NONE' },
-			{ id: 'role-tech', kind: 'CUSTOM', name: 'Tech', chaseAccess: 'TEAM' }
+			{ id: 'role-press', kind: 'CUSTOM', name: 'Press' },
+			{ id: 'role-tech', kind: 'CUSTOM', name: 'Tech' }
 		],
 		teamMembers: [
 			{ id: 'tm-pm', role: 'PROJECT_MANAGEMENT', user: person('pm') },
@@ -74,7 +72,6 @@ function source(overrides: Partial<MirrorSource> = {}): MirrorSource {
 		],
 		singleParticipants: [
 			{ id: 'sp-press', assignedRole: { id: 'role-press' }, user: person('paula') },
-			{ id: 'sp-judge', assignedRole: { id: 'role-judge' }, user: person('jo') },
 			{ id: 'sp-tech', assignedRole: { id: 'role-tech' }, user: person('tim') },
 			{ id: 'sp-none', assignedRole: null, user: person('nobody') }
 		],
@@ -140,23 +137,30 @@ describe('mirrorConference', () => {
 		expect(types['sup']).toBe('SPECTATOR');
 	});
 
-	it("follows a custom role's CHASE access", () => {
+	it('makes every custom role a spectator', () => {
 		const types = Object.fromEntries(
 			mirrorConference(source()).conferenceUsers.map((u) => [u.id, u.conferenceUserType])
 		);
 		expect(types['sp-press']).toBe('SPECTATOR');
-		expect(types['sp-tech']).toBe('TEAM');
-		expect(types).not.toHaveProperty('sp-judge');
+		expect(types['sp-tech']).toBe('SPECTATOR');
 		expect(types).not.toHaveProperty('sp-none');
 	});
 
-	it('stores addresses in lower case with the DELEGATOR user id', () => {
+	it('stores addresses in lower case', () => {
 		const anna = mirrorConference(source()).conferenceUsers.find((u) => u.id === 'dm-de-1');
-		expect(anna).toMatchObject({
-			userEmail: 'anna@example.org',
-			name: 'anna Doe',
-			delegatorUserId: 'anna'
+		expect(anna).toMatchObject({ userEmail: 'anna@example.org', name: 'anna Doe' });
+	});
+
+	it('names every account once, under the id both instances share', () => {
+		const { accounts } = mirrorConference(source());
+		expect(accounts.find((account) => account.id === 'anna')).toEqual({
+			id: 'anna',
+			email: 'anna@example.org',
+			givenName: 'anna',
+			familyName: 'Doe',
+			preferredUsername: 'anna@example.org'
 		});
+		expect(new Set(accounts.map((account) => account.id)).size).toBe(accounts.length);
 	});
 
 	it('mirrors no participants before the release, when DELEGATOR shows none', () => {

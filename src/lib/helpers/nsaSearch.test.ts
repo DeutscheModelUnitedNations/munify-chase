@@ -28,7 +28,7 @@ describe('nsaOfUser', () => {
 				id: 'u1',
 				name: 'Zoë',
 				userEmail: 'zoe@example.org',
-				delegatorUserId: 'd1',
+				user: { id: 'd1' },
 				cardNumber: 2,
 				conferenceMember: { representation: { name: 'Amnesty International' } }
 			})
@@ -36,7 +36,7 @@ describe('nsaOfUser', () => {
 			id: 'u1',
 			name: 'Zoë',
 			userEmail: 'zoe@example.org',
-			delegatorUserId: 'd1',
+			userId: 'd1',
 			cardNumber: 2,
 			nsaName: 'Amnesty International'
 		});
@@ -47,7 +47,7 @@ describe('nsaOfUser', () => {
 			id: 'u2',
 			name: null,
 			userEmail: 'press@example.org',
-			delegatorUserId: null,
+			userId: null,
 			cardNumber: 0,
 			nsaName: null
 		});

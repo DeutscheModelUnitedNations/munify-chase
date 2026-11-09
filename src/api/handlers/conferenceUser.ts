@@ -30,7 +30,6 @@ abilityBuilder.conferenceUser.allow('read').when(
 			conferenceId: true,
 			conferenceUserType: true,
 			userEmail: true,
-			delegatorUserId: true,
 			committeeMemberId: true,
 			conferenceMemberId: true
 		}
@@ -67,7 +66,6 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 			committeeMemberId: true,
 			conferenceMemberId: true,
 			conferenceUserType: true,
-			delegatorUserId: true,
 			cardNumber: true,
 			createdAt: true,
 			updatedAt: true
@@ -114,7 +112,6 @@ abilityBuilder.conferenceUser.allow('read').when((ctx) => {
 			conferenceMemberId: true,
 			conferenceUserType: true,
 			managedByDelegator: true,
-			delegatorUserId: true,
 			cardNumber: true,
 			createdAt: true,
 			updatedAt: true

@@ -1,0 +1,166 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "636bbbcb-974e-42eb-a000-c8f8478f979d",
+  "prevIds": [
+    "ea098f79-08b6-48a5-a7c6-c50cf82437fb"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "conference_user",
+        "delegator_user_id"
+      ],
+      "writes": [
+        "s|col|public.conference_user.delegator_user_id",
+        "n|col|public.conference_user.delegator_user_id",
+        "e|col|public.conference_user.delegator_user_id"
+      ],
+      "reads": [
+        "n|tbl|public.conference_user",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "instance_link",
+        "status"
+      ],
+      "writes": [
+        "s|col|public.instance_link.status",
+        "n|col|public.instance_link.status",
+        "e|col|public.instance_link.status"
+      ],
+      "reads": [
+        "n|tbl|public.instance_link",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "instance_link",
+        "inbound_token_hash"
+      ],
+      "writes": [
+        "s|col|public.instance_link.inbound_token_hash",
+        "n|col|public.instance_link.inbound_token_hash",
+        "e|col|public.instance_link.inbound_token_hash"
+      ],
+      "reads": [
+        "n|tbl|public.instance_link",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "instance_link",
+        "outbound_token"
+      ],
+      "writes": [
+        "s|col|public.instance_link.outbound_token",
+        "n|col|public.instance_link.outbound_token",
+        "e|col|public.instance_link.outbound_token"
+      ],
+      "reads": [
+        "n|tbl|public.instance_link",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "instance_link",
+        "confirmation_code"
+      ],
+      "writes": [
+        "s|col|public.instance_link.confirmation_code",
+        "n|col|public.instance_link.confirmation_code",
+        "e|col|public.instance_link.confirmation_code"
+      ],
+      "reads": [
+        "n|tbl|public.instance_link",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "instance_link",
+        "linked_at"
+      ],
+      "writes": [
+        "s|col|public.instance_link.linked_at",
+        "n|col|public.instance_link.linked_at",
+        "e|col|public.instance_link.linked_at"
+      ],
+      "reads": [
+        "n|tbl|public.instance_link",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "instance_link_status"
+      ],
+      "writes": [
+        "s|enum|public.instance_link_status",
+        "n|enum|public.instance_link_status",
+        "e|enum|public.instance_link_status",
+        "n|type|public.instance_link_status"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "enums\u0000[\"public\",\"instance_link_status\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"conference_user\",\"delegator_user_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"instance_link\",\"status\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"instance_link\",\"inbound_token_hash\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"instance_link\",\"outbound_token\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"instance_link\",\"confirmation_code\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"instance_link\",\"linked_at\"]"
+    }
+  ]
+}

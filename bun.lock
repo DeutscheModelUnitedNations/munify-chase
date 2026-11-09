@@ -118,6 +118,7 @@
         "graphql-ws": "^6.4.1",
         "gridstack": "^14.0.0",
         "hotkeys-js": "^4.1.1",
+        "jose": "^6.2.13",
         "js-yaml": "^5.5.0",
         "jsdom": "^31.0.0",
         "json-schema-to-typescript": "^16.0.0",

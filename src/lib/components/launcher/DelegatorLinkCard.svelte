@@ -1,85 +1,29 @@
 <script lang="ts">
-	import toast from 'svelte-french-toast';
 	import { m } from '#lib/paraglide/messages';
 	import { getLocale } from '#lib/paraglide/runtime';
 	import { client } from '#lib/api/rumbleClient/client';
-	import { withBackendMessage } from '#lib/utils/toast';
 
 	/**
-	 * The link to a MUNify DELEGATOR instance, for global admins (`docs/plans/delegator-link.md`).
-	 * DELEGATOR asks; here the request is approved with the code DELEGATOR shows, and the link
-	 * watched or ended.
+	 * How the link to a MUNify DELEGATOR instance fares, for global admins
+	 * (`docs/plans/delegator-link.md`). The link itself is configuration (`LINK_REMOTE_URL` and the
+	 * rest), so there is nothing to change here.
 	 */
 	const links = await client.liveQuery.instanceLinks({
 		id: true,
 		remoteUrl: true,
-		status: true,
-		confirmationCode: true,
-		linkedAt: true,
 		lastEventAt: true,
 		lastReconcileAt: true,
 		lastError: true
 	});
-	const link = $derived((links ?? []).find((l) => l.status !== 'FROZEN'));
-
-	let code = $state('');
-	let busy = $state(false);
+	const link = $derived((links ?? []).at(0));
 
 	const formatTime = (date: Date | string | null | undefined) =>
 		date
 			? new Date(date).toLocaleString(getLocale(), { dateStyle: 'medium', timeStyle: 'short' })
 			: '–';
-
-	async function run(action: () => Promise<unknown>) {
-		busy = true;
-		try {
-			await action();
-		} catch (error) {
-			toast.error(withBackendMessage(m.saveError(), error));
-		} finally {
-			busy = false;
-		}
-	}
-
-	const approve = () =>
-		run(() =>
-			Promise.resolve(client.mutate.approveDelegatorLink({ __args: { confirmationCode: code } }))
-		);
-	const reject = () => run(() => Promise.resolve(client.mutate.rejectDelegatorLink()));
-	const unlink = () => {
-		if (!confirm(m.delegatorLinkUnlinkConfirm())) return;
-		return run(() => Promise.resolve(client.mutate.unlinkDelegator()));
-	};
 </script>
 
-{#if link?.status === 'PENDING'}
-	<section class="card bg-base-200 gap-3 p-5">
-		<h2 class="m-0 text-lg font-bold">
-			<i aria-hidden="true" class="ph-duotone ph-link"></i>
-			{m.delegatorLinkRequestTitle()}
-		</h2>
-		<p class="m-0 text-sm">{m.delegatorLinkRequestBody({ url: link.remoteUrl })}</p>
-		<label class="input w-full max-w-xs">
-			<span class="label">{m.delegatorLinkCode()}</span>
-			<input
-				class="font-mono uppercase tracking-widest"
-				maxlength="6"
-				autocomplete="off"
-				bind:value={code}
-			/>
-		</label>
-		<div class="flex flex-wrap gap-2">
-			<button class="btn btn-primary" disabled={busy || code.trim().length !== 6} onclick={approve}>
-				<i aria-hidden="true" class="ph-duotone ph-check"></i>
-				{m.delegatorLinkApprove()}
-			</button>
-			<button class="btn btn-ghost" disabled={busy} onclick={reject}>
-				<i aria-hidden="true" class="ph-duotone ph-x"></i>
-				{m.delegatorLinkReject()}
-			</button>
-		</div>
-	</section>
-{:else if link?.status === 'ACTIVE'}
+{#if link}
 	<section class="card bg-base-200 gap-3 p-5">
 		<h2 class="m-0 text-lg font-bold">
 			<i aria-hidden="true" class="ph-duotone ph-link"></i>
@@ -87,10 +31,6 @@
 		</h2>
 		<p class="m-0 text-sm">{m.delegatorLinkActiveBody({ url: link.remoteUrl })}</p>
 		<dl class="m-0 flex flex-col gap-1 text-sm">
-			<div class="flex flex-wrap gap-x-6">
-				<dt class="text-base-content/60">{m.delegatorLinkLinkedAt()}</dt>
-				<dd class="m-0">{formatTime(link.linkedAt)}</dd>
-			</div>
 			<div class="flex flex-wrap gap-x-6">
 				<dt class="text-base-content/60">{m.delegatorLinkLastSync()}</dt>
 				<dd class="m-0">{formatTime(link.lastReconcileAt)}</dd>
@@ -102,15 +42,9 @@
 				<span>{m.delegatorLinkLastError({ error: link.lastError })}</span>
 			</div>
 		{/if}
-		<div class="flex flex-wrap gap-2">
-			<a class="btn btn-primary btn-sm" href={link.remoteUrl} target="_blank" rel="noopener">
-				<i aria-hidden="true" class="ph-duotone ph-arrow-square-out"></i>
-				{m.delegatorLinkOpen()}
-			</a>
-			<button class="btn btn-ghost btn-sm text-error" disabled={busy} onclick={unlink}>
-				<i aria-hidden="true" class="ph-duotone ph-link-break"></i>
-				{m.delegatorLinkUnlink()}
-			</button>
-		</div>
+		<a class="btn btn-primary btn-sm self-start" href={link.remoteUrl} target="_blank" rel="noopener">
+			<i aria-hidden="true" class="ph-duotone ph-arrow-square-out"></i>
+			{m.delegatorLinkOpen()}
+		</a>
 	</section>
 {/if}

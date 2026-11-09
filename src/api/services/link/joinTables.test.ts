@@ -21,7 +21,7 @@ function tables(overrides: Partial<DelegatorTables> = {}): DelegatorTables {
 			{ id: 'ga', name: 'General Assembly', abbreviation: 'GA', roles: [{ id: 'deu' }] }
 		],
 		agendaItems: [{ id: 'climate', title: 'Climate', committeeId: 'ga' }],
-		roles: [{ id: 'deu', kind: 'NATION', chaseAccess: 'SPECTATOR', nation: { alpha2Code: 'DE' } }],
+		roles: [{ id: 'deu', kind: 'NATION', nation: { alpha2Code: 'DE' } }],
 		teamMembers: [{ id: 'tm', role: 'PROJECT_MANAGEMENT', userId: 'ada' }],
 		delegations: [{ id: 'del', assignedRoleId: 'deu' }],
 		delegationMembers: [

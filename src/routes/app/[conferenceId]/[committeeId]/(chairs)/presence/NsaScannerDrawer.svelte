@@ -31,7 +31,7 @@
 			id: true,
 			name: true,
 			userEmail: true,
-			delegatorUserId: true,
+			user: { id: true },
 			cardNumber: true,
 			conferenceMember: { representation: { name: true } }
 		})

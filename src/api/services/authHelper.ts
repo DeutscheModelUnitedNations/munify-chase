@@ -168,9 +168,9 @@ export function isPaperAuthor(ctx: Context) {
 	} as const;
 }
 
-/** The linked MUNify DELEGATOR calling with its token, once the link is approved. */
-async function isLinkedDelegator(ctx: Context) {
-	return (await ctx.linkCaller())?.status === 'ACTIVE';
+/** The linked MUNify DELEGATOR calling, with a token granting the `delegator` role (`linkAuth`). */
+function isLinkedDelegator(ctx: Context) {
+	return ctx.hasRole('delegator');
 }
 
 /** Conferences that came from the linked DELEGATOR: the only ones it reads back. */
@@ -182,5 +182,5 @@ export const SYNCED_CONFERENCE = { managedByDelegator: true } as const;
  * nothing to anybody else.
  */
 export function linkedDelegator<R>(grant: R) {
-	return async (ctx: Context) => ((await isLinkedDelegator(ctx)) ? grant : undefined);
+	return (ctx: Context) => (isLinkedDelegator(ctx) ? grant : undefined);
 }

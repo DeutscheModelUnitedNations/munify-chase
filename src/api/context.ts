@@ -7,10 +7,10 @@ import {
 } from './services/syntheticRequestEvent';
 import { OidcProviderUnavailableError } from '@m1212e/oidc';
 import { OIDC } from './services/OIDC';
-import { findLinkCaller, type LinkCaller } from './services/link/linkCaller';
-import { LINK_TOKEN_HEADER } from './services/link/linkTokens';
+import { LINK_TOKEN_HEADER } from './services/link/linkAuth';
+import { LINK_ROLE, rolesOfClaim, type OidcRole } from './services/oidcRoles';
 
-export const oidcRoles = ['admin', 'member', 'service_user'] as const;
+export { oidcRoles } from './services/oidcRoles';
 
 export function context(req: RequestEvent) {
 	const source: unknown =
@@ -19,39 +19,28 @@ export function context(req: RequestEvent) {
 		req = (source as Record<string, unknown>)[SYNTHETIC_EVENT_FIELD] as RequestEvent;
 	}
 
-	const OIDCRoleNames: (typeof oidcRoles)[number][] = [];
-	if (OIDC_ROLE_CLAIM) {
-		const rolesRaw =
-			(req.locals.oidc?.accessTokenClaims as Record<string, unknown> | undefined)?.[
-				OIDC_ROLE_CLAIM
-			] ??
-			(req.locals.oidc?.idTokenClaims as Record<string, unknown> | undefined)?.[OIDC_ROLE_CLAIM];
-		if (rolesRaw) {
-			// Support both Logto format (array of role objects/strings) and Zitadel format (object with role keys)
-			const collected: string[] = [];
-			if (Array.isArray(rolesRaw)) {
-				for (const role of rolesRaw) {
-					const name = typeof role === 'string' ? role : (role as { name?: string })?.name;
-					if (name) collected.push(name);
-				}
-			} else if (typeof rolesRaw === 'object') {
-				collected.push(...Object.keys(rolesRaw));
-			}
-			const validRoles = collected.filter((r): r is (typeof oidcRoles)[number] =>
-				(oidcRoles as readonly string[]).includes(r)
-			);
-			OIDCRoleNames.push(...validRoles);
-		}
-	}
+	// the link role comes from the linked DELEGATOR's token (`linkHandle`, `websocket.ts`), never
+	// from a session
+	const OIDCRoleNames: OidcRole[] = [
+		...(OIDC_ROLE_CLAIM
+			? rolesOfClaim(
+					(req.locals.oidc?.accessTokenClaims as Record<string, unknown> | undefined)?.[
+						OIDC_ROLE_CLAIM
+					] ??
+						(req.locals.oidc?.idTokenClaims as Record<string, unknown> | undefined)?.[
+							OIDC_ROLE_CLAIM
+						]
+				)
+			: []
+		).filter((role) => role !== LINK_ROLE),
+		...(req.locals.linkCaller ? [LINK_ROLE] : [])
+	];
 
 	// A synthetic WebSocket event carries the token as a header too (`websocket.ts`).
 	const linkToken = req.request?.headers.get(LINK_TOKEN_HEADER);
-	let linkCaller: Promise<LinkCaller | undefined> | undefined;
 
 	return {
 		...req.locals,
-		/** The linked DELEGATOR instance, when it is the one calling (`docs/plans/delegator-link.md`). */
-		linkCaller: () => (linkCaller ??= findLinkCaller(linkToken)),
 		/**
 		 * Whether the request carries a link token. Such a request has no session, and the rules that
 		 * need one grant it nothing instead of failing the whole query (`sessionUserId`).
@@ -64,8 +53,8 @@ export function context(req: RequestEvent) {
 
 			return req.locals.oidc.user;
 		},
-		hasRole(role: string) {
-			return OIDCRoleNames.includes(role as (typeof oidcRoles)[number]);
+		hasRole(role: OidcRole) {
+			return OIDCRoleNames.includes(role);
 		},
 		isSessionLive: async (): Promise<boolean> => {
 			const oidc = req.locals.oidc;

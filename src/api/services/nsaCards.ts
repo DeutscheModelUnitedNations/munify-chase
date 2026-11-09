@@ -2,7 +2,7 @@ import { db, schema } from '#api/db/db';
 import { and, eq, lt, sql } from 'drizzle-orm';
 import { GraphQLError } from 'graphql';
 import { identifyNsa, type IdentityKeys, type NsaScanFailure } from '#lib/helpers/nsaScan';
-import { ownSigningKeys, signOwnCode } from './identityKeyPair';
+import { signCode, signedCodeKeys } from './signingKeys';
 
 /** The largest card number a card carries; a reprint past it is refused. */
 const MAX_CARD_NUMBER = 0xffff;
@@ -28,7 +28,7 @@ export async function identityKeys(): Promise<IdentityKeys> {
 	const delegator = new Map(
 		(link?.remoteSigningKeys ?? []).map(({ kid, publicKey }) => [kid, publicKey])
 	);
-	return { delegator, own: await ownSigningKeys() };
+	return { delegator, own: await signedCodeKeys() };
 }
 
 const SCAN_FAILURES: Record<NsaScanFailure, string> = {
@@ -48,9 +48,15 @@ function onlyIds(ids: readonly string[] | null | undefined) {
 }
 
 /** The NSA a verified code names among `nsas`. */
-async function scannedNsa<
-	T extends { id: string; delegatorUserId: string | null; cardNumber: number }
->({ code, conferenceId, nsas }: { code: string; conferenceId: string; nsas: readonly T[] }) {
+async function scannedNsa<T extends { id: string; userId: string | null; cardNumber: number }>({
+	code,
+	conferenceId,
+	nsas
+}: {
+	code: string;
+	conferenceId: string;
+	nsas: readonly T[];
+}) {
 	const scan = await identifyNsa({ code, keys: await identityKeys(), conferenceId, nsas });
 	if (!scan.found) throw new GraphQLError(SCAN_FAILURES[scan.reason]);
 	return scan.nsa;
@@ -69,14 +75,20 @@ export async function resolveNsaTarget({
 	code?: string | null;
 	conferenceUserId?: string | null;
 }) {
-	const nsas = await db.query.conferenceUser.findMany({
+	const rows = await db.query.conferenceUser.findMany({
 		where: {
 			conferenceId,
 			conferenceUserType: 'NON_STATE_ACTOR',
 			...onlyIds(conferenceUserId ? [conferenceUserId] : null)
 		},
-		columns: { id: true, delegatorUserId: true, cardNumber: true }
+		columns: { id: true, cardNumber: true },
+		with: { user: { columns: { id: true } } }
 	});
+	const nsas = rows.map((row) => ({
+		id: row.id,
+		userId: row.user?.id ?? null,
+		cardNumber: row.cardNumber
+	}));
 	if (code) return scannedNsa({ code, conferenceId, nsas });
 	return pickedNsa({ nsas, conferenceUserId });
 }
@@ -120,7 +132,7 @@ export async function ownNsaCards({
 	const expiresAt = cardExpiry(endDate);
 	return Promise.all(
 		users.map(async (user) => {
-			const code = await signOwnCode({
+			const code = await signCode({
 				kind: 'nsaCard',
 				userId: user.id,
 				conferenceId,
@@ -129,7 +141,7 @@ export async function ownNsaCards({
 				cardNumber: user.cardNumber
 			});
 			if (!code)
-				throw new GraphQLError('LINK_SECRET is not set, so this instance cannot sign cards');
+				throw new GraphQLError('SIGNED_CODE_SECRET is not set, so this instance cannot sign cards');
 			const nsa = { name: null, icon: null, ...user.conferenceMember?.representation };
 			return {
 				conferenceUserId: user.id,

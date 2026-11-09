@@ -107,7 +107,6 @@ export async function reconcileConference(mirror: Mirror) {
 					conferenceUserType: true,
 					userEmail: true,
 					name: true,
-					delegatorUserId: true,
 					cardNumber: true,
 					conferenceMemberId: true,
 					committeeMemberId: true,
@@ -154,7 +153,6 @@ export async function reconcileConference(mirror: Mirror) {
 					'conferenceUserType',
 					'userEmail',
 					'name',
-					'delegatorUserId',
 					'cardNumber',
 					'conferenceMemberId',
 					'committeeMemberId'
@@ -255,6 +253,11 @@ export async function reconcileConference(mirror: Mirror) {
 					set: { representationId: excluded(t.representationId), ...MANAGED }
 				});
 		});
+		// the accounts first, so a person's conference user reaches theirs (`user`, by address); one
+		// that signed in already, or was written by another conference, stays as it is
+		await inChunks(mirror.accounts, (rows) =>
+			tx.insert(schema.user).values(rows).onConflictDoNothing()
+		);
 		await inChunks(c.users.write, (rows) => {
 			const t = schema.conferenceUser;
 			return tx
@@ -266,7 +269,6 @@ export async function reconcileConference(mirror: Mirror) {
 						conferenceUserType: excluded(t.conferenceUserType),
 						userEmail: excluded(t.userEmail),
 						name: excluded(t.name),
-						delegatorUserId: excluded(t.delegatorUserId),
 						cardNumber: excluded(t.cardNumber),
 						conferenceMemberId: excluded(t.conferenceMemberId),
 						committeeMemberId: excluded(t.committeeMemberId),

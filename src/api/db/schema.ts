@@ -191,8 +191,6 @@ export const conferenceUser = snakeCase.table(
 		// userEmail when null.
 		name: text(),
 		managedByDelegator: managedByDelegator(),
-		/** The person's DELEGATOR user id, which the codes on their nametag and card sign. */
-		delegatorUserId: text(),
 		conferenceId: text()
 			.notNull()
 			.references(() => conference.id, { onDelete: 'cascade' }),
@@ -817,26 +815,18 @@ export const resolutionAdoptionStats = snakeCase
 	})
 	.existing();
 
-export const instanceLinkStatus = pgEnum('instance_link_status', ['PENDING', 'ACTIVE', 'FROZEN']);
-
 /**
- * The one link of this instance to a MUNify DELEGATOR instance (`docs/plans/delegator-link.md`).
- * A system-level link, so at most one row: pairing again replaces a frozen one.
+ * The state of the link to a MUNify DELEGATOR instance (`docs/plans/delegator-link.md`). The link
+ * itself is configuration (`LINK_REMOTE_URL` and the rest, `#api/services/link/linkAuth`): the row
+ * exists while it is configured, written at start-up, and holds where it points, how the link
+ * worker fares and DELEGATOR's public keys. At most one row.
  */
 export const instanceLink = snakeCase.table(
 	'instance_link',
 	{
 		...defaultIdAndTimestamps,
-		/** The DELEGATOR instance's origin. */
+		/** The DELEGATOR instance's origin, `LINK_REMOTE_URL`. */
 		remoteUrl: text().notNull(),
-		status: instanceLinkStatus().notNull().default('PENDING'),
-		/** SHA-256 of the token DELEGATOR sends with its requests; null until approved. */
-		inboundTokenHash: text(),
-		/** The token this instance sends to DELEGATOR, encrypted with `LINK_SECRET`. */
-		outboundToken: text().notNull(),
-		/** Shown on both sides while pending, for the admins to compare. */
-		confirmationCode: text().notNull(),
-		linkedAt: timestamp({ mode: 'date' }),
 		/** The last notice the link worker received from DELEGATOR. */
 		lastEventAt: timestamp({ mode: 'date' }),
 		/** The last full reconcile, run on every (re)connect. */

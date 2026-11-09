@@ -5,6 +5,7 @@ import { ConferenceRef } from './conference';
 import { GraphQLError } from 'graphql';
 import { isGlobalAdmin } from '#api/services/authHelper';
 import { assertFindFirstExists } from '@m1212e/rumble';
+import { linkConfig } from '#api/services/link/linkAuth';
 
 const Input = schemaBuilder.inputType('ImportData', {
 	description: 'Import data. You can find the JSON schema here: /api/schema/import',
@@ -132,11 +133,7 @@ schemaBuilder.mutationFields((t) => ({
 			}
 
 			// a linked DELEGATOR brings its conferences itself (`docs/plans/delegator-link.md`)
-			const link = await db.query.instanceLink.findFirst({
-				where: { status: 'ACTIVE' },
-				columns: { id: true }
-			});
-			if (link) {
+			if (linkConfig()) {
 				throw new GraphQLError(
 					'This instance is linked to MUNify DELEGATOR: create the conference there.'
 				);

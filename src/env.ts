@@ -88,10 +88,34 @@ export const variables = defineEnvVars({
 		description: 'Comma-separated email domains whose users are global admins',
 		schema: z.string().default('')
 	},
-	LINK_SECRET: {
+	SIGNED_CODE_SECRET: {
 		description:
-			'Secret for linking this instance to a MUNify DELEGATOR: encrypts the stored link token and derives the key NSA cards are signed with. Linking is refused while it is unset.',
+			'Secret the key this instance signs its own NSA cards with is derived from (`#api/services/signingKeys`), at least 32 characters. Without it no cards are printed here; a linked DELEGATOR prints its own.',
 		schema: z.string().min(32).optional()
+	},
+	OIDC_M2M_CLIENT_ID: {
+		description:
+			'The machine-to-machine client this instance gets tokens with (client credentials), to call a linked MUNify DELEGATOR. Logto allows that grant only for M2M apps.',
+		schema: z.string().optional()
+	},
+	OIDC_M2M_CLIENT_SECRET: {
+		description: 'Secret of OIDC_M2M_CLIENT_ID',
+		schema: z.string().optional()
+	},
+	LINK_REMOTE_URL: {
+		description:
+			'Origin of the MUNify DELEGATOR to link with (`docs/plans/delegator-link.md`). The link is on while LINK_REMOTE_URL, LINK_REMOTE_RESOURCE and LINK_RESOURCE are set, with OIDC_M2M_CLIENT_ID and OIDC_M2M_CLIENT_SECRET. A call is from DELEGATOR when its token grants the `delegator` role (OIDC_ROLE_CLAIM, or the `delegator` scope).',
+		schema: z.url().optional()
+	},
+	LINK_REMOTE_RESOURCE: {
+		description:
+			"The resource indicator of DELEGATOR's API, which this instance asks its tokens for",
+		schema: z.url().optional()
+	},
+	LINK_RESOURCE: {
+		description:
+			"The resource indicator of this instance's API, which DELEGATOR's tokens have to be issued for",
+		schema: z.url().optional()
 	},
 	REDIS_URL: {
 		description:

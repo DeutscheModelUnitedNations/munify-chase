@@ -25,7 +25,7 @@ export function nsaOfUser(user: {
 	id: string;
 	name?: string | null;
 	userEmail: string;
-	delegatorUserId?: string | null;
+	user?: { id: string } | null;
 	cardNumber: number;
 	conferenceMember?: { representation?: { name?: string | null } | null } | null;
 }) {
@@ -33,7 +33,7 @@ export function nsaOfUser(user: {
 		id: user.id,
 		name: user.name ?? null,
 		userEmail: user.userEmail,
-		delegatorUserId: user.delegatorUserId ?? null,
+		userId: user.user?.id ?? null,
 		cardNumber: user.cardNumber,
 		nsaName: user.conferenceMember?.representation?.name ?? null
 	};

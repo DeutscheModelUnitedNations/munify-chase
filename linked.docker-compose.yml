@@ -1,6 +1,8 @@
 # Next to a MUNify DELEGATOR dev setup, which holds 5432: `bun run dev:linked`
-# (docs/plans/delegator-link.md, "Running both").
+# (docs/plans/delegator-link.md, "Running both"). A container of its own, so the usual chase dev
+# database stays as it is.
 services:
   postgres:
+    container_name: postgres-chase-linked
     ports: !override
       - 15433:5432

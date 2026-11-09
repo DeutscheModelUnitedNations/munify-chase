@@ -10,6 +10,7 @@ import { nanoid } from '#lib/helpers/nanoid';
 import { applyServerMutation } from '#api/yjs/server';
 import type { DelegatorClient } from './delegatorRemote';
 import { workingPaperChanges } from './workingPapers';
+import { readAll } from './readAll';
 
 const paperPubsub = pubsub({ table: 'resolutionPaper' });
 
@@ -26,15 +27,18 @@ export async function syncWorkingPapers({
 	remote: DelegatorClient;
 	conferenceId: string;
 }) {
-	const papers = await remote.query.papers({
-		__args: {
-			where: { type: 'WORKING_PAPER', delegation: { conferenceId: { eq: conferenceId } } }
-		},
-		id: true,
-		agendaItem: { id: true, committeeId: true },
-		delegation: { id: true, assignedRoleId: true },
-		versions: { id: true, version: true, content: true }
-	});
+	const papers = await readAll((page) =>
+		remote.query.papers({
+			__args: {
+				...page,
+				where: { type: 'WORKING_PAPER', delegation: { conferenceId: { eq: conferenceId } } }
+			},
+			id: true,
+			agendaItem: { id: true, committeeId: true },
+			delegation: { id: true, assignedRoleId: true },
+			versions: { id: true, version: true, content: true }
+		})
+	);
 	const [existing, seatRows] = await Promise.all([
 		db.query.resolutionPaper.findMany({
 			where: { committee: { conferenceId }, delegatorPaperId: { isNotNull: true } },

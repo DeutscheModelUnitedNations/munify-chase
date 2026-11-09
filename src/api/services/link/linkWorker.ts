@@ -6,6 +6,7 @@ import { openLinkToken } from './linkTokens';
 import { mirrorConference } from './mirror';
 import { reconcileConference, releaseConference } from './reconcile';
 import { syncWorkingPapers } from './workingPaperSync';
+import { readAll } from './readAll';
 
 /**
  * The link worker (`docs/plans/delegator-link.md`): mirrors every DELEGATOR conference that has not
@@ -71,11 +72,13 @@ function runWorker() {
 			for (const unwatch of watchers.values()) unwatch();
 		});
 
+		let reconnected = () => {};
 		const remote: DelegatorClient = createDelegatorClient({
 			url: link.remoteUrl,
 			token: openLinkToken(link.outboundToken),
 			onConnected: () => {
 				void storeIdentityKey({ remote, linkId: link.id });
+				reconnected();
 				for (const conferenceId of watchers.keys()) schedule(conferenceId);
 			}
 		});
@@ -94,26 +97,40 @@ function runWorker() {
 
 		// DELEGATOR shows the link the conferences it mirrors; a public one that has ended may
 		// still be readable, so the state decides
-		const conferences = remote.liveQuery.conferences({ id: true, state: true });
-		const unsubscribe = conferences.subscribe((list) => {
-			if (!list || stopped) return;
-			const current = new Set(list.filter((c) => c.state !== 'POST').map((c) => c.id));
-			for (const [conferenceId, unwatch] of watchers) {
-				if (current.has(conferenceId)) continue;
-				unwatch();
-				watchers.delete(conferenceId);
-				void releaseConference(conferenceId).catch((error) =>
-					recordError({ linkId: link.id, error })
-				);
-			}
-			for (const conferenceId of current) {
-				if (!watchers.has(conferenceId)) {
-					watchers.set(conferenceId, watchConference({ remote, conferenceId, onChange: schedule }));
+		// A live query's first answer may fail (DELEGATOR unreachable, a rule refusing): that is noted
+		// on the link and retried on the next (re)connect, never left to crash the app.
+		const failed = (error: unknown) => void recordError({ linkId: link.id, error });
+		// Set up again on every (re)connect: a first answer that failed (the other side was away)
+		// leaves no watch behind otherwise.
+		let unwatchConferences: (() => void) | undefined;
+		const watchConferences = () => {
+			unwatchConferences?.();
+			const conferences = handled(remote.liveQuery.conferences({ id: true, state: true }), failed);
+			unwatchConferences = conferences.subscribe((list) => {
+				if (!list || stopped) return;
+				const current = new Set(list.filter((c) => c.state !== 'POST').map((c) => c.id));
+				for (const [conferenceId, unwatch] of watchers) {
+					if (current.has(conferenceId)) continue;
+					unwatch();
+					watchers.delete(conferenceId);
+					void releaseConference(conferenceId).catch((error) =>
+						recordError({ linkId: link.id, error })
+					);
 				}
-				schedule(conferenceId);
-			}
-		});
-		cleanups.push(unsubscribe);
+				for (const conferenceId of current) {
+					if (!watchers.has(conferenceId)) {
+						watchers.set(
+							conferenceId,
+							watchConference({ remote, conferenceId, onChange: schedule, onError: failed })
+						);
+					}
+					schedule(conferenceId);
+				}
+			});
+		};
+		reconnected = watchConferences;
+		watchConferences();
+		cleanups.push(() => unwatchConferences?.());
 	})().catch((error) => {
 		console.error('[link] the link worker stopped', error);
 		stop();
@@ -121,6 +138,12 @@ function runWorker() {
 	});
 
 	return { stop };
+}
+
+/** Lets a live query's first answer fail without an unhandled rejection; it still subscribes. */
+function handled<T extends PromiseLike<unknown>>(result: T, onError: (error: unknown) => void): T {
+	Promise.resolve(result).then(undefined, onError);
+	return result;
 }
 
 /**
@@ -131,11 +154,13 @@ function runWorker() {
 function watchConference({
 	remote,
 	conferenceId,
-	onChange
+	onChange,
+	onError
 }: {
 	remote: DelegatorClient;
 	conferenceId: string;
 	onChange: (conferenceId: string) => void;
+	onError: (error: unknown) => void;
 }) {
 	const inConference = { where: { conferenceId: { eq: conferenceId } } };
 	const ofConference = { where: { conference: { id: { eq: conferenceId } } } };
@@ -186,7 +211,7 @@ function watchConference({
 			versions: { id: true }
 		})
 	];
-	const unsubscribes = live.map((result) => result.subscribe(changed));
+	const unsubscribes = live.map((result) => handled(result, onError).subscribe(changed));
 	return () => {
 		for (const unsubscribe of unsubscribes) unsubscribe();
 	};
@@ -223,39 +248,60 @@ async function syncConference({
 				startConference: true,
 				endConference: true
 			}),
-			remote.query.committees({
-				__args: inConference,
-				id: true,
-				name: true,
-				abbreviation: true,
-				agendaItems: { id: true, title: true },
-				roles: { id: true }
-			}),
-			remote.query.conferenceRoles({
-				__args: inConference,
-				id: true,
-				kind: true,
-				name: true,
-				fontAwesomeIcon: true,
-				chaseAccess: true,
-				nation: { alpha2Code: true }
-			}),
-			remote.query.teamMembers({ __args: inConference, id: true, role: true, user: PERSON }),
-			remote.query.delegationMembers({
-				__args: ofConference,
-				id: true,
-				assignedCommittee: { id: true },
-				delegation: { id: true, assignedRole: { id: true } },
-				participant: { id: true, nsaCardNumber: true },
-				user: PERSON
-			}),
-			remote.query.singleParticipants({
-				__args: ofConference,
-				id: true,
-				assignedRole: { id: true },
-				user: PERSON
-			}),
-			remote.query.conferenceSupervisors({ __args: ofConference, id: true, user: PERSON })
+			readAll((page) =>
+				remote.query.committees({
+					__args: { ...inConference, ...page },
+					id: true,
+					name: true,
+					abbreviation: true,
+					agendaItems: { id: true, title: true },
+					roles: { id: true }
+				})
+			),
+			readAll((page) =>
+				remote.query.conferenceRoles({
+					__args: { ...inConference, ...page },
+					id: true,
+					kind: true,
+					name: true,
+					fontAwesomeIcon: true,
+					chaseAccess: true,
+					nation: { alpha2Code: true }
+				})
+			),
+			readAll((page) =>
+				remote.query.teamMembers({
+					__args: { ...inConference, ...page },
+					id: true,
+					role: true,
+					user: PERSON
+				})
+			),
+			readAll((page) =>
+				remote.query.delegationMembers({
+					__args: { ...ofConference, ...page },
+					id: true,
+					assignedCommittee: { id: true },
+					delegation: { id: true, assignedRole: { id: true } },
+					participant: { id: true, nsaCardNumber: true },
+					user: PERSON
+				})
+			),
+			readAll((page) =>
+				remote.query.singleParticipants({
+					__args: { ...ofConference, ...page },
+					id: true,
+					assignedRole: { id: true },
+					user: PERSON
+				})
+			),
+			readAll((page) =>
+				remote.query.conferenceSupervisors({
+					__args: { ...ofConference, ...page },
+					id: true,
+					user: PERSON
+				})
+			)
 		]);
 
 		await reconcileConference(
@@ -267,12 +313,12 @@ async function syncConference({
 					startConference: conference.startConference,
 					endConference: conference.endConference
 				},
-				committees: Array.from(committees),
-				roles: Array.from(roles),
-				teamMembers: Array.from(teamMembers),
-				delegationMembers: Array.from(delegationMembers),
-				singleParticipants: Array.from(singleParticipants),
-				supervisors: Array.from(supervisors)
+				committees,
+				roles,
+				teamMembers,
+				delegationMembers,
+				singleParticipants,
+				supervisors
 			})
 		);
 		// after the reconcile: a draft needs its committee, agenda item and seat in place

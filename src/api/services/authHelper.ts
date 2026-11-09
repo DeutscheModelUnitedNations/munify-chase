@@ -1,6 +1,7 @@
 import type { Context } from '#api/context';
 import { ADMIN_DOMAIN_WHITELIST, ADMIN_EMAIL_WHITELIST } from '$app/env/private';
 import { GraphQLError } from 'graphql';
+import { sql } from 'drizzle-orm';
 
 export function isAdminEmail(email: string) {
 	const whitelistEmails = ADMIN_EMAIL_WHITELIST.split(',').filter(Boolean);
@@ -8,6 +9,21 @@ export function isAdminEmail(email: string) {
 	const domain = email.split('@')[1];
 
 	return whitelistEmails.includes(email) || whitelistDomains.includes(domain);
+}
+
+/** A filter no row matches, for a rule that grants nothing. */
+export const NO_ROWS = { RAW: sql`false` };
+
+/**
+ * The signed-in person's user id. The linked DELEGATOR calls without a session, so a rule that
+ * needs one grants it nothing (`undefined`) rather than failing the whole query, which would also
+ * fail the link's own rules; anybody else without a session gets "Must be logged in" as before.
+ */
+export function sessionUserId(ctx: Context) {
+	const user = ctx.oidc?.user;
+	if (user) return user.sub;
+	if (ctx.linkRequest) return undefined;
+	return ctx.mustBeLoggedIn().sub;
 }
 
 export function isGlobalAdmin(ctx: Context) {
@@ -25,7 +41,8 @@ export function isTeamInConference(ctx: Context) {
 		return {};
 	}
 
-	const userId = ctx.mustBeLoggedIn().sub;
+	const userId = sessionUserId(ctx);
+	if (!userId) return NO_ROWS;
 
 	return {
 		conference: {
@@ -68,7 +85,8 @@ export function isAdmin(ctx: Context) {
 		return {};
 	}
 
-	const userId = ctx.mustBeLoggedIn().sub;
+	const userId = sessionUserId(ctx);
+	if (!userId) return NO_ROWS;
 
 	return {
 		users: {
@@ -85,7 +103,8 @@ export function isParticipant(ctx: Context) {
 		return {};
 	}
 
-	const userId = ctx.mustBeLoggedIn().sub;
+	const userId = sessionUserId(ctx);
+	if (!userId) return NO_ROWS;
 
 	return {
 		users: {
@@ -133,10 +152,11 @@ export function isPaperEditor(ctx: Context, paperId: string) {
 }
 
 export function isPaperAuthor(ctx: Context) {
-	const user = ctx.mustBeLoggedIn();
+	const userId = sessionUserId(ctx);
+	if (!userId) return NO_ROWS;
 	return {
 		editors: {
-			conferenceUser: { user: { id: user.sub } }
+			conferenceUser: { user: { id: userId } }
 		}
 	} as const;
 }

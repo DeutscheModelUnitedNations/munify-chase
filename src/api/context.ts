@@ -52,6 +52,11 @@ export function context(req: RequestEvent) {
 		...req.locals,
 		/** The linked DELEGATOR instance, when it is the one calling (`docs/plans/delegator-link.md`). */
 		linkCaller: () => (linkCaller ??= findLinkCaller(linkToken)),
+		/**
+		 * Whether the request carries a link token. Such a request has no session, and the rules that
+		 * need one grant it nothing instead of failing the whole query (`sessionUserId`).
+		 */
+		linkRequest: !!linkToken,
 		mustBeLoggedIn: () => {
 			if (!req.locals.oidc?.user) {
 				throw new GraphQLError('Must be logged in');

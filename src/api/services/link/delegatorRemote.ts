@@ -38,6 +38,9 @@ export function createDelegatorClient({
 		url: new URL('/api/graphql/stream', url).toString(),
 		headers,
 		singleConnection: true,
+		// connected from the start, so a DELEGATOR that comes back is noticed (`onConnected`) even
+		// while nothing is subscribed
+		lazy: false,
 		// keep trying while DELEGATOR is away; the worker reconciles once it is back
 		retryAttempts: Infinity,
 		on: { connected: (reconnected) => onConnected?.(reconnected) }

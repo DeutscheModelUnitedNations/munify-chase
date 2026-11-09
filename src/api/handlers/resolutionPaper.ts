@@ -11,6 +11,7 @@ import {
 	isParticipantInConference,
 	isTeamInConference,
 	isPaperAuthor,
+	sessionUserId,
 	linkedDelegator,
 	SYNCED_CONFERENCE
 } from '#api/services/authHelper';
@@ -60,10 +61,11 @@ abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
 });
 
 abilityBuilder.resolutionPaper.allow('read').when((ctx) => {
-	const user = ctx.mustBeLoggedIn();
+	const userId = sessionUserId(ctx);
+	if (!userId) return undefined;
 	return {
 		where: {
-			sponsors: { committeeMember: { users: { user: { id: user.sub } } } }
+			sponsors: { committeeMember: { users: { user: { id: userId } } } }
 		}
 	};
 });

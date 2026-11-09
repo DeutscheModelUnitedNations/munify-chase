@@ -1,6 +1,7 @@
 import { db, schema } from '#api/db/db';
 import { pubsub } from '#api/rumble';
 import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import type { Mirror } from './mirror';
 
 /**
@@ -25,8 +26,15 @@ function excluded(column: { name: string }) {
 	return sql.raw(`excluded."${column.name}"`);
 }
 
-const NONE = ['\u0000'];
-const ids = (rows: readonly { id: string }[]) => (rows.length > 0 ? rows.map((r) => r.id) : NONE);
+/** The rows not among `rows`: all of them when `rows` is empty (`NOT IN ()` is no valid SQL). */
+function notAmong(column: AnyPgColumn, rows: readonly { id: string }[]) {
+	return rows.length > 0
+		? notInArray(
+				column,
+				rows.map((row) => row.id)
+			)
+		: sql`true`;
+}
 
 export async function reconcileConference(mirror: Mirror) {
 	const conferenceId = mirror.conference.id;
@@ -60,7 +68,7 @@ export async function reconcileConference(mirror: Mirror) {
 				and(
 					eq(schema.conferenceUser.conferenceId, conferenceId),
 					eq(schema.conferenceUser.managedByDelegator, true),
-					notInArray(schema.conferenceUser.id, ids(mirror.conferenceUsers))
+					notAmong(schema.conferenceUser.id, mirror.conferenceUsers)
 				)
 			)
 			.returning({ id: schema.conferenceUser.id });
@@ -86,7 +94,7 @@ export async function reconcileConference(mirror: Mirror) {
 				and(
 					eq(schema.conferenceMember.conferenceId, conferenceId),
 					eq(schema.conferenceMember.managedByDelegator, true),
-					notInArray(schema.conferenceMember.id, ids(mirror.conferenceMembers))
+					notAmong(schema.conferenceMember.id, mirror.conferenceMembers)
 				)
 			)
 			.returning({ id: schema.conferenceMember.id });
@@ -96,7 +104,7 @@ export async function reconcileConference(mirror: Mirror) {
 				and(
 					inArray(schema.committeeMember.committeeId, committeeIdsOfConference),
 					eq(schema.committeeMember.managedByDelegator, true),
-					notInArray(schema.committeeMember.id, ids(mirror.committeeMembers))
+					notAmong(schema.committeeMember.id, mirror.committeeMembers)
 				)
 			)
 			.returning({ id: schema.committeeMember.id });
@@ -106,7 +114,7 @@ export async function reconcileConference(mirror: Mirror) {
 				and(
 					eq(schema.representation.conferenceId, conferenceId),
 					eq(schema.representation.managedByDelegator, true),
-					notInArray(schema.representation.id, ids(mirror.representations))
+					notAmong(schema.representation.id, mirror.representations)
 				)
 			)
 			.returning({ id: schema.representation.id });
@@ -116,7 +124,7 @@ export async function reconcileConference(mirror: Mirror) {
 				and(
 					inArray(schema.agendaItem.committeeId, committeeIdsOfConference),
 					eq(schema.agendaItem.managedByDelegator, true),
-					notInArray(schema.agendaItem.id, ids(mirror.agendaItems))
+					notAmong(schema.agendaItem.id, mirror.agendaItems)
 				)
 			)
 			.returning({ id: schema.agendaItem.id });
@@ -126,7 +134,7 @@ export async function reconcileConference(mirror: Mirror) {
 				and(
 					eq(schema.committee.conferenceId, conferenceId),
 					eq(schema.committee.managedByDelegator, true),
-					notInArray(schema.committee.id, ids(mirror.committees))
+					notAmong(schema.committee.id, mirror.committees)
 				)
 			)
 			.returning({ id: schema.committee.id });

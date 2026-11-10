@@ -42,7 +42,9 @@ export default ts.config(
 		ignores: [
 			'src/lib/paraglide/**',
 			'src/lib/api/rumbleClient/**',
-			'src/api/db/seed-data/schema.d.ts'
+			'src/api/db/seed-data/schema.d.ts',
+			// Tauri's build output (.prettierignore skips src-tauri too)
+			'src-tauri/**'
 		]
 	},
 	{

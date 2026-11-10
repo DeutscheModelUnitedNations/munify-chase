@@ -26,7 +26,6 @@ import {
 } from '#lib/helpers/clearOfflineCacheMarker';
 import { makeLocalDemoMutationResult, makeSuccessResult } from './localDemo/operationResults';
 import { cleanupStaleCaches, hashSchema } from './offlineCacheStorage';
-import { remoteFunctionsExchange } from './remoteFunctionsExchange';
 import { keepSyntheticOptimisticExchange } from './syntheticOptimisticExchange';
 import {
 	localDemoConferenceUpdates,

@@ -21,6 +21,10 @@ pre-commit:
 # with --no-verify is caught by the next push instead of by CI.
 pre-push:
   parallel: true
+  # Nothing to check when the branch has no commits its remote lacks, such as a push of a tag
+  # alone. Without an upstream (a new branch) the comparison fails, and the checks run.
+  skip:
+    - run: git diff --quiet '@{push}' HEAD
   commands:
     format:
       run: bun run format:check

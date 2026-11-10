@@ -167,6 +167,25 @@ export function isMachineToken(payload: Record<string, unknown>) {
 }
 
 /**
+ * Whether a verified token is the other instance's - a machine's token granting the link role -
+ * and, when not, what it lacks: the scopes and roles it does carry and whether its subject is its
+ * client, so a link that does not connect says why. Never the token itself.
+ */
+export function linkTokenVerdict(payload: Record<string, unknown>) {
+	const machine = isMachineToken(payload);
+	const roles = rolesOfToken(payload);
+	if (machine && roles.includes(LINK_ROLE)) return { accepted: true as const };
+	return {
+		accepted: false as const,
+		reason: machine ? 'it grants no link role' : 'it is not a machine token',
+		scope: typeof payload.scope === 'string' ? payload.scope : null,
+		roles,
+		hasClientId: typeof payload.client_id === 'string',
+		subjectIsClient: payload.sub === payload.client_id
+	};
+}
+
+/**
  * Whether `token` is the other instance calling: signed by the provider, unexpired, for this
  * instance's API, and granting the link role. Never throws: a token that does not pass is nobody.
  */
@@ -180,17 +199,9 @@ export async function isRemoteInstanceToken({
 	try {
 		const { issuer, keys } = await oidcProvider();
 		const { payload } = await jwtVerify(token, keys, { issuer, audience: config.resource });
-		const machine = isMachineToken(payload);
-		const roles = rolesOfToken(payload);
-		if (machine && roles.includes(LINK_ROLE)) return true;
-		// what was missing, never the token: so a link that does not connect says why
-		logger.warn('A link token was refused', {
-			reason: machine ? 'it grants no link role' : 'it is not a machine token',
-			scope: typeof payload.scope === 'string' ? payload.scope : null,
-			roles,
-			hasClientId: typeof payload.client_id === 'string',
-			subjectIsClient: payload.sub === payload.client_id
-		});
+		const verdict = linkTokenVerdict(payload);
+		if (verdict.accepted) return true;
+		logger.warn('A link token was refused', verdict);
 		return false;
 	} catch (error) {
 		logger.warn('A link token was refused', {

@@ -53,7 +53,9 @@ describe('roles', () => {
 describe('assignments', () => {
 	it('takes the seat the role uses', () => {
 		expect(assignmentRepresentation(row())?.name).toBe('Peru');
-		expect(assignmentRepresentation(row({ conferenceUserType: 'NON_STATE_ACTOR' }))?.name).toBe('NGO');
+		expect(assignmentRepresentation(row({ conferenceUserType: 'NON_STATE_ACTOR' }))?.name).toBe(
+			'NGO'
+		);
 		expect(assignmentRepresentation(row({ conferenceUserType: 'TEAM' }))).toBeUndefined();
 		expect(assignmentRepresentation(row({ committeeMember: null }))).toBeUndefined();
 	});
@@ -103,7 +105,15 @@ describe('visiblePages', () => {
 
 	it('shows the ends and the current neighbourhood of more', () => {
 		expect(visiblePages({ current: 0, total: 10 })).toEqual([0, 1, 'ellipsis', 9]);
-		expect(visiblePages({ current: 5, total: 10 })).toEqual([0, 'ellipsis', 4, 5, 6, 'ellipsis', 9]);
+		expect(visiblePages({ current: 5, total: 10 })).toEqual([
+			0,
+			'ellipsis',
+			4,
+			5,
+			6,
+			'ellipsis',
+			9
+		]);
 		expect(visiblePages({ current: 9, total: 10 })).toEqual([0, 'ellipsis', 8, 9]);
 	});
 });
@@ -135,8 +145,16 @@ describe('edit dialog', () => {
 	});
 
 	it('keeps only the assignment the role uses', () => {
-		const form = { role: 'NON_STATE_ACTOR' as const, committeeMemberId: 'cm', conferenceMemberId: 'm', name: ' ' };
-		expect(withRoleAssignment(form)).toMatchObject({ committeeMemberId: null, conferenceMemberId: 'm' });
+		const form = {
+			role: 'NON_STATE_ACTOR' as const,
+			committeeMemberId: 'cm',
+			conferenceMemberId: 'm',
+			name: ' '
+		};
+		expect(withRoleAssignment(form)).toMatchObject({
+			committeeMemberId: null,
+			conferenceMemberId: 'm'
+		});
 		expect(userEditResult(form)).toEqual({
 			conferenceUserType: 'NON_STATE_ACTOR',
 			committeeMemberId: null,

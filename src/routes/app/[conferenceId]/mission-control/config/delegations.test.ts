@@ -8,10 +8,14 @@ const committee = (id: string, seated: string[]): Committee => ({
 	members: seated.map((rep) => ({ id: `${id}-${rep}`, representation: { id: rep } }))
 });
 
-const committees = [committee('ga', ['peru']), committee('sc', ['chad']), committee('hrc', ['peru'])];
+const committees = [
+	committee('ga', ['peru']),
+	committee('sc', ['chad']),
+	committee('hrc', ['peru'])
+];
 
 describe('seats', () => {
-	it('finds a representation\'s seat', () => {
+	it("finds a representation's seat", () => {
 		expect(seatOf({ committee: committees[0], representationId: 'peru' })?.id).toBe('ga-peru');
 		expect(seatOf({ committee: committees[1], representationId: 'peru' })).toBeUndefined();
 	});

@@ -12,8 +12,7 @@
 		canNext: boolean;
 		onPage: (index: number) => void;
 	}
-	let { pageIndex, pageSize, pageCount, rowCount, canPrevious, canNext, onPage }: Props =
-		$props();
+	let { pageIndex, pageSize, pageCount, rowCount, canPrevious, canNext, onPage }: Props = $props();
 </script>
 
 <div class="mt-4 flex items-center justify-between">
@@ -29,7 +28,7 @@
 		>
 			<i aria-hidden="true" class="ph-fill ph-caret-left"></i>
 		</button>
-		{#each visiblePages({ current: pageIndex, total: pageCount }) as item, i (item === 'ellipsis' ? `ellipsis-${i}` : item)}
+		{#each visiblePages( { current: pageIndex, total: pageCount } ) as item, i (item === 'ellipsis' ? `ellipsis-${i}` : item)}
 			{#if item === 'ellipsis'}
 				<span class="join-item btn btn-sm btn-disabled">…</span>
 			{:else}

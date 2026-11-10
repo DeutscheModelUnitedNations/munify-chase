@@ -37,7 +37,8 @@
 				legend: { display: false },
 				tooltip: {
 					callbacks: {
-						label: (ctx: { parsed: { y: number | null } }) => speakingMinutesLabel(ctx.parsed.y ?? 0)
+						label: (ctx: { parsed: { y: number | null } }) =>
+							speakingMinutesLabel(ctx.parsed.y ?? 0)
 					}
 				}
 			},

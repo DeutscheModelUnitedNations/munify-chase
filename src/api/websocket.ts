@@ -33,14 +33,14 @@ type Verdict = false | undefined;
 createWs(
 	useServer as unknown as (options: unknown, ws: typeof gqlWSS) => void,
 	{
-		onConnect: async (wsCtx: {
+		onConnect: (wsCtx: {
 			connectionParams?: unknown;
 			extra: { socket: WebSocket; request: IncomingMessage };
 		}): Promise<Verdict> => {
 			const req = wsCtx.extra.request as UpgradeRequest;
 			// Upgrade-time auth (cookie / Authorization header) already stored the
 			// synthetic event on the IncomingMessage — nothing more to do.
-			if (req[SYNTHETIC_EVENT_FIELD]) return;
+			if (req[SYNTHETIC_EVENT_FIELD]) return Promise.resolve(undefined);
 
 			const params = (wsCtx.connectionParams ?? {}) as Record<string, unknown>;
 

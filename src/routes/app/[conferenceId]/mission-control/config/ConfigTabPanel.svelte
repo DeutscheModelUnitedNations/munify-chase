@@ -1,5 +1,6 @@
 <script module lang="ts">
-	export type ConfigTab = 'general' | 'users' | 'committees' | 'delegations' | 'nsa' | 'requestTypes';
+	export type ConfigTab =
+		'general' | 'users' | 'committees' | 'delegations' | 'nsa' | 'requestTypes';
 </script>
 
 <script lang="ts">

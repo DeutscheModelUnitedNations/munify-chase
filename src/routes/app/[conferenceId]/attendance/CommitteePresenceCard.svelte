@@ -64,7 +64,10 @@
 		</h2>
 	</div>
 	<div class="-mt-3 mb-3 flex flex-wrap items-center gap-2">
-		<span class="badge badge-sm {presenceBadgeClass(stat)} tabular-nums" title={m.delegatePresence()}>
+		<span
+			class="badge badge-sm {presenceBadgeClass(stat)} tabular-nums"
+			title={m.delegatePresence()}
+		>
 			{m.delegatesPresentOfTotal({ present: stat.present, total: stat.total })}
 		</span>
 	</div>
@@ -89,7 +92,9 @@
 							title={m.forgottenCheckoutWarning({ hours: STALE_CHECK_IN_HOURS })}
 						>
 							<i aria-hidden="true" class="ph-fill ph-warning"></i>
-							<span class="sr-only">{m.forgottenCheckoutWarning({ hours: STALE_CHECK_IN_HOURS })}</span>
+							<span class="sr-only"
+								>{m.forgottenCheckoutWarning({ hours: STALE_CHECK_IN_HOURS })}</span
+							>
 						</span>
 					{/if}
 				</NsaRow>

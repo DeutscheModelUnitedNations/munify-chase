@@ -17,13 +17,14 @@ describe('cleanupStaleCaches', () => {
 	it('deletes the cache databases of other schemas only', async () => {
 		const deleteDatabase = vi.fn();
 		vi.stubGlobal('indexedDB', {
-			databases: async () => [
-				{ name: 'chase-cache' },
-				{ name: 'chase-cache-old' },
-				{ name: 'chase-cache-current' },
-				{ name: 'other-app' },
-				{}
-			],
+			databases: () =>
+				Promise.resolve([
+					{ name: 'chase-cache' },
+					{ name: 'chase-cache-old' },
+					{ name: 'chase-cache-current' },
+					{ name: 'other-app' },
+					{}
+				]),
 			deleteDatabase
 		});
 		await cleanupStaleCaches('chase-cache-current');

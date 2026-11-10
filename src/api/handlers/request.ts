@@ -64,7 +64,7 @@ function findEnabledRequestType({
 }
 
 /** A pending request of this type for any of the seats, in the committee. */
-async function findPendingFor({
+function findPendingFor({
 	committeeId,
 	requestTypeId,
 	seats

@@ -16,13 +16,14 @@ export function withBackendMessage(baseMsg: string, err: unknown): string {
 type ToastAction = 'create' | 'delete' | 'update' | 'add';
 type ToastMessage = (inputs: { targetName: string }) => string;
 
-const TOAST_MESSAGES: Record<ToastAction | 'default', [ToastMessage, ToastMessage, ToastMessage]> = {
-	create: [m.toastCreateLoading, m.toastCreateSuccess, m.toastCreateError],
-	delete: [m.toastDeleteLoading, m.toastDeleteSuccess, m.toastDeleteError],
-	update: [m.toastUpdateLoading, m.toastUpdateSuccess, m.toastUpdateError],
-	add: [m.toastAddLoading, m.toastAddSuccess, m.toastAddError],
-	default: [m.toastLoading, m.toastSuccess, m.toastError]
-};
+const TOAST_MESSAGES: Record<ToastAction | 'default', [ToastMessage, ToastMessage, ToastMessage]> =
+	{
+		create: [m.toastCreateLoading, m.toastCreateSuccess, m.toastCreateError],
+		delete: [m.toastDeleteLoading, m.toastDeleteSuccess, m.toastDeleteError],
+		update: [m.toastUpdateLoading, m.toastUpdateSuccess, m.toastUpdateError],
+		add: [m.toastAddLoading, m.toastAddSuccess, m.toastAddError],
+		default: [m.toastLoading, m.toastSuccess, m.toastError]
+	};
 
 export function promiseToastStrings(targetName: string, action?: ToastAction) {
 	const [loading, success, error] = TOAST_MESSAGES[action ?? 'default'];

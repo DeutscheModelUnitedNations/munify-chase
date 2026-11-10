@@ -21,7 +21,7 @@ vi.mock('./assess', async (original) => ({
 const errors: { message: string; retrying: boolean }[] = [];
 const fakeEngine = () => ({ unload: vi.fn() });
 
-async function loadModule({ availableMB }: { availableMB?: number } = {}) {
+function loadModule({ availableMB }: { availableMB?: number } = {}) {
 	vi.resetModules();
 	vi.stubGlobal('navigator', {
 		storage:
@@ -45,11 +45,9 @@ beforeEach(() => {
 			return true;
 		}
 	});
-	assess.mockImplementation(async (tier: number) => ({
-		supported: true,
-		reason: '',
-		modelId: LOCAL_MODEL_TIERS[tier].id
-	}));
+	assess.mockImplementation((tier: number) =>
+		Promise.resolve({ supported: true, reason: '', modelId: LOCAL_MODEL_TIERS[tier].id })
+	);
 	webLlm.CreateWebWorkerMLCEngine.mockReset();
 	webLlm.deleteModelAllInfoInCache.mockReset().mockResolvedValue(undefined);
 });
@@ -156,8 +154,10 @@ describe('getEngine', () => {
 		expect(await (await loadModule()).getEngine()).toBeNull();
 		expect(errors.at(-1)?.message).toContain('QuotaExceededError');
 
-		assess.mockImplementation(async (tier: number) =>
-			tier === 1 ? { supported: true, modelId: LOCAL_MODEL_TIERS[1].id } : { supported: false }
+		assess.mockImplementation((tier: number) =>
+			Promise.resolve(
+				tier === 1 ? { supported: true, modelId: LOCAL_MODEL_TIERS[1].id } : { supported: false }
+			)
 		);
 		expect(await (await loadModule()).getEngine()).toBeNull();
 	});

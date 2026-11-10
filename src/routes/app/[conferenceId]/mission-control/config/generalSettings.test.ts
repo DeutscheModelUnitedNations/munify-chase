@@ -56,7 +56,7 @@ describe('settings form', () => {
 });
 
 describe('readSvgLogo', () => {
-	const file = (text: string, size = text.length) => ({ size, text: async () => text });
+	const file = (text: string, size = text.length) => ({ size, text: () => Promise.resolve(text) });
 
 	it('takes an SVG', async () => {
 		expect(await readSvgLogo(file('<svg></svg>'))).toBe('<svg></svg>');

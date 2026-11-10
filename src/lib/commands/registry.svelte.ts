@@ -26,9 +26,7 @@ export function registerCommands(commands: () => Command[]) {
 
 /** All commands currently offered, hidden ones excluded */
 export function getCommands(): Command[] {
-	return [...sources.values()]
-		.flatMap((source) => source())
-		.filter(isVisible);
+	return [...sources.values()].flatMap((source) => source()).filter(isVisible);
 }
 
 function warnIfAmbiguous({ shortcut, matching }: { shortcut: string; matching: Command[] }) {

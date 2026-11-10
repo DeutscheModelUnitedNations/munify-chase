@@ -41,10 +41,18 @@ describe('alertTick', () => {
 	});
 
 	it('alerts for lists of other types without remembering them', () => {
-		const tick = alertTick({ state: quiet, statusExpired: false, lists: [{ type: 'X', overtime: true }] });
+		const tick = alertTick({
+			state: quiet,
+			statusExpired: false,
+			lists: [{ type: 'X', overtime: true }]
+		});
 		expect(tick.alerts).toEqual(['listOvertime']);
 		expect(tick.state).toEqual(quiet);
-		const calm = alertTick({ state: quiet, statusExpired: false, lists: [{ type: 'X', overtime: false }] });
+		const calm = alertTick({
+			state: quiet,
+			statusExpired: false,
+			lists: [{ type: 'X', overtime: false }]
+		});
 		expect(calm.state).toEqual(quiet);
 	});
 });
@@ -69,14 +77,25 @@ describe('isDockItemActive', () => {
 
 	it('follows the route', () => {
 		expect(isDockItemActive({ ...base, key: 'voting', activeDraftResolutionId: null })).toBe(false);
-		expect(isDockItemActive({ ...base, key: 'resolutions', activeDraftResolutionId: null })).toBe(true);
+		expect(isDockItemActive({ ...base, key: 'resolutions', activeDraftResolutionId: null })).toBe(
+			true
+		);
 		expect(
-			isDockItemActive({ key: 'voting', routeId: null, pathname: '/', activeDraftResolutionId: null })
+			isDockItemActive({
+				key: 'voting',
+				routeId: null,
+				pathname: '/',
+				activeDraftResolutionId: null
+			})
 		).toBe(false);
 	});
 
 	it('hands the resolutions entry to the active draft while it is open', () => {
-		expect(isDockItemActive({ ...base, key: 'resolutions', activeDraftResolutionId: 'p1' })).toBe(false);
-		expect(isDockItemActive({ ...base, key: 'resolutions', activeDraftResolutionId: 'p2' })).toBe(true);
+		expect(isDockItemActive({ ...base, key: 'resolutions', activeDraftResolutionId: 'p1' })).toBe(
+			false
+		);
+		expect(isDockItemActive({ ...base, key: 'resolutions', activeDraftResolutionId: 'p2' })).toBe(
+			true
+		);
 	});
 });

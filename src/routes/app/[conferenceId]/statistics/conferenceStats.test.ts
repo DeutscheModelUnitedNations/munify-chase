@@ -84,8 +84,13 @@ describe('lists', () => {
 
 describe('charts', () => {
 	it('shows the date only at the first bucket of a day', () => {
-		const dates = [new Date(2026, 0, 1, 9, 0), new Date(2026, 0, 1, 9, 15), new Date(2026, 0, 2, 9, 0)];
-		const time = (d: Date) => d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+		const dates = [
+			new Date(2026, 0, 1, 9, 0),
+			new Date(2026, 0, 1, 9, 15),
+			new Date(2026, 0, 2, 9, 0)
+		];
+		const time = (d: Date) =>
+			d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 		const labels = timelineLabels(dates);
 		expect(labels[0]).not.toBe(time(dates[0]));
 		expect(labels[0].endsWith(` ${time(dates[0])}`)).toBe(true);

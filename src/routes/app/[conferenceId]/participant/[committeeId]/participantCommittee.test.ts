@@ -27,10 +27,18 @@ describe('positionOnList', () => {
 	];
 
 	it('finds the caller by either seat', () => {
-		expect(positionOnList({ speakers, committeeMemberId: 'cm1', conferenceMemberId: null })).toBe(0);
-		expect(positionOnList({ speakers, committeeMemberId: null, conferenceMemberId: 'nsa1' })).toBe(1);
-		expect(positionOnList({ speakers, committeeMemberId: 'x', conferenceMemberId: 'y' })).toBeNull();
-		expect(positionOnList({ speakers, committeeMemberId: null, conferenceMemberId: null })).toBeNull();
+		expect(positionOnList({ speakers, committeeMemberId: 'cm1', conferenceMemberId: null })).toBe(
+			0
+		);
+		expect(positionOnList({ speakers, committeeMemberId: null, conferenceMemberId: 'nsa1' })).toBe(
+			1
+		);
+		expect(
+			positionOnList({ speakers, committeeMemberId: 'x', conferenceMemberId: 'y' })
+		).toBeNull();
+		expect(
+			positionOnList({ speakers, committeeMemberId: null, conferenceMemberId: null })
+		).toBeNull();
 	});
 });
 
@@ -65,7 +73,11 @@ describe('showsDeviceVote', () => {
 		expect(showsDeviceVote({ session, committeeMemberId: 'cm', present: false })).toBe(false);
 		expect(showsDeviceVote({ session, committeeMemberId: null, present: true })).toBe(false);
 		expect(
-			showsDeviceVote({ session: { ...session, mode: 'ROLL_CALL' }, committeeMemberId: 'cm', present: true })
+			showsDeviceVote({
+				session: { ...session, mode: 'ROLL_CALL' },
+				committeeMemberId: 'cm',
+				present: true
+			})
 		).toBe(false);
 		expect(
 			showsDeviceVote({

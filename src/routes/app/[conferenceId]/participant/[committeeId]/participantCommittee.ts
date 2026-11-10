@@ -28,7 +28,8 @@ export function positionOnList({
 	const isMine = (seat: { id: string } | null | undefined, mine: string | null | undefined) =>
 		!!mine && seat?.id === mine;
 	const speaker = speakers.find(
-		(s) => isMine(s.committeeMember, committeeMemberId) || isMine(s.conferenceMember, conferenceMemberId)
+		(s) =>
+			isMine(s.committeeMember, committeeMemberId) || isMine(s.conferenceMember, conferenceMemberId)
 	);
 	return speaker?.position ?? null;
 }
@@ -59,7 +60,13 @@ export function positionText(position: number) {
 }
 
 /** Read aloud whenever the caller's place on a list changes. */
-export function positionAnnouncement({ label, position }: { label: string; position: number | null }) {
+export function positionAnnouncement({
+	label,
+	position
+}: {
+	label: string;
+	position: number | null;
+}) {
 	return position === null ? '' : `${label}: ${positionText(position)}`;
 }
 

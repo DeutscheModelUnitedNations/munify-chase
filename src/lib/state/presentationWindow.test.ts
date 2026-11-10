@@ -20,9 +20,8 @@ afterEach(() => {
 
 describe('presentation window', () => {
 	it('opens once and focuses the open popup again', async () => {
-		const { openPresentationWindow, presentationOpen } = await import(
-			'./presentationWindow.svelte'
-		);
+		const { openPresentationWindow, presentationOpen } =
+			await import('./presentationWindow.svelte');
 		expect(openPresentationWindow('/present', 'c1')).toBe(popup);
 		expect(presentationOpen()).toBe(true);
 		expect(openPresentationWindow('/present', 'c1')).toBe(popup);
@@ -31,9 +30,8 @@ describe('presentation window', () => {
 	});
 
 	it('notices the popup being closed', async () => {
-		const { openPresentationWindow, presentationOpen, postToPresentation } = await import(
-			'./presentationWindow.svelte'
-		);
+		const { openPresentationWindow, presentationOpen, postToPresentation } =
+			await import('./presentationWindow.svelte');
 		openPresentationWindow('/present', 'c1');
 		popup.closed = true;
 		vi.advanceTimersByTime(1000);
@@ -43,9 +41,8 @@ describe('presentation window', () => {
 	});
 
 	it('posts to the open popup, delegating fullscreen where it can', async () => {
-		const { openPresentationWindow, postToPresentation } = await import(
-			'./presentationWindow.svelte'
-		);
+		const { openPresentationWindow, postToPresentation } =
+			await import('./presentationWindow.svelte');
 		openPresentationWindow('/present', 'c1');
 		popup.postMessage.mockImplementationOnce(() => {
 			throw new TypeError('no delegation');
@@ -56,9 +53,8 @@ describe('presentation window', () => {
 
 	it('stays closed when the browser blocks the popup', async () => {
 		vi.mocked(window.open).mockReturnValueOnce(null);
-		const { openPresentationWindow, presentationOpen } = await import(
-			'./presentationWindow.svelte'
-		);
+		const { openPresentationWindow, presentationOpen } =
+			await import('./presentationWindow.svelte');
 		expect(openPresentationWindow('/present', 'c1')).toBeNull();
 		expect(presentationOpen()).toBe(false);
 		expect(vi.getTimerCount()).toBe(0);

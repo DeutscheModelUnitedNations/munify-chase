@@ -68,8 +68,8 @@
 				<p class="text-base-content/40 text-xs">
 					The Gini coefficient measures speaking-time inequality across all delegations — like an
 					economic inequality index, but for floor time.
-					<span class="font-medium">0</span> means every delegation spoke for exactly the same amount
-					of time;
+					<span class="font-medium">0</span> means every delegation spoke for exactly the same
+					amount of time;
 					<span class="font-medium">1</span> means a single delegation took all the floor time. A value
 					below 0.4 is generally considered healthy debate participation.
 				</p>

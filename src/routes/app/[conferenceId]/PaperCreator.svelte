@@ -17,5 +17,8 @@
 
 <div class="flex items-center gap-1 {className}">
 	<Flag size="xs" {representation} />
-	<span>{representation.name ?? getTranslatedCountryNameFromAlpha3Code(representation.alpha3Code)}</span>
+	<span
+		>{representation.name ??
+			getTranslatedCountryNameFromAlpha3Code(representation.alpha3Code)}</span
+	>
 </div>

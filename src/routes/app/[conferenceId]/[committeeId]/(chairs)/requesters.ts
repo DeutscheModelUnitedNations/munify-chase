@@ -18,15 +18,12 @@ function seatName(req: Requester) {
  */
 export function requesterLabel(req: Requester) {
 	const personName = req.conferenceUser?.name;
-	const primary =
-		seatName(req) ?? personName ?? req.conferenceUser?.userEmail ?? m.unknown();
+	const primary = seatName(req) ?? personName ?? req.conferenceUser?.userEmail ?? m.unknown();
 	const secondary = personName && personName !== primary ? personName : null;
 	return { primary, secondary };
 }
 
 /** The toast names the person first, then their seat. */
 export function notificationRequesterLabel(req: Requester) {
-	return (
-		req.conferenceUser?.name ?? seatName(req) ?? req.conferenceUser?.userEmail ?? m.unknown()
-	);
+	return req.conferenceUser?.name ?? seatName(req) ?? req.conferenceUser?.userEmail ?? m.unknown();
 }

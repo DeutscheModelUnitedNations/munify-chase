@@ -66,7 +66,7 @@ async function readableList(ctx: HandlerContext, id: string) {
 }
 
 /** The caller's conference user with their seat, in the conference a list belongs to. */
-async function findSelfAddingUser(tx: Transaction, email: string, speakersListId: string) {
+function findSelfAddingUser(tx: Transaction, email: string, speakersListId: string) {
 	return tx.query.conferenceUser
 		.findFirst({
 			where: {

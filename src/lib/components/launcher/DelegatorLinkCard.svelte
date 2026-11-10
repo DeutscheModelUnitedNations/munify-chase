@@ -42,7 +42,12 @@
 				<span>{m.delegatorLinkLastError({ error: link.lastError })}</span>
 			</div>
 		{/if}
-		<a class="btn btn-primary btn-sm self-start" href={link.remoteUrl} target="_blank" rel="noopener">
+		<a
+			class="btn btn-primary btn-sm self-start"
+			href={link.remoteUrl}
+			target="_blank"
+			rel="noopener"
+		>
 			<i aria-hidden="true" class="ph-duotone ph-arrow-square-out"></i>
 			{m.delegatorLinkOpen()}
 		</a>

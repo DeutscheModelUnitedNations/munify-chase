@@ -27,7 +27,8 @@ describe('resolutionPreviewState', () => {
 			})
 		).toEqual({ currentOperativeIndex: 2, showAmendments: true, activeAmendment: amendment });
 		expect(
-			resolutionPreviewState({ activeDraftResolution: { status: 'AMENDMENT_PHASE' } }).activeAmendment
+			resolutionPreviewState({ activeDraftResolution: { status: 'AMENDMENT_PHASE' } })
+				.activeAmendment
 		).toBeNull();
 	});
 

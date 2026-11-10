@@ -28,14 +28,14 @@ function nationCodeToLocalName(code: string, locale = getLocale()) {
 
 // we build an index of nation codes to translation objects
 type TranslationObject = { [key in (typeof locales)[number]]: string };
-const nationIso3ToLocalNames = new Map<string, TranslationObject>();
-
-for (const nation of allNations) {
-	const translationObject = Object.fromEntries(
-		locales.map((locale) => [locale, nationCodeToLocalName(nation.cca3, locale)])
-	);
-	nationIso3ToLocalNames.set(nation.cca3, translationObject as TranslationObject);
-}
+const nationIso3ToLocalNames: ReadonlyMap<string, TranslationObject> = new Map(
+	allNations.map((nation) => [
+		nation.cca3,
+		Object.fromEntries(
+			locales.map((locale) => [locale, nationCodeToLocalName(nation.cca3, locale)])
+		) as TranslationObject
+	])
+);
 
 /** Accepts either an ISO 3166-1 alpha-2 or alpha-3 code, returns the localised country name or null. */
 export const getCountryNameFromCode = (code: string | null | undefined): string | null => {

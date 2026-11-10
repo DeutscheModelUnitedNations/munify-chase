@@ -85,7 +85,12 @@ describe('csv', () => {
 	});
 
 	it('joins rows with semicolons and CRLF', () => {
-		expect(toCsv([['a', 'b'], ['c', 'd;e']])).toBe('a;b\r\nc;"d;e"\r\n');
+		expect(
+			toCsv([
+				['a', 'b'],
+				['c', 'd;e']
+			])
+		).toBe('a;b\r\nc;"d;e"\r\n');
 	});
 
 	it('lists every NSA with the committee they are in', () => {
@@ -119,7 +124,9 @@ describe('csv', () => {
 		expect(nsaSheetFileName({ title: 'MUN Berlin 2026!', date })).toBe(
 			'nsa-laufzettel-mun-berlin-2026--2026-03-04.csv'
 		);
-		expect(nsaSheetFileName({ title: null, date })).toBe('nsa-laufzettel-conference-2026-03-04.csv');
+		expect(nsaSheetFileName({ title: null, date })).toBe(
+			'nsa-laufzettel-conference-2026-03-04.csv'
+		);
 	});
 });
 
@@ -159,7 +166,11 @@ describe('absentDelegatesByCommittee', () => {
 				name: 'GA',
 				abbreviation: null,
 				members: [
-					{ id: 'm1', present: false, representation: { type: 'DELEGATION', name: 'Peru', alpha3Code: 'PER' } },
+					{
+						id: 'm1',
+						present: false,
+						representation: { type: 'DELEGATION', name: 'Peru', alpha3Code: 'PER' }
+					},
 					{ id: 'm2', present: false, representation: { type: 'DELEGATION', name: 'Chad' } },
 					{ id: 'm3', present: true, representation: { type: 'DELEGATION', name: 'Iran' } },
 					{ id: 'm4', present: false, representation: { type: 'NSA', name: 'NGO' } },
@@ -202,7 +213,9 @@ describe('delegate presence', () => {
 			total: 2
 		});
 		expect(delegateStat({})).toEqual({ present: 0, total: 0 });
-		expect(delegateTotals([{ totalPresent: 1, members: [delegation] }, { members: [delegation] }])).toEqual({
+		expect(
+			delegateTotals([{ totalPresent: 1, members: [delegation] }, { members: [delegation] }])
+		).toEqual({
 			present: 1,
 			total: 2
 		});
@@ -260,7 +273,12 @@ describe('presenceEventDraft', () => {
 	it('copies an event', () => {
 		const ts = new Date(2026, 1, 2, 3, 4);
 		const draft = presenceEventDraft({
-			event: { present: false, committeeId: 'c', conferenceUserId: 'u', timestamp: ts.toISOString() },
+			event: {
+				present: false,
+				committeeId: 'c',
+				conferenceUserId: 'u',
+				timestamp: ts.toISOString()
+			},
 			now
 		});
 		expect(draft).toEqual({

@@ -13,7 +13,11 @@
 	<div class="flex items-center gap-2">
 		<Flag size="xs" representation={{ alpha2Code: row.alpha2Code }} />
 		<span class="text-sm" class:truncate
-			>{repLabel({ name: row.representationName, alpha2: row.alpha2Code, id: row.representationId })}</span
+			>{repLabel({
+				name: row.representationName,
+				alpha2: row.alpha2Code,
+				id: row.representationId
+			})}</span
 		>
 	</div>
 </td>

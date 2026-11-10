@@ -41,7 +41,13 @@
 		if (!checkedCommittees.delete(committeeId)) checkedCommittees.add(committeeId);
 	}
 
-	function addSeat({ committee, representationId }: { committee: Committee; representationId: string }) {
+	function addSeat({
+		committee,
+		representationId
+	}: {
+		committee: Committee;
+		representationId: string;
+	}) {
 		return toast.promise(
 			client.mutate.createCommitteeMember({
 				__args: { id: nanoid(), committeeId: committee.id, representationId },

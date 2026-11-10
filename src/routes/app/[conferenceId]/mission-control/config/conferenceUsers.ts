@@ -149,7 +149,12 @@ export function withRoleAssignment(form: UserEditForm): UserEditForm {
 /** What the edit dialog saves: only the assignment the role uses. */
 export function userEditResult(form: UserEditForm) {
 	const { role, committeeMemberId, conferenceMemberId, name } = withRoleAssignment(form);
-	return { conferenceUserType: role, committeeMemberId, conferenceMemberId, name: name.trim() || null };
+	return {
+		conferenceUserType: role,
+		committeeMemberId,
+		conferenceMemberId,
+		name: name.trim() || null
+	};
 }
 
 /** The edit dialog's fields for a member. */

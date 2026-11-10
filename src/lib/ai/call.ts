@@ -99,11 +99,7 @@ async function callServer({
  * Sends a chat completion request to either the local WebLLM engine or the remote GraphQL
  * endpoint, depending on the `mode` parameter. Returns the raw text output from the model.
  */
-export async function callAI({
-	mode,
-	enableThinking = false,
-	...args
-}: CallAIArgs): Promise<string> {
+export function callAI({ mode, enableThinking = false, ...args }: CallAIArgs): Promise<string> {
 	if (mode === 'offline') return callLocal({ ...args, enableThinking });
 	return callServer(args);
 }

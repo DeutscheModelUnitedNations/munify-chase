@@ -11,7 +11,9 @@ describe('requesterLabel', () => {
 		expect(
 			requesterLabel({ committeeMember: seat('Peru'), conferenceUser: { name: 'Ana' } })
 		).toEqual({ primary: 'Peru', secondary: 'Ana' });
-		expect(requesterLabel({ committeeMember: seat('Ana'), conferenceUser: { name: 'Ana' } })).toEqual({
+		expect(
+			requesterLabel({ committeeMember: seat('Ana'), conferenceUser: { name: 'Ana' } })
+		).toEqual({
 			primary: 'Ana',
 			secondary: null
 		});

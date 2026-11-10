@@ -87,16 +87,14 @@ describe('context', () => {
 		});
 
 		test('is false when the provider refuses the token', async () => {
-			processTokens.mockImplementation(async () => {
-				throw new Error('expired');
-			});
+			processTokens.mockImplementation(() => Promise.reject(new Error('expired')));
 			expect(await context(event({ oidc: session() })).isSessionLive()).toBe(false);
 		});
 
 		test('throws when the provider cannot be reached', async () => {
-			processTokens.mockImplementation(async () => {
-				throw new OidcProviderUnavailableError(['access'], []);
-			});
+			processTokens.mockImplementation(() =>
+				Promise.reject(new OidcProviderUnavailableError(['access'], []))
+			);
 			await expect(context(event({ oidc: session() })).isSessionLive()).rejects.toBeInstanceOf(
 				OidcProviderUnavailableError
 			);

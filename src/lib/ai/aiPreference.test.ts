@@ -5,7 +5,7 @@ vi.mock('$app/env', () => env);
 
 let store: Map<string, string>;
 
-async function loadModule() {
+function loadModule() {
 	vi.resetModules();
 	return import('./aiPreference.svelte');
 }

@@ -32,6 +32,18 @@ export const LINK_TOKEN_HEADER = 'x-munify-link-token';
 const RENEW_BEFORE_MS = 60_000;
 const REQUEST_TIMEOUT_MS = 10_000;
 
+const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
+
+/** https, or http on this machine (development): the link's tokens never travel unencrypted. */
+export function isSafeRemoteUrl(value: string) {
+	try {
+		const url = new URL(value);
+		return url.protocol === 'https:' || (url.protocol === 'http:' && LOOPBACK.has(url.hostname));
+	} catch {
+		return false;
+	}
+}
+
 /** The link's configuration, or undefined while it is not (completely) set. */
 export function linkConfig() {
 	const values = {
@@ -45,6 +57,10 @@ export function linkConfig() {
 	if (!LINK_REMOTE_URL && !LINK_REMOTE_RESOURCE) return undefined;
 	if (missing.length > 0) {
 		logger.warn('The link is only partly configured, so it is off', { missing });
+		return undefined;
+	}
+	if (!isSafeRemoteUrl(LINK_REMOTE_URL ?? '')) {
+		logger.warn('LINK_REMOTE_URL has to use https (http only on this machine), so the link is off');
 		return undefined;
 	}
 	return {
@@ -142,6 +158,15 @@ export function rolesOfToken(payload: Record<string, unknown>) {
 }
 
 /**
+ * Whether a token is a machine's own (the client credentials grant), not a person's: Logto then
+ * names the client as the subject. A person's token for this API must never pass for the other
+ * instance, whatever role or permission that person was given.
+ */
+export function isMachineToken(payload: Record<string, unknown>) {
+	return typeof payload.client_id === 'string' && payload.sub === payload.client_id;
+}
+
+/**
  * Whether `token` is the other instance calling: signed by the provider, unexpired, for this
  * instance's API, and granting the link role. Never throws: a token that does not pass is nobody.
  */
@@ -155,7 +180,7 @@ export async function isRemoteInstanceToken({
 	try {
 		const { issuer, keys } = await oidcProvider();
 		const { payload } = await jwtVerify(token, keys, { issuer, audience: config.resource });
-		return rolesOfToken(payload).includes(LINK_ROLE);
+		return isMachineToken(payload) && rolesOfToken(payload).includes(LINK_ROLE);
 	} catch (error) {
 		logger.info('A link token was refused', { reason: String(error) });
 		return false;

@@ -9,6 +9,7 @@
 	import SortableHeaderCell from './SortableHeaderCell.svelte';
 	import TablePagination from './TablePagination.svelte';
 	import AddMembersForm from './AddMembersForm.svelte';
+	import ManagedPeopleNotice from '#lib/components/delegatorLink/ManagedPeopleNotice.svelte';
 	import {
 		assignmentCounts,
 		assignmentRepresentation,
@@ -218,6 +219,8 @@
 </script>
 
 <BasicCard title={m.conferenceMembers()}>
+	<ManagedPeopleNotice conferenceId={conference.id} />
+
 	<!-- Search input -->
 	<div class="mb-4">
 		<input

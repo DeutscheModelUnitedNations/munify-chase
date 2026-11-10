@@ -1464,6 +1464,8 @@ export type Mutation = {
     conferenceId: ID,
     conferenceUserId: ID
   }) => NsaCard,
+  requestLinkSync: Boolean,
+  requestRemoteLinkSync: Boolean,
   resolveRequest: (p: {
     id: ID
   }) => Request,

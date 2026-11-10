@@ -56,6 +56,7 @@ Instead of moving files, CHASE can be linked to one MUNify DELEGATOR instance. T
 - Every DELEGATOR conference appears here by itself, with its committees, agenda items, roles, team and, once the assignment is released, its participants. The launcher no longer creates or imports conferences.
 - What comes from DELEGATOR is changed there: names, abbreviations, dates and people can't be edited or deleted here. Session state, presentation settings and anything you add locally stay yours.
 - DELEGATOR reads back the presence and the resolutions a committee adopts, and accepted working papers arrive here as drafts (marked **From DELEGATOR, version n**) until someone changes them here.
+- Changes arrive by themselves. Should something be missing, Global Admins click **Sync now** on the launcher's link card or above a conference's users in the configuration: CHASE asks DELEGATOR for everything again, and DELEGATOR reads CHASE again.
 - Removing the link from the setup stops all of this. The rows stay as ordinary local ones.
 
 The file import and the presence export stay available under "advanced" for when there is no link.

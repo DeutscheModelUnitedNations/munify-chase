@@ -56,6 +56,7 @@ Em vez de trocar ficheiros, o CHASE pode ser ligado a uma instância do MUNify D
 - Cada conferência do DELEGATOR aparece aqui por si, com os seus comités, pontos da agenda, funções, equipa e, assim que a atribuição for publicada, os participantes. O launcher deixa de criar ou importar conferências.
 - O que vem do DELEGATOR altera-se lá: nomes, siglas, datas e pessoas não podem ser editados nem eliminados aqui. O estado das sessões, as definições de apresentação e tudo o que acrescentar localmente continuam a ser seus.
 - O DELEGATOR lê de volta a presença e as resoluções adotadas, e os documentos de trabalho aceites chegam aqui como rascunhos (marcados com **Do DELEGATOR, versão n**) até alguém os alterar aqui.
+- As alterações chegam sozinhas. Se faltar algo, os Global Admins clicam em **Sincronizar agora**, no cartão da ligação no launcher ou acima dos utilizadores de uma conferência na configuração: o CHASE pede tudo de novo ao DELEGATOR, e o DELEGATOR lê o CHASE de novo.
 - Retirar a ligação da configuração termina tudo isto. Os registos ficam como registos locais normais.
 
 A importação de ficheiros e a exportação de presença continuam disponíveis em "avançado" para quando não há ligação.

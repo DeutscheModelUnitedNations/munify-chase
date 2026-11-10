@@ -25,7 +25,7 @@ If you're not a Global Admin, a notice explains that you can prepare the file bu
 2. **Committees**: create your committees and add their **Agenda** items with **Add Item**.
 3. **Delegations**: review imported delegations, or use **Add Country** on a committee to add delegations with the same country-code dialog used in Mission Control.
 4. **Other actors**: non-state actors and UN actors. These are optional.
-5. **Requests**: the request types delegates can send to the chairs. Use **Load default set** or **Add request**, and adjust **Enabled** and **Delegates only** per type. You can change everything later in the [Requests](./requests) tab.
+5. **Requests**: the request types delegates can send to the chairs. A fresh conference starts with DMUN's default set, as does a file without any request types. Use **Load default set** to add missing defaults again or **Add request** for your own, and adjust **Enabled** and **Delegates only** per type. You can change everything later in the [Requests](./requests) tab.
 6. **Edit**: a summary of the whole conference with any notices, each with a **Jump** button to the step that needs fixing.
 
 ![Step 1 of the import wizard, asking for the conference title, dates, and location](shot:admin/import-wizard-basics)

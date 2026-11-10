@@ -19,6 +19,7 @@
 	import {
 		IMPORT_STEP_COUNT,
 		addCountriesToCommittee,
+		defaultImportRequestTypes,
 		freshImportData,
 		importFileName,
 		importPayload,
@@ -45,6 +46,9 @@
 		try {
 			const parsed = importDataSchema.parse(JSON.parse(text));
 			if (parsed.$schema) delete parsed.$schema;
+			// A DELEGATOR export carries no request types, start it with the default set. An empty
+			// list was emptied on purpose and stays empty.
+			parsed.requestTypes ??= defaultImportRequestTypes(nanoid);
 			return parsed;
 		} catch (e) {
 			console.error('Validation error:', e);

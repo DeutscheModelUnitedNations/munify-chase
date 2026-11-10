@@ -1,6 +1,7 @@
 import type { z } from 'zod/v4';
 import WorldCountries from 'world-countries';
 import type { importDataSchema } from '#lib/utils/import';
+import { getDefaultRequestTypes } from '#lib/data/defaultRequestTypes';
 
 export type ImportData = z.infer<typeof importDataSchema>;
 type RegionalGroup = NonNullable<ImportData['representations'][number]['regionalGroup']>;
@@ -32,7 +33,23 @@ export function isJsonFileName(name: string) {
 	return name.split('.').pop()?.toLowerCase() === 'json';
 }
 
-/** A new, empty conference with every UN member state as a delegation. */
+/** DMUN's default request types, in the shape the import data holds them. */
+export function defaultImportRequestTypes(
+	makeId: () => string
+): NonNullable<ImportData['requestTypes']> {
+	return getDefaultRequestTypes().map((rt) => ({
+		id: makeId(),
+		name: rt.name,
+		icon: rt.icon,
+		enabled: true,
+		delegatesOnly: rt.delegatesOnly
+	}));
+}
+
+/**
+ * A new, empty conference with every UN member state as a delegation and the default request
+ * types.
+ */
 export function freshImportData(origin: string, makeId: () => string): ImportData {
 	return {
 		$schema: importSchemaUrl(origin),
@@ -49,7 +66,7 @@ export function freshImportData(origin: string, makeId: () => string): ImportDat
 		})),
 		conferenceMembers: [],
 		committeeMembers: [],
-		requestTypes: []
+		requestTypes: defaultImportRequestTypes(makeId)
 	} as unknown as ImportData;
 }
 

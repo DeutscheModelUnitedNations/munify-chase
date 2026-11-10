@@ -188,7 +188,7 @@
 		"vanilla-cookieconsent": "^3.3.0",
 		"ws": "^8.22.2"
 	},
-	"version": "3.2.0",
+	"version": "3.2.1",
 	"imports": {
 		"#lib": "./src/lib/index.js",
 		"#lib/*": [

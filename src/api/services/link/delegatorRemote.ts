@@ -10,6 +10,7 @@ import {
 import { schema } from './delegatorClient/schema';
 import type { Mutation, Query, Subscription } from './delegatorClient/client';
 import { LINK_TOKEN_HEADER } from './linkAuth';
+import { coalesceConnections } from './coalesceConnections';
 
 /** The subscriptions DELEGATOR's schema offers, which a live query subscribes to by name. */
 const availableSubscriptions = new Set(
@@ -21,8 +22,9 @@ const availableSubscriptions = new Set(
 /**
  * A typed client of a DELEGATOR instance (`docs/plans/delegator-link.md`), generated from its
  * schema (`bun run link:client`). Calls carry a fresh link token when given a source of them
- * (`linkAccessToken`); subscriptions share one stream to DELEGATOR's `/api/graphql/stream`. No
- * cache: the link worker reads current state.
+ * (`linkAccessToken`); subscriptions go over yoga's built-in server-sent events on DELEGATOR's
+ * `/api/graphql`, one response each (graphql-sse's distinct connections mode). No cache: the link
+ * worker reads current state.
  */
 export function createDelegatorClient({
 	url,
@@ -33,7 +35,11 @@ export function createDelegatorClient({
 	url: string;
 	/** The current link token, asked for every call: tokens expire. */
 	token?: () => Promise<string>;
-	/** Every (re)connect of the subscription stream, when updates may have been missed. */
+	/**
+	 * The first subscription connecting (`false`), and after that every burst of subscriptions
+	 * reconnecting (`true`), when updates may have been missed. Each subscription has its own
+	 * connection, so a DELEGATOR that went away reconnects all of them; this reports that once.
+	 */
 	onConnected?: (reconnected: boolean) => void;
 	/** An update a live query skipped, keeping its last rows. */
 	onError?: (error: CombinedError) => void;
@@ -45,16 +51,13 @@ export function createDelegatorClient({
 		for (const [name, value] of Object.entries(await headers())) merged.set(name, value);
 		return fetch(input, { ...init, headers: merged });
 	};
+	const connections = coalesceConnections(onConnected);
 	const sse = createSSEClient({
-		url: new URL('/api/graphql/stream', url).toString(),
+		url: new URL('/api/graphql', url).toString(),
 		headers,
-		singleConnection: true,
-		// connected from the start, so a DELEGATOR that comes back is noticed (`onConnected`) even
-		// while nothing is subscribed
-		lazy: false,
 		// keep trying while DELEGATOR is away; the worker reconciles once it is back
 		retryAttempts: Infinity,
-		on: { connected: (reconnected) => onConnected?.(reconnected) }
+		on: { connected: connections.connected }
 	});
 
 	const urqlClient = new Client({
@@ -81,7 +84,10 @@ export function createDelegatorClient({
 		query: makeQuery<Query, false, 'id'>(options),
 		mutate: makeMutation<Mutation, 'id'>(options),
 		subscribe: makeSubscription<Subscription, 'id'>(options),
-		dispose: () => sse.dispose()
+		dispose: () => {
+			connections.dispose();
+			sse.dispose();
+		}
 	};
 }
 

@@ -101,7 +101,6 @@ export const SHOTS: Shot[] = [
 		prepare: async ({ page, t }) => {
 			await page.getByText(t('startFreshTitle')).click();
 			await page.locator('ul.steps li button').nth(4).click();
-			await page.getByRole('button', { name: t('loadDefaultRequestTypes') }).click();
 		},
 		viewport: { width: 1280, height: 1000 }
 	},

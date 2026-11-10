@@ -10,6 +10,7 @@ import {
 	transformRegionalGroup,
 	type ImportData
 } from './importWizard';
+import { getDefaultRequestTypes } from '#lib/data/defaultRequestTypes';
 
 function counter() {
 	let n = 0;
@@ -79,6 +80,13 @@ describe('freshImportData', () => {
 			alpha3Code: 'deu',
 			regionalGroup: 'WESTERN_EUROPE_OTHERS'
 		});
+	});
+
+	test('starts with the default request types', () => {
+		const data = freshImportData('https://chase.test', counter());
+		expect(data.requestTypes).toHaveLength(getDefaultRequestTypes().length);
+		expect(data.requestTypes?.[0]).toMatchObject({ enabled: true, delegatesOnly: false });
+		expect(new Set(data.requestTypes?.map((rt) => rt.id)).size).toBe(data.requestTypes?.length);
 	});
 });
 

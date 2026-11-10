@@ -25,7 +25,7 @@ Se não for administrador global, um aviso explica que pode preparar o ficheiro,
 2. **Comités**: crie os seus comités e adicione os itens da **Agenda** com **Adicionar Item**.
 3. **Delegações**: reveja as delegações importadas ou use **Adicionar País** num comité para adicionar delegações com a mesma janela de códigos de país usada no Controlo de Missão.
 4. **Outros atores**: atores não estatais e atores da ONU. São opcionais.
-5. **Pedidos**: os tipos de pedido que os delegados podem enviar à presidência. Use **Carregar conjunto padrão** ou **Adicionar pedido** e ajuste **Ativado** e **Apenas delegados** para cada tipo. Pode alterar tudo mais tarde no separador [Pedidos](./requests).
+5. **Pedidos**: os tipos de pedido que os delegados podem enviar à presidência. Uma conferência nova começa com o conjunto padrão da DMUN, tal como um ficheiro sem tipos de pedido. Use **Carregar conjunto padrão** para voltar a adicionar os tipos padrão em falta ou **Adicionar pedido** para os seus próprios, e ajuste **Ativado** e **Apenas delegados** para cada tipo. Pode alterar tudo mais tarde no separador [Pedidos](./requests).
 6. **Editar**: um resumo de toda a conferência com eventuais avisos, cada um com um botão **Pular** para o passo que precisa de ser corrigido.
 
 ![O passo 1 do assistente de importação, que pede o título, as datas e o local da conferência](shot:admin/import-wizard-basics)

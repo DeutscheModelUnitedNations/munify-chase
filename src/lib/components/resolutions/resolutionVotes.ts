@@ -37,31 +37,3 @@ export async function launchClauseVote(opts: {
 	});
 	return session.id;
 }
-
-/**
- * Start (or resume) the final resolution-level vote. The paper is linked and
- * snapshotted only once the chair concludes the vote (see
- * `concludeResolutionPaperVote`), so this just launches the session.
- */
-export async function launchFinalVote(opts: {
-	committeeId: string;
-	majorityAmount: number;
-	voteName: string;
-	mode?: 'SHOW_OF_HANDS' | 'ROLL_CALL';
-	majority?: 'SIMPLE' | 'ABSOLUTE' | 'TWO_THIRDS';
-	withAbstentions?: boolean;
-}): Promise<string | null> {
-	const session = await client.mutate.startVotingSession({
-		__args: {
-			id: nanoid(),
-			committeeId: opts.committeeId,
-			mode: opts.mode ?? 'ROLL_CALL',
-			majority: opts.majority ?? 'ABSOLUTE',
-			majorityAmount: opts.majorityAmount,
-			withAbstentions: opts.withAbstentions ?? true,
-			voteName: opts.voteName
-		},
-		id: true
-	});
-	return session?.id ?? null;
-}

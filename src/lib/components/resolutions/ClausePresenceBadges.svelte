@@ -4,7 +4,7 @@
 	import type { ResolutionViewer } from './paperContext';
 	import { isTeam } from './paperContext';
 	import { m } from '#lib/paraglide/messages';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import { presenceIdentity, toFlagEmoji } from './presenceDisplay';
 	import { scale } from 'svelte/transition';
 
 	interface Props {
@@ -25,38 +25,19 @@
 		}))
 	);
 
-	/** Convert ISO alpha-2 code to a flag emoji (e.g. "DE" → "🇩🇪"). */
-	function toFlagEmoji(alpha2: string | null | undefined): string | null {
-		if (!alpha2 || alpha2.length !== 2) return null;
-		const base = 0x1f1e6 - 0x41;
-		const upper = alpha2.toUpperCase();
-		return String.fromCodePoint(base + upper.charCodeAt(0), base + upper.charCodeAt(1));
-	}
+	const AVATAR_ICONS = { person: 'user', participant: 'globe-hemisphere-east', team: 'shield' };
 
 	function getAvatar(info: (typeof editorsWithMeta)[number]): {
 		emoji: string | null;
 		icon: string;
 		label: string;
 	} {
-		const meta = info.userMeta;
-		if (!meta) return { emoji: null, icon: 'user', label: info.user.name || '?' };
-
-		const isParticipant =
-			meta.conferenceUserType === 'DELEGATE' || meta.conferenceUserType === 'NON_STATE_ACTOR';
-
-		if (isParticipant) {
-			const label =
-				(meta.alpha3Code ? getTranslatedCountryNameFromAlpha3Code(meta.alpha3Code) : null) ??
-				meta.nationName ??
-				'?';
-			return { emoji: toFlagEmoji(meta.alpha2Code), icon: 'globe-hemisphere-east', label };
-		}
-
-		if (isTeam(viewer)) {
-			return { emoji: null, icon: 'user', label: info.user.name || '?' };
-		}
-
-		return { emoji: null, icon: 'shield', label: m.roleTeam() };
+		const identity = presenceIdentity({ presence: info, viewerIsTeam: isTeam(viewer) });
+		return {
+			emoji: identity.kind === 'participant' ? toFlagEmoji(identity.meta.alpha2Code) : null,
+			icon: AVATAR_ICONS[identity.kind],
+			label: identity.kind === 'team' ? m.roleTeam() : identity.name
+		};
 	}
 </script>
 

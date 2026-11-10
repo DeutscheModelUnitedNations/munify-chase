@@ -1,45 +1,27 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
 	import { liveEmbeds } from '#lib/docs/liveEmbed';
 	import { findCategory, flatDocsSlugs } from '#lib/docs/nav';
 	import { m } from '#lib/paraglide/messages';
 	import { getLocale } from '#lib/paraglide/runtime';
+	import DocsCategoryIndex from '../DocsCategoryIndex.svelte';
+	import DocsPager from '../DocsPager.svelte';
+	import DocsToc from '../DocsToc.svelte';
+	import { docDescription, docEditUrl, docNeighbours, docPageTitle, docToc } from '../docsPage';
 
 	let { data } = $props();
 
 	const category = $derived(data.kind === 'category' ? findCategory(data.slug) : undefined);
-	const title = $derived(
-		data.kind === 'page'
-			? (data.doc.frontmatter.title ?? data.slug)
-			: (category?.label() ?? data.slug)
-	);
-
-	const neighbours = $derived.by(() => {
-		const slugs = flatDocsSlugs();
-		const index = slugs.indexOf(data.slug);
-		return { prev: slugs[index - 1], next: slugs[index + 1] };
-	});
-
-	function docHref(slug: string) {
-		return resolve('/(pages)/docs/[...slug]', { slug });
-	}
-
-	function titleFor(slug: string) {
-		return page.data.titles[slug] ?? findCategory(slug)?.label() ?? slug;
-	}
-
-	const editUrl = $derived(
-		data.kind === 'page'
-			? `https://github.com/DeutscheModelUnitedNations/munify-chase/edit/main/docs/${data.doc.locale}/${data.slug}.md`
-			: undefined
-	);
+	const title = $derived(docPageTitle(data));
+	const description = $derived(docDescription(data));
+	const neighbours = $derived(docNeighbours(flatDocsSlugs(), data.slug));
+	const editUrl = $derived(docEditUrl(data));
+	const toc = $derived(docToc(data));
 </script>
 
 <svelte:head>
 	<title>{title} - MUNify CHASE</title>
-	{#if data.kind === 'page' && data.doc.frontmatter.description}
-		<meta name="description" content={data.doc.frontmatter.description} />
+	{#if description}
+		<meta name="description" content={description} />
 	{/if}
 </svelte:head>
 
@@ -58,33 +40,10 @@
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -- rendered from our own markdown in docs/ -->
 			{@html data.doc.html}
 		{:else if category}
-			<h1>{category.label()}</h1>
-			<p class="lead">{category.description()}</p>
-			<div class="not-prose grid gap-3 sm:grid-cols-2">
-				{#each category.items as item (item)}
-					<a href={docHref(item)} class="card card-border bg-base-100 hover:bg-base-200 p-4">
-						<span class="font-semibold">{titleFor(item)}</span>
-					</a>
-				{/each}
-			</div>
+			<DocsCategoryIndex {category} titles={data.titles} />
 		{/if}
 
-		<div class="not-prose border-base-300 mt-12 flex flex-wrap justify-between gap-4 border-t pt-6">
-			{#if neighbours.prev}
-				<a href={docHref(neighbours.prev)} class="btn btn-ghost">
-					<i aria-hidden="true" class="ph-duotone ph-arrow-left"></i>
-					{titleFor(neighbours.prev)}
-				</a>
-			{:else}
-				<span></span>
-			{/if}
-			{#if neighbours.next}
-				<a href={docHref(neighbours.next)} class="btn btn-ghost">
-					{titleFor(neighbours.next)}
-					<i aria-hidden="true" class="ph-duotone ph-arrow-right"></i>
-				</a>
-			{/if}
-		</div>
+		<DocsPager prev={neighbours.prev} next={neighbours.next} titles={data.titles} />
 
 		{#if editUrl}
 			<p class="not-prose mt-4 text-sm">
@@ -103,18 +62,7 @@
 		{/if}
 	</article>
 
-	{#if data.kind === 'page' && data.doc.toc.length > 1}
-		<aside class="hidden w-56 shrink-0 xl:block">
-			<nav class="sticky top-4 text-sm" aria-label={m.docsOnThisPage()}>
-				<p class="mb-2 font-semibold">{m.docsOnThisPage()}</p>
-				<ul class="flex flex-col gap-1">
-					{#each data.doc.toc as entry (entry.id)}
-						<li class={entry.depth === 3 ? 'pl-3' : ''}>
-							<a class="link link-hover opacity-80" href="#{entry.id}">{entry.text}</a>
-						</li>
-					{/each}
-				</ul>
-			</nav>
-		</aside>
+	{#if toc.length > 0}
+		<DocsToc entries={toc} />
 	{/if}
 </div>

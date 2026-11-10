@@ -4,6 +4,7 @@
 	import Modal from '#lib/components/Modal.svelte';
 	import { promiseToastStrings } from '#lib/utils/toast';
 	import toast from 'svelte-french-toast';
+	import { isDraftComplete, presenceEventDraft, type PresenceEventDraft } from './attendance';
 
 	interface Props {
 		open: boolean;
@@ -40,69 +41,48 @@
 		conferenceMember: { representation: { name: true } }
 	});
 
-	let conferenceUserId = $state('');
-	let committeeId = $state('');
-	let present = $state(true);
-	let timestampLocal = $state(''); // value for <input type="datetime-local">
-	let note = $state('');
-
-	function toLocalInput(d: Date) {
-		const pad = (n: number) => String(n).padStart(2, '0');
-		return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-	}
+	let draft = $state<PresenceEventDraft>(presenceEventDraft({ event: null, now: new Date() }));
 
 	$effect(() => {
-		if (!open) return;
-		if (event) {
-			conferenceUserId = event.conferenceUserId;
-			committeeId = event.committeeId;
-			present = event.present;
-			const d = event.timestamp instanceof Date ? event.timestamp : new Date(event.timestamp);
-			timestampLocal = toLocalInput(d);
-			note = event.note ?? '';
-		} else {
-			conferenceUserId = '';
-			committeeId = '';
-			present = true;
-			timestampLocal = toLocalInput(new Date());
-			note = '';
-		}
+		if (open) draft = presenceEventDraft({ event, now: new Date() });
 	});
 
-	async function save() {
-		if (!conferenceUserId || !committeeId || !timestampLocal) return;
-		const timestamp = new Date(timestampLocal);
+	function update(event: NonNullable<Props['event']>) {
+		return toast.promise(
+			client.mutate.updatePresenceEvent({
+				__args: {
+					id: event.id,
+					timestamp: new Date(draft.timestampLocal),
+					present: draft.present,
+					committeeId: draft.committeeId,
+					note: draft.note || null
+				},
+				id: true
+			}),
+			promiseToastStrings(m.nsaAttendance(), 'update')
+		);
+	}
 
-		if (event) {
-			await toast.promise(
-				client.mutate.updatePresenceEvent({
-					__args: {
-						id: event.id,
-						timestamp,
-						present,
-						committeeId,
-						note: note || null
-					},
-					id: true
-				}),
-				promiseToastStrings(m.nsaAttendance(), 'update')
-			);
-		} else {
-			await toast.promise(
-				client.mutate.insertPresenceEvent({
-					__args: {
-						conferenceUserId,
-						committeeId,
-						present,
-						markerType: 'NSA_SCAN',
-						timestamp,
-						note: note || null
-					},
-					id: true
-				}),
-				promiseToastStrings(m.nsaAttendance(), 'create')
-			);
-		}
+	function insert() {
+		return toast.promise(
+			client.mutate.insertPresenceEvent({
+				__args: {
+					conferenceUserId: draft.conferenceUserId,
+					committeeId: draft.committeeId,
+					present: draft.present,
+					markerType: 'NSA_SCAN',
+					timestamp: new Date(draft.timestampLocal),
+					note: draft.note || null
+				},
+				id: true
+			}),
+			promiseToastStrings(m.nsaAttendance(), 'create')
+		);
+	}
+
+	async function save() {
+		if (!isDraftComplete(draft)) return;
+		await (event ? update(event) : insert());
 		onClose();
 	}
 
@@ -127,7 +107,7 @@
 
 		<fieldset class="fieldset">
 			<legend class="fieldset-legend">{m.nsaPerson()}</legend>
-			<select class="select w-full" bind:value={conferenceUserId} disabled={!!event}>
+			<select class="select w-full" bind:value={draft.conferenceUserId} disabled={!!event}>
 				<option value="" disabled>{m.selectNsaPerson()}</option>
 				{#each nsaUsers ?? [] as u (u.id)}
 					<option value={u.id}>
@@ -141,7 +121,7 @@
 
 		<fieldset class="fieldset">
 			<legend class="fieldset-legend">{m.committee()}</legend>
-			<select class="select w-full" bind:value={committeeId}>
+			<select class="select w-full" bind:value={draft.committeeId}>
 				<option value="" disabled>{m.selectCommittee()}</option>
 				{#each conference?.committees ?? [] as c (c.id)}
 					<option value={c.id}>{c.name} ({c.abbreviation})</option>
@@ -151,7 +131,7 @@
 
 		<fieldset class="fieldset">
 			<legend class="fieldset-legend">{m.eventType()}</legend>
-			<select class="select w-full" bind:value={present}>
+			<select class="select w-full" bind:value={draft.present}>
 				<option value={true}>{m.checkIn()}</option>
 				<option value={false}>{m.checkOut()}</option>
 			</select>
@@ -159,12 +139,12 @@
 
 		<fieldset class="fieldset">
 			<legend class="fieldset-legend">{m.timestamp()}</legend>
-			<input type="datetime-local" class="input w-full" bind:value={timestampLocal} />
+			<input type="datetime-local" class="input w-full" bind:value={draft.timestampLocal} />
 		</fieldset>
 
 		<fieldset class="fieldset">
 			<legend class="fieldset-legend">{m.note()}</legend>
-			<input class="input w-full" bind:value={note} />
+			<input class="input w-full" bind:value={draft.note} />
 		</fieldset>
 
 		<div class="flex justify-end gap-2 pt-2">

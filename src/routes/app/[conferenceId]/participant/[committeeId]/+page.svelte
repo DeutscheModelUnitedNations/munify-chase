@@ -1,60 +1,29 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
 	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { nanoid } from '#lib/helpers/nanoid';
-	import { getCurrentUser } from '#lib/state/currentUser.svelte';
 	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
-	import IconInfoBox from '#lib/components/IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '#lib/utils/committeeStatus';
-	import CurrentSpeaker from '#lib/components/speakersList/CurrentSpeaker.svelte';
-	import PresentationSpeakersQueue from '#lib/components/speakersList/PresentationSpeakersQueue.svelte';
-	import WhiteboardViewer from '#lib/components/whiteboard/WhiteboardViewer.svelte';
-	import Majorities from '#lib/components/Majorities.svelte';
 	import ParticipantIdentityCard from '../ParticipantIdentityCard.svelte';
-	import DeviceVoteModal from '#lib/components/voting/DeviceVoteModal.svelte';
 	import RequestsCard from '#lib/components/requests/RequestsCard.svelte';
 	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
 	import { registerCommands } from '#lib/commands/registry.svelte';
+	import { editableSpeakersListSelection } from '../../selections';
+	import { loadParticipantUser, participantRepresentation } from '../participantUser';
+	import ParticipantListCard from './ParticipantListCard.svelte';
+	import CommitteeOverviewCards from './CommitteeOverviewCards.svelte';
+	import ResolutionsLinkCard from './ResolutionsLinkCard.svelte';
+	import WhiteboardCard from './WhiteboardCard.svelte';
+	import ParticipantDeviceVote from './ParticipantDeviceVote.svelte';
+	import {
+		isParticipantRole,
+		positionOnList,
+		seesSpeakersLists,
+		selfAddState,
+		showsDeviceVote
+	} from './participantCommittee';
 
-	const currentUser = await getCurrentUser();
-	const [conferenceUser] =
-		(await client.liveQuery.conferenceUsers({
-			__args: {
-				where: {
-					conference: { id: { eq: page.params.conferenceId } },
-					user: { id: { eq: currentUser?.id ?? '' } }
-				}
-			},
-			id: true,
-			conferenceUserType: true,
-			committeeMemberId: true,
-			conferenceMemberId: true,
-			committeeMember: {
-				id: true,
-				present: true,
-				representation: {
-					id: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true,
-					type: true,
-					icon: true
-				}
-			},
-			conferenceMember: {
-				id: true,
-				representation: {
-					id: true,
-					name: true,
-					alpha2Code: true,
-					alpha3Code: true,
-					type: true,
-					icon: true
-				}
-			}
-		})) ?? [];
+	const conferenceUser = await loadParticipantUser(page.params.conferenceId);
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -83,65 +52,22 @@
 		activeAgendaItem: {
 			id: true,
 			title: true,
-			speakersList: {
-				id: true,
-				type: true,
-				isClosed: true,
-				speakingTime: true,
-				startTimestamp: true,
-				timeLeft: true,
-				phase: true,
-				agendaItem: {
-					id: true,
-					committee: {
-						id: true,
-						allowDelegationsToAddThemselvesToSpeakersList: true,
-						conferenceId: true
-					}
-				},
-				speakers: {
-					id: true,
-					position: true,
-					speakersListId: true,
-					overwriteName: true,
-					committeeMember: {
-						id: true,
-						representation: {
-							id: true,
-							name: true,
-							alpha3Code: true,
-							type: true,
-							icon: true
-						}
-					},
-					conferenceMember: {
-						id: true,
-						representation: {
-							id: true,
-							name: true,
-							alpha3Code: true,
-							type: true,
-							icon: true
-						}
-					}
-				}
-			}
+			speakersList: editableSpeakersListSelection
 		}
 	});
 
+	const conferenceId = $derived(page.params.conferenceId!);
 	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
 	let role = $derived(conferenceUser?.conferenceUserType);
-	let isParticipant = $derived(role === 'DELEGATE' || role === 'NON_STATE_ACTOR');
+	let isParticipant = $derived(isParticipantRole(role));
+	const showsRequests = $derived(isParticipant && !!committee?.allowRequests);
 
 	// Determine what member IDs we have for self-add detection
 	let myCommitteeMemberId = $derived(conferenceUser?.committeeMemberId);
 	let myConferenceMemberId = $derived(conferenceUser?.conferenceMemberId);
 	let myPresent = $derived(conferenceUser?.committeeMember?.present ?? false);
-	let representation = $derived(
-		conferenceUser?.committeeMember?.representation ??
-			conferenceUser?.conferenceMember?.representation
-	);
+	let representation = $derived(participantRepresentation(conferenceUser));
 
 	// Freeze the last-known agenda item while the WS is confirmed disconnected, so a
 	// transient network blip doesn't reset the active speaker's timer.
@@ -153,12 +79,11 @@
 	const getActiveVotingSession = latchWhileDisconnected(() => committee?.activeVotingSession);
 	const activeVotingSession = $derived(getActiveVotingSession());
 	const showDeviceVoteModal = $derived(
-		!!activeVotingSession &&
-			activeVotingSession.mode === 'DEVICE_BASED' &&
-			!!activeVotingSession.deviceVotingStartedAt &&
-			!!activeVotingSession.deviceVotingWindowSeconds &&
-			!!myCommitteeMemberId &&
-			myPresent
+		showsDeviceVote({
+			session: activeVotingSession,
+			committeeMemberId: myCommitteeMemberId,
+			present: myPresent
+		})
 	);
 	const myVote = $derived(
 		activeVotingSession?.votes.find((v) => v.committeeMemberId === myCommitteeMemberId)?.vote ??
@@ -178,13 +103,11 @@
 	);
 
 	function findMyPositionOnList(list: typeof speakersList): number | null {
-		if (!list?.speakers) return null;
-		const speaker = list.speakers.find(
-			(s) =>
-				(myCommitteeMemberId && s.committeeMember?.id === myCommitteeMemberId) ||
-				(myConferenceMemberId && s.conferenceMember?.id === myConferenceMemberId)
-		);
-		return speaker ? speaker.position : null;
+		return positionOnList({
+			speakers: list?.speakers ?? [],
+			committeeMemberId: myCommitteeMemberId,
+			conferenceMemberId: myConferenceMemberId
+		});
 	}
 
 	let myPositionOnSpeakers = $derived(findMyPositionOnList(speakersList));
@@ -207,44 +130,59 @@
 		});
 	}
 
+	const lists = $derived([
+		{
+			list: speakersList,
+			label: m.speakersList,
+			myPosition: myPositionOnSpeakers,
+			key: 'speakers'
+		},
+		{ list: commentList, label: m.commentList, myPosition: myPositionOnComments, key: 'poi' }
+	]);
+
+	// The lists the caller sees, the first of both carrying the tour's anchors
+	const shownLists = $derived(
+		seesSpeakersLists(role)
+			? lists.flatMap((entry, i) =>
+					entry.list ? [{ ...entry, list: entry.list, tour: i === 0 }] : []
+				)
+			: []
+	);
+
+	/** What the caller can do about a list, null while they cannot add themselves at all. */
+	function selfAddFor({
+		list,
+		myPosition
+	}: {
+		list: typeof speakersList;
+		myPosition: number | null;
+	}) {
+		if (!list || !seesSpeakersLists(role) || !canSelfAdd) return null;
+		return selfAddState({ myPosition, isClosed: list.isClosed, role, present: myPresent });
+	}
+
 	// The self-add buttons of both lists. Each command is visible exactly while its button is
 	// rendered, so a closed list or a delegate who is not present gets no command.
 	registerCommands(() =>
-		[
-			{
-				list: speakersList,
-				context: m.speakersList,
-				myPosition: myPositionOnSpeakers,
-				key: 'speakers'
-			},
-			{ list: commentList, context: m.commentList, myPosition: myPositionOnComments, key: 'poi' }
-		].flatMap(({ list, context, myPosition, key }) => {
-			const listShown = !!list && (isParticipant || role === 'SPECTATOR') && !!canSelfAdd;
-			const keywords = key === 'poi' ? ['POI'] : [];
+		lists.flatMap((entry) => {
+			const keywords = entry.key === 'poi' ? ['POI'] : [];
+			const shared = { context: entry.label, keywords, group: 'page' as const };
 			return [
 				{
-					id: `participant.${key}.add-me`,
+					...shared,
+					id: `participant.${entry.key}.add-me`,
 					title: m.addMeToList,
-					context,
-					keywords,
-					group: 'page' as const,
 					icon: 'plus',
-					visible: () =>
-						listShown &&
-						myPosition === null &&
-						!list!.isClosed &&
-						!(role === 'DELEGATE' && !myPresent),
-					run: () => handleSelfAdd(list!.id)
+					visible: () => selfAddFor(entry) === 'canAdd',
+					run: () => handleSelfAdd(entry.list!.id)
 				},
 				{
-					id: `participant.${key}.remove-me`,
+					...shared,
+					id: `participant.${entry.key}.remove-me`,
 					title: m.removeFromList,
-					context,
-					keywords,
-					group: 'page' as const,
 					icon: 'minus',
-					visible: () => listShown && myPosition !== null,
-					run: () => handleSelfRemove(list!.id)
+					visible: () => selfAddFor(entry) === 'onList',
+					run: () => handleSelfRemove(entry.list!.id)
 				}
 			];
 		})
@@ -263,161 +201,47 @@
 			<ParticipantIdentityCard {representation} />
 		</div>
 
-		<!-- Committee Status Card -->
-		<div class="card bg-base-100 shadow-sm" data-tour="committee.status">
-			<div class="card-body gap-2 p-4">
-				<IconInfoBox text={activeAgendaItem?.title ?? '—'} icon="lectern" />
-				<IconInfoBox
-					text={getCommitteeStatusText(committee.status)}
-					icon={getCommitteeStatusIcon(committee.status)}
-					committeeStatus={committee.status}
-					until={new Date(committee.statusUntil)}
-				/>
-				{#if committee.statusHeadline}
-					<div class="text-sm opacity-70">{committee.statusHeadline}</div>
-				{/if}
-			</div>
-		</div>
-		<div class="card bg-base-100 shadow-sm" data-tour="committee.majorities">
-			<div class="card-body gap-2 p-4">
-				<h2 class="card-title text-lg">{m.majorities()}</h2>
-				<Majorities
-					totalPresent={committee.totalPresent}
-					simpleMajority={committee.simpleMajority}
-					twoThirdsMajority={committee.twoThirdsMajority}
-					{minAmendmentSponsors}
-				/>
-			</div>
-		</div>
+		<CommitteeOverviewCards
+			{committee}
+			agendaItemTitle={activeAgendaItem?.title}
+			{minAmendmentSponsors}
+		/>
 
 		<!-- Speakers List Card -->
-		{#if isParticipant || role === 'SPECTATOR'}
-			{#each [{ list: speakersList, label: m.speakersList(), myPosition: myPositionOnSpeakers }, { list: commentList, label: m.commentList(), myPosition: myPositionOnComments }] as { list, label, myPosition }, i (label)}
-				{#if list}
-					<div
-						class="card bg-base-100 shadow-sm"
-						data-tour={i === 0 ? 'committee.speakers' : undefined}
-					>
-						<div class="card-body gap-3 p-4">
-							<h2 class="card-title text-lg">{label}</h2>
-
-							<!-- The badge below says it to the eye; this says it aloud whenever it changes -->
-							{#if canSelfAdd}
-								<p class="sr-only" aria-live="polite">
-									{myPosition === null
-										? ''
-										: `${label}: ${
-												myPosition === 0
-													? m.youreUp()
-													: m.onListPosition({ position: String(myPosition) })
-											}`}
-								</p>
-							{/if}
-
-							<CurrentSpeaker speakersList={list} />
-
-							<PresentationSpeakersQueue rawSpeakers={list.speakers} closed={list.isClosed} />
-
-							<!-- Self-add/remove button -->
-							{#if canSelfAdd}
-								<div class="flex flex-col" data-tour={i === 0 ? 'committee.self-add' : undefined}>
-									{#if myPosition !== null}
-										<!-- Already on list -->
-										<div class="flex w-full flex-col gap-2">
-											{#if myPosition === 0}
-												<span class="badge badge-success w-full">
-													{m.youreUp()}
-												</span>
-											{:else}
-												<span class="badge badge-primary w-full">
-													{m.onListPosition({ position: String(myPosition) })}
-												</span>
-											{/if}
-											<button
-												class="btn btn-outline btn-error btn-sm w-full"
-												onclick={() => handleSelfRemove(list.id)}
-											>
-												<i aria-hidden="true" class="ph-fill ph-minus mr-1"></i>
-												{m.removeFromList()}
-											</button>
-										</div>
-									{:else if list.isClosed}
-										<div class="text-sm opacity-50">
-											<i aria-hidden="true" class="ph-fill ph-lock mr-1"></i>
-											{m.listClosedCannotAdd()}
-										</div>
-									{:else if role === 'DELEGATE' && !myPresent}
-										<div class="text-sm opacity-50">
-											<i aria-hidden="true" class="ph-fill ph-warning mr-1"></i>
-											{m.notPresentCannotAdd()}
-										</div>
-									{:else}
-										<button class="btn btn-primary btn-sm" onclick={() => handleSelfAdd(list.id)}>
-											<i aria-hidden="true" class="ph-fill ph-plus mr-1"></i>
-											{m.addMeToList()}
-										</button>
-									{/if}
-								</div>
-							{/if}
-						</div>
-					</div>
-				{/if}
-			{/each}
-		{/if}
+		{#each shownLists as entry (entry.key)}
+			<ParticipantListCard
+				list={entry.list}
+				label={entry.label()}
+				myPosition={entry.myPosition}
+				selfAdd={selfAddFor(entry)}
+				tour={entry.tour}
+				onAdd={() => handleSelfAdd(entry.list.id)}
+				onRemove={() => handleSelfRemove(entry.list.id)}
+			/>
+		{/each}
 
 		<!-- Requests Card -->
-		{#if isParticipant && committee.allowRequests}
+		{#if showsRequests}
 			<div class="grid" data-tour="committee.requests">
-				<RequestsCard
-					conferenceId={page.params.conferenceId!}
-					committeeId={committee.id}
-					isDelegate={role === 'DELEGATE'}
-				/>
+				<RequestsCard {conferenceId} committeeId={committee.id} isDelegate={role === 'DELEGATE'} />
 			</div>
 		{/if}
 
 		<!-- Resolutions Card -->
 		{#if !isLocalConferenceActive()}
-			<a
-				data-tour="committee.resolutions"
-				class="card bg-base-100 shadow-sm transition hover:shadow-md"
-				href={resolve('/app/[conferenceId]/participant/[committeeId]/papers', {
-					conferenceId: page.params.conferenceId!,
-					committeeId: page.params.committeeId!
-				})}
-			>
-				<div class="card-body flex-row items-center gap-3 p-4">
-					<i aria-hidden="true" class="ph-duotone ph-file-text text-2xl"></i>
-					<div class="flex-1">
-						<h2 class="card-title text-lg">{m.resolutions()}</h2>
-						<p class="text-base-content/60 text-sm">{m.resolutionsCardHint()}</p>
-					</div>
-					<i aria-hidden="true" class="ph-fill ph-caret-right opacity-50"></i>
-				</div>
-			</a>
+			<ResolutionsLinkCard {conferenceId} committeeId={page.params.committeeId!} />
 		{/if}
 
 		<!-- Whiteboard Card -->
 		{#if committee.showWhiteboard && committee.whiteboardContent}
-			<div class="card bg-base-100 shadow-sm" data-tour="committee.whiteboard">
-				<div class="card-body p-4">
-					<h2 class="card-title text-lg">{m.whiteboard()}</h2>
-					<WhiteboardViewer data={committee.whiteboardContent} />
-				</div>
-			</div>
+			<WhiteboardCard data={committee.whiteboardContent} />
 		{/if}
 	</div>
 {/if}
 
-{#if showDeviceVoteModal && activeVotingSession?.deviceVotingStartedAt && activeVotingSession?.deviceVotingWindowSeconds && myCommitteeMemberId}
-	<DeviceVoteModal
-		active={showDeviceVoteModal}
-		sessionId={activeVotingSession.id}
-		voteName={activeVotingSession.voteName}
-		withAbstentions={activeVotingSession.withAbstentions}
-		deviceVotingStartedAt={activeVotingSession.deviceVotingStartedAt}
-		deviceVotingWindowSeconds={activeVotingSession.deviceVotingWindowSeconds}
-		{myVote}
-		{myCommitteeMemberId}
-	/>
-{/if}
+<ParticipantDeviceVote
+	show={showDeviceVoteModal}
+	session={activeVotingSession}
+	{myVote}
+	{myCommitteeMemberId}
+/>

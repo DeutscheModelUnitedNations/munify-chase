@@ -119,6 +119,22 @@ function collectFields(
 	return into;
 }
 
+/** The field's own `id` argument (e.g. `agendaItem(id: ...)`), if it has one */
+function idArgumentOf(field: FieldNode, ctx: WalkContext): unknown {
+	const idArgument = field.arguments?.find((arg) => arg.name.value === 'id');
+	return idArgument ? resolveArgumentValue(idArgument.value, ctx) : undefined;
+}
+
+/** A value for a non-null field nobody gave us data for */
+function completeMissing(type: IntrospectionTypeRef, field: FieldNode, ctx: WalkContext) {
+	if (type.kind === 'LIST') return [];
+	if (type.kind !== 'OBJECT') return zeroScalar(type.name);
+	// The smallest object that still satisfies the selection. Its id comes from the field's
+	// own `id` argument when there is one, so it at least normalizes to the entity asked for.
+	const id = idArgumentOf(field, ctx);
+	return completeObject(type.name!, field.selectionSet, id !== undefined ? { id } : {}, ctx);
+}
+
 function completeValue(
 	typeRef: IntrospectionTypeRef,
 	field: FieldNode,
@@ -128,18 +144,8 @@ function completeValue(
 	const nonNull = typeRef.kind === 'NON_NULL';
 	const type = nonNull ? typeRef.ofType! : typeRef;
 
-	if (value === undefined || value === null) {
-		if (!nonNull) return null;
-		if (type.kind === 'LIST') return [];
-		if (type.kind !== 'OBJECT') return zeroScalar(type.name);
-		// A non-null object nobody gave us data for: the smallest object that still satisfies
-		// the selection. Its id comes from the field's own `id` argument when there is one
-		// (e.g. `agendaItem(id: ...)`), so it at least normalizes to the entity asked for.
-		const idArgument = field.arguments?.find((arg) => arg.name.value === 'id');
-		const id = idArgument ? resolveArgumentValue(idArgument.value, ctx) : undefined;
-		return completeObject(type.name!, field.selectionSet, id !== undefined ? { id } : {}, ctx);
-	}
-
+	if (value === undefined || value === null)
+		return nonNull ? completeMissing(type, field, ctx) : null;
 	if (type.kind === 'LIST') {
 		return Array.isArray(value)
 			? value.map((item) => completeValue(type.ofType!, field, item, ctx))
@@ -151,37 +157,47 @@ function completeValue(
 	return value;
 }
 
+type FieldSource = {
+	typename: string;
+	source: Record<string, unknown>;
+	/** The full seed entity behind `source`, see LocalDemoEntityLookup */
+	backing: Record<string, unknown> | undefined;
+};
+
+function completeField(
+	field: FieldNode,
+	{ typename, source, backing }: FieldSource,
+	ctx: WalkContext
+) {
+	const name = field.name.value;
+	const key = field.alias?.value ?? name;
+	if (name === '__typename') return typename;
+	const own = key in source ? source[key] : source[name];
+	const raw = own === undefined ? backing?.[name] : own;
+	const definition = getLocalDemoField(typename, name);
+	if (!definition) return raw ?? null;
+	const value = raw === undefined && name === 'id' ? `local-demo-${typename.toLowerCase()}` : raw;
+	return completeValue(definition.type, field, value, ctx);
+}
+
 function completeObject(
 	typename: string,
 	selectionSet: SelectionSetNode | undefined,
 	source: Record<string, unknown>,
 	ctx: WalkContext
 ): Record<string, unknown> {
-	const result: Record<string, unknown> = {};
-	if (!selectionSet) return result;
+	if (!selectionSet) return {};
 	const backing =
 		typeof source.id === 'string' && typename !== QUERY_TYPE_NAME
 			? ctx.lookup?.(typename, source.id)
 			: undefined;
-
-	for (const field of collectFields(selectionSet, typename, ctx)) {
-		const name = field.name.value;
-		const key = field.alias?.value ?? name;
-		if (name === '__typename') {
-			result[key] = typename;
-			continue;
-		}
-		const definition = getLocalDemoField(typename, name);
-		let raw = key in source ? source[key] : source[name];
-		if (raw === undefined) raw = backing?.[name];
-		if (!definition) {
-			result[key] = raw ?? null;
-			continue;
-		}
-		if (raw === undefined && name === 'id') raw = `local-demo-${typename.toLowerCase()}`;
-		result[key] = completeValue(definition.type, field, raw, ctx);
-	}
-	return result;
+	const fields = collectFields(selectionSet, typename, ctx);
+	return Object.fromEntries(
+		fields.map((field) => [
+			field.alias?.value ?? field.name.value,
+			completeField(field, { typename, source, backing }, ctx)
+		])
+	);
 }
 
 /**

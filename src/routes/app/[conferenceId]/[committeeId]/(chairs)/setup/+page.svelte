@@ -8,10 +8,8 @@
 	import { promiseToastStrings } from '#lib/utils/toast';
 	import Kbd from '#lib/components/Kbd.svelte';
 	import { registerCommands } from '#lib/commands/registry.svelte';
-	import UndrawError from '#lib/components/UndrawError.svelte';
-	import emptyStreet from '#assets/undraw/empty_street.svg';
 	import BasicCard from '#lib/components/BasicCard.svelte';
-	import Majorities from '#lib/components/Majorities.svelte';
+	import ChairPage from '../ChairPage.svelte';
 	import WhiteboardViewer from '#lib/components/whiteboard/WhiteboardViewer.svelte';
 	import WhiteboardEditorModal from '#lib/components/whiteboard/WhiteboardEditorModal.svelte';
 	import StatusChanger from '../../../../../../lib/components/committee/StatusChanger.svelte';
@@ -19,7 +17,6 @@
 	import AgendaItemChanger from '#lib/components/committee/AgendaItemChanger.svelte';
 	import PresentationSettings from './PresentationSettings.svelte';
 	import Tabs from '#lib/components/Tabs.svelte';
-	import StatusWidget from '../StatusWidget.svelte';
 	import {
 		fullscreenDelegationSupported,
 		openPresentationWindow,
@@ -44,8 +41,6 @@
 		agendaItems: { id: true, title: true },
 		conference: { hasModeratedCaucus: true }
 	});
-
-	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
 	let editWhiteboardModalOpen = $state(false);
 
@@ -110,6 +105,9 @@
 		);
 	}
 
+	const selfAddAllowed = $derived(!!committee?.allowDelegationsToAddThemselvesToSpeakersList);
+	const requestsAllowed = $derived(!!committee?.allowRequests);
+
 	// Opening the presentation is a layout-wide command (Alt+P), so it is not repeated here
 	registerCommands(() => [
 		{
@@ -132,124 +130,100 @@
 		},
 		{
 			id: 'setup.self-add',
-			title: committee?.allowDelegationsToAddThemselvesToSpeakersList
-				? m.commandDisallowSelfAdd
-				: m.commandAllowSelfAdd,
+			title: selfAddAllowed ? m.commandDisallowSelfAdd : m.commandAllowSelfAdd,
 			group: 'page',
 			icon: 'user-plus',
 			visible: () => !!committee && !isLocalConferenceActive(),
-			run: () => setSelfAdd(!committee?.allowDelegationsToAddThemselvesToSpeakersList)
+			run: () => setSelfAdd(!selfAddAllowed)
 		},
 		{
 			id: 'setup.requests',
-			title: committee?.allowRequests ? m.commandDisableRequests : m.commandEnableRequests,
+			title: requestsAllowed ? m.commandDisableRequests : m.commandEnableRequests,
 			group: 'page',
 			icon: 'hand',
 			visible: () => !!committee && !isLocalConferenceActive(),
-			run: () => setAllowRequests(!committee?.allowRequests)
+			run: () => setAllowRequests(!requestsAllowed)
 		}
 	]);
 </script>
 
-{#if committee}
-	<div class="flex h-full w-full items-center justify-center">
-		<div class="flex h-full w-full max-w-screen-xl flex-col gap-6 p-6 lg:flex-row">
-			<div class="top-22 flex h-full flex-col gap-4 lg:sticky lg:w-lg">
-				<BasicCard>
-					<StatusWidget {committee} />
-				</BasicCard>
-				<BasicCard>
-					<Majorities
-						totalPresent={committee.totalPresent}
-						simpleMajority={committee.simpleMajority}
-						twoThirdsMajority={committee.twoThirdsMajority}
-						{minAmendmentSponsors}
-					/>
-				</BasicCard>
-				<BasicCard className="relative group" data-tour="setup.whiteboard">
-					<button class="btn mb-4" onclick={openWhiteboardEditor}>
-						<i aria-hidden="true" class="ph-fill ph-pencil-simple"></i>
-						{m.edit()}
+<ChairPage {committee}>
+	{#snippet sidebar(committee)}
+		<BasicCard className="relative group" data-tour="setup.whiteboard">
+			<button class="btn mb-4" onclick={openWhiteboardEditor}>
+				<i aria-hidden="true" class="ph-fill ph-pencil-simple"></i>
+				{m.edit()}
+			</button>
+			<WhiteboardViewer data={committee.whiteboardContent} />
+		</BasicCard>
+	{/snippet}
+	{#snippet children(committee)}
+		<BasicCard title={m.setStatus()} kbd="alt+S" data-tour="setup.status">
+			<StatusChanger
+				committeeId={committee.id}
+				oldStatus={committee.status}
+				oldUntil={committee.statusUntil}
+				oldCustomName={committee.statusHeadline}
+				hasModeratedCaucus={committee.conference?.hasModeratedCaucus}
+			/>
+		</BasicCard>
+		<BasicCard title={m.stateOfDebate()} kbd="alt+D" data-tour="setup.state-of-debate">
+			<StateOfDebate committeeId={committee.id} oldStateOfDebate={committee.stateOfDebate} />
+		</BasicCard>
+		<BasicCard title={m.agendaItem()} data-tour="setup.agenda-item">
+			<AgendaItemChanger
+				committeeId={committee.id}
+				activeAgendaItem={committee.activeAgendaItem}
+				agendaItems={committee.agendaItems}
+			/>
+		</BasicCard>
+		<BasicCard title={m.presentationMode()} data-tour="setup.presentation">
+			<div class="mb-4 flex flex-wrap items-center gap-3">
+				<button
+					type="button"
+					class="btn btn-primary btn-lg flex items-center gap-3"
+					onclick={openPresentation}
+				>
+					<i aria-hidden="true" class="ph-fill ph-projector-screen"></i>
+					{m.openPresentation()}
+					<Kbd hotkey="alt+P" class="text-base-content" />
+				</button>
+				{#if canToggleFullscreen}
+					<button
+						type="button"
+						class="btn btn-lg flex items-center gap-3"
+						onclick={toggleFullscreen}
+						disabled={!presentationOpen()}
+						title={presentationOpen() ? m.enterFullscreen() : m.openPresentation()}
+						aria-label={m.enterFullscreen()}
+					>
+						<i aria-hidden="true" class="ph-fill ph-arrows-out"></i>
+						{m.enterFullscreen()}
 					</button>
-					<WhiteboardViewer data={committee.whiteboardContent} />
-				</BasicCard>
-			</div>
-			<div class="flex h-full w-full flex-3 flex-col gap-4">
-				<BasicCard title={m.setStatus()} kbd="alt+S" data-tour="setup.status">
-					<StatusChanger
-						committeeId={committee.id}
-						oldStatus={committee.status}
-						oldUntil={committee.statusUntil}
-						oldCustomName={committee.statusHeadline}
-						hasModeratedCaucus={committee.conference?.hasModeratedCaucus}
-					/>
-				</BasicCard>
-				<BasicCard title={m.stateOfDebate()} kbd="alt+D" data-tour="setup.state-of-debate">
-					<StateOfDebate committeeId={committee.id} oldStateOfDebate={committee.stateOfDebate} />
-				</BasicCard>
-				<BasicCard title={m.agendaItem()} data-tour="setup.agenda-item">
-					<AgendaItemChanger
-						committeeId={committee.id}
-						activeAgendaItem={committee.activeAgendaItem}
-						agendaItems={committee.agendaItems}
-					/>
-				</BasicCard>
-				<BasicCard title={m.presentationMode()} data-tour="setup.presentation">
-					<div class="mb-4 flex flex-wrap items-center gap-3">
-						<button
-							type="button"
-							class="btn btn-primary btn-lg flex items-center gap-3"
-							onclick={openPresentation}
-						>
-							<i aria-hidden="true" class="ph-fill ph-projector-screen"></i>
-							{m.openPresentation()}
-							<Kbd hotkey="alt+P" class="text-base-content" />
-						</button>
-						{#if canToggleFullscreen}
-							<button
-								type="button"
-								class="btn btn-lg flex items-center gap-3"
-								onclick={toggleFullscreen}
-								disabled={!presentationOpen()}
-								title={presentationOpen() ? m.enterFullscreen() : m.openPresentation()}
-								aria-label={m.enterFullscreen()}
-							>
-								<i aria-hidden="true" class="ph-fill ph-arrows-out"></i>
-								{m.enterFullscreen()}
-							</button>
-						{/if}
-					</div>
-					<PresentationSettings committeeId={page.params.committeeId!} />
-				</BasicCard>
-				{#if !isLocalConferenceActive()}
-					<BasicCard title={m.allowSelfAddToSpeakersList()} data-tour="setup.self-add">
-						<p class="mb-4 text-sm opacity-70">{m.allowSelfAddToSpeakersListDescription()}</p>
-						<Tabs
-							activeTab={committee.allowDelegationsToAddThemselvesToSpeakersList}
-							tabs={selfAddTabs}
-							onTabChange={setSelfAdd}
-						/>
-					</BasicCard>
-					<BasicCard title={m.allowRequests()} data-tour="setup.requests">
-						<p class="mb-4 text-sm opacity-70">{m.allowRequestsDescription()}</p>
-						<Tabs
-							activeTab={committee.allowRequests}
-							tabs={requestsTabs}
-							onTabChange={setAllowRequests}
-						/>
-					</BasicCard>
 				{/if}
 			</div>
-		</div>
-	</div>
-{:else}
-	<UndrawError
-		undrawImage={emptyStreet}
-		title={m.committeeDoesNotExist()}
-		buttonText={m.back()}
-		buttonLink="/app"
-	/>
-{/if}
+			<PresentationSettings committeeId={page.params.committeeId!} />
+		</BasicCard>
+		{#if !isLocalConferenceActive()}
+			<BasicCard title={m.allowSelfAddToSpeakersList()} data-tour="setup.self-add">
+				<p class="mb-4 text-sm opacity-70">{m.allowSelfAddToSpeakersListDescription()}</p>
+				<Tabs
+					activeTab={committee.allowDelegationsToAddThemselvesToSpeakersList}
+					tabs={selfAddTabs}
+					onTabChange={setSelfAdd}
+				/>
+			</BasicCard>
+			<BasicCard title={m.allowRequests()} data-tour="setup.requests">
+				<p class="mb-4 text-sm opacity-70">{m.allowRequestsDescription()}</p>
+				<Tabs
+					activeTab={committee.allowRequests}
+					tabs={requestsTabs}
+					onTabChange={setAllowRequests}
+				/>
+			</BasicCard>
+		{/if}
+	{/snippet}
+</ChairPage>
 
 {#if editWhiteboardModalOpen}
 	<WhiteboardEditorModal

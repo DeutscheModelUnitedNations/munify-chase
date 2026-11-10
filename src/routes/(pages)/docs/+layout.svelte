@@ -3,6 +3,8 @@
 	import { resolve } from '$app/paths';
 	import { docsNav } from '#lib/docs/nav';
 	import { m } from '#lib/paraglide/messages';
+	import DocsNavCategory from './DocsNavCategory.svelte';
+	import { menuActiveClass, navEntryKey, pageLabel } from './docsPage';
 
 	let { data, children } = $props();
 
@@ -31,36 +33,15 @@
 			aria-label={m.homeDocsTitle()}
 		>
 			<ul class="menu w-full p-0">
-				{#each docsNav as entry (typeof entry === 'string' ? entry : entry.slug)}
+				{#each docsNav as entry (navEntryKey(entry))}
 					{#if typeof entry === 'string'}
 						<li>
-							<a href={docHref(entry)} class={current === entry ? 'menu-active' : ''}>
-								{data.titles[entry] ?? entry}
+							<a href={docHref(entry)} class={menuActiveClass(current, entry)}>
+								{pageLabel(data.titles, entry)}
 							</a>
 						</li>
 					{:else}
-						<li>
-							<details open={current === entry.slug || current.startsWith(`${entry.slug}/`)}>
-								<summary>{entry.label()}</summary>
-								<ul>
-									<li>
-										<a
-											href={docHref(entry.slug)}
-											class={current === entry.slug ? 'menu-active' : ''}
-										>
-											{m.docsOverview()}
-										</a>
-									</li>
-									{#each entry.items as item (item)}
-										<li>
-											<a href={docHref(item)} class={current === item ? 'menu-active' : ''}>
-												{data.titles[item] ?? item}
-											</a>
-										</li>
-									{/each}
-								</ul>
-							</details>
-						</li>
+						<DocsNavCategory category={entry} {current} titles={data.titles} />
 					{/if}
 				{/each}
 			</ul>

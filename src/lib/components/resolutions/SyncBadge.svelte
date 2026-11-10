@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
 	import type { YjsConnectionState } from '#lib/api/yjs/createPaperYjs.svelte';
+	import { syncBadgeState } from './presenceDisplay';
 
 	interface Props {
 		connectionState: YjsConnectionState;
@@ -10,14 +11,7 @@
 
 	let { connectionState, persistenceLoaded, wsSynced }: Props = $props();
 
-	const state = $derived.by(() => {
-		if (connectionState === 'error') return 'error';
-		if (!persistenceLoaded) return 'loading';
-		if (wsSynced) return 'synced';
-		if (connectionState === 'connected') return 'syncing';
-		if (connectionState === 'connecting') return 'syncing';
-		return 'offline';
-	});
+	const state = $derived(syncBadgeState({ connectionState, persistenceLoaded, wsSynced }));
 </script>
 
 <div

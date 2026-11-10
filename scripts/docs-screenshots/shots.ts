@@ -1,6 +1,6 @@
 import type { Page } from 'playwright';
 import { setActiveDraftResolution, startDeviceVote, startSpeech } from './stage';
-import type { Shot, StageIds } from './types';
+import type { PrepareContext, Shot, StageIds } from './types';
 
 const conference = (path: string) => (ids: StageIds) => `/app/${ids.conferenceId}/${path}`;
 const chair = (path: string) => (ids: StageIds) =>
@@ -20,6 +20,21 @@ const configTab =
 		await page.locator('button[role="tab"]').nth(index).click();
 		await page.waitForTimeout(800);
 	};
+
+// The paper in the amendment phase, open as the committee's draft resolution
+const amendmentPhaseAsChair = {
+	role: 'admin',
+	path: (ids: StageIds) => chair(`resolutions/${ids.amendmentPhasePaperId}`)(ids),
+	setup: (ids: StageIds) => setActiveDraftResolution(ids, ids.amendmentPhasePaperId),
+	storage: AI_OFF
+} satisfies Partial<Shot>;
+
+const openAmendmentsTab = async ({ page, t }: Pick<PrepareContext, 'page' | 't'>) => {
+	await page
+		.getByRole('tab', { name: t('amendments') })
+		.first()
+		.click();
+};
 
 /**
  * Every screenshot used in the manual. The docs test fails when a page references
@@ -183,28 +198,15 @@ export const SHOTS: Shot[] = [
 	},
 	{
 		id: 'chair/amendment-review',
-		role: 'admin',
-		path: (ids) => chair(`resolutions/${ids.amendmentPhasePaperId}`)(ids),
-		setup: (ids) => setActiveDraftResolution(ids, ids.amendmentPhasePaperId),
-		storage: AI_OFF,
-		prepare: async ({ page, t }) => {
-			await page
-				.getByRole('tab', { name: t('amendments') })
-				.first()
-				.click();
-		}
+		...amendmentPhaseAsChair,
+		prepare: openAmendmentsTab
 	},
 	{
 		id: 'chair/amendment-decide-menu',
-		role: 'admin',
-		path: (ids) => chair(`resolutions/${ids.amendmentPhasePaperId}`)(ids),
-		setup: (ids) => setActiveDraftResolution(ids, ids.amendmentPhasePaperId),
-		storage: AI_OFF,
-		prepare: async ({ page, t }) => {
-			await page
-				.getByRole('tab', { name: t('amendments') })
-				.first()
-				.click();
+		...amendmentPhaseAsChair,
+		prepare: async (ctx) => {
+			await openAmendmentsTab(ctx);
+			const { page, t } = ctx;
 			await page
 				.getByRole('button', { name: t('decideManually') })
 				.first()

@@ -51,11 +51,11 @@ Im letzten Schritt **Bearbeiten** klicken Global Admins auf **Konferenz erstelle
 
 ## Mit DELEGATOR verbinden
 
-Statt Dateien hin- und herzuschieben, lässt sich CHASE mit einer MUNify-DELEGATOR-Instanz verbinden. Ein Systemadmin in DELEGATOR fordert die Verbindung mit der Adresse dieser Instanz an. Ein Global Admin bestätigt sie hier im Launcher mit dem Bestätigungscode, den beide Seiten zeigen. Danach gilt:
+Statt Dateien hin- und herzuschieben, lässt sich CHASE mit einer MUNify-DELEGATOR-Instanz verbinden. Die Verbindung wird auf dem Server eingerichtet, nicht in der Oberfläche: Beide Instanzen melden Personen beim selben Anbieter an und kennen sich über ihn. Steht sie, zeigt der Launcher Global Admins ihren Stand. Danach gilt:
 
 - Jede DELEGATOR-Konferenz erscheint hier von selbst, mit Gremien, Tagesordnungspunkten, Rollen, Team und, sobald die Zuteilung veröffentlicht ist, den Teilnehmenden. Der Launcher legt dann keine Konferenzen mehr an und importiert keine.
 - Was aus DELEGATOR kommt, wird dort geändert: Namen, Kürzel, Daten und Personen lassen sich hier weder bearbeiten noch löschen. Sitzungsstand, Präsentationseinstellungen und alles, was du hier ergänzt, bleiben bei dir.
 - DELEGATOR liest die Anwesenheit und die angenommenen Resolutionen zurück, und angenommene Arbeitspapiere kommen hier als Entwürfe an (markiert mit **Aus DELEGATOR, Version n**), bis sie hier jemand ändert.
-- Wird die Verbindung getrennt, egal auf welcher Seite, endet all das. Die Einträge bleiben als gewöhnliche lokale erhalten.
+- Wird die Verbindung aus der Einrichtung entfernt, endet all das. Die Einträge bleiben als gewöhnliche lokale erhalten.
 
 Der Dateiimport und der Anwesenheitsexport bleiben unter „Erweitert“ für den Fall ohne Verbindung erhalten.

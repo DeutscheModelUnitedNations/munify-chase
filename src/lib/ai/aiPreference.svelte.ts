@@ -33,6 +33,12 @@ export function getLocalModelTier(): number | null {
 	return _modelTier;
 }
 
+function storeModelTier(modelTier: number | null) {
+	if (modelTier === null) localStorage.removeItem(STORAGE_MODEL_TIER);
+	else localStorage.setItem(STORAGE_MODEL_TIER, String(modelTier));
+}
+
+/** `modelTier` left out keeps the chosen tier, null switches back to auto-detection */
 export function setAiPreference(mode: AiPreference, modelTier?: number | null): void {
 	_preference = mode;
 	_onboarded = true;
@@ -40,13 +46,7 @@ export function setAiPreference(mode: AiPreference, modelTier?: number | null): 
 	if (!browser) return;
 	localStorage.setItem(STORAGE_MODE, mode);
 	localStorage.setItem(STORAGE_ONBOARDED, 'true');
-	if (modelTier !== undefined) {
-		if (modelTier === null) {
-			localStorage.removeItem(STORAGE_MODEL_TIER);
-		} else {
-			localStorage.setItem(STORAGE_MODEL_TIER, String(modelTier));
-		}
-	}
+	if (modelTier !== undefined) storeModelTier(modelTier);
 }
 
 /** Maps user preference to the AiMode used by callAI. Only valid when preference !== 'off'. */

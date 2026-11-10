@@ -1,7 +1,15 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
 	import Modal from '#lib/components/Modal.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import CommitteeSeatSelect from './CommitteeSeatSelect.svelte';
+	import {
+		seatOptionLabel,
+		userEditForm,
+		userEditResult,
+		withRoleAssignment,
+		type RoleType,
+		type UserEditForm
+	} from './conferenceUsers';
 
 	interface CommitteeMemberOption {
 		id: string;
@@ -41,8 +49,6 @@
 		conferenceMember: { id: string } | null;
 	}
 
-	type RoleType = 'ADMIN' | 'TEAM' | 'DELEGATE' | 'NON_STATE_ACTOR' | 'SPECTATOR';
-
 	interface Props {
 		open: boolean;
 		user: ConferenceUser | null;
@@ -68,36 +74,26 @@
 		onsave
 	}: Props = $props();
 
-	let selectedRole = $state<RoleType>('TEAM');
-	let selectedCommitteeMemberId = $state<string | null>(null);
-	let selectedConferenceMemberId = $state<string | null>(null);
-	let editedName = $state('');
-
-	$effect(() => {
-		if (user) {
-			selectedRole = user.conferenceUserType as RoleType;
-			selectedCommitteeMemberId = user.committeeMember?.id ?? null;
-			selectedConferenceMemberId = user.conferenceMember?.id ?? null;
-			editedName = user.name ?? '';
-		}
+	let form = $state<UserEditForm>({
+		role: 'TEAM',
+		committeeMemberId: null,
+		conferenceMemberId: null,
+		name: ''
 	});
 
-	function onRoleChange() {
-		if (selectedRole !== 'DELEGATE') {
-			selectedCommitteeMemberId = null;
-		}
-		if (selectedRole !== 'NON_STATE_ACTOR') {
-			selectedConferenceMemberId = null;
-		}
+	$effect(() => {
+		if (user) form = userEditForm(user);
+	});
+
+	function conferenceSeatLabel(member: ConferenceMemberOption) {
+		return seatOptionLabel({
+			representation: member.representation,
+			assigned: conferenceMemberAssignmentCounts.get(member.id) ?? 0
+		});
 	}
 
 	function handleSave() {
-		onsave({
-			conferenceUserType: selectedRole,
-			committeeMemberId: selectedRole === 'DELEGATE' ? selectedCommitteeMemberId : null,
-			conferenceMemberId: selectedRole === 'NON_STATE_ACTOR' ? selectedConferenceMemberId : null,
-			name: editedName.trim() || null
-		});
+		onsave(userEditResult(form));
 		open = false;
 	}
 </script>
@@ -115,7 +111,7 @@
 				id="edit-name-input"
 				type="text"
 				class="input input-bordered w-full"
-				bind:value={editedName}
+				bind:value={form.name}
 				placeholder={user.userEmail}
 			/>
 		</div>
@@ -127,8 +123,8 @@
 			<select
 				id="edit-role-select"
 				class="select select-bordered w-full"
-				bind:value={selectedRole}
-				onchange={onRoleChange}
+				bind:value={form.role}
+				onchange={() => (form = withRoleAssignment(form))}
 			>
 				<option value="ADMIN">{m.admin()}</option>
 				<option value="TEAM">{m.teamMember()}</option>
@@ -138,33 +134,13 @@
 			</select>
 		</div>
 
-		{#if selectedRole === 'DELEGATE'}
-			<div class="form-control mb-4">
-				<label class="label" for="edit-committee-member-select">
-					<span class="label-text">{m.committeeMember()}</span>
-				</label>
-				<select
-					id="edit-committee-member-select"
-					class="select select-bordered w-full"
-					bind:value={selectedCommitteeMemberId}
-				>
-					<option value={null}>{m.selectCommitteeMember()}</option>
-					{#each committees as committee (committee.id)}
-						<optgroup label="{committee.abbreviation} — {committee.name}">
-							{#each committee.members as member (member.id)}
-								{@const assignedCount = committeeMemberAssignmentCounts.get(member.id) ?? 0}
-								<option value={member.id}>
-									{member.representation.name ||
-										getTranslatedCountryNameFromAlpha3Code(
-											member.representation.alpha3Code
-										)}{assignedCount > 0 ? ` (${m.assignedCount({ count: assignedCount })})` : ''}
-								</option>
-							{/each}
-						</optgroup>
-					{/each}
-				</select>
-			</div>
-		{:else if selectedRole === 'NON_STATE_ACTOR'}
+		{#if form.role === 'DELEGATE'}
+			<CommitteeSeatSelect
+				bind:value={form.committeeMemberId}
+				{committees}
+				assignmentCounts={committeeMemberAssignmentCounts}
+			/>
+		{:else if form.role === 'NON_STATE_ACTOR'}
 			<div class="form-control mb-4">
 				<label class="label" for="edit-conference-member-select">
 					<span class="label-text">{m.conferenceMembers()}</span>
@@ -172,16 +148,12 @@
 				<select
 					id="edit-conference-member-select"
 					class="select select-bordered w-full"
-					bind:value={selectedConferenceMemberId}
+					bind:value={form.conferenceMemberId}
 				>
 					<option value={null}>{m.selectConferenceMember()}</option>
 					{#each conferenceMembers as member (member.id)}
-						{@const assignedCount = conferenceMemberAssignmentCounts.get(member.id) ?? 0}
 						<option value={member.id}>
-							{member.representation.name ||
-								getTranslatedCountryNameFromAlpha3Code(
-									member.representation.alpha3Code
-								)}{assignedCount > 0 ? ` (${m.assignedCount({ count: assignedCount })})` : ''}
+							{conferenceSeatLabel(member)}
 						</option>
 					{/each}
 				</select>

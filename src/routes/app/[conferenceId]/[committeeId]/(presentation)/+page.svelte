@@ -1,32 +1,28 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
-	import Grid, { GridItem } from 'svelte-grid-extended';
-	import IconInfoBox from '#lib/components/IconInfoBox.svelte';
-	import { getCommitteeStatusIcon, getCommitteeStatusText } from '#lib/utils/committeeStatus';
-	import WhiteboardViewer from '#lib/components/whiteboard/WhiteboardViewer.svelte';
-	import Majorities from '#lib/components/Majorities.svelte';
+	import Grid from 'svelte-grid-extended';
 	import {
 		getPresentationLayoutPreset,
 		type PresentationLayoutPresetOptions
 	} from '#lib/data/presentationLayoutPresets';
-	import AbbreviationInfoBox from '#lib/components/AbbreviationInfoBox.svelte';
 	import UndrawError from '#lib/components/UndrawError.svelte';
 	import emptyStreet from '#assets/undraw/empty_street.svg';
 	import RegionalGroups from './RegionalGroups.svelte';
+	import PresentationInfoTiles from './PresentationInfoTiles.svelte';
+	import SpeakersListTile from './SpeakersListTile.svelte';
+	import PresentationPaperTiles from './PresentationPaperTiles.svelte';
+	import { resolutionPreviewState } from './presentation';
+	import { speakersListSelection } from '../../selections';
 	import PresentationRollCall from '#lib/components/rollCall/PresentationRollCall.svelte';
 	import ShowOfHandsVotingPresentation from '#lib/components/voting/ShowOfHandsVotingPresentation.svelte';
 	import RollCallVotingPresentation from '#lib/components/voting/RollCallVotingPresentation.svelte';
 	import DeviceBasedVotingPresentation from '#lib/components/voting/DeviceBasedVotingPresentation.svelte';
-	import PresentationResolutionPreview from '#lib/components/resolutions/PresentationResolutionPreview.svelte';
 	import AdoptionConfetti from '#lib/components/AdoptionConfetti.svelte';
 	import { sortTranslatedCountries } from '#lib/utils/nationTranslationHelper.svelte';
-	import CurrentSpeaker from '#lib/components/speakersList/CurrentSpeaker.svelte';
-	import SpeakersQueue from '#lib/components/speakersList/PresentationSpeakersQueue.svelte';
 	import { browser } from '$app/env';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
 	import { page } from '$app/state';
-	import PresentationRequests from '#lib/components/requests/PresentationRequests.svelte';
 	import { compareRequests, requestRepresentation } from '#lib/helpers/requests';
 	import { toggleFullscreen } from '#lib/platform/index';
 
@@ -76,44 +72,7 @@
 		activeAgendaItem: {
 			id: true,
 			title: true,
-			speakersList: {
-				id: true,
-				type: true,
-				isClosed: true,
-				speakingTime: true,
-				startTimestamp: true,
-				timeLeft: true,
-				speakers: {
-					id: true,
-					position: true,
-					overwriteName: true,
-					committeeMember: {
-						id: true,
-						representation: {
-							id: true,
-							type: true,
-							name: true,
-							regionalGroup: true,
-							alpha2Code: true,
-							alpha3Code: true,
-							icon: true
-						},
-						present: true
-					},
-					conferenceMember: {
-						id: true,
-						representation: {
-							id: true,
-							type: true,
-							name: true,
-							regionalGroup: true,
-							alpha2Code: true,
-							alpha3Code: true,
-							icon: true
-						}
-					}
-				}
-			}
+			speakersList: speakersListSelection
 		},
 		members: {
 			id: true,
@@ -188,6 +147,13 @@
 	// A boolean of its own so the layout only changes when the tile appears or
 	// disappears, not on every queue update
 	const hasPresentationRequests = $derived(presentationRequests.length > 0);
+
+	// The delegations, in the order the roll call goes through them
+	const rollCallMembers = $derived(
+		(committee?.members ?? [])
+			.filter((x) => x.representation?.type === 'DELEGATION')
+			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))
+	);
 
 	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
 
@@ -272,119 +238,38 @@
 			on:change={resizeQueues}
 			collision="none"
 		>
-			{#if layout.committeeTitle}
-				{@const gridProps = layout.committeeTitle}
-				<GridItem
-					{...gridProps}
-					class="card bg-base-100 gap-2 overflow-hidden p-4"
-					id="committee-title"
-				>
-					<AbbreviationInfoBox text={committee.name || '—'} abbreviation={committee.abbreviation} />
-				</GridItem>
-			{/if}
-			{#if layout.committeeStatus}
-				{@const gridProps = layout.committeeStatus}
-				<GridItem
-					{...gridProps}
-					class="card bg-base-100 gap-2 overflow-hidden p-4"
-					id="committee-status"
-				>
-					<IconInfoBox
-						text={committee.statusHeadline.length > 0
-							? committee.statusHeadline
-							: getCommitteeStatusText(committee.status)}
-						icon={getCommitteeStatusIcon(committee.status)}
-						committeeStatus={committee.status}
-						until={new Date(committee.statusUntil)}
-						fullHeight
-						hideCountdown={committee.status === 'FORMAL'}
-					/>
-				</GridItem>
-			{/if}
-			{#if layout.agendaItem}
-				{@const gridProps = layout.agendaItem}
-				<GridItem
-					{...gridProps}
-					class="card bg-base-100 gap-2 overflow-hidden p-4"
-					id="agenda-item"
-				>
-					<IconInfoBox text={activeAgendaItem?.title || '—'} icon="lectern" fullHeight />
-				</GridItem>
-			{/if}
-			{#if layout.majorities}
-				{@const gridProps = layout.majorities}
-				<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="majorities">
-					<Majorities
-						totalPresent={committee.totalPresent}
-						simpleMajority={committee.simpleMajority}
-						twoThirdsMajority={committee.twoThirdsMajority}
-						{minAmendmentSponsors}
-					/>
-				</GridItem>
-			{/if}
-
-			{#if layout.whiteboard}
-				{@const gridProps = layout.whiteboard}
-				<GridItem {...gridProps} class="card bg-base-100 gap-2 overflow-hidden p-4" id="whiteboard">
-					<WhiteboardViewer data={committee.whiteboardContent} />
-				</GridItem>
-			{/if}
+			<PresentationInfoTiles
+				{layout}
+				{committee}
+				agendaItemTitle={activeAgendaItem?.title}
+				{minAmendmentSponsors}
+			/>
 
 			{#if layout.speakersList}
-				{@const gridProps = layout.speakersList}
-				<GridItem
-					{...gridProps}
-					class="card bg-base-100 gap-8 overflow-hidden p-4"
+				<SpeakersListTile
+					gridProps={layout.speakersList}
 					id="speakers-list"
-				>
-					<CurrentSpeaker {speakersList} />
-					<SpeakersQueue
-						rawSpeakers={speakersList?.speakers}
-						closed={speakersList?.isClosed}
-						bind:resizeFn={speakersQueueResizeFn}
-					/>
-				</GridItem>
+					list={speakersList}
+					bind:resizeFn={speakersQueueResizeFn}
+				/>
 			{/if}
 
 			{#if layout.commentsList}
-				{@const gridProps = layout.commentsList}
-				<GridItem
-					{...gridProps}
-					class="card bg-base-100 gap-8 overflow-hidden p-4"
+				<SpeakersListTile
+					gridProps={layout.commentsList}
 					id="comment-list"
-				>
-					<CurrentSpeaker speakersList={commentsList} />
-					<SpeakersQueue
-						rawSpeakers={commentsList?.speakers}
-						closed={commentsList?.isClosed}
-						bind:resizeFn={commentsQueueResizeFn}
-					/>
-				</GridItem>
+					list={commentsList}
+					bind:resizeFn={commentsQueueResizeFn}
+				/>
 			{/if}
 
-			{#if layout.resolutionPreview && activePaperId}
-				{@const gridProps = layout.resolutionPreview}
-				<GridItem {...gridProps} class="card bg-base-100 overflow-auto p-4" id="resolution-preview">
-					<PresentationResolutionPreview
-						paperId={activePaperId}
-						currentOperativeIndex={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE' ||
-						committee.activeDraftResolution?.status === 'VOTING_PHASE'
-							? committee.currentOperativeIndex
-							: undefined}
-						resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
-						showAmendments={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'}
-						activeAmendment={committee.activeDraftResolution?.status === 'AMENDMENT_PHASE'
-							? (committee.activeAmendment ?? null)
-							: null}
-					/>
-				</GridItem>
-			{/if}
-			{#if layout.requests}
-				{@const gridProps = layout.requests}
-				<GridItem {...gridProps} class="card bg-base-100 overflow-hidden p-4" id="requests">
-					<PresentationRequests requests={presentationRequests} />
-				</GridItem>
-			{/if}
+			<PresentationPaperTiles
+				{layout}
+				{activePaperId}
+				resolutionFontSize={committee.presentationResolutionFontSize ?? 16}
+				preview={resolutionPreviewState(committee)}
+				requests={presentationRequests}
+			/>
 		</Grid>
 	</main>
 
@@ -398,12 +283,7 @@
 		committeeMembers={committee.members}
 	/>
 
-	<PresentationRollCall
-		{committeeId}
-		members={committee.members
-			.filter((x) => x.representation?.type === 'DELEGATION')
-			.sort((a, b) => sortTranslatedCountries(a.representation!, b.representation!))}
-	/>
+	<PresentationRollCall {committeeId} members={rollCallMembers} />
 
 	<ShowOfHandsVotingPresentation {committeeId} />
 	<RollCallVotingPresentation {committeeId} {committee} />

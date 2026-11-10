@@ -7,6 +7,7 @@
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import toast from 'svelte-french-toast';
 	import { listCommandScope } from './listCommands';
+	import { hasEmptyResult, otherListTimeLeft, phaseFor } from './timerArgs';
 
 	type List = {
 		id: string;
@@ -52,7 +53,7 @@
 					id: speakersList.id,
 					startTimestamp: getServerTime().toDate(),
 					// Starting the main speakers list timer always (re)enters the speech phase
-					...(type === 'SPEAKERS_LIST' ? { phase: 'SPEECH' } : {})
+					...phaseFor({ type, when: 'SPEAKERS_LIST', phase: 'SPEECH' })
 				},
 				id: true,
 				speakingTime: true,
@@ -66,13 +67,10 @@
 				client.mutate.updateSpeakersList({
 					__args: {
 						id: otherList.id,
-						timeLeft:
-							otherList.type === 'SPEAKERS_LIST'
-								? speakersList.speakingTime
-								: otherList.speakingTime,
+						timeLeft: otherListTimeLeft({ otherList, speakingTime: speakersList.speakingTime }),
 						stopTimer: true,
 						// When starting the comment list timer, mark the speakers list as entering question phase
-						...(type === 'COMMENT_LIST' ? { phase: 'QUESTION' } : {})
+						...phaseFor({ type, when: 'COMMENT_LIST', phase: 'QUESTION' })
 					},
 					id: true,
 					speakingTime: true,
@@ -84,8 +82,7 @@
 		}
 
 		const results = await Promise.allSettled(ops);
-		if (results.some((r) => r.status === 'fulfilled' && !r.value))
-			toast.error(m.errorUpdatingTimer());
+		if (hasEmptyResult(results)) toast.error(m.errorUpdatingTimer());
 	});
 
 	const stopTimer = withTimerLock(async () => {
@@ -98,7 +95,7 @@
 						id: speakersList.id,
 						stopTimer: true,
 						// Stopping the main speakers list timer marks the speech as done
-						...(type === 'SPEAKERS_LIST' ? { phase: 'SPEECH_DONE' } : {})
+						...phaseFor({ type, when: 'SPEAKERS_LIST', phase: 'SPEECH_DONE' })
 					},
 					id: true,
 					timeLeft: true,

@@ -8,6 +8,7 @@
 	import RoleBadge from './RoleBadge.svelte';
 	import CommitteeStack from './CommitteeStack.svelte';
 	import type { LauncherConference } from './types';
+	import { conferenceEntry } from './conferenceEntry';
 
 	interface Props {
 		conference: LauncherConference;
@@ -17,14 +18,15 @@
 
 	const status = $derived(deriveStatus(conference));
 	const dateRange = $derived(formatDateRange(conference, getLocale()));
+	const entry = $derived(conferenceEntry(conference));
 	const href = $derived.by(() => {
-		if (conference.role === 'ADMIN' || conference.role === 'CHAIR') {
+		if (entry.kind === 'missionControl') {
 			return resolve('/app/[conferenceId]/mission-control', { conferenceId: conference.id });
 		}
-		if (conference.role === 'DELEGATE' && conference.committeeId) {
+		if (entry.kind === 'committee') {
 			return resolve('/app/[conferenceId]/participant/[committeeId]', {
 				conferenceId: conference.id,
-				committeeId: conference.committeeId
+				committeeId: entry.committeeId
 			});
 		}
 		return resolve('/app/[conferenceId]/participant', { conferenceId: conference.id });

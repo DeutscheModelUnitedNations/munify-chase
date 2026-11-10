@@ -1,50 +1,31 @@
 <script lang="ts">
-	import { Alpha3 } from 'convert-iso-codes';
+	import { flagCardClass, flagCountryCode, type FlagRepresentation } from './flag';
 
-	interface Representation {
-		type?: string | null;
-		name?: string | null;
-		alpha2Code?: string | null;
-		alpha3Code?: string | null;
-		icon?: string | null;
-		regionalGroup?: string | null;
-	}
+	type FlagSize = 'xs' | 'sm' | 'md' | 'lg' | 'full';
 
 	interface Props {
-		size?: 'xs' | 'sm' | 'md' | 'lg' | 'full';
-		representation?: Representation | null;
+		size?: FlagSize;
+		representation?: FlagRepresentation | null;
 		placeholder?: boolean;
 	}
 
 	let { size = 'md', placeholder = false, representation }: Props = $props();
 
-	const flagClassNames = () => {
-		switch (size) {
-			case 'xs':
-				return 'w-[2rem] h-[1.5rem]';
-			case 'sm':
-				return 'w-[4rem] h-[3rem]';
-			case 'md':
-				return 'w-[6rem] h-[4.5rem]';
-			case 'lg':
-				return 'w-[8rem] h-[6rem]';
-			case 'full':
-				return 'w-full aspect-[4/3]';
-		}
+	const FLAG_CLASSES: Record<FlagSize, string> = {
+		xs: 'w-[2rem] h-[1.5rem]',
+		sm: 'w-[4rem] h-[3rem]',
+		md: 'w-[6rem] h-[4.5rem]',
+		lg: 'w-[8rem] h-[6rem]',
+		full: 'w-full aspect-[4/3]'
 	};
 
-	const iconClassNames = () => {
-		switch (size) {
-			case 'xs':
-				return 'text-base';
-			case 'sm':
-				return 'text-lg';
-			case 'md':
-				return 'text-2xl';
-			case 'lg':
-				return 'text-5xl';
-		}
+	const ICON_CLASSES: Partial<Record<FlagSize, string>> = {
+		xs: 'text-base',
+		sm: 'text-lg',
+		md: 'text-2xl',
+		lg: 'text-5xl'
 	};
+	const iconClass = $derived(ICON_CLASSES[size]);
 
 	const placeholderIcon = () => {
 		const worldIcons = ['globe-hemisphere-west', 'globe-hemisphere-east', 'globe'];
@@ -52,26 +33,21 @@
 		return worldIcons[randomIndex];
 	};
 
-	let countryCode = $derived.by(() => {
-		if (representation?.type === 'UN') return 'un';
-		if (representation?.alpha2Code) return representation.alpha2Code.toLowerCase();
-		if (representation?.alpha3Code)
-			return Alpha3.toAlpha2(representation.alpha3Code)?.toLowerCase();
-		return null;
-	});
+	let countryCode = $derived(flagCountryCode(representation));
 </script>
 
 <div
-	class="{flagClassNames()} card items-center justify-center overflow-hidden shadow-md {representation?.type ===
-	'NSA'
-		? 'bg-error text-error-content'
-		: representation?.type === 'DELEGATION' && 'text-base-content bg-[#bea162]'} {placeholder &&
-		'bg-base-200 text-base-content opacity-50'}"
+	class="{FLAG_CLASSES[
+		size
+	]} card items-center justify-center overflow-hidden shadow-md {flagCardClass({
+		type: representation?.type,
+		placeholder
+	})}"
 >
 	{#if placeholder}
-		<i aria-hidden="true" class="ph-fill ph-{placeholderIcon()} {iconClassNames()}"></i>
+		<i aria-hidden="true" class="ph-fill ph-{placeholderIcon()} {iconClass}"></i>
 	{:else if representation?.icon}
-		<i aria-hidden="true" class="ph-fill ph-{representation.icon} {iconClassNames()}"></i>
+		<i aria-hidden="true" class="ph-fill ph-{representation.icon} {iconClass}"></i>
 	{:else}
 		<span class="fi fi-{countryCode}"></span>
 	{/if}

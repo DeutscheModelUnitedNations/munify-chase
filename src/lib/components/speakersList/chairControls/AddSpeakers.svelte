@@ -6,11 +6,11 @@
 	import Flag from '#lib/components/Flag.svelte';
 	import type { MergeWithUndefined } from '#lib/helpers/utilityTypes';
 	import { m } from '#lib/paraglide/messages';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import { promiseToastStrings } from '#lib/utils/toast';
 	import Fuse, { type IFuseOptions } from 'fuse.js';
 	import toast from 'svelte-french-toast';
 	import { listCommandScope } from './listCommands';
+	import { memberName, membersNamed } from './listOptions';
 
 	type MemberLike = {
 		id: string;
@@ -52,10 +52,7 @@
 	let value = $state('');
 	let focused = $state(false);
 
-	const getName = (member: Member | undefined) =>
-		member?.representation?.name
-			? member?.representation.name
-			: getTranslatedCountryNameFromAlpha3Code(member?.representation?.alpha3Code);
+	const getName = memberName;
 
 	type FuseItem = Member & { label: string | undefined };
 
@@ -96,28 +93,22 @@
 			toast.error(m.speakersListNotFound());
 			return;
 		}
-		if (!value) return;
-
-		const committeeMember = committeeMembers.find((x) => getName(x as Member) === value);
-		const conferenceMember = conferenceMembers.find((x) => getName(x as Member) === value);
-
-		if (!committeeMember && !conferenceMember) {
-			return;
-		}
+		const match = membersNamed({ committeeMembers, conferenceMembers, name: value });
+		if (!match) return;
 
 		await toast.promise(
 			client.mutate.addSpeakerOnList({
 				__args: {
 					id: nanoid(),
-					committeeMemberId: committeeMember?.id,
-					conferenceMemberId: conferenceMember?.id,
+					committeeMemberId: match.committeeMemberId,
+					conferenceMemberId: match.conferenceMemberId,
 					speakersListId: speakersList.id
 				},
 				id: true,
 				position: true,
 				speakersListId: true
 			}),
-			promiseToastStrings(getName((committeeMember ?? conferenceMember) as Member), 'add')
+			promiseToastStrings(match.label, 'add')
 		);
 
 		value = '';

@@ -13,6 +13,7 @@ import { LOCAL_CONFERENCE_ID, isLocalConferenceActive } from '#lib/state/localDe
 import { densifySpeakers } from '../optimisticUpdateHandlers';
 import { schema } from '../rumbleClient/schema';
 import { completeLocalDemoQueryAnswer } from './completeAnswer';
+import { readStoredJson, writeStoredJson } from './storage';
 
 const now = new Date();
 
@@ -368,20 +369,13 @@ const LOCAL_DEMO_STORAGE_KEY = 'chase-local-demo-state';
  * IndexedDB-persisted cache still remembers.
  */
 function persistLocalDemoState() {
-	if (typeof localStorage === 'undefined') return;
-	const snapshot: Record<string, Record<string, unknown>> = {};
-	for (const [key, entity] of localDemoEntitiesById) {
-		const scalarFields: Record<string, unknown> = {};
-		for (const [field, value] of Object.entries(entity)) {
-			if (isScalarValue(value)) scalarFields[field] = value;
-		}
-		snapshot[key] = scalarFields;
-	}
-	try {
-		localStorage.setItem(LOCAL_DEMO_STORAGE_KEY, JSON.stringify(snapshot));
-	} catch {
-		// Best-effort only (e.g. storage disabled/full) — falls back to the in-memory state.
-	}
+	const snapshot = Object.fromEntries(
+		[...localDemoEntitiesById].map(([key, entity]) => [
+			key,
+			Object.fromEntries(Object.entries(entity).filter(([, value]) => isScalarValue(value)))
+		])
+	);
+	writeStoredJson(LOCAL_DEMO_STORAGE_KEY, snapshot);
 }
 
 /**
@@ -391,24 +385,10 @@ function persistLocalDemoState() {
  * registered in localDemoEntitiesById, not just the hardcoded defaults.
  */
 function loadPersistedLocalDemoState() {
-	if (typeof localStorage === 'undefined') return;
-	let raw: string | null;
-	try {
-		raw = localStorage.getItem(LOCAL_DEMO_STORAGE_KEY);
-	} catch {
-		return;
-	}
-	if (!raw) return;
-	let persisted: Record<string, Record<string, unknown>>;
-	try {
-		persisted = JSON.parse(raw);
-	} catch {
-		return;
-	}
+	const persisted = readStoredJson<Record<string, Record<string, unknown>>>(LOCAL_DEMO_STORAGE_KEY);
+	if (!persisted) return;
 	for (const [key, entity] of localDemoEntitiesById) {
-		const savedFields = persisted[key];
-		if (!savedFields) continue;
-		for (const [field, value] of Object.entries(savedFields)) {
+		for (const [field, value] of Object.entries(persisted[key] ?? {})) {
 			// Dates round-trip through JSON as strings — convert back based on the default's type.
 			entity[field] = entity[field] instanceof Date ? new Date(value as string) : value;
 		}
@@ -424,33 +404,12 @@ const ROLL_CALL_SESSION_DATE_FIELDS = ['createdAt', 'updatedAt', 'completedAt'] 
  * one at runtime — so the whole array has to round-trip through JSON, not just a patch.
  */
 function persistLocalDemoRollCallSessions() {
-	if (typeof localStorage === 'undefined') return;
-	try {
-		localStorage.setItem(
-			LOCAL_DEMO_ROLL_CALL_SESSIONS_KEY,
-			JSON.stringify(localDemoRollCallSessions)
-		);
-	} catch {
-		// Best-effort only — see persistLocalDemoState.
-	}
+	writeStoredJson(LOCAL_DEMO_ROLL_CALL_SESSIONS_KEY, localDemoRollCallSessions);
 }
 
 function loadPersistedLocalDemoRollCallSessions() {
-	if (typeof localStorage === 'undefined') return;
-	let raw: string | null;
-	try {
-		raw = localStorage.getItem(LOCAL_DEMO_ROLL_CALL_SESSIONS_KEY);
-	} catch {
-		return;
-	}
-	if (!raw) return;
-	let persisted: Record<string, unknown>[];
-	try {
-		persisted = JSON.parse(raw);
-	} catch {
-		return;
-	}
-	for (const session of persisted) {
+	const persisted = readStoredJson<Record<string, unknown>[]>(LOCAL_DEMO_ROLL_CALL_SESSIONS_KEY);
+	for (const session of persisted ?? []) {
 		for (const field of ROLL_CALL_SESSION_DATE_FIELDS) {
 			if (typeof session[field] === 'string') session[field] = new Date(session[field] as string);
 		}
@@ -496,46 +455,36 @@ function registerCommitteeMembers(committee: LocalDemoCommittee) {
  * instead, same idea as persistLocalDemoRollCallSessions.
  */
 function persistLocalDemoCommittees() {
-	if (typeof localStorage === 'undefined') return;
-	try {
-		localStorage.setItem(LOCAL_DEMO_COMMITTEES_KEY, JSON.stringify(localDemoCommittees));
-	} catch {
-		// Best-effort only — see persistLocalDemoState.
+	writeStoredJson(LOCAL_DEMO_COMMITTEES_KEY, localDemoCommittees);
+}
+
+/** Drops the registered entities whose key starts with one of `prefixes` */
+function forgetLocalDemoEntities(...prefixes: string[]) {
+	for (const key of [...localDemoEntitiesById.keys()]) {
+		if (prefixes.some((prefix) => key.startsWith(prefix))) localDemoEntitiesById.delete(key);
 	}
 }
 
+/** The committee's active agenda item as its entry in `agendaItems`, which is the copy
+ * every speakers list change updates */
+function activeAgendaItemEntry(committee: LocalDemoCommittee, activeId: string | null) {
+	if (!activeId) return null;
+	return committee.agendaItems.find((item) => item.id === activeId) ?? null;
+}
+
 function loadPersistedLocalDemoCommittees() {
-	if (typeof localStorage === 'undefined') return;
-	let raw: string | null;
-	try {
-		raw = localStorage.getItem(LOCAL_DEMO_COMMITTEES_KEY);
-	} catch {
-		return;
-	}
-	if (!raw) return;
-	let persisted: LocalDemoCommittee[];
-	try {
-		persisted = JSON.parse(raw, committeeDateReviver);
-	} catch {
-		return;
-	}
+	const persisted = readStoredJson<LocalDemoCommittee[]>(
+		LOCAL_DEMO_COMMITTEES_KEY,
+		committeeDateReviver
+	);
 	if (!Array.isArray(persisted) || persisted.length === 0) return;
 
 	localDemoCommittees.length = 0;
 	localDemoCommittees.push(...persisted);
-	// JSON turns the shared agenda item into two copies. Re-point the active one at its
-	// entry in agendaItems, which is the copy every speakers list change updates.
+	forgetLocalDemoEntities('Committee:', 'Committeemember:');
 	for (const committee of localDemoCommittees) {
-		committee.activeAgendaItem = committee.activeAgendaItemId
-			? (committee.agendaItems.find((item) => item.id === committee.activeAgendaItemId) ?? null)
-			: null;
-	}
-	for (const key of [...localDemoEntitiesById.keys()]) {
-		if (key.startsWith('Committee:') || key.startsWith('Committeemember:')) {
-			localDemoEntitiesById.delete(key);
-		}
-	}
-	for (const committee of localDemoCommittees) {
+		// JSON turns the shared agenda item into two copies
+		committee.activeAgendaItem = activeAgendaItemEntry(committee, committee.activeAgendaItemId);
 		localDemoEntitiesById.set(`Committee:${committee.id}`, committee);
 		registerCommitteeMembers(committee);
 		registerActiveSessions(committee);
@@ -560,36 +509,16 @@ const LOCAL_DEMO_REPRESENTATIONS_KEY = 'chase-local-demo-representations';
  * NSA tabs) isn't a scalar field on any single entity, so the whole collection round-trips.
  */
 function persistLocalDemoRepresentations() {
-	if (typeof localStorage === 'undefined') return;
-	try {
-		localStorage.setItem(LOCAL_DEMO_REPRESENTATIONS_KEY, JSON.stringify(localDemoRepresentations));
-	} catch {
-		// Best-effort only — see persistLocalDemoState.
-	}
+	writeStoredJson(LOCAL_DEMO_REPRESENTATIONS_KEY, localDemoRepresentations);
 }
 
 function loadPersistedLocalDemoRepresentations() {
-	if (typeof localStorage === 'undefined') return;
-	let raw: string | null;
-	try {
-		raw = localStorage.getItem(LOCAL_DEMO_REPRESENTATIONS_KEY);
-	} catch {
-		return;
-	}
-	if (!raw) return;
-	let persisted: LocalDemoRepresentation[];
-	try {
-		persisted = JSON.parse(raw);
-	} catch {
-		return;
-	}
+	const persisted = readStoredJson<LocalDemoRepresentation[]>(LOCAL_DEMO_REPRESENTATIONS_KEY);
 	if (!Array.isArray(persisted) || persisted.length === 0) return;
 
 	localDemoRepresentations.length = 0;
 	localDemoRepresentations.push(...persisted);
-	for (const key of [...localDemoEntitiesById.keys()]) {
-		if (key.startsWith('Representation:')) localDemoEntitiesById.delete(key);
-	}
+	forgetLocalDemoEntities('Representation:');
 	for (const rep of localDemoRepresentations) {
 		localDemoEntitiesById.set(`Representation:${rep.id}`, rep);
 	}
@@ -616,21 +545,48 @@ function findLocalDemoCommittee(committeeId: string): LocalDemoCommittee | undef
 	return localDemoCommittees.find((c) => c.id === committeeId);
 }
 
-/** Finds a speakers list by id across every committee's every agenda item's `speakersList`
- * — the seeded default pair (`localDemoSpeakersList`/`localDemoCommentList`) as well as any
- * list belonging to a TOP created at runtime via createAgendaItem's own effect below. */
+/** Every speakers list of every committee's every agenda item — the seeded default pair
+ * (`localDemoSpeakersList`/`localDemoCommentList`) as well as any list belonging to a TOP
+ * created at runtime via createAgendaItem's own effect below. */
+function allLocalDemoSpeakersLists(): LocalDemoSpeakersListEntity[] {
+	return localDemoCommittees.flatMap((committee) =>
+		committee.agendaItems.flatMap(
+			(agendaItem) => (agendaItem.speakersList as LocalDemoSpeakersListEntity[] | undefined) ?? []
+		)
+	);
+}
+
 function findLocalDemoSpeakersList(
 	speakersListId: string
 ): LocalDemoSpeakersListEntity | undefined {
-	for (const committee of localDemoCommittees) {
-		for (const agendaItem of committee.agendaItems) {
-			const list = (agendaItem.speakersList as LocalDemoSpeakersListEntity[] | undefined)?.find(
-				(l) => l.id === speakersListId
-			);
-			if (list) return list;
-		}
-	}
-	return undefined;
+	return allLocalDemoSpeakersLists().find((list) => list.id === speakersListId);
+}
+
+/**
+ * Speakers' new positions after moving the one at `from` to `to`, mirroring
+ * optimistic.moveSpeakerToPosition: the ones in between close the gap it leaves.
+ */
+function shiftedSpeakerPositions<T extends { id: unknown; position: number }>({
+	speakers,
+	id,
+	from,
+	to
+}: {
+	speakers: T[];
+	id: unknown;
+	from: number;
+	to: number;
+}): T[] {
+	const movingDown = to > from;
+	const shift = (position: number) => {
+		if (movingDown) return position > from && position <= to ? -1 : 0;
+		return position >= to && position < from ? 1 : 0;
+	};
+	return speakers.map((s) => {
+		if (s.id === id) return { ...s, position: to };
+		const by = shift(s.position);
+		return by === 0 ? s : { ...s, position: s.position + by };
+	});
 }
 
 /**
@@ -903,45 +859,23 @@ const localDemoExtraMutationEffects: Record<
 		replaceLocalDemoSpeakers(entity.id as string, (entity.speakers as LocalDemoSpeaker[]) ?? []);
 	},
 	moveSpeakerToPosition: (_args, [entity]) => {
-		if (!entity?.id) return;
-		const speakersListId = entity.speakersListId as string | undefined;
-		const targetPosition = entity.position as number | undefined;
-		if (!speakersListId || typeof targetPosition !== 'number') return;
-
-		const list = findLocalDemoSpeakersList(speakersListId);
-		if (!list) return;
-		const currentPosition = list.speakers.find((s) => s.id === entity.id)?.position;
-		if (currentPosition === undefined || currentPosition === targetPosition) return;
-
-		// Mirror optimistic.moveSpeakerToPosition's shift semantics.
-		const shifted = list.speakers.map((s) => {
-			if (s.id === entity.id) return { ...s, position: targetPosition };
-			if (targetPosition > currentPosition) {
-				if (s.position > currentPosition && s.position <= targetPosition) {
-					return { ...s, position: s.position - 1 };
-				}
-			} else if (s.position >= targetPosition && s.position < currentPosition) {
-				return { ...s, position: s.position + 1 };
-			}
-			return s;
-		});
+		const to = entity?.position;
+		if (typeof to !== 'number' || typeof entity?.speakersListId !== 'string') return;
+		const list = findLocalDemoSpeakersList(entity.speakersListId);
+		const from = list?.speakers.find((s) => s.id === entity.id)?.position;
+		if (!list || from === undefined || from === to) return;
+		const shifted = shiftedSpeakerPositions({ speakers: list.speakers, id: entity.id, from, to });
 		list.speakers = densifySpeakers(shifted);
 		persistLocalDemoCommittees();
 	},
 	updateSpeakerOnList: (_args, [entity]) => {
 		if (!entity?.id) return;
-		for (const committee of localDemoCommittees) {
-			for (const agendaItem of committee.agendaItems) {
-				for (const list of (agendaItem.speakersList as LocalDemoSpeakersListEntity[] | undefined) ??
-					[]) {
-					const speaker = list.speakers.find((s) => s.id === entity.id);
-					if (!speaker) continue;
-					speaker.overwriteName = entity.overwriteName ?? null;
-					persistLocalDemoCommittees();
-					return;
-				}
-			}
-		}
+		const speaker = allLocalDemoSpeakersLists()
+			.flatMap((list) => list.speakers)
+			.find((s) => s.id === entity.id);
+		if (!speaker) return;
+		speaker.overwriteName = entity.overwriteName ?? null;
+		persistLocalDemoCommittees();
 	}
 };
 
@@ -996,7 +930,7 @@ const answeredOperationKeys = new Set<number>();
  * `null`: a handled field whose answer has already been served for this exact operation
  * — caller should neither error nor emit new data, deferring entirely to the cache.
  */
-export type LocalDemoFieldAnswer = Record<string, unknown> | undefined | null;
+type LocalDemoFieldAnswer = Record<string, unknown> | undefined | null;
 
 /**
  * Canned answers for the handful of queries pages under the local conference route need
@@ -1005,7 +939,7 @@ export type LocalDemoFieldAnswer = Record<string, unknown> | undefined | null;
  * client.ts. `operationKey` is urql's `Operation.key` — omit it (e.g. from SSR, which has
  * no persistent cache to defer to) to always get a fresh answer.
  */
-export function resolveLocalDemoRootField(
+function resolveLocalDemoRootField(
 	fieldName: string | undefined,
 	variables: unknown,
 	operationKey?: number
@@ -1113,31 +1047,162 @@ type LocalDemoCommittableEntity = { __typename?: string } & Record<string, unkno
 
 type IntrospectionTypeRef = { kind: string; name?: string; ofType?: IntrospectionTypeRef | null };
 
-/** Whether `typename.fieldName` is a to-one relation (needs `cache.link`) vs a scalar/enum
- * (needs `writeFragment`) or a to-many list (needs list-append semantics, e.g. addToList —
- * committing it here would overwrite the list instead of growing it, so it's left alone). */
-const FIELD_KIND_CACHE = new Map<string, 'scalar' | 'object' | 'list'>();
-function fieldKind(typename: string, fieldName: string): 'scalar' | 'object' | 'list' {
-	const cacheKey = `${typename}.${fieldName}`;
-	const cached = FIELD_KIND_CACHE.get(cacheKey);
-	if (cached) return cached;
+type FieldKind = 'scalar' | 'object' | 'list';
 
+/** The named type below any NON_NULL/LIST wrappers, and whether a LIST was among them */
+function unwrapFieldType(typeRef: IntrospectionTypeRef) {
+	let ref: IntrospectionTypeRef | null | undefined = typeRef;
+	let isList = false;
+	while (ref?.kind === 'NON_NULL' || ref?.kind === 'LIST') {
+		isList ||= ref.kind === 'LIST';
+		ref = ref.ofType;
+	}
+	return { named: ref, isList };
+}
+
+function computeFieldKind(typename: string, fieldName: string): FieldKind {
 	const type = schema.__schema.types.find((t) => t.kind === 'OBJECT' && t.name === typename);
 	const field =
 		type && 'fields' in type ? type.fields?.find((f) => f.name === fieldName) : undefined;
+	if (!field) return 'scalar';
+	const { named, isList } = unwrapFieldType(field.type as IntrospectionTypeRef);
+	if (isList) return 'list';
+	return named?.kind === 'OBJECT' ? 'object' : 'scalar';
+}
 
-	let kind: 'scalar' | 'object' | 'list' = 'scalar';
-	if (field) {
-		let ref = field.type as IntrospectionTypeRef;
-		let isList = false;
-		while (ref && (ref.kind === 'NON_NULL' || ref.kind === 'LIST')) {
-			if (ref.kind === 'LIST') isList = true;
-			ref = ref.ofType as IntrospectionTypeRef;
-		}
-		kind = isList ? 'list' : ref?.kind === 'OBJECT' ? 'object' : 'scalar';
-	}
+/** Whether `typename.fieldName` is a to-one relation (needs `cache.link`) vs a scalar/enum
+ * (needs `writeFragment`) or a to-many list (needs list-append semantics, e.g. addToList —
+ * committing it here would overwrite the list instead of growing it, so it's left alone). */
+const FIELD_KIND_CACHE = new Map<string, FieldKind>();
+function fieldKind(typename: string, fieldName: string): FieldKind {
+	const cacheKey = `${typename}.${fieldName}`;
+	const kind = FIELD_KIND_CACHE.get(cacheKey) ?? computeFieldKind(typename, fieldName);
 	FIELD_KIND_CACHE.set(cacheKey, kind);
 	return kind;
+}
+
+type CommitPlan = { scalars: string[]; relations: string[]; emptyLists: string[] };
+
+/**
+ * Sorts an entity's fields by how they are committed. A genuinely empty list (e.g. a
+ * brand-new Committee's `members: []`) is safe to link directly — there's nothing to clobber
+ * yet. A non-empty list still needs addToList-style append semantics instead (committing it
+ * here would clobber the list with just this mutation's own view of it), so those stay
+ * skipped. Without this, a newly created entity's list field is never written at all unless
+ * the mutation's OWN selection set happened to ask for it — any query with a broader
+ * selection than that (e.g. a page listing every committee's members) can't resolve the new
+ * entity from cache and, offline, never gets a network round trip to fill the gap either, so
+ * the new entity silently never appears anywhere.
+ */
+function planCommit({
+	typename,
+	fields
+}: {
+	typename: string;
+	fields: Record<string, unknown>;
+}): CommitPlan {
+	const plan: CommitPlan = { scalars: [], relations: [], emptyLists: [] };
+	for (const [key, value] of Object.entries(fields)) {
+		const kind = fieldKind(typename, key);
+		if (kind === 'object') plan.relations.push(key);
+		else if (kind === 'scalar') plan.scalars.push(key);
+		else if (Array.isArray(value) && value.length === 0) plan.emptyLists.push(key);
+	}
+	return plan;
+}
+
+/** A relation's value as the reference `cache.link` takes */
+function linkTarget(value: unknown) {
+	const target = value as { __typename?: unknown; id?: unknown } | null;
+	if (typeof target?.__typename !== 'string' || typeof target.id !== 'string') return null;
+	return { __typename: target.__typename, id: target.id };
+}
+
+function writeCommitToCache({
+	cache,
+	entity,
+	plan
+}: {
+	cache: Cache;
+	entity: LocalDemoCommittableEntity & { __typename: string };
+	plan: CommitPlan;
+}) {
+	const { __typename } = entity;
+	if (plan.scalars.length > 0) {
+		cache.writeFragment(
+			gql`fragment LocalDemoMutationCommit on ${__typename} { ${plan.scalars.join(' ')} }`,
+			entity
+		);
+	}
+	// Singular relations (e.g. Committee.activeAgendaItem) can't go through writeFragment —
+	// an object-typed field needs its own GraphQL sub-selection, not a bare field name — so
+	// link them directly instead. Without this, selecting a new agenda item/voting
+	// session/etc. only ever set the *Id scalar column; the UI reads the relation object
+	// itself and the selection would revert once the optimistic layer cleared.
+	const self = { __typename, id: entity.id as string };
+	for (const key of plan.relations) cache.link(self, key, linkTarget(entity[key]));
+	for (const key of plan.emptyLists) cache.link(self, key, []);
+}
+
+/**
+ * Keeps the seed's own snapshot in sync too — see localDemoEntitiesById — so a *different*
+ * page's first-ever (and therefore genuinely fresh-answered, see resolveLocalDemoRootField)
+ * query for this entity sees the change instead of the original hardcoded relation.
+ */
+function commitToSeed({
+	entity,
+	plan
+}: {
+	entity: LocalDemoCommittableEntity & { __typename: string };
+	plan: CommitPlan;
+}) {
+	const known = localDemoEntitiesById.get(`${entity.__typename}:${entity.id}`);
+	if (!known) return;
+	for (const name of [...plan.relations, ...plan.scalars]) known[name] = entity[name];
+	persistLocalDemoState();
+}
+
+/**
+ * Speakers lists live inside each committee's agenda items rather than in
+ * localDemoEntitiesById, so their scalars (timer start/stop, time left, closed, speaking
+ * time, phase) are patched there. Otherwise a reload or a newly opened presentation window
+ * gets the original values back.
+ */
+function commitSpeakersList({
+	entity,
+	plan
+}: {
+	entity: LocalDemoCommittableEntity;
+	plan: CommitPlan;
+}) {
+	if (entity.__typename !== 'Speakerslist' || plan.scalars.length === 0) return;
+	const list = findLocalDemoSpeakersList(entity.id as string);
+	if (!list) return;
+	for (const name of plan.scalars) list[name] = entity[name];
+	persistLocalDemoCommittees();
+}
+
+/**
+ * `optimistic.updateCommittee` only produces a minimal `{__typename, id}` stub for
+ * activeAgendaItem (it doesn't know the item's title/speakersList) — swap in the full entry
+ * from that committee's own `agendaItems` (which does) so this stays in the same shape as
+ * every other agenda item the seed hands out, and persist it (see persistLocalDemoCommittees'
+ * doc comment for why this can't go through the generic scalar snapshot above).
+ */
+function commitActiveAgendaItem({
+	entity,
+	plan
+}: {
+	entity: LocalDemoCommittableEntity;
+	plan: CommitPlan;
+}) {
+	if (entity.__typename !== 'Committee' || !plan.relations.includes('activeAgendaItem')) return;
+	const committee = findLocalDemoCommittee(entity.id as string);
+	if (!committee) return;
+	const activeId = (entity.activeAgendaItem as { id?: string } | null)?.id ?? null;
+	committee.activeAgendaItemId = activeId;
+	committee.activeAgendaItem = activeAgendaItemEntry(committee, activeId);
+	persistLocalDemoCommittees();
 }
 
 /**
@@ -1148,100 +1213,16 @@ function fieldKind(typename: string, fieldName: string): 'scalar' | 'object' | '
  * instant.
  */
 function commitLocalDemoEntity(cache: Cache, entity: LocalDemoCommittableEntity | undefined) {
-	if (!entity?.__typename) return;
-	const { __typename, ...fields } = entity;
+	const typename = entity?.__typename;
+	if (!entity || !typename) return;
+	const fields = Object.fromEntries(Object.entries(entity).filter(([key]) => key !== '__typename'));
+	const typed = { ...entity, __typename: typename };
+	const plan = planCommit({ typename, fields });
 
-	const scalarFieldNames: string[] = [];
-	const relationFieldNames: string[] = [];
-	const emptyListFieldNames: string[] = [];
-	for (const key of Object.keys(fields)) {
-		const kind = fieldKind(__typename, key);
-		if (kind === 'object') relationFieldNames.push(key);
-		else if (kind === 'scalar') scalarFieldNames.push(key);
-		else if (
-			kind === 'list' &&
-			Array.isArray(fields[key]) &&
-			(fields[key] as unknown[]).length === 0
-		) {
-			// A genuinely empty list (e.g. a brand-new Committee's `members: []`) is safe to
-			// link directly — there's nothing to clobber yet. A non-empty list still needs
-			// addToList-style append semantics instead (committing it here would clobber the
-			// list with just this mutation's own view of it), so those stay skipped. Without
-			// this, a newly created entity's list field is never written at all unless the
-			// mutation's OWN selection set happened to ask for it — any query with a broader
-			// selection than that (e.g. a page listing every committee's members) can't
-			// resolve the new entity from cache and, offline, never gets a network round trip
-			// to fill the gap either, so the new entity silently never appears anywhere.
-			emptyListFieldNames.push(key);
-		}
-	}
-
-	if (scalarFieldNames.length > 0) {
-		cache.writeFragment(
-			gql`fragment LocalDemoMutationCommit on ${__typename} { ${scalarFieldNames.join(' ')} }`,
-			entity
-		);
-	}
-
-	// Singular relations (e.g. Committee.activeAgendaItem) can't go through writeFragment —
-	// an object-typed field needs its own GraphQL sub-selection, not a bare field name — so
-	// link them directly instead. Without this, selecting a new agenda item/voting
-	// session/etc. only ever set the *Id scalar column; the UI reads the relation object
-	// itself and the selection would revert once the optimistic layer cleared.
-	for (const key of relationFieldNames) {
-		const value = fields[key] as { __typename?: string; id?: string } | null;
-		cache.link(
-			{ __typename, id: entity.id as string },
-			key,
-			value && typeof value.__typename === 'string' && typeof value.id === 'string'
-				? { __typename: value.__typename, id: value.id }
-				: null
-		);
-	}
-
-	for (const key of emptyListFieldNames) {
-		cache.link({ __typename, id: entity.id as string }, key, []);
-	}
-
-	// Keep the seed's own snapshot in sync too — see localDemoEntitiesById — so a *different*
-	// page's first-ever (and therefore genuinely fresh-answered, see resolveLocalDemoRootField)
-	// query for this entity sees the change instead of the original hardcoded relation.
-	const known = localDemoEntitiesById.get(`${__typename}:${entity.id}`);
-	if (known) {
-		for (const name of relationFieldNames) known[name] = fields[name];
-		for (const name of scalarFieldNames) known[name] = fields[name];
-		persistLocalDemoState();
-	}
-
-	// Speakers lists live inside each committee's agenda items rather than in
-	// localDemoEntitiesById, so their scalars (timer start/stop, time left, closed,
-	// speaking time, phase) are patched there. Otherwise a reload or a newly opened
-	// presentation window gets the original values back.
-	if (__typename === 'Speakerslist' && scalarFieldNames.length > 0) {
-		const list = findLocalDemoSpeakersList(entity.id as string);
-		if (list) {
-			for (const name of scalarFieldNames) list[name] = fields[name];
-			persistLocalDemoCommittees();
-		}
-	}
-
-	// `optimistic.updateCommittee` only produces a minimal `{__typename, id}` stub for
-	// activeAgendaItem (it doesn't know the item's title/speakersList) — swap in the full
-	// entry from that committee's own `agendaItems` (which does) so this stays in the same
-	// shape as every other agenda item the seed hands out, and persist it (see
-	// persistLocalDemoCommittees' doc comment for why this can't go through the generic
-	// scalar snapshot above).
-	if (__typename === 'Committee' && relationFieldNames.includes('activeAgendaItem')) {
-		const committee = findLocalDemoCommittee(entity.id as string);
-		if (committee) {
-			const activeId = (fields.activeAgendaItem as { id?: string } | null)?.id ?? null;
-			committee.activeAgendaItemId = activeId;
-			committee.activeAgendaItem = activeId
-				? (committee.agendaItems.find((item) => item.id === activeId) ?? null)
-				: null;
-			persistLocalDemoCommittees();
-		}
-	}
+	writeCommitToCache({ cache, entity: typed, plan });
+	commitToSeed({ entity: typed, plan });
+	commitSpeakersList({ entity, plan });
+	commitActiveAgendaItem({ entity, plan });
 }
 
 /**

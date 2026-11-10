@@ -5,6 +5,7 @@
 	import toast from 'svelte-french-toast';
 	import { page } from '$app/state';
 	import { untrack } from 'svelte';
+	import { committeeUrl, dialogChange } from './qrTarget';
 
 	interface Props {
 		showModal: boolean;
@@ -30,36 +31,27 @@
 
 	// Generate committee URL based on current committee and option
 	function getCommitteeUrl(): string | undefined {
-		const baseUrl = window.location.origin;
+		const url = committeeUrl({
+			origin: window.location.origin,
+			conferenceId,
+			committeeId,
+			includePapers
+		});
+		if (url === undefined) toast.error('Missing required data. Please reload or contact support.');
+		return url;
+	}
 
-		if (!conferenceId || !committeeId || !baseUrl) {
-			toast.error('Missing required data. Please reload or contact support.');
-			return undefined;
-		}
-
-		if (includePapers) {
-			return `${baseUrl}/app/${encodeURIComponent(conferenceId)}/participant/${encodeURIComponent(committeeId)}/papers`;
-		} else {
-			return `${baseUrl}/app/${encodeURIComponent(conferenceId)}/participant/${encodeURIComponent(committeeId)}`;
-		}
+	function urlToGenerate(): string | undefined {
+		if (activeTab !== 'CUSTOM') return getCommitteeUrl();
+		if (!qrUrl) qrError = m.urlRequired();
+		return qrUrl || undefined;
 	}
 
 	async function generateQRCode() {
-		let urlToGenerate: string | undefined;
-
-		if (activeTab === 'CUSTOM') {
-			if (!qrUrl) {
-				qrError = m.urlRequired();
-				isGenerating = false;
-				return;
-			}
-			urlToGenerate = qrUrl;
-		} else {
-			urlToGenerate = getCommitteeUrl();
-			if (urlToGenerate === undefined) {
-				isGenerating = false;
-				return;
-			}
+		const target = urlToGenerate();
+		if (target === undefined) {
+			isGenerating = false;
+			return;
 		}
 
 		isGenerating = true;
@@ -67,7 +59,7 @@
 		qrImageUrl = null;
 
 		try {
-			const url = await QRCode.toDataURL(urlToGenerate, {
+			const url = await QRCode.toDataURL(target, {
 				errorCorrectionLevel: 'M',
 				margin: 2,
 				width: 300,
@@ -121,14 +113,13 @@
 
 	$effect(() => {
 		if (!dialog) return;
-		if (showModal && !dialog.open) {
+		const change = dialogChange({ showModal, isOpen: dialog.open });
+		if (change === 'open') {
 			dialog.showModal();
 			untrack(() => {
-				if (activeTab === 'COMMITTEE') {
-					generateQRCode();
-				}
+				if (activeTab === 'COMMITTEE') generateQRCode();
 			});
-		} else if (!showModal && dialog.open) {
+		} else if (change === 'close') {
 			dialog.close();
 			resetState();
 		}

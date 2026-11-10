@@ -2,7 +2,7 @@ import { m } from '#lib/paraglide/messages';
 import type { Tour } from '#lib/tours/types';
 
 /** Participant conference overview for NSAs and visitors. Anchors live in the page. */
-export const tour: Tour = {
+export const participantOverviewTour: Tour = {
 	id: 'participant.overview',
 	steps: [
 		{

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { browser } from '$app/env';
 	import { goto } from '$app/navigation';
 	import { m } from '#lib/paraglide/messages';
@@ -12,21 +13,33 @@
 
 	import {
 		ResolutionEditor,
-		ResolutionPreview,
-		type ResolutionHeaderData
+		ResolutionPreview
 	} from '@deutschemodelunitednations/munify-resolution-editor';
 	import { englishLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
 	import {
 		englishPreamblePhrases,
 		englishOperativePhrases
 	} from '@deutschemodelunitednations/munify-resolution-editor/phrases';
-	import { svgToDataUrl } from '#lib/utils/svgToDataUrl';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import { createPaperYjsClient, type PaperYjsClient } from '#lib/api/yjs/createPaperYjs.svelte';
+	import { resolutionHeaderData } from './resolutionHeader';
 	import {
-		createPaperYjsClient,
-		type PaperYjsClient,
-		type PresenceUserMeta
-	} from '#lib/api/yjs/createPaperYjs.svelte';
+		activeDrBlocker as activeDrBlockerOf,
+		clauseRejected,
+		clauseVoteToLink,
+		committeeNameToSeed,
+		countByClause,
+		debatableAmendmentCounts,
+		docNumberToSave,
+		formatModelId,
+		hasClauseBadges,
+		openReviews,
+		rejectedClauseIdsOf,
+		presenceMetaOf,
+		presenceUserOf,
+		setCurrentButtonState
+	} from './paperPageState';
+	import { dodgeOnHover } from '../dodgeOnHover';
+	import { fetchClauseVoteOutcomes, fetchOverlayAmendments } from './paperOverlays';
 	import PresenceIndicator from './PresenceIndicator.svelte';
 	import ClausePresenceBadges from './ClausePresenceBadges.svelte';
 
@@ -130,6 +143,7 @@
 		editors: { id: true, conferenceUser: { id: true } }
 	});
 	const paper = $derived(papers?.[0]);
+	type Paper = NonNullable<typeof paper>;
 
 	const committees = await client.liveQuery.committees({
 		__args: { where: { resolutionPapers: { id: { eq: paperId } } } },
@@ -156,26 +170,11 @@
 		}
 	});
 	const committee = $derived(committees?.[0]);
+	type Committee = NonNullable<typeof committee>;
 
 	// ---- amendments + votes (overlays / highlighting) -----------------------
-	const amendmentRows = await client.liveQuery.amendments({
-		__args: { where: { paper: { id: { eq: paperId } } } },
-		id: true,
-		type: true,
-		status: true,
-		targetClauseId: true,
-		targetOperativeIndex: true,
-		targetPosition: true,
-		newContent: true,
-		proposer: { id: true, representation: { id: true, name: true, alpha2Code: true } },
-		sponsors: { id: true }
-	});
-	const clauseVotes = await client.liveQuery.operativeClauseVotes({
-		__args: { where: { paper: { id: { eq: paperId } } } },
-		id: true,
-		clauseId: true,
-		vote: { id: true, outcome: true }
-	});
+	const amendmentRows = await fetchOverlayAmendments(paperId);
+	const clauseVotes = await fetchClauseVoteOutcomes(paperId);
 	const comments = await client.liveQuery.resolutionComments({
 		__args: { where: { paper: { id: { eq: paperId } } } },
 		id: true,
@@ -196,47 +195,22 @@
 	const amendmentOverlays = $derived(
 		isDebatePhase ? toAmendmentOverlays(amendmentRows ?? []) : undefined
 	);
-	const rejectedClauseIds = $derived(
-		(clauseVotes ?? []).filter((v) => v.vote?.outcome === 'REJECTED').map((v) => v.clauseId)
-	);
+	const rejectedClauseIds = $derived(rejectedClauseIdsOf(clauseVotes ?? []));
 	const _showVoteTab = $derived(status !== 'WORKING_PAPER' && status !== 'SUBMITTED');
 	// Lookup map for clause vote records (for inline vote button + outcome badge).
 	const clauseVoteMap = $derived(new Map((clauseVotes ?? []).map((v) => [v.clauseId, v])));
 
 	const amendmentCountMap = $derived(
-		(amendmentRows ?? [])
-			.filter((a) => a.status === 'SUBMITTED' && (a.sponsors?.length ?? 0) >= minAmendmentSponsors)
-			.reduce((m, a) => {
-				if (a.targetClauseId) m.set(a.targetClauseId, (m.get(a.targetClauseId) ?? 0) + 1);
-				return m;
-			}, new Map<string, number>())
+		debatableAmendmentCounts({
+			amendments: amendmentRows ?? [],
+			minSponsors: minAmendmentSponsors
+		})
 	);
-	const commentCountMap = $derived(
-		(comments ?? []).reduce((m, c) => {
-			if (c.clauseId) m.set(c.clauseId, (m.get(c.clauseId) ?? 0) + 1);
-			return m;
-		}, new Map<string, number>())
-	);
-	const reviewClauseIds = $derived(
-		new Set(
-			(reviewItemsForBadges ?? [])
-				.filter((r) => r.phase !== 'RESOLVED' && r.triggerAmendment?.targetClauseId)
-				.map((r) => r.triggerAmendment!.targetClauseId as string)
-		)
-	);
+	const commentCountMap = $derived(countByClause((comments ?? []).map((c) => c.clauseId)));
+	const reviews = $derived(openReviews(reviewItemsForBadges ?? []));
+	const reviewClauseIds = $derived(reviews.clauseIds);
 	// Maps clauseId → first unresolved trigger amendment ID for direct modal opening.
-	const reviewTriggerForClause = $derived(
-		(reviewItemsForBadges ?? [])
-			.filter(
-				(r) =>
-					r.phase !== 'RESOLVED' && r.triggerAmendment?.targetClauseId && r.triggerAmendment?.id
-			)
-			.reduce((map, r) => {
-				const clauseId = r.triggerAmendment!.targetClauseId as string;
-				if (!map.has(clauseId)) map.set(clauseId, r.triggerAmendment!.id as string);
-				return map;
-			}, new Map<string, string>())
-	);
+	const reviewTriggerForClause = $derived(reviews.triggerByClause);
 	let pendingOpenTriggerId = $state<string | null>(null);
 
 	function amendmentCountFor(clauseId: string) {
@@ -247,27 +221,7 @@
 	}
 
 	// ---- header data (for paper preview / export) ---------------------------
-	const headerData = $derived<ResolutionHeaderData>({
-		conferenceTitle: committee?.conference?.title ?? undefined,
-		conferenceEmblem: svgToDataUrl(committee?.conference?.logoSvg),
-		committeeAbbreviation: committee?.abbreviation ?? undefined,
-		committeeFullName: committee?.name ?? undefined,
-		documentNumber: paper?.documentNumber ?? undefined,
-		topic: paper?.agendaItem?.title ?? undefined,
-		authoringDelegation:
-			getTranslatedCountryNameFromAlpha3Code(
-				paper?.creatorCommitteeMember?.representation?.alpha3Code
-			) ??
-			paper?.creatorCommitteeMember?.representation?.name ??
-			undefined,
-		sponsoringDelegations: (paper?.sponsors ?? []).map(
-			(s) =>
-				getTranslatedCountryNameFromAlpha3Code(s.committeeMember?.representation?.alpha3Code) ??
-				s.committeeMember?.representation?.name ??
-				''
-		),
-		lastEdited: paper?.updatedAt ?? undefined
-	});
+	const headerData = $derived(resolutionHeaderData({ committee, paper }));
 
 	// ---- access -------------------------------------------------------------
 
@@ -316,30 +270,6 @@
 	let aiOnboardingOpen = $state(false);
 	let aiHasBackend = $state(false);
 	let aiNotifDodging = $state(false);
-
-	function dodgeOnHover(node: HTMLElement) {
-		const onMove = (e: MouseEvent) => {
-			const r = node.getBoundingClientRect();
-			const pad = 24;
-			aiNotifDodging =
-				e.clientX >= r.left - pad &&
-				e.clientX <= r.right + pad &&
-				e.clientY >= r.top - pad &&
-				e.clientY <= r.bottom + pad;
-		};
-		window.addEventListener('mousemove', onMove);
-		return {
-			destroy() {
-				window.removeEventListener('mousemove', onMove);
-				aiNotifDodging = false;
-			}
-		};
-	}
-
-	function formatModelId(id: string): string {
-		// Strip quantisation suffix (e.g. -q4f32_1-MLC) and replace dashes with spaces
-		return id.replace(/-q\d+f\d+.*$/, '').replaceAll('-', ' ');
-	}
 
 	function startLocalEngine() {
 		assessAiCapability(getLocalModelTier()).then((assessment) => {
@@ -421,29 +351,14 @@
 		// to a different paper. Everything else (identity, meta) is session-stable
 		// and is read once at connect time without creating reactive dependencies.
 		const pid = paperId;
-		const created = untrack(() => {
-			const presenceUser = {
-				id: currentUser.id || 'anonymous',
-				name:
-					[currentUser.givenName, currentUser.familyName].filter(Boolean).join(' ').trim() ||
-					currentUser.email ||
-					'Anonymous',
-				color: undefined
-			};
-			const presenceMeta: PresenceUserMeta = {
-				conferenceUserType: (conferenceUsers?.[0]?.conferenceUserType ??
-					'SPECTATOR') as PresenceUserMeta['conferenceUserType'],
-				nationName: conferenceUsers?.[0]?.committeeMember?.representation?.name ?? null,
-				alpha2Code: conferenceUsers?.[0]?.committeeMember?.representation?.alpha2Code ?? null,
-				alpha3Code: conferenceUsers?.[0]?.committeeMember?.representation?.alpha3Code ?? null
-			};
-			return createPaperYjsClient({
+		const created = untrack(() =>
+			createPaperYjsClient({
 				paperId: pid,
-				user: presenceUser,
-				meta: presenceMeta,
+				user: presenceUserOf(currentUser),
+				meta: presenceMetaOf(conferenceUsers?.[0]),
 				token: () => getCachedAccessToken()
-			});
-		});
+			})
+		);
 		yClient = created;
 		return () => void created.destroy();
 	});
@@ -453,10 +368,12 @@
 
 	// Seed committeeName in the Y.js doc once IDB has loaded and the field is blank.
 	$effect(() => {
-		if (!yClient?.persistenceLoaded) return;
-		if (yClient.store.snapshot.committeeName) return;
-		const name = committee?.name ?? committee?.abbreviation;
-		if (name) yClient.store.setCommitteeName(name);
+		const name = committeeNameToSeed({
+			persistenceLoaded: !!yClient?.persistenceLoaded,
+			documentName: yClient?.store.snapshot.committeeName,
+			committee
+		});
+		if (name) yClient?.store.setCommitteeName(name);
 	});
 
 	// ---- selection ----------------------------------------------------------
@@ -528,33 +445,33 @@
 			return '<i aria-hidden="true" class="ph-fill ph-caret-right"></i>';
 		}
 
-		type BtnState = 'hidden' | 'next' | 'other';
-		let lastBtnState: BtnState | null = null;
+		const BUTTON_LOOKS = {
+			next: {
+				className:
+					'clause-set-current-btn clause-set-current-btn--next btn btn-xs btn-success gap-1',
+				html: () => `<i aria-hidden="true" class="ph-fill ph-play"></i>${m.setAsCurrentClause()}`
+			},
+			other: {
+				className:
+					'clause-set-current-btn clause-set-current-btn--other btn btn-xs btn-ghost gap-1',
+				html: () => '<i aria-hidden="true" class="ph-fill ph-play"></i>'
+			}
+		};
+		let lastBtnState: ReturnType<typeof setCurrentButtonState> | null = null;
 
 		function applyBtnState(p: typeof params) {
-			const state: BtnState =
-				!p.showSetCurrentBtn || p.isCurrentClause ? 'hidden' : p.isNextClause ? 'next' : 'other';
+			const state = setCurrentButtonState(p);
 
 			// Always keep the callbacks fresh so closures don't go stale.
-			if (state === 'next') setCurrentBtn.onclick = () => p.onSetCurrentNext?.();
-			else if (state === 'other') setCurrentBtn.onclick = () => p.onSetCurrentOutOfOrder?.();
+			setCurrentBtn.onclick = () =>
+				state === 'next' ? p.onSetCurrentNext?.() : p.onSetCurrentOutOfOrder?.();
 
 			if (state === lastBtnState) return;
 			lastBtnState = state;
-
-			if (state === 'hidden') {
-				setCurrentBtn.style.display = 'none';
-			} else if (state === 'next') {
-				setCurrentBtn.style.display = '';
-				setCurrentBtn.className =
-					'clause-set-current-btn clause-set-current-btn--next btn btn-xs btn-success gap-1';
-				setCurrentBtn.innerHTML = `<i aria-hidden="true" class="ph-fill ph-play"></i>${m.setAsCurrentClause()}`;
-			} else {
-				setCurrentBtn.style.display = '';
-				setCurrentBtn.className =
-					'clause-set-current-btn clause-set-current-btn--other btn btn-xs btn-ghost gap-1';
-				setCurrentBtn.innerHTML = '<i aria-hidden="true" class="ph-fill ph-play"></i>';
-			}
+			setCurrentBtn.style.display = state === 'hidden' ? 'none' : '';
+			if (state === 'hidden') return;
+			setCurrentBtn.className = BUTTON_LOOKS[state].className;
+			setCurrentBtn.innerHTML = BUTTON_LOOKS[state].html();
 		}
 
 		function apply(p: typeof params) {
@@ -585,39 +502,42 @@
 	let pendingLinkSessionId = $state<string | null>(null);
 
 	$effect(() => {
-		const sessionId = committee?.activeVotingSession?.id;
-		const clauseId = pendingLinkClauseId;
 		// Only link when a NEW session appears (not one that was already active).
-		if (!sessionId || !clauseId || sessionId === pendingLinkSessionId) return;
+		const link = clauseVoteToLink({
+			sessionId: committee?.activeVotingSession?.id,
+			clauseId: pendingLinkClauseId,
+			ignoredSessionId: pendingLinkSessionId
+		});
+		if (!link) return;
 		pendingLinkClauseId = null;
 		client.mutate
 			.linkOperativeClauseVote({
-				__args: { id: nanoid(), paperId, clauseId, votingSessionId: sessionId },
+				__args: { id: nanoid(), paperId, clauseId: link.clauseId, votingSessionId: link.sessionId },
 				id: true
 			})
 			.catch(() => {});
 	});
 
 	let suggestRemoveClauseId = $state<string | null>(null);
+	const activeSessionId = $derived(committee?.activeVotingSession?.id ?? null);
 	let outOfOrderClauseIndex = $state<number | null>(null);
 
 	async function setCurrentClause(index: number) {
-		const committeeId = committee?.id;
-		if (!committeeId) return;
+		if (!committee) return;
 		try {
 			await client.mutate.setCommitteeResolutionToggles({
-				__args: { committeeId, currentOperativeIndex: index },
+				__args: { committeeId: committee.id, currentOperativeIndex: index },
 				id: true,
 				currentOperativeIndex: true
 			});
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed');
+			toast.error(errorMessage(err, 'Failed'));
 		}
 	}
 
 	async function startClauseVote(clauseId: string, clauseLabel: string) {
 		// Capture the current session ID so the $effect ignores it (only fires for new ones).
-		pendingLinkSessionId = committee?.activeVotingSession?.id ?? null;
+		pendingLinkSessionId = activeSessionId;
 		pendingLinkClauseId = clauseId;
 		const result = await openVotingModal({
 			voteName: clauseLabel,
@@ -628,9 +548,7 @@
 		// Clear if vote was cancelled before starting (session never appeared).
 		pendingLinkClauseId = null;
 		pendingLinkSessionId = null;
-		if (!result.cancelled && result.outcome === 'REJECTED') {
-			suggestRemoveClauseId = clauseId;
-		}
+		if (clauseRejected(result)) suggestRemoveClauseId = clauseId;
 	}
 
 	// ---- actions ------------------------------------------------------------
@@ -697,15 +615,15 @@
 
 	async function saveDocNum() {
 		editingDocNum = false;
-		const trimmed = docNumDraft.trim();
-		if (!trimmed || trimmed === paper?.documentNumber) return;
+		const documentNumber = docNumberToSave({ draft: docNumDraft, current: paper?.documentNumber });
+		if (!documentNumber) return;
 		try {
 			await client.mutate.updateResolutionPaper({
-				__args: { id: paperId, documentNumber: trimmed },
+				__args: { id: paperId, documentNumber },
 				id: true
 			});
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed to save document number');
+			toast.error(errorMessage(err, 'Failed to save document number'));
 		}
 	}
 	let submitting = $state(false);
@@ -716,31 +634,30 @@
 			committees?.[0]?.activeDraftResolutionId === papers?.[0]?.id
 	);
 	let togglingActiveDr = $state(false);
+	// Toggling unsets the active paper or makes this one active.
+	const nextActiveDrId = $derived(isActiveDr ? undefined : paper?.id);
 
 	// Mirrors the server rules of setActiveDraftResolution, so the chair sees why a paper
 	// can't become active instead of only getting an error after clicking
-	const activeDrBlocker = $derived.by(() => {
-		if (isActiveDr) return undefined;
-		if (paper?.status === 'WORKING_PAPER') return m.setActiveDrWorkingPaper();
-		const activeAgendaItemId = committees?.[0]?.activeAgendaItemId;
-		if (activeAgendaItemId && paper?.agendaItem?.id !== activeAgendaItemId) {
-			return m.setActiveDrOtherAgendaItem();
-		}
-		return undefined;
-	});
+	const activeDrBlocker = $derived(
+		activeDrBlockerOf({
+			isActiveDr,
+			paperStatus: paper?.status,
+			paperAgendaItemId: paper?.agendaItem?.id,
+			activeAgendaItemId: committee?.activeAgendaItemId
+		})
+	);
 	async function toggleActiveDr() {
-		const cId = committees?.[0]?.id;
-		const pId = papers?.[0]?.id;
-		if (!cId || !pId) return;
+		if (!committee || !paper) return;
 		togglingActiveDr = true;
 		try {
 			await client.mutate.setActiveDraftResolution({
-				__args: { committeeId: cId, paperId: isActiveDr ? undefined : pId },
+				__args: { committeeId: committee.id, paperId: nextActiveDrId },
 				id: true,
 				activeDraftResolutionId: true
 			});
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed');
+			toast.error(errorMessage(err, 'Failed'));
 		} finally {
 			togglingActiveDr = false;
 		}
@@ -877,7 +794,7 @@
 			});
 			toast.success(m.paperSubmitted());
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed to submit');
+			toast.error(errorMessage(err, 'Failed to submit'));
 		} finally {
 			submitting = false;
 		}
@@ -895,201 +812,11 @@
 			<a class="btn btn-ghost btn-sm" href={backHref} aria-label={m.back()}>
 				<i aria-hidden="true" class="ph-fill ph-arrow-left"></i>
 			</a>
-			<div class="min-w-0">
-				{#if editingDocNum && team}
-					<div class="flex items-center gap-1">
-						<!-- svelte-ignore a11y_autofocus -->
-						<input
-							class="input input-bordered input-sm w-36"
-							type="text"
-							bind:value={docNumDraft}
-							onkeydown={(e) => {
-								if (e.key === 'Enter') saveDocNum();
-								if (e.key === 'Escape') editingDocNum = false;
-							}}
-							onblur={saveDocNum}
-							autofocus
-							aria-label={m.documentNumber()}
-						/>
-					</div>
-				{:else}
-					<div class="flex items-center gap-1">
-						<span
-							class="truncate text-lg font-semibold"
-							style="view-transition-name: paper-title-{paper.id};"
-						>
-							{paper.documentNumber || paper.title || workingPaperName(paperId)}
-						</span>
-						{#if team && status === 'SUBMITTED'}
-							<button
-								class="btn btn-ghost btn-xs opacity-50 hover:opacity-100"
-								title="Set document number"
-								onclick={startEditingDocNum}
-							>
-								<i aria-hidden="true" class="ph-fill ph-pen text-xs"></i>
-							</button>
-						{/if}
-					</div>
-				{/if}
-				<div class="text-base-content/60 text-xs">{paper.agendaItem?.title ?? ''}</div>
-			</div>
+			{@render paperTitle(paper)}
 
-			{#if team}
-				<ChairControlBar
-					paper={{ id: paper.id, status, title: paper.documentNumber ?? paper.title ?? '' }}
-					committee={{
-						id: committee.id,
-						amendmentSubmissionOpen: committee.amendmentSubmissionOpen,
-						amendmentSponsoringOpen: committee.amendmentSponsoringOpen,
-						supportReevaluationOpen: committee.supportReevaluationOpen,
-						activeVotingSession: committee.activeVotingSession ?? null
-					}}
-					currentClauseId={operative[committee.currentOperativeIndex]?.id ?? null}
-					currentClauseLabel={m.clauseN({ n: String(committee.currentOperativeIndex + 1) })}
-					onStartClauseVote={startClauseVote}
-				/>
-			{:else}
-				<!-- Read-only lifecycle chain for participants -->
-				<ul class="steps steps-horizontal text-xs" data-tour="paper.lifecycle">
-					{#each PAPER_STATUS_ORDER as s, i (s)}
-						<li class="step {i <= currentStatusIdx ? 'step-primary' : ''}">
-							<span
-								class:font-bold={i === currentStatusIdx}
-								class:opacity-50={i > currentStatusIdx}
-							>
-								{statusLabel(s)}
-							</span>
-						</li>
-					{/each}
-				</ul>
-			{/if}
+			{@render lifecycle(paper, committee)}
 
-			<div class="ml-auto flex items-center gap-2">
-				<button
-					type="button"
-					class="btn btn-ghost btn-sm"
-					title={m.downloadTypst()}
-					aria-label={m.downloadTypst()}
-					disabled={!yClient?.store.snapshot}
-					onclick={() =>
-						yClient?.store.snapshot &&
-						downloadResolutionTypst(yClient.store.snapshot, headerData, paper?.documentNumber)}
-				>
-					<i aria-hidden="true" class="ph-fill ph-file-code"></i>
-				</button>
-				<button
-					type="button"
-					class="btn btn-ghost btn-sm"
-					title={m.downloadPdf()}
-					aria-label={m.downloadPdf()}
-					disabled={!yClient?.store.snapshot || isExportingPdf}
-					onclick={exportPdf}
-				>
-					{#if isExportingPdf}
-						<span class="loading loading-spinner loading-xs"></span>
-					{:else}
-						<i aria-hidden="true" class="ph-fill ph-file-pdf"></i>
-					{/if}
-				</button>
-				{#if yClient && yClient.remotePresences.length > 0}
-					<button
-						class="btn btn-ghost btn-sm gap-1.5"
-						onclick={() => (presenceOpen = true)}
-						title="Co-editors"
-					>
-						<i aria-hidden="true" class="ph-fill ph-users"></i>
-						{yClient.remotePresences.length}
-					</button>
-				{/if}
-				<DelegatorOriginBadge
-					delegatorVersion={paper?.delegatorVersion}
-					detached={paper?.detachedAt != null}
-				/>
-				{#if yClient}
-					<SyncBadge
-						connectionState={yClient.connectionState}
-						persistenceLoaded={yClient.persistenceLoaded}
-						wsSynced={yClient.wsSynced}
-					/>
-				{/if}
-				{#if status === 'WORKING_PAPER' && (isCreator || team)}
-					<button
-						class="btn btn-ghost btn-sm"
-						data-tour={team ? 'chair-paper.share' : 'paper.share'}
-						onclick={openShareCodes}
-						title={m.shareCodes()}
-					>
-						<i aria-hidden="true" class="ph-fill ph-share-network"></i>
-						{m.shareCodes()}
-					</button>
-				{/if}
-				<button
-					class="btn btn-ghost btn-sm"
-					data-tour={team ? 'chair-paper.sponsors' : 'paper.sponsors'}
-					onclick={toggleSponsors}
-					title={m.sponsors()}
-				>
-					<i aria-hidden="true" class="ph-fill ph-user-gear"></i>
-					{m.sponsors()}
-				</button>
-				{#if team}
-					<div class="dropdown dropdown-end">
-						<button tabindex="0" class="btn btn-ghost btn-sm" title="Committee settings">
-							<i aria-hidden="true" class="ph-fill ph-gear"></i>
-						</button>
-						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-						<div
-							tabindex="0"
-							class="dropdown-content bg-base-100 border-base-300 rounded-box z-50 mt-1 w-max border p-4 shadow-xl"
-						>
-							<CommitteePhaseToggles
-								committeeId={committee.id}
-								amendmentSubmissionOpen={committee.amendmentSubmissionOpen}
-								amendmentSponsoringOpen={committee.amendmentSponsoringOpen}
-								supportReevaluationOpen={committee.supportReevaluationOpen}
-							/>
-						</div>
-					</div>
-					<button
-						class="btn btn-ghost btn-sm"
-						data-tour="chair-paper.ai"
-						onclick={openAiSettings}
-						title={m.aiOnboardingOpenSettings()}
-					>
-						<i aria-hidden="true" class="ph-fill ph-robot"></i>
-					</button>
-					<button
-						class="btn btn-ghost btn-sm"
-						data-tour="chair-paper.history"
-						onclick={openHistory}
-						title={m.documentHistory()}
-					>
-						<i aria-hidden="true" class="ph-fill ph-clock-counter-clockwise"></i>
-					</button>
-					<button
-						class="btn btn-sm"
-						class:btn-secondary={isActiveDr}
-						class:btn-ghost={!isActiveDr}
-						disabled={togglingActiveDr || !!activeDrBlocker}
-						onclick={toggleActiveDr}
-						title={activeDrBlocker ?? (isActiveDr ? m.activeDraftResolution() : m.setActiveDr())}
-					>
-						<i aria-hidden="true" class="ph-fill ph-star"></i>
-						{isActiveDr ? m.activeDraftResolution() : m.setActiveDr()}
-					</button>
-				{/if}
-				{#if status === 'WORKING_PAPER' && (isCreator || team)}
-					<button
-						class="btn btn-primary btn-sm"
-						data-tour={team ? undefined : 'paper.submit'}
-						disabled={submitting}
-						onclick={openSubmitConfirm}
-					>
-						<i aria-hidden="true" class="ph-fill ph-paper-plane-tilt"></i>
-						{m.submit()}
-					</button>
-				{/if}
-			</div>
+			{@render headerActions(paper, committee)}
 		</header>
 
 		<!-- Locked-paper notice: shown to creators/editors while the paper is in SUBMITTED stage -->
@@ -1113,150 +840,384 @@
 			onpointerup={stopDrag}
 			onpointerleave={stopDrag}
 		>
-			<!-- Left: collapsible document preview (hidden on FINAL) -->
 			{#if status !== 'FINAL'}
-				{#if previewOpen}
-					<aside
-						class="hidden shrink-0 flex-col overflow-hidden lg:flex"
-						style="width: {previewWidth}px;"
-						data-tour={team ? undefined : 'paper.preview'}
-					>
-						<div class="border-base-300 flex items-center justify-between border-b px-3 py-2">
-							<span class="text-sm font-semibold">
-								<i aria-hidden="true" class="ph-fill ph-eye mr-1.5"></i>{m.resolutionPreview()}
-							</span>
-							<button
-								class="btn btn-ghost btn-xs"
-								title={m.resolutionHidePreview()}
-								onclick={hidePreview}
-							>
-								<i aria-hidden="true" class="ph-fill ph-caret-left"></i>
-							</button>
-						</div>
-						{#if browser && yClient}
-							<div class="min-h-0 flex-1 overflow-auto p-4">
-								<ResolutionPreview
-									resolution={yClient.store.snapshot}
-									{headerData}
-									labels={englishLabels}
-									amendments={amendmentOverlays}
-									{rejectedClauseIds}
-								/>
-							</div>
-						{/if}
-					</aside>
-					<!-- Drag handle: preview / editor -->
-					<div
-						role="separator"
-						aria-label="Resize preview panel"
-						aria-orientation="vertical"
-						class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
-						onpointerdown={(e) => {
-							e.preventDefault();
-							e.currentTarget.setPointerCapture(e.pointerId);
-							startDrag('preview');
-						}}
-					>
-						<div
-							class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"
-						></div>
-					</div>
-				{:else}
-					<div class="hidden shrink-0 flex-col items-center pt-2 lg:flex">
-						<button
-							class="btn btn-ghost btn-xs"
-							title={m.resolutionShowPreview()}
-							onclick={showPreview}
-						>
-							<i aria-hidden="true" class="ph-fill ph-caret-right"></i>
-						</button>
-					</div>
-				{/if}
+				{@render previewPanel()}
 			{/if}
 
 			<!-- Center: preview (FINAL) or editor -->
-			<div class="min-h-0 flex-1 overflow-auto" data-tour={team ? undefined : 'paper.editor'}>
-				{#if browser && yClient}
-					{#if status === 'FINAL'}
-						<div class="min-h-0 flex-1 overflow-auto p-4">
-							<ResolutionPreview
-								resolution={yClient.store.snapshot}
-								{headerData}
-								labels={englishLabels}
-								amendments={amendmentOverlays}
-								{rejectedClauseIds}
-							/>
-						</div>
-					{:else}
-						<div class="editor-no-internal-preview flex h-full w-full flex-col">
-							<ResolutionEditor
-								store={yClient.store}
-								presence={yClient.presence}
-								labels={englishLabels}
-								preamblePhrases={englishPreamblePhrases}
-								operativePhrases={englishOperativePhrases}
-								editable={canEdit}
-								amendments={amendmentOverlays}
-								{rejectedClauseIds}
-								{headerData}
-								previewHeader={noHeader}
-								clauseAnnotations={clauseAnnotationsSnippet}
-								preambleAnnotations={preambleAnnotationsSnippet}
-							/>
-						</div>
-					{/if}
-				{/if}
-			</div>
+			{@render centerPanel()}
 
 			<!-- Drag handle + right context panel: hidden on FINAL -->
 			{#if status !== 'FINAL'}
-				<div
-					role="separator"
-					aria-label="Resize context panel"
-					aria-orientation="vertical"
-					class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
-					onpointerdown={(e) => {
-						e.preventDefault();
-						e.currentTarget.setPointerCapture(e.pointerId);
-						startDrag('context');
-					}}
-				>
-					<div
-						class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"
-					></div>
-				</div>
-
-				<aside
-					class="hidden shrink-0 overflow-hidden lg:flex lg:flex-col"
-					style="width: {contextWidth}px;"
-					data-tour={team ? 'chair-paper.amendments' : 'paper.context'}
-				>
-					<ClauseContextPanel
-						{paperId}
-						committeeId={committee.id}
-						{selectedClauseId}
-						{selectedClauseIndex}
-						{operative}
-						{viewer}
-						submissionOpen={committee.amendmentSubmissionOpen}
-						sponsoringOpen={committee.amendmentSponsoringOpen}
-						{minAmendmentSponsors}
-						activeAmendmentId={committee.activeAmendmentId ?? null}
-						simpleMajority={committee.simpleMajority}
-						showVoteTab={false}
-						{requestedTab}
-						hasReview={selectedClauseId != null && reviewClauseIds.has(selectedClauseId)}
-						openTriggerId={pendingOpenTriggerId}
-						ondeselect={() => (selectedClauseId = null)}
-						onselectclause={(id) => (selectedClauseId = id)}
-					/>
-				</aside>
+				{@render contextPanel(committee)}
 			{/if}
 		</div>
 	</div>
 
 	<SnapshotHistoryModal bind:open={historyOpen} {paperId} close={() => (historyOpen = false)} />
 
+	{@render dialogs(committee)}
+
+	<AiOnboardingModal
+		bind:open={aiOnboardingOpen}
+		hasBackend={aiHasBackend}
+		savedPreference={getAiOnboarded() ? getAiPreference() : null}
+		initialModelTier={getLocalModelTier()}
+		onConfirm={applyAiPreference}
+	/>
+
+	<!-- AI model status (chairs only) -->
+	{@render aiStatus()}
+{:else}
+	<div class="flex h-full w-full items-center justify-center">
+		<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin text-3xl opacity-50"></i>
+	</div>
+{/if}
+
+{#snippet paperTitle(paper: Paper)}
+	<div class="min-w-0">
+		{#if editingDocNum && team}
+			<div class="flex items-center gap-1">
+				<!-- svelte-ignore a11y_autofocus -->
+				<input
+					class="input input-bordered input-sm w-36"
+					type="text"
+					bind:value={docNumDraft}
+					onkeydown={(e) => {
+						if (e.key === 'Enter') saveDocNum();
+						if (e.key === 'Escape') editingDocNum = false;
+					}}
+					onblur={saveDocNum}
+					autofocus
+					aria-label={m.documentNumber()}
+				/>
+			</div>
+		{:else}
+			<div class="flex items-center gap-1">
+				<span
+					class="truncate text-lg font-semibold"
+					style="view-transition-name: paper-title-{paper.id};"
+				>
+					{paper.documentNumber || paper.title || workingPaperName(paperId)}
+				</span>
+				{#if team && status === 'SUBMITTED'}
+					<button
+						class="btn btn-ghost btn-xs opacity-50 hover:opacity-100"
+						title="Set document number"
+						onclick={startEditingDocNum}
+					>
+						<i aria-hidden="true" class="ph-fill ph-pen text-xs"></i>
+					</button>
+				{/if}
+			</div>
+		{/if}
+		<div class="text-base-content/60 text-xs">{paper.agendaItem?.title ?? ''}</div>
+	</div>
+{/snippet}
+
+{#snippet lifecycle(paper: Paper, committee: Committee)}
+	{#if team}
+		<ChairControlBar
+			paper={{ id: paper.id, status, title: paper.documentNumber ?? paper.title ?? '' }}
+			committee={{
+				id: committee.id,
+				amendmentSubmissionOpen: committee.amendmentSubmissionOpen,
+				amendmentSponsoringOpen: committee.amendmentSponsoringOpen,
+				supportReevaluationOpen: committee.supportReevaluationOpen,
+				activeVotingSession: committee.activeVotingSession ?? null
+			}}
+			currentClauseId={operative[committee.currentOperativeIndex]?.id ?? null}
+			currentClauseLabel={m.clauseN({ n: String(committee.currentOperativeIndex + 1) })}
+			onStartClauseVote={startClauseVote}
+		/>
+	{:else}
+		<!-- Read-only lifecycle chain for participants -->
+		<ul class="steps steps-horizontal text-xs" data-tour="paper.lifecycle">
+			{#each PAPER_STATUS_ORDER as s, i (s)}
+				<li class="step {i <= currentStatusIdx ? 'step-primary' : ''}">
+					<span class:font-bold={i === currentStatusIdx} class:opacity-50={i > currentStatusIdx}>
+						{statusLabel(s)}
+					</span>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+{/snippet}
+
+{#snippet headerActions(paper: Paper, committee: Committee)}
+	<div class="ml-auto flex items-center gap-2">
+		{@render exportButtons(paper)}
+		{#if yClient && yClient.remotePresences.length > 0}
+			<button
+				class="btn btn-ghost btn-sm gap-1.5"
+				onclick={() => (presenceOpen = true)}
+				title="Co-editors"
+			>
+				<i aria-hidden="true" class="ph-fill ph-users"></i>
+				{yClient.remotePresences.length}
+			</button>
+		{/if}
+		<DelegatorOriginBadge
+			delegatorVersion={paper?.delegatorVersion}
+			detached={paper?.detachedAt != null}
+		/>
+		{#if yClient}
+			<SyncBadge
+				connectionState={yClient.connectionState}
+				persistenceLoaded={yClient.persistenceLoaded}
+				wsSynced={yClient.wsSynced}
+			/>
+		{/if}
+		{#if status === 'WORKING_PAPER' && (isCreator || team)}
+			<button
+				class="btn btn-ghost btn-sm"
+				data-tour={team ? 'chair-paper.share' : 'paper.share'}
+				onclick={openShareCodes}
+				title={m.shareCodes()}
+			>
+				<i aria-hidden="true" class="ph-fill ph-share-network"></i>
+				{m.shareCodes()}
+			</button>
+		{/if}
+		<button
+			class="btn btn-ghost btn-sm"
+			data-tour={team ? 'chair-paper.sponsors' : 'paper.sponsors'}
+			onclick={toggleSponsors}
+			title={m.sponsors()}
+		>
+			<i aria-hidden="true" class="ph-fill ph-user-gear"></i>
+			{m.sponsors()}
+		</button>
+		{#if team}
+			{@render chairActions(committee)}
+		{/if}
+		{#if status === 'WORKING_PAPER' && (isCreator || team)}
+			<button
+				class="btn btn-primary btn-sm"
+				data-tour={team ? undefined : 'paper.submit'}
+				disabled={submitting}
+				onclick={openSubmitConfirm}
+			>
+				<i aria-hidden="true" class="ph-fill ph-paper-plane-tilt"></i>
+				{m.submit()}
+			</button>
+		{/if}
+	</div>
+{/snippet}
+
+{#snippet exportButtons(paper: Paper)}
+	<button
+		type="button"
+		class="btn btn-ghost btn-sm"
+		title={m.downloadTypst()}
+		aria-label={m.downloadTypst()}
+		disabled={!yClient?.store.snapshot}
+		onclick={() =>
+			yClient?.store.snapshot &&
+			downloadResolutionTypst(yClient.store.snapshot, headerData, paper?.documentNumber)}
+	>
+		<i aria-hidden="true" class="ph-fill ph-file-code"></i>
+	</button>
+	<button
+		type="button"
+		class="btn btn-ghost btn-sm"
+		title={m.downloadPdf()}
+		aria-label={m.downloadPdf()}
+		disabled={!yClient?.store.snapshot || isExportingPdf}
+		onclick={exportPdf}
+	>
+		{#if isExportingPdf}
+			<span class="loading loading-spinner loading-xs"></span>
+		{:else}
+			<i aria-hidden="true" class="ph-fill ph-file-pdf"></i>
+		{/if}
+	</button>
+{/snippet}
+
+{#snippet chairActions(committee: Committee)}
+	<div class="dropdown dropdown-end">
+		<button tabindex="0" class="btn btn-ghost btn-sm" title="Committee settings">
+			<i aria-hidden="true" class="ph-fill ph-gear"></i>
+		</button>
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+		<div
+			tabindex="0"
+			class="dropdown-content bg-base-100 border-base-300 rounded-box z-50 mt-1 w-max border p-4 shadow-xl"
+		>
+			<CommitteePhaseToggles
+				committeeId={committee.id}
+				amendmentSubmissionOpen={committee.amendmentSubmissionOpen}
+				amendmentSponsoringOpen={committee.amendmentSponsoringOpen}
+				supportReevaluationOpen={committee.supportReevaluationOpen}
+			/>
+		</div>
+	</div>
+	<button
+		class="btn btn-ghost btn-sm"
+		data-tour="chair-paper.ai"
+		onclick={openAiSettings}
+		title={m.aiOnboardingOpenSettings()}
+	>
+		<i aria-hidden="true" class="ph-fill ph-robot"></i>
+	</button>
+	<button
+		class="btn btn-ghost btn-sm"
+		data-tour="chair-paper.history"
+		onclick={openHistory}
+		title={m.documentHistory()}
+	>
+		<i aria-hidden="true" class="ph-fill ph-clock-counter-clockwise"></i>
+	</button>
+	<button
+		class="btn btn-sm"
+		class:btn-secondary={isActiveDr}
+		class:btn-ghost={!isActiveDr}
+		disabled={togglingActiveDr || !!activeDrBlocker}
+		onclick={toggleActiveDr}
+		title={activeDrBlocker ?? (isActiveDr ? m.activeDraftResolution() : m.setActiveDr())}
+	>
+		<i aria-hidden="true" class="ph-fill ph-star"></i>
+		{isActiveDr ? m.activeDraftResolution() : m.setActiveDr()}
+	</button>
+{/snippet}
+
+<!-- Left: collapsible document preview (hidden on FINAL) -->
+{#snippet previewPanel()}
+	{#if previewOpen}
+		<aside
+			class="hidden shrink-0 flex-col overflow-hidden lg:flex"
+			style="width: {previewWidth}px;"
+			data-tour={team ? undefined : 'paper.preview'}
+		>
+			<div class="border-base-300 flex items-center justify-between border-b px-3 py-2">
+				<span class="text-sm font-semibold">
+					<i aria-hidden="true" class="ph-fill ph-eye mr-1.5"></i>{m.resolutionPreview()}
+				</span>
+				<button
+					class="btn btn-ghost btn-xs"
+					title={m.resolutionHidePreview()}
+					onclick={hidePreview}
+				>
+					<i aria-hidden="true" class="ph-fill ph-caret-left"></i>
+				</button>
+			</div>
+			{#if browser && yClient}
+				<div class="min-h-0 flex-1 overflow-auto p-4">
+					<ResolutionPreview
+						resolution={yClient.store.snapshot}
+						{headerData}
+						labels={englishLabels}
+						amendments={amendmentOverlays}
+						{rejectedClauseIds}
+					/>
+				</div>
+			{/if}
+		</aside>
+		<!-- Drag handle: preview / editor -->
+		<div
+			role="separator"
+			aria-label="Resize preview panel"
+			aria-orientation="vertical"
+			class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
+			onpointerdown={(e) => {
+				e.preventDefault();
+				e.currentTarget.setPointerCapture(e.pointerId);
+				startDrag('preview');
+			}}
+		>
+			<div
+				class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"
+			></div>
+		</div>
+	{:else}
+		<div class="hidden shrink-0 flex-col items-center pt-2 lg:flex">
+			<button class="btn btn-ghost btn-xs" title={m.resolutionShowPreview()} onclick={showPreview}>
+				<i aria-hidden="true" class="ph-fill ph-caret-right"></i>
+			</button>
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet centerPanel()}
+	<div class="min-h-0 flex-1 overflow-auto" data-tour={team ? undefined : 'paper.editor'}>
+		{#if browser && yClient}
+			{#if status === 'FINAL'}
+				<div class="min-h-0 flex-1 overflow-auto p-4">
+					<ResolutionPreview
+						resolution={yClient.store.snapshot}
+						{headerData}
+						labels={englishLabels}
+						amendments={amendmentOverlays}
+						{rejectedClauseIds}
+					/>
+				</div>
+			{:else}
+				<div class="editor-no-internal-preview flex h-full w-full flex-col">
+					<ResolutionEditor
+						store={yClient.store}
+						presence={yClient.presence}
+						labels={englishLabels}
+						preamblePhrases={englishPreamblePhrases}
+						operativePhrases={englishOperativePhrases}
+						editable={canEdit}
+						amendments={amendmentOverlays}
+						{rejectedClauseIds}
+						{headerData}
+						previewHeader={noHeader}
+						clauseAnnotations={clauseAnnotationsSnippet}
+						preambleAnnotations={preambleAnnotationsSnippet}
+					/>
+				</div>
+			{/if}
+		{/if}
+	</div>
+{/snippet}
+
+{#snippet contextPanel(committee: Committee)}
+	<div
+		role="separator"
+		aria-label="Resize context panel"
+		aria-orientation="vertical"
+		class="drag-handle group hidden w-3 shrink-0 cursor-col-resize items-stretch justify-center lg:flex"
+		onpointerdown={(e) => {
+			e.preventDefault();
+			e.currentTarget.setPointerCapture(e.pointerId);
+			startDrag('context');
+		}}
+	>
+		<div
+			class="bg-base-300 w-px group-hover:w-1 group-hover:bg-primary/40 group-active:bg-primary/60 transition-all"
+		></div>
+	</div>
+
+	<aside
+		class="hidden shrink-0 overflow-hidden lg:flex lg:flex-col"
+		style="width: {contextWidth}px;"
+		data-tour={team ? 'chair-paper.amendments' : 'paper.context'}
+	>
+		<ClauseContextPanel
+			{paperId}
+			committeeId={committee.id}
+			{selectedClauseId}
+			{selectedClauseIndex}
+			{operative}
+			{viewer}
+			submissionOpen={committee.amendmentSubmissionOpen}
+			sponsoringOpen={committee.amendmentSponsoringOpen}
+			{minAmendmentSponsors}
+			activeAmendmentId={committee.activeAmendmentId ?? null}
+			simpleMajority={committee.simpleMajority}
+			showVoteTab={false}
+			{requestedTab}
+			hasReview={selectedClauseId != null && reviewClauseIds.has(selectedClauseId)}
+			openTriggerId={pendingOpenTriggerId}
+			ondeselect={() => (selectedClauseId = null)}
+			onselectclause={(id) => (selectedClauseId = id)}
+		/>
+	</aside>
+{/snippet}
+
+{#snippet dialogs(committee: Committee)}
 	<!-- Remove-clause suggestion after a rejected clause vote -->
 	{#if suggestRemoveClauseId}
 		{@const clauseToRemove = suggestRemoveClauseId}
@@ -1419,19 +1380,12 @@
 			></button>
 		</div>
 	{/if}
+{/snippet}
 
-	<AiOnboardingModal
-		bind:open={aiOnboardingOpen}
-		hasBackend={aiHasBackend}
-		savedPreference={getAiOnboarded() ? getAiPreference() : null}
-		initialModelTier={getLocalModelTier()}
-		onConfirm={applyAiPreference}
-	/>
-
-	<!-- AI model status (chairs only) -->
+{#snippet aiStatus()}
 	{#if aiDownloadProgress !== null || aiReady || aiDisabledReason !== null}
 		<div
-			use:dodgeOnHover
+			{@attach dodgeOnHover((near) => (aiNotifDodging = near))}
 			transition:fly={{ x: 80, duration: 250, opacity: 0 }}
 			class="pointer-events-none fixed bottom-4 right-4 z-50 transition-all duration-300 ease-out {aiNotifDodging
 				? 'translate-y-2 scale-95 opacity-0'
@@ -1476,11 +1430,7 @@
 			{/if}
 		</div>
 	{/if}
-{:else}
-	<div class="flex h-full w-full items-center justify-center">
-		<i aria-hidden="true" class="ph-fill ph-spinner-gap animate-spin text-3xl opacity-50"></i>
-	</div>
-{/if}
+{/snippet}
 
 {#snippet preambleAnnotationsSnippet({ clause }: { clause: { id: string } })}
 	{#if yClient}
@@ -1494,20 +1444,15 @@
 {/snippet}
 
 {#snippet clauseAnnotationsSnippet({ clause, index }: { clause: { id: string }; index: number })}
-	{@const ac = amendmentCountFor(clause.id)}
-	{@const cc = commentCountFor(clause.id)}
-	{@const existingVote = clauseVoteMap.get(clause.id)}
-	{@const outcome = existingVote?.vote?.outcome}
 	{@const isCurrent = index === committee?.currentOperativeIndex}
 	{@const isNext = index === (committee?.currentOperativeIndex ?? -1) + 1}
-	{@const hasReview = reviewClauseIds.has(clause.id)}
 	<div
 		use:highlightClause={{
 			selected: selectedClauseId === clause.id,
 			current: isCurrent && isDebatePhase,
 			clauseId: clause.id,
-			commentCount: cc,
-			amendmentCount: ac,
+			commentCount: commentCountFor(clause.id),
+			amendmentCount: amendmentCountFor(clause.id),
 			showSetCurrentBtn: team && isDebatePhase,
 			isCurrentClause: isCurrent,
 			isNextClause: isNext,
@@ -1524,55 +1469,62 @@
 					{viewer}
 				/>
 			{/if}
-			{#if (isCurrent && isDebatePhase) || ac || cc || outcome || hasReview}
-				<div class="flex items-center gap-1" class:opacity-100={selectedClauseId === clause.id}>
-					{#if isCurrent && isDebatePhase}
-						<button class="btn btn-xs btn-secondary gap-1" onclick={() => selectClause(clause.id)}>
-							<i aria-hidden="true" class="ph-fill ph-caret-right"></i>{m.currentClause()}
-						</button>
-					{/if}
-					{#if outcome}
-						<button
-							class="btn btn-xs gap-1 {outcome === 'ADOPTED' ? 'btn-success' : 'btn-error'}"
-							onclick={() => selectClause(clause.id)}
-						>
-							{outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
-						</button>
-					{/if}
-					{#if ac}
-						<button
-							class="btn btn-xs btn-warning gap-1 relative"
-							onclick={() =>
-								hasReview
-									? selectClauseAndOpenReview(clause.id)
-									: selectClauseWithTab(clause.id, 'amendments')}
-						>
-							<i aria-hidden="true" class="ph-fill ph-pen-nib"></i>{ac}
-							{#if hasReview}<span class="badge badge-error badge-xs absolute -right-1 -top-1"
-									>!</span
-								>{/if}
-						</button>
-					{:else if hasReview}
-						<button
-							class="btn btn-xs btn-error gap-1"
-							aria-label={m.goToReview()}
-							onclick={() => selectClauseAndOpenReview(clause.id)}
-						>
-							<i aria-hidden="true" class="ph-fill ph-warning"></i>
-						</button>
-					{/if}
-					{#if cc}
-						<button
-							class="btn btn-xs gap-1"
-							onclick={() => selectClauseWithTab(clause.id, 'comments')}
-						>
-							<i aria-hidden="true" class="ph-fill ph-chat"></i>{cc}
-						</button>
-					{/if}
-				</div>
-			{/if}
+			{@render clauseBadges(clause.id, isCurrent && isDebatePhase)}
 		</div>
 	</div>
+{/snippet}
+
+{#snippet clauseBadges(clauseId: string, current: boolean)}
+	{@const amendmentCount = amendmentCountFor(clauseId)}
+	{@const commentCount = commentCountFor(clauseId)}
+	{@const outcome = clauseVoteMap.get(clauseId)?.vote?.outcome}
+	{@const hasReview = reviewClauseIds.has(clauseId)}
+	{#if hasClauseBadges({ current, amendmentCount, commentCount, outcome, hasReview })}
+		<div class="flex items-center gap-1" class:opacity-100={selectedClauseId === clauseId}>
+			{#if current}
+				<button class="btn btn-xs btn-secondary gap-1" onclick={() => selectClause(clauseId)}>
+					<i aria-hidden="true" class="ph-fill ph-caret-right"></i>{m.currentClause()}
+				</button>
+			{/if}
+			{#if outcome}
+				<button
+					class="btn btn-xs gap-1 {outcome === 'ADOPTED' ? 'btn-success' : 'btn-error'}"
+					onclick={() => selectClause(clauseId)}
+				>
+					{outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
+				</button>
+			{/if}
+			{@render amendmentBadge(clauseId, amendmentCount, hasReview)}
+			{#if commentCount}
+				<button class="btn btn-xs gap-1" onclick={() => selectClauseWithTab(clauseId, 'comments')}>
+					<i aria-hidden="true" class="ph-fill ph-chat"></i>{commentCount}
+				</button>
+			{/if}
+		</div>
+	{/if}
+{/snippet}
+
+{#snippet amendmentBadge(clauseId: string, amendmentCount: number, hasReview: boolean)}
+	{#if amendmentCount}
+		<button
+			class="btn btn-xs btn-warning gap-1 relative"
+			onclick={() =>
+				hasReview
+					? selectClauseAndOpenReview(clauseId)
+					: selectClauseWithTab(clauseId, 'amendments')}
+		>
+			<i aria-hidden="true" class="ph-fill ph-pen-nib"></i>{amendmentCount}
+			{#if hasReview}<span class="badge badge-error badge-xs absolute -right-1 -top-1">!</span>{/if}
+		</button>
+	{:else if hasReview}
+		<button
+			class="btn btn-xs btn-error gap-1"
+			aria-label={m.goToReview()}
+			onclick={() => selectClauseAndOpenReview(clauseId)}
+		>
+			<i aria-hidden="true" class="ph-fill ph-warning"></i>
+		</button>
+	{/if}
 {/snippet}
 
 <style>

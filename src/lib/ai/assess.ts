@@ -72,119 +72,119 @@ function runWithForcedTier(tier: number): Promise<AiAssessment> {
 	});
 }
 
-async function run(): Promise<AiAssessment> {
-	if (typeof navigator === 'undefined' || !('gpu' in navigator)) {
-		return { supported: false, reason: 'WebGPU is not supported in this browser' };
-	}
+type AdapterInfo = { vendor: string; device: string; description: string; backend: string };
+type CatalogEntry = { model_id: string; vram_required_MB?: number };
 
-	const gpu = (navigator as unknown as { gpu: GPU }).gpu;
-	let adapter: GPUAdapter | null = null;
+const unsupported = (reason: string, backend?: string): AiAssessment => ({
+	supported: false,
+	reason,
+	backend
+});
 
-	// Some browsers initialise the WebGPU subsystem lazily and return null on
-	// the first call. Retry a few times with short delays before giving up.
+/**
+ * Some browsers initialise the WebGPU subsystem lazily and return null on the first call,
+ * so this retries a few times with short delays before giving up. Throws when the GPU
+ * cannot be accessed at all.
+ */
+async function requestAdapter(gpu: GPU): Promise<GPUAdapter | null> {
 	for (const delay of [0, 200, 500]) {
 		if (delay) await new Promise((r) => setTimeout(r, delay));
-		try {
-			adapter =
-				(await gpu.requestAdapter()) ??
-				(await gpu.requestAdapter({ powerPreference: 'low-power' }));
-		} catch {
-			return { supported: false, reason: 'Could not access the GPU' };
-		}
-		if (adapter) break;
+		const adapter =
+			(await gpu.requestAdapter()) ?? (await gpu.requestAdapter({ powerPreference: 'low-power' }));
+		if (adapter) return adapter;
 	}
+	return null;
+}
 
-	if (!adapter) {
-		return { supported: false, reason: 'No WebGPU adapter found' };
-	}
-
-	// Read adapter info for vendor/backend detection.
-	let adapterInfo: GPUAdapterInfo | null = null;
+/** Vendor and backend for detection, lower-cased; empty where the browser does not tell */
+async function readAdapterInfo(adapter: GPUAdapter): Promise<AdapterInfo> {
+	let info: Partial<AdapterInfo> | null = null;
 	try {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const a = adapter as any;
-		adapterInfo = a.info ?? (await a.requestAdapterInfo?.()) ?? null;
+		info = a.info ?? (await a.requestAdapterInfo?.()) ?? null;
 	} catch {
 		/* ignore */
 	}
+	return {
+		vendor: (info?.vendor ?? '').toLowerCase(),
+		device: (info?.device ?? '').toLowerCase(),
+		description: (info?.description ?? '').toLowerCase(),
+		backend: info?.backend ?? ''
+	};
+}
 
-	const vendor = (adapterInfo?.vendor ?? '').toLowerCase();
-	const device = (adapterInfo?.device ?? '').toLowerCase();
-	const description = (adapterInfo?.description ?? '').toLowerCase();
-	const backend = (adapterInfo as unknown as { backend?: string })?.backend ?? '';
+/** Why an adapter cannot run the models although WebGPU reports one, if it cannot */
+export function adapterProblem(info: AdapterInfo): AiAssessment | undefined {
+	const { vendor, device, description, backend } = info;
 	const adapterStr = `${vendor} ${device} ${description} ${backend}`.toLowerCase();
 
-	// maxStorageBufferBindingSize is what WebLLM's own engine.getMaxStorageBufferBindingSize()
-	// uses to assess limited hardware (e.g. Android phones). It is a tighter and more
-	// meaningful limit than maxBufferSize for LLM inference because model weight tensors
-	// are bound as storage buffers. Chrome reports the true device value here (not a
-	// hard-capped constant like it does for maxBufferSize).
-	const maxStorageBinding = adapter.limits.maxStorageBufferBindingSize;
-	const maxStorageBindingMB = maxStorageBinding / (1024 * 1024);
-
-	// Detect software/CPU-only renderers.
+	// Browsers/drivers that report a hardware adapter but run all compute on the CPU
 	if (SOFTWARE_BACKEND_PATTERNS.some((p) => adapterStr.includes(p))) {
-		return {
-			supported: false,
-			reason: `GPU is a software renderer (${vendor || 'unknown'}) — AI features require a hardware GPU`,
+		return unsupported(
+			`GPU is a software renderer (${vendor || 'unknown'}) — AI features require a hardware GPU`,
 			backend
-		};
+		);
 	}
 
 	// On Linux AMD/Intel: OpenGL/ANGLE backend doesn't support compute shaders well.
-	if (backend && backend.toLowerCase() === 'opengl') {
+	if (backend.toLowerCase() === 'opengl') {
 		console.warn(
 			'[WebLLM] WebGPU is using the OpenGL backend — LLM inference will saturate the CPU.\n' +
 				'Fix: chrome://flags/#use-vulkan → Enabled, then relaunch.'
 		);
-		return {
-			supported: false,
-			reason: 'WebGPU is using OpenGL — Vulkan is required for GPU-accelerated AI. See console.',
+		return unsupported(
+			'WebGPU is using OpenGL — Vulkan is required for GPU-accelerated AI. See console.',
 			backend
-		};
+		);
 	}
+	return undefined;
+}
 
-	// Load the WebLLM model catalog and pick the best model whose vram_required_MB
-	// fits within maxStorageBufferBindingSize. This uses the same hardware metric
-	// WebLLM's own engine uses, and the catalog's measured per-model VRAM costs.
-	const { prebuiltAppConfig } = await import('@mlc-ai/web-llm');
-	const catalog = prebuiltAppConfig.model_list;
-
+/**
+ * The best model whose `vram_required_MB` fits within `maxStorageBindingMB`, the same
+ * hardware metric WebLLM's own engine uses, by the catalog's measured per-model costs.
+ */
+export function pickModel({
+	catalog,
+	info,
+	maxStorageBindingMB
+}: {
+	catalog: CatalogEntry[];
+	info: AdapterInfo;
+	maxStorageBindingMB: number;
+}): AiAssessment {
+	const { backend } = info;
 	// On some platforms (notably Linux + AMD/Intel via Vulkan) Chrome reports no
 	// adapter info at all and caps maxStorageBufferBindingSize at a conservative
 	// browser default (1024 MB) that has no relation to actual VRAM. In that case
 	// skip VRAM filtering and trust the model preference order — any desktop GPU
 	// capable of WebGPU can handle the 3B models.
-	const hasAdapterInfo = !!(vendor || device || description || backend);
-	const skipVramCheck = !hasAdapterInfo;
-
+	const skipVramCheck = !Object.values(info).some(Boolean);
 	if (skipVramCheck) {
 		console.warn(
 			'[WebLLM] No adapter info available — skipping VRAM check, selecting by preference order'
 		);
 	}
 
-	for (const candidateId of CANDIDATE_MODEL_IDS) {
-		const record = catalog.find((m) => m.model_id === candidateId);
-		if (!record) continue;
-
-		const vramNeeded = record.vram_required_MB ?? Infinity;
-
-		if (skipVramCheck || vramNeeded <= maxStorageBindingMB) {
-			return {
-				supported: true,
-				reason: '',
-				modelId: candidateId,
-				backend,
-				vramRequiredMB: vramNeeded
-			};
-		}
+	const vramOf = (id: string) => catalog.find((m) => m.model_id === id)?.vram_required_MB;
+	const known = CANDIDATE_MODEL_IDS.filter((id) => catalog.some((m) => m.model_id === id));
+	const fitting = known.find(
+		(id) => skipVramCheck || (vramOf(id) ?? Infinity) <= maxStorageBindingMB
+	);
+	if (fitting) {
+		return {
+			supported: true,
+			reason: '',
+			modelId: fitting,
+			backend,
+			vramRequiredMB: vramOf(fitting) ?? Infinity
+		};
 	}
 
 	// Nothing fit — fall back to the smallest model unconditionally and hope
 	// shared GPU memory covers the shortfall (common on iGPUs).
 	const fallbackId = LOCAL_MODEL_TIERS[0].id;
-	const fallbackRecord = catalog.find((m) => m.model_id === fallbackId);
 	console.warn(
 		`[WebLLM] No model fit within ${Math.round(maxStorageBindingMB)} MB — using fallback ${fallbackId}`
 	);
@@ -193,6 +193,34 @@ async function run(): Promise<AiAssessment> {
 		reason: '',
 		modelId: fallbackId,
 		backend,
-		vramRequiredMB: fallbackRecord?.vram_required_MB
+		vramRequiredMB: vramOf(fallbackId)
 	};
+}
+
+async function run(): Promise<AiAssessment> {
+	if (typeof navigator === 'undefined' || !('gpu' in navigator)) {
+		return unsupported('WebGPU is not supported in this browser');
+	}
+
+	let adapter: GPUAdapter | null;
+	try {
+		adapter = await requestAdapter((navigator as unknown as { gpu: GPU }).gpu);
+	} catch {
+		return unsupported('Could not access the GPU');
+	}
+	if (!adapter) return unsupported('No WebGPU adapter found');
+
+	const info = await readAdapterInfo(adapter);
+	const problem = adapterProblem(info);
+	if (problem) return problem;
+
+	// maxStorageBufferBindingSize is what WebLLM's own engine.getMaxStorageBufferBindingSize()
+	// uses to assess limited hardware (e.g. Android phones). It is a tighter and more
+	// meaningful limit than maxBufferSize for LLM inference because model weight tensors
+	// are bound as storage buffers. Chrome reports the true device value here (not a
+	// hard-capped constant like it does for maxBufferSize).
+	const maxStorageBindingMB = adapter.limits.maxStorageBufferBindingSize / (1024 * 1024);
+
+	const { prebuiltAppConfig } = await import('@mlc-ai/web-llm');
+	return pickModel({ catalog: prebuiltAppConfig.model_list, info, maxStorageBindingMB });
 }

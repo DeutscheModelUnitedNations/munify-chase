@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { chartPercentage } from './votingMath';
+
 	interface Props {
 		votesPro?: number | null;
 		votesCon?: number | null;
@@ -17,10 +19,7 @@
 		showNumbers = false
 	}: Props = $props();
 
-	const getPercentage = (value: number | undefined | null) => {
-		if (value === null || value === undefined || total === 0) return 0;
-		return `${(value / (total ?? 1)) * 100}%`;
-	};
+	const getPercentage = (value: number | undefined | null) => chartPercentage({ value, total });
 
 	const getMajorityPercent = () => {
 		return `${((majorityAmount ?? 0) / (total || 1)) * 100}%`;

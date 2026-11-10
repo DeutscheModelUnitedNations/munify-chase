@@ -3,11 +3,14 @@ FROM oven/bun:1-slim AS base
 FROM base AS dependencies
 WORKDIR /build/dependencies
 COPY package.json bun.lock tsconfig.json ./
+# the patches `patchedDependencies` in package.json names; bun refuses to install without them
+COPY patches ./patches
 RUN bun install --frozen-lockfile
 
 FROM base AS runtime-dependencies
 WORKDIR /build/dependencies
 COPY package.json bun.lock ./
+COPY patches ./patches
 RUN bun install --frozen-lockfile --production
 
 FROM base AS builder

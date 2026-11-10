@@ -13,40 +13,23 @@ export function withBackendMessage(baseMsg: string, err: unknown): string {
 	return baseMsg;
 }
 
-export function promiseToastStrings(
-	targetName: string,
-	action?: 'create' | 'delete' | 'update' | 'add'
-) {
-	switch (action) {
-		case 'create':
-			return {
-				loading: m.toastCreateLoading({ targetName }),
-				success: m.toastCreateSuccess({ targetName }),
-				error: m.toastCreateError({ targetName })
-			};
-		case 'delete':
-			return {
-				loading: m.toastDeleteLoading({ targetName }),
-				success: m.toastDeleteSuccess({ targetName }),
-				error: m.toastDeleteError({ targetName })
-			};
-		case 'update':
-			return {
-				loading: m.toastUpdateLoading({ targetName }),
-				success: m.toastUpdateSuccess({ targetName }),
-				error: m.toastUpdateError({ targetName })
-			};
-		case 'add':
-			return {
-				loading: m.toastAddLoading({ targetName }),
-				success: m.toastAddSuccess({ targetName }),
-				error: m.toastAddError({ targetName })
-			};
-		default:
-			return {
-				loading: m.toastLoading({ targetName }),
-				success: m.toastSuccess({ targetName }),
-				error: m.toastError({ targetName })
-			};
-	}
+type ToastAction = 'create' | 'delete' | 'update' | 'add';
+type ToastMessage = (inputs: { targetName: string }) => string;
+
+const TOAST_MESSAGES: Record<ToastAction | 'default', [ToastMessage, ToastMessage, ToastMessage]> =
+	{
+		create: [m.toastCreateLoading, m.toastCreateSuccess, m.toastCreateError],
+		delete: [m.toastDeleteLoading, m.toastDeleteSuccess, m.toastDeleteError],
+		update: [m.toastUpdateLoading, m.toastUpdateSuccess, m.toastUpdateError],
+		add: [m.toastAddLoading, m.toastAddSuccess, m.toastAddError],
+		default: [m.toastLoading, m.toastSuccess, m.toastError]
+	};
+
+export function promiseToastStrings(targetName: string, action?: ToastAction) {
+	const [loading, success, error] = TOAST_MESSAGES[action ?? 'default'];
+	return {
+		loading: loading({ targetName }),
+		success: success({ targetName }),
+		error: error({ targetName })
+	};
 }

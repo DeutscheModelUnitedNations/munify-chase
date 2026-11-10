@@ -4,6 +4,7 @@
 	import { translateRegionalGroupEnum } from '#lib/utils/enumTranslationHelper';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
+	import { groupDisplayMs, nextGroup } from './presentation';
 
 	interface Props {
 		open: boolean;
@@ -25,21 +26,6 @@
 
 	let activeGroup: RegionalgroupEnum = $state('AFRICA');
 
-	const nextGroup = (group: RegionalgroupEnum) => {
-		switch (group) {
-			case 'AFRICA':
-				return 'ASIA_PACIFIC';
-			case 'ASIA_PACIFIC':
-				return 'EASTERN_EUROPE';
-			case 'EASTERN_EUROPE':
-				return 'LATIN_AMERICA_CARIBBEAN';
-			case 'LATIN_AMERICA_CARIBBEAN':
-				return 'WESTERN_EUROPE_OTHERS';
-			default:
-				return 'AFRICA';
-		}
-	};
-
 	const getGroupMembers = (group: RegionalgroupEnum) =>
 		committeeMembers.filter((member) => member.representation?.regionalGroup === group);
 
@@ -50,7 +36,7 @@
 				() => {
 					activeGroup = nextGroup(activeGroup);
 				},
-				Math.min(Math.max(getGroupMembers(activeGroup).length * 250, 5000), 9000)
+				groupDisplayMs(getGroupMembers(activeGroup).length)
 			);
 		}
 

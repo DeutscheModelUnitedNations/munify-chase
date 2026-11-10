@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
 	import { onMount } from 'svelte';
-	import { SvelteMap } from 'svelte/reactivity';
+	import { createDetectionThrottle, errorText } from './detectionThrottle';
 
 	interface Props {
 		// Called every time a code is detected. Caller is responsible for
@@ -20,44 +20,40 @@
 	let errorMessage = $state<string | null>(null);
 	let starting = $state(true);
 
-	const recentDetections = new SvelteMap<string, number>();
+	const shouldFire = createDetectionThrottle(() => debounceMs);
+
+	function handleResult(result: { getText(): string } | undefined) {
+		if (paused || !result) return;
+		const text = result.getText();
+		if (shouldFire(text, Date.now())) onDetect(text);
+	}
+
+	async function startPreview(isCancelled: () => boolean) {
+		const { BrowserMultiFormatReader } = await import('@zxing/browser');
+		if (isCancelled() || !video) return undefined;
+		return new BrowserMultiFormatReader().decodeFromVideoDevice(undefined, video, handleResult);
+	}
 
 	onMount(() => {
 		let controls: { stop: () => void } | undefined;
 		let cancelled = false;
 
-		(async () => {
-			try {
-				const { BrowserMultiFormatReader } = await import('@zxing/browser');
-				if (cancelled || !video) return;
-
-				const reader = new BrowserMultiFormatReader();
-				const previewControls = await reader.decodeFromVideoDevice(undefined, video, (result) => {
-					if (paused || !result) return;
-					const text = result.getText();
-					const now = Date.now();
-					const last = recentDetections.get(text);
-					if (last && now - last < debounceMs) return;
-					recentDetections.set(text, now);
-					// Clean up old entries so the map doesn't grow unbounded.
-					for (const [code, ts] of recentDetections) {
-						if (now - ts > debounceMs * 4) recentDetections.delete(code);
-					}
-					onDetect(text);
-				});
-
+		startPreview(() => cancelled).then(
+			(previewControls) => {
+				if (!previewControls) return;
 				if (cancelled) {
 					previewControls.stop();
 					return;
 				}
 				controls = previewControls;
 				starting = false;
-			} catch (e) {
+			},
+			(e) => {
 				if (cancelled) return;
-				errorMessage = e instanceof Error ? e.message : String(e);
+				errorMessage = errorText(e);
 				starting = false;
 			}
-		})();
+		);
 
 		return () => {
 			cancelled = true;

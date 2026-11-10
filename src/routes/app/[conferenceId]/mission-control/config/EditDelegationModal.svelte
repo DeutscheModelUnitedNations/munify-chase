@@ -8,28 +8,12 @@
 	import { promiseToastStrings } from '#lib/utils/toast';
 	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import { SvelteSet } from 'svelte/reactivity';
-
-	interface Representation {
-		id: string;
-		name: string | null;
-		alpha2Code: string | null;
-		alpha3Code: string | null;
-		type: string;
-		icon: string | null;
-	}
-
-	interface Committee {
-		id: string;
-		name: string;
-		abbreviation: string;
-		members: {
-			id: string;
-			representation: {
-				id: string;
-				type: string;
-			};
-		}[];
-	}
+	import {
+		committeesSeating,
+		seatChanges,
+		type Committee,
+		type Representation
+	} from './delegations';
 
 	interface Props {
 		open: boolean;
@@ -46,66 +30,54 @@
 
 	// Sync checked state when modal opens / delegation changes
 	$effect(() => {
-		if (delegation && open) {
-			checkedCommittees.clear();
-			for (const committee of committees) {
-				if (committee.members.some((cm) => cm.representation.id === delegation.id)) {
-					checkedCommittees.add(committee.id);
-				}
-			}
+		if (!delegation || !open) return;
+		checkedCommittees.clear();
+		for (const committee of committeesSeating({ committees, representationId: delegation.id })) {
+			checkedCommittees.add(committee.id);
 		}
 	});
 
-	function getCommitteeMemberId(committeeId: string): string | undefined {
-		if (!delegation) return undefined;
-		const committee = committees.find((c) => c.id === committeeId);
-		return committee?.members.find((cm) => cm.representation.id === delegation.id)?.id;
+	function toggleCommittee(committeeId: string) {
+		if (!checkedCommittees.delete(committeeId)) checkedCommittees.add(committeeId);
 	}
 
-	function toggleCommittee(committeeId: string) {
-		if (checkedCommittees.has(committeeId)) {
-			checkedCommittees.delete(committeeId);
-		} else {
-			checkedCommittees.add(committeeId);
-		}
+	function addSeat({
+		committee,
+		representationId
+	}: {
+		committee: Committee;
+		representationId: string;
+	}) {
+		return toast.promise(
+			client.mutate.createCommitteeMember({
+				__args: { id: nanoid(), committeeId: committee.id, representationId },
+				id: true
+			}),
+			promiseToastStrings(committee.abbreviation, 'add')
+		);
+	}
+
+	function removeSeat({ committee, memberId }: { committee: Committee; memberId: string }) {
+		return toast.promise(
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
+			(client.mutate.deleteCommitteeMember as any)({ __args: { id: memberId } } as any),
+			promiseToastStrings(committee.abbreviation, 'delete')
+		);
 	}
 
 	async function handleSave() {
 		if (!delegation) return;
 		isSaving = true;
-
 		try {
-			// Determine which committees to add/remove
-			for (const committee of committees) {
-				const hasSeat = committee.members.some((cm) => cm.representation.id === delegation.id);
-				const wantsSeat = checkedCommittees.has(committee.id);
-
-				if (!hasSeat && wantsSeat) {
-					// Add seat
-					await toast.promise(
-						client.mutate.createCommitteeMember({
-							__args: {
-								id: nanoid(),
-								committeeId: committee.id,
-								representationId: delegation.id
-							},
-							id: true
-						}),
-						promiseToastStrings(committee.abbreviation, 'add')
-					);
-				} else if (hasSeat && !wantsSeat) {
-					// Remove seat
-					const memberId = getCommitteeMemberId(committee.id);
-					if (memberId) {
-						await toast.promise(
-							// eslint-disable-next-line @typescript-eslint/no-explicit-any -- rumble generator types delete mutations as plain `Boolean` instead of callable functions
-							(client.mutate.deleteCommitteeMember as any)({ __args: { id: memberId } } as any),
-							promiseToastStrings(committee.abbreviation, 'delete')
-						);
-					}
-				}
+			const changes = seatChanges({
+				committees,
+				representationId: delegation.id,
+				wanted: checkedCommittees
+			});
+			for (const committee of changes.add) {
+				await addSeat({ committee, representationId: delegation.id });
 			}
-
+			for (const seat of changes.remove) await removeSeat(seat);
 			open = false;
 		} finally {
 			isSaving = false;

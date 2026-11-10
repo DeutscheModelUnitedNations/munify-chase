@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Flag from '#lib/components/Flag.svelte';
+	import { representationOrUn } from '#lib/components/flag';
 
 	type RepresentationType = 'DELEGATION' | 'NSA' | 'UN';
 
@@ -17,13 +18,7 @@
 
 	// Show the user's own delegation flag whenever a representation with a real
 	// country code is present (regardless of role); fall back to UN otherwise.
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const effectiveRep = $derived.by<any>(() => {
-		if (representation?.alpha3Code || representation?.alpha2Code || representation?.icon) {
-			return representation;
-		}
-		return { type: 'UN' };
-	});
+	const effectiveRep = $derived(representationOrUn(representation));
 </script>
 
 <div class="shrink-0 leading-none" style:width="{size}px">

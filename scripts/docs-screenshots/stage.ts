@@ -11,13 +11,14 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 import * as schema from '../../src/api/db/schema';
 import type { StageIds, Translate } from './types';
 import en from '../../messages/en.json';
+import { committeeMembersWithRepresentation } from '../../src/api/db/seedQueries';
 
 const db = drizzle(process.env.DATABASE_URL!);
 
 const MINUTE = 60 * 1000;
 const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * MINUTE);
 
-export const STAGE = {
+const STAGE = {
 	conferenceTitle: 'Dev Conference',
 	committeeAbbreviation: 'GV',
 	presentShare: 0.75,
@@ -63,8 +64,79 @@ function byCountry<T>(rows: T[], code: (row: T) => string | null | undefined) {
 	return new Map(rows.map((row) => [code(row)?.toUpperCase(), row]));
 }
 
+type Committee = typeof schema.committee.$inferSelect;
+type MemberRow = { id: string; alpha2: string | null };
+type Lookup = (code: string) => string;
+
+/** Looks codes up in `rows`, throwing `missing(code)` for one that is not there */
+function lookupByCountry<T extends { id: string }>(
+	rows: Map<string | undefined, T>,
+	missing: (code: string) => string
+): Lookup {
+	return (code) => {
+		const id = rows.get(code)?.id;
+		if (!id) throw new Error(missing(code));
+		return id;
+	};
+}
+
 /** `t` names the request types, the screenshots show them in the captured language */
 export async function stage(t?: Translate): Promise<StageIds> {
+	const { conference, committee, agendaItemId } = await loadStagedCommittee();
+	await resetCommittees(conference.id, committee.id);
+
+	const memberRows = await committeeMembersWithRepresentation(db, committee.id);
+	const memberId = lookupByCountry(
+		byCountry(memberRows, (m) => m.alpha2),
+		(code) => `No ${code} delegation in ${committee.abbreviation}`
+	);
+	const delegateUserId = lookupByCountry(
+		byCountry(
+			await db
+				.select({ id: schema.conferenceUser.id, email: schema.conferenceUser.userEmail })
+				.from(schema.conferenceUser)
+				.where(eq(schema.conferenceUser.conferenceId, conference.id)),
+			(u) => /^gv\.([a-z]{2})@delegate\.dev$/.exec(u.email)?.[1]
+		),
+		(code) => `No delegate user for ${code}`
+	);
+
+	const presentIds = await stagePresence(committee.id, memberRows, memberId);
+	await stageSpeakersLists(agendaItemId, memberId);
+	await stageVotes(committee.id, presentIds);
+	await stageRequests({
+		conferenceId: conference.id,
+		committeeId: committee.id,
+		delegateUserId,
+		t
+	});
+	await stageNsaPeople(conference.id, committee.id);
+
+	// Germany checked in this morning, for the personal statistics
+	const germanyUserId = delegateUserId('DE');
+	await db
+		.delete(schema.presenceEvent)
+		.where(eq(schema.presenceEvent.conferenceUserId, germanyUserId));
+	await db.insert(schema.presenceEvent).values({
+		conferenceUserId: germanyUserId,
+		committeeId: committee.id,
+		timestamp: minutesAgo(180),
+		present: true,
+		type: 'ROLL_CALL'
+	});
+
+	const ids = await stagePapers({
+		conferenceId: conference.id,
+		committeeId: committee.id,
+		agendaItemId,
+		germanyMemberId: memberId('DE'),
+		germanyUserId
+	});
+	await refreshMaterializedViews();
+	return ids;
+}
+
+async function loadStagedCommittee() {
 	const [conference] = await db
 		.select()
 		.from(schema.conference)
@@ -75,10 +147,14 @@ export async function stage(t?: Translate): Promise<StageIds> {
 		.select()
 		.from(schema.committee)
 		.where(eq(schema.committee.conferenceId, conference.id));
-	const committee = committees.find((c) => c.abbreviation === STAGE.committeeAbbreviation);
+	const committee: Committee | undefined = committees.find(
+		(c) => c.abbreviation === STAGE.committeeAbbreviation
+	);
 	if (!committee?.activeAgendaItemId) throw new Error('Committee or active agenda item missing');
-	const agendaItemId = committee.activeAgendaItemId;
+	return { conference, committee, agendaItemId: committee.activeAgendaItemId };
+}
 
+async function resetCommittees(conferenceId: string, committeeId: string) {
 	await db
 		.update(schema.committee)
 		.set({
@@ -95,7 +171,7 @@ export async function stage(t?: Translate): Promise<StageIds> {
 			activeAmendmentId: null,
 			presentationLayout: 'default'
 		})
-		.where(eq(schema.committee.id, committee.id));
+		.where(eq(schema.committee.id, committeeId));
 
 	// Other committees sit in a timed break, so Mission Control shows both kinds of cards
 	await db
@@ -103,41 +179,14 @@ export async function stage(t?: Translate): Promise<StageIds> {
 		.set({ status: 'PAUSE', statusUntil: new Date(Date.now() + 10 * MINUTE) })
 		.where(
 			and(
-				eq(schema.committee.conferenceId, conference.id),
-				sql`${schema.committee.id} <> ${committee.id}`
+				eq(schema.committee.conferenceId, conferenceId),
+				sql`${schema.committee.id} <> ${committeeId}`
 			)
 		);
+}
 
-	// Members by country code
-	const memberRows = await db
-		.select({ id: schema.committeeMember.id, alpha2: schema.representation.alpha2Code })
-		.from(schema.committeeMember)
-		.innerJoin(
-			schema.representation,
-			eq(schema.committeeMember.representationId, schema.representation.id)
-		)
-		.where(eq(schema.committeeMember.committeeId, committee.id));
-	const members = byCountry(memberRows, (m) => m.alpha2);
-	const memberId = (code: string) => {
-		const id = members.get(code)?.id;
-		if (!id) throw new Error(`No ${code} delegation in ${committee.abbreviation}`);
-		return id;
-	};
-
-	const delegateUsers = byCountry(
-		await db
-			.select({ id: schema.conferenceUser.id, email: schema.conferenceUser.userEmail })
-			.from(schema.conferenceUser)
-			.where(eq(schema.conferenceUser.conferenceId, conference.id)),
-		(u) => /^gv\.([a-z]{2})@delegate\.dev$/.exec(u.email)?.[1]
-	);
-	const delegateUserId = (code: string) => {
-		const id = delegateUsers.get(code)?.id;
-		if (!id) throw new Error(`No delegate user for ${code}`);
-		return id;
-	};
-
-	// Presence
+/** Marks a share of the members and every speaker present, answering who is */
+async function stagePresence(committeeId: string, memberRows: MemberRow[], memberId: Lookup) {
 	const present = new Set(
 		memberRows.slice(0, Math.round(memberRows.length * STAGE.presentShare)).map((m) => m.id)
 	);
@@ -145,13 +194,16 @@ export async function stage(t?: Translate): Promise<StageIds> {
 	await db
 		.update(schema.committeeMember)
 		.set({ present: false })
-		.where(eq(schema.committeeMember.committeeId, committee.id));
+		.where(eq(schema.committeeMember.committeeId, committeeId));
 	await db
 		.update(schema.committeeMember)
 		.set({ present: true })
 		.where(inArray(schema.committeeMember.id, [...present]));
+	return [...present];
+}
 
-	// Speakers lists: queued speakers and today's finished speeches
+/** Queued speakers and today's finished speeches */
+async function stageSpeakersLists(agendaItemId: string, memberId: Lookup) {
 	const lists = await db
 		.select()
 		.from(schema.speakersList)
@@ -192,18 +244,22 @@ export async function stage(t?: Translate): Promise<StageIds> {
 			};
 		})
 	);
+}
 
-	// Completed votes from today
+const voteOf = (i: number, pro: number, con: number) =>
+	i < pro ? ('PRO' as const) : i < pro + con ? ('CON' as const) : ('ABSTAIN' as const);
+
+/** Completed votes from today */
+async function stageVotes(committeeId: string, presentIds: string[]) {
 	const voteNames = STAGE.votes.map((v) => v.name);
 	await db
 		.delete(schema.votingSession)
 		.where(
 			and(
-				eq(schema.votingSession.committeeId, committee.id),
+				eq(schema.votingSession.committeeId, committeeId),
 				inArray(schema.votingSession.voteName, [...voteNames, DEVICE_VOTE_NAME])
 			)
 		);
-	const presentIds = [...present];
 	for (const vote of STAGE.votes) {
 		const pro = Math.round(presentIds.length * vote.share);
 		const abstain = 3;
@@ -211,7 +267,7 @@ export async function stage(t?: Translate): Promise<StageIds> {
 		const [session] = await db
 			.insert(schema.votingSession)
 			.values({
-				committeeId: committee.id,
+				committeeId,
 				mode: 'ROLL_CALL',
 				voteName: vote.name,
 				majority: 'SIMPLE',
@@ -229,16 +285,28 @@ export async function stage(t?: Translate): Promise<StageIds> {
 			presentIds.map((committeeMemberId, i) => ({
 				votingSessionId: session.id,
 				committeeMemberId,
-				vote: i < pro ? ('PRO' as const) : i < pro + con ? ('CON' as const) : ('ABSTAIN' as const)
+				vote: voteOf(i, pro, con)
 			}))
 		);
 	}
+}
 
-	// Request types and pending requests
+/** Request types and pending requests */
+async function stageRequests({
+	conferenceId,
+	committeeId,
+	delegateUserId,
+	t
+}: {
+	conferenceId: string;
+	committeeId: string;
+	delegateUserId: Lookup;
+	t?: Translate;
+}) {
 	const existingTypes = await db
 		.select()
 		.from(schema.requestType)
-		.where(eq(schema.requestType.conferenceId, conference.id));
+		.where(eq(schema.requestType.conferenceId, conferenceId));
 	const typeIds: string[] = [];
 	for (const [priority, { message, ...type }] of STAGE.requestTypes.entries()) {
 		const values = { ...type, name: t ? t(message) : en[message], priority };
@@ -249,21 +317,23 @@ export async function stage(t?: Translate): Promise<StageIds> {
 		} else {
 			const [row] = await db
 				.insert(schema.requestType)
-				.values({ ...values, conferenceId: conference.id })
+				.values({ ...values, conferenceId })
 				.returning();
 			typeIds.push(row.id);
 		}
 	}
-	await db.delete(schema.request).where(eq(schema.request.committeeId, committee.id));
+	await db.delete(schema.request).where(eq(schema.request.committeeId, committeeId));
 	await db.insert(schema.request).values(
 		STAGE.pendingRequests.map(([code, typeIndex]) => ({
-			committeeId: committee.id,
+			committeeId,
 			conferenceUserId: delegateUserId(code),
 			requestTypeId: typeIds[typeIndex]
 		}))
 	);
+}
 
-	// Non-state actor people with attendance codes, one of them checked into this committee
+/** Non-state actor people with attendance codes, one of them checked into this committee */
+async function stageNsaPeople(conferenceId: string, committeeId: string) {
 	const [icrc] = await db
 		.select({ id: schema.conferenceMember.id })
 		.from(schema.conferenceMember)
@@ -273,14 +343,14 @@ export async function stage(t?: Translate): Promise<StageIds> {
 		)
 		.where(
 			and(
-				eq(schema.conferenceMember.conferenceId, conference.id),
+				eq(schema.conferenceMember.conferenceId, conferenceId),
 				eq(schema.representation.type, 'NSA')
 			)
 		);
 	if (!icrc) throw new Error('Seed has no NSA conference member');
 	await db.delete(schema.conferenceUser).where(
 		and(
-			eq(schema.conferenceUser.conferenceId, conference.id),
+			eq(schema.conferenceUser.conferenceId, conferenceId),
 			inArray(
 				schema.conferenceUser.userEmail,
 				STAGE.nsaPeople.map((p) => p.email)
@@ -291,7 +361,7 @@ export async function stage(t?: Translate): Promise<StageIds> {
 		const [user] = await db
 			.insert(schema.conferenceUser)
 			.values({
-				conferenceId: conference.id,
+				conferenceId,
 				conferenceUserType: 'NON_STATE_ACTOR',
 				userEmail: person.email,
 				name: person.name,
@@ -301,35 +371,38 @@ export async function stage(t?: Translate): Promise<StageIds> {
 		if (person.checkedIn) {
 			await db.insert(schema.presenceEvent).values({
 				conferenceUserId: user.id,
-				committeeId: committee.id,
+				committeeId,
 				timestamp: minutesAgo(90),
 				present: true,
 				type: 'NSA_SCAN'
 			});
 		}
 	}
+}
 
-	// Germany checked in this morning, for the personal statistics
-	const germanyUserId = delegateUserId('DE');
-	await db
-		.delete(schema.presenceEvent)
-		.where(eq(schema.presenceEvent.conferenceUserId, germanyUserId));
-	await db.insert(schema.presenceEvent).values({
-		conferenceUserId: germanyUserId,
-		committeeId: committee.id,
-		timestamp: minutesAgo(180),
-		present: true,
-		type: 'ROLL_CALL'
-	});
-
-	// Papers on the active agenda item. Germany owns and edits the working paper and
-	// has a pending amendment on the paper in the amendment phase.
+/**
+ * Papers on the active agenda item. Germany owns and edits the working paper and
+ * has a pending amendment on the paper in the amendment phase.
+ */
+async function stagePapers({
+	conferenceId,
+	committeeId,
+	agendaItemId,
+	germanyMemberId,
+	germanyUserId
+}: {
+	conferenceId: string;
+	committeeId: string;
+	agendaItemId: string;
+	germanyMemberId: string;
+	germanyUserId: string;
+}): Promise<StageIds> {
 	const papers = await db
 		.select({ id: schema.resolutionPaper.id, status: schema.resolutionPaper.status })
 		.from(schema.resolutionPaper)
 		.where(
 			and(
-				eq(schema.resolutionPaper.committeeId, committee.id),
+				eq(schema.resolutionPaper.committeeId, committeeId),
 				eq(schema.resolutionPaper.agendaItemId, agendaItemId)
 			)
 		);
@@ -339,8 +412,8 @@ export async function stage(t?: Translate): Promise<StageIds> {
 		return paper.id;
 	};
 	const ids = {
-		conferenceId: conference.id,
-		committeeId: committee.id,
+		conferenceId,
+		committeeId,
 		workingPaperId: paperWith('WORKING_PAPER'),
 		submittedPaperId: paperWith('SUBMITTED'),
 		draftResolutionId: paperWith('DRAFT_RESOLUTION'),
@@ -350,43 +423,43 @@ export async function stage(t?: Translate): Promise<StageIds> {
 
 	await db
 		.update(schema.resolutionPaper)
-		.set({ creatorCommitteeMemberId: memberId('DE') })
+		.set({ creatorCommitteeMemberId: germanyMemberId })
 		.where(eq(schema.resolutionPaper.id, ids.workingPaperId));
 	await db
 		.insert(schema.paperEditor)
 		.values({ paperId: ids.workingPaperId, conferenceUserId: germanyUserId })
 		.onConflictDoNothing();
+	await adoptPendingAmendment(ids.amendmentPhasePaperId, germanyMemberId);
+	return ids;
+}
 
+async function adoptPendingAmendment(paperId: string, memberId: string) {
 	const [pendingAmendment] = await db
 		.select({ id: schema.amendment.id })
 		.from(schema.amendment)
-		.where(
-			and(
-				eq(schema.amendment.paperId, ids.amendmentPhasePaperId),
-				eq(schema.amendment.status, 'PENDING')
-			)
-		);
-	if (pendingAmendment) {
-		await db
-			.update(schema.amendment)
-			.set({ proposerCommitteeMemberId: memberId('DE') })
-			.where(eq(schema.amendment.id, pendingAmendment.id));
-		await db
-			.insert(schema.amendmentSponsor)
-			.values({ amendmentId: pendingAmendment.id, committeeMemberId: memberId('DE') })
-			.onConflictDoNothing();
-	}
+		.where(and(eq(schema.amendment.paperId, paperId), eq(schema.amendment.status, 'PENDING')));
+	if (!pendingAmendment) return;
+	await db
+		.update(schema.amendment)
+		.set({ proposerCommitteeMemberId: memberId })
+		.where(eq(schema.amendment.id, pendingAmendment.id));
+	await db
+		.insert(schema.amendmentSponsor)
+		.values({ amendmentId: pendingAmendment.id, committeeMemberId: memberId })
+		.onConflictDoNothing();
+}
 
-	// Statistics and Mission Control read materialized views, refreshed by the server
-	// every 30 seconds. Refresh now so the screenshots don't depend on that timing.
+/**
+ * Statistics and Mission Control read materialized views, refreshed by the server
+ * every 30 seconds. Refresh now so the screenshots don't depend on that timing.
+ */
+async function refreshMaterializedViews() {
 	const { rows: views } = await db.execute<{ matviewname: string }>(
 		sql`select matviewname from pg_matviews where schemaname = 'public'`
 	);
 	for (const { matviewname } of views) {
 		await db.execute(sql.raw(`refresh materialized view "${matviewname}"`));
 	}
-
-	return ids;
 }
 
 // Per-shot setups, applied after stage() for the few shots that need extra state

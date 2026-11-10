@@ -4,14 +4,8 @@
 	import { page } from '$app/state';
 	import { client } from '#lib/api/rumbleClient/client';
 	import { getCurrentUser, getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
-	import { displayNameOf } from '#lib/helpers/displayName';
 	import { isLocalConferenceActive } from '#lib/state/localDemo.svelte';
-	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
-	import {
-		buildConferenceNavItems,
-		roleBadgeClassFor,
-		roleLabelFor
-	} from '#lib/components/navbar/conferenceNavItems';
+	import ConferenceMenu from '../../ConferenceMenu.svelte';
 	import type { Snippet } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { registerCommands } from '#lib/commands/registry.svelte';
@@ -20,7 +14,6 @@
 
 	const currentUser = await getCurrentUser();
 	const userId = currentUser?.id ?? '';
-	const userDisplayName = displayNameOf(currentUser);
 
 	const [conferenceUser] =
 		(await client.liveQuery.conferenceUsers({
@@ -37,16 +30,6 @@
 	const showBack = $derived(role !== 'DELEGATE');
 
 	const isGlobalAdmin = await getIsGlobalAdmin();
-
-	const menubarItems = $derived(
-		buildConferenceNavItems({
-			role,
-			conferenceId: page.params.conferenceId!,
-			activeRouteId: page.route.id,
-			activePathname: page.url.pathname,
-			isGlobalAdmin: !!isGlobalAdmin
-		})
-	);
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -139,20 +122,12 @@
 			— {committee.name}
 		</h1>
 		<div class="flex-none">
-			<NavbarBurgerMenu
-				items={menubarItems}
-				user={{
-					name: userDisplayName,
-					email: currentUser?.email ?? undefined,
-					givenName: currentUser?.givenName ?? undefined,
-					familyName: currentUser?.familyName ?? undefined
-				}}
-				roleLabel={roleLabelFor(role)}
-				roleBadgeClass={roleBadgeClassFor(role)}
+			<ConferenceMenu
+				{role}
+				conferenceId={page.params.conferenceId!}
 				conferenceTitle={committee?.conference?.title}
-				conferenceId={page.params.conferenceId}
-				dashboardHref="/app"
-				signOutHref="/logout"
+				isGlobalAdmin={!!isGlobalAdmin}
+				user={currentUser}
 			/>
 		</div>
 	</div>

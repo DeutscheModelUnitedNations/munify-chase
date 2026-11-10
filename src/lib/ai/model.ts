@@ -27,20 +27,28 @@ function dispatchError(message: string, retrying = false): void {
 	window.dispatchEvent(new CustomEvent('webllm-error', { detail: { message, retrying } }));
 }
 
-/** Find the largest tier that fits in available storage with a safety buffer. */
-async function selectFittingTier(preferred: number | null): Promise<number | null> {
-	const available = navigator.storage?.estimate
-		? await navigator.storage
-				.estimate()
-				.then(({ quota = 0, usage = 0 }) => (quota - usage) / 1024 / 1024)
-		: null;
-	if (available === null) return preferred;
-	const start =
-		preferred !== null
-			? Math.min(preferred, LOCAL_MODEL_TIERS.length - 1)
-			: LOCAL_MODEL_TIERS.length - 1;
+async function availableStorageMB(): Promise<number | null> {
+	if (!navigator.storage?.estimate) return null;
+	const { quota = 0, usage = 0 } = await navigator.storage.estimate();
+	return (quota - usage) / 1024 / 1024;
+}
+
+/**
+ * The largest tier up to `preferred` (any without) that fits in `availableMB` with a safety
+ * buffer. Without a storage estimate the preference stands.
+ */
+export function fittingTier({
+	preferred,
+	availableMB
+}: {
+	preferred: number | null;
+	availableMB: number | null;
+}): number | null {
+	if (availableMB === null) return preferred;
+	const largest = LOCAL_MODEL_TIERS.length - 1;
+	const start = Math.min(preferred ?? largest, largest);
 	for (let i = start; i >= 0; i--) {
-		if (LOCAL_MODEL_TIERS[i].vramMB + STORAGE_BUFFER_MB <= available) return i;
+		if (LOCAL_MODEL_TIERS[i].vramMB + STORAGE_BUFFER_MB <= availableMB) return i;
 	}
 	return null;
 }
@@ -90,17 +98,14 @@ async function tryLoad(modelId: string, fixWindowSize = false): Promise<MLCEngin
 	}
 }
 
-async function createEnginePromise(): Promise<MLCEngineInterface | null> {
-	await navigator.storage?.persist?.().catch(() => undefined);
-
+/** The tier storage allows, telling the user when it is not the one they chose */
+async function chooseTier(): Promise<number | null> {
 	const preferred = getLocalModelTier();
-	const tier = await selectFittingTier(preferred);
+	const tier = fittingTier({ preferred, availableMB: await availableStorageMB() });
 
 	if (tier === null) {
 		dispatchError(m.aiModelNoStorage());
-		return null;
-	}
-	if (preferred !== null && tier < preferred) {
+	} else if (preferred !== null && tier < preferred) {
 		dispatchError(
 			m.aiModelStorageFallback({
 				model: LOCAL_MODEL_TIERS[tier].label(),
@@ -109,36 +114,49 @@ async function createEnginePromise(): Promise<MLCEngineInterface | null> {
 			true
 		);
 	}
+	return tier;
+}
 
+async function modelForTier(tier: number): Promise<string | undefined> {
 	const assessment = await assessAiCapability(tier);
-	if (!assessment.supported || !assessment.modelId) return null;
+	return assessment.supported ? assessment.modelId : undefined;
+}
+
+/** Storage ran full mid-download: clear it and retry one tier down. */
+async function retryOneTierDown(tier: number): Promise<MLCEngineInterface | null> {
+	dispatchError(m.aiModelStorageFullRetry(), true);
+	await clearCache().catch(() => undefined);
+
+	if (tier < 1) {
+		dispatchError(m.aiModelNoStorage());
+		return null;
+	}
+	const modelId = await modelForTier(tier - 1);
+	if (!modelId) return null;
+
+	return tryLoad(modelId).catch((retryErr) => {
+		enginePromise = null;
+		dispatchError(m.aiModelLoadFailed({ error: errMsg(retryErr) }));
+		return null;
+	});
+}
+
+async function createEnginePromise(): Promise<MLCEngineInterface | null> {
+	await navigator.storage?.persist?.().catch(() => undefined);
+
+	const tier = await chooseTier();
+	if (tier === null) return null;
+
+	const modelId = await modelForTier(tier);
+	if (!modelId) return null;
 
 	try {
-		return await tryLoad(assessment.modelId);
+		return await tryLoad(modelId);
 	} catch (err) {
 		enginePromise = null;
-		if (!isStorageFullError(err)) {
-			dispatchError(m.aiModelLoadFailed({ error: errMsg(err) }));
-			return null;
-		}
-
-		// Storage full mid-download — clear and retry one tier down.
-		dispatchError(m.aiModelStorageFullRetry(), true);
-		await clearCache().catch(() => undefined);
-
-		const fallbackTier = tier - 1;
-		if (fallbackTier < 0) {
-			dispatchError(m.aiModelNoStorage());
-			return null;
-		}
-		const fallback = await assessAiCapability(fallbackTier);
-		if (!fallback.supported || !fallback.modelId) return null;
-
-		return tryLoad(fallback.modelId).catch((retryErr) => {
-			enginePromise = null;
-			dispatchError(m.aiModelLoadFailed({ error: errMsg(retryErr) }));
-			return null;
-		});
+		if (isStorageFullError(err)) return retryOneTierDown(tier);
+		dispatchError(m.aiModelLoadFailed({ error: errMsg(err) }));
+		return null;
 	}
 }
 

@@ -20,7 +20,7 @@ Anders als Delegationen sind NAs und UN-Akteure nicht an ein einzelnes Gremium g
 
 Um jemandem Zugang als NA zu geben, füge die Person unter [Benutzer & Rollen](./users-roles) mit der Rolle **Nichtstaatlicher Akteur** hinzu und verknüpfe sie mit dem NA. Der Vorsitz checkt sie bei den Gremiensitzungen, die sie besucht, ein und aus (siehe [Anwesenheitsfeststellung & Anwesenheit](../chair/roll-call-attendance)): über ihre gedruckte NA-Karte, bei einer Konferenz aus MUNify DELEGATOR auch über ihr digitales Namensschild, oder über die Suche nach ihrem Namen.
 
-Die Karten druckst du unter **Anwesenheit** im Reiter **Nach NA** aus. Dort steht jede NA-Person mit ihrem aktuellen Gremium. Nutze **QR-Karte** für eine einzelne Karte, **Alle Karten drucken** für den ganzen Satz oder **CSV exportieren** für eine Liste. Jede Karte trägt den Namen der Person und einen signierten Code, der bis zum Tag nach dem Konferenzende gilt. Trag deshalb zuerst das Enddatum der Konferenz ein. Zum Drucken muss auf dem Server `LINK_SECRET` gesetzt sein.
+Die Karten druckst du unter **Anwesenheit** im Reiter **Nach NA** aus. Dort steht jede NA-Person mit ihrem aktuellen Gremium. Nutze **QR-Karte** für eine einzelne Karte, **Alle Karten drucken** für den ganzen Satz oder **CSV exportieren** für eine Liste. Jede Karte trägt den Namen der Person und einen signierten Code, der bis zum Tag nach dem Konferenzende gilt. Trag deshalb zuerst das Enddatum der Konferenz ein. Zum Drucken muss auf dem Server `SIGNED_CODE_SECRET` gesetzt sein.
 
 Verliert jemand seine Karte, öffne seine **QR-Karte** und wähle **Neue Karte**. Die neue Karte bekommt die nächste Nummer, frühere Karten lehnen die Scanner ab.
 

@@ -9,6 +9,13 @@
 		"src/api/db/seed-data/schema.d.ts",
 		"drizzle/**"
 	],
+	// The release image starts `node ./server.js` (see the Dockerfile), copied from src/server.js:
+	// it wraps adapter-node's build output with the WebSocket upgrade, so nothing imports it.
+	"entry": ["src/server.js"],
+	// Never imported, so fallow cannot see why it is listed. Verified before suppressing; do not
+	// "clean it up": it pins the brace-expansion minimatch resolves to a release with the DoS fix
+	// (see .trivyignore).
+	"ignoreDependencies": ["brace-expansion"],
 	"rules": {
 		// The SvelteKit/Vite build bundles all app code, so frontend packages belong in
 		// devDependencies on purpose. Only what `node server.js` still requires at runtime
@@ -16,5 +23,23 @@
 		// these two rules pure false positives for this repo.
 		"dev-dependencies-in-production": "off",
 		"test-only-dependencies": "off"
+	},
+	"health": {
+		"thresholdOverrides": [
+			{
+				// The dev seed, the docs screenshots' staging and the offline demo's seed build
+				// conference data for clicking around and for screenshots. They have no tests and
+				// never will, so CRAP there only measures that. Only the CRAP ceiling moves:
+				// complexity findings still count.
+				"files": [
+					"src/api/db/seed*",
+					"src/api/db/seed-data/**",
+					"scripts/docs-screenshots/stage.ts",
+					"src/lib/api/localDemo/seed*"
+				],
+				"maxCrap": 1000,
+				"reason": "Seed and demo data scripts: never covered by tests, so CRAP is not meaningful"
+			}
+		]
 	}
 }

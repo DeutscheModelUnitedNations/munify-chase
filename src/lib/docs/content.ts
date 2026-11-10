@@ -13,10 +13,6 @@ function sourceFor(locale: string, slug: string) {
 	return sources[`/docs/${locale}/${slug}.md`];
 }
 
-export function docExists(slug: string) {
-	return sourceFor(baseLocale, slug) !== undefined;
-}
-
 export type LoadedDoc = RenderedDoc & {
 	/** Locale the page was actually rendered in, differs from the request on fallback */
 	locale: string;
@@ -47,16 +43,25 @@ export function loadDoc(slug: string, locale: Locale): LoadedDoc | undefined {
 	return doc;
 }
 
-/** Page titles for the sidebar, without rendering the full pages. */
-export function docTitles(locale: Locale): Record<string, string> {
+const DOC_PATH = /^\/docs\/([^/]+)\/(.+)\.md$/;
+
+/**
+ * Page titles in `locale` from markdown sources keyed by path, falling back to the base
+ * locale's title for pages not translated yet.
+ */
+export function titlesFrom(markdown: Record<string, string>, locale: string) {
 	const titles: Record<string, string> = {};
-	for (const path of Object.keys(sources)) {
-		const match = /^\/docs\/([^/]+)\/(.+)\.md$/.exec(path);
-		if (!match) continue;
-		const [, fileLocale, slug] = match;
-		if (fileLocale !== locale && (fileLocale !== baseLocale || titles[slug])) continue;
-		const title = parseFrontmatter(sources[path]).frontmatter.title;
+	for (const [path, source] of Object.entries(markdown)) {
+		const [, fileLocale, slug] = DOC_PATH.exec(path) ?? [];
+		const isFallback = fileLocale === baseLocale && !titles[slug];
+		if (fileLocale !== locale && !isFallback) continue;
+		const title = parseFrontmatter(source).frontmatter.title;
 		if (title) titles[slug] = title;
 	}
 	return titles;
+}
+
+/** Page titles for the sidebar, without rendering the full pages. */
+export function docTitles(locale: Locale): Record<string, string> {
+	return titlesFrom(sources, locale);
 }

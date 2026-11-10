@@ -2,6 +2,7 @@ import { untrack } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 import hotkeys from 'hotkeys-js';
 import { dev } from '$app/env';
+import { isVisible, resolveShortcut } from './shortcuts';
 import type { Command } from './types';
 
 // Every mounted component that offers commands adds one source. The palette and the
@@ -25,13 +26,15 @@ export function registerCommands(commands: () => Command[]) {
 
 /** All commands currently offered, hidden ones excluded */
 export function getCommands(): Command[] {
-	return [...sources.values()]
-		.flatMap((source) => source())
-		.filter((command) => command.visible?.() ?? true);
+	return [...sources.values()].flatMap((source) => source()).filter(isVisible);
 }
 
-export function isEnabled(command: Command) {
-	return command.enabled?.() ?? true;
+function warnIfAmbiguous({ shortcut, matching }: { shortcut: string; matching: Command[] }) {
+	if (!dev || matching.length < 2) return;
+	console.warn(
+		`Shortcut ${shortcut} is used by several commands:`,
+		matching.map((c) => c.id)
+	);
 }
 
 /**
@@ -55,22 +58,11 @@ export function bindCommandShortcuts() {
 		const shortcuts = shortcutKeys ? shortcutKeys.split('\n') : [];
 		const handlers = untrack(() => shortcuts).map((shortcut) => {
 			const handler = (event: KeyboardEvent) => {
-				// Hidden commands still own their key, so the browser default (e.g. Alt+N
-				// switching tabs) stays suppressed on the page the shortcut would open
-				const owned = [...sources.values()].some((source) =>
-					source().some((command) => command.shortcut === shortcut)
-				);
+				const offered = [...sources.values()].flatMap((source) => source());
+				const { owned, matching, command } = resolveShortcut({ shortcut, offered });
 				if (!owned) return;
 				event.preventDefault();
-				const matching = getCommands().filter((command) => command.shortcut === shortcut);
-				if (matching.length === 0) return;
-				if (dev && matching.length > 1) {
-					console.warn(
-						`Shortcut ${shortcut} is used by several commands:`,
-						matching.map((c) => c.id)
-					);
-				}
-				const command = matching.find(isEnabled);
+				warnIfAmbiguous({ shortcut, matching });
 				command?.run();
 			};
 			hotkeys(shortcut, handler);

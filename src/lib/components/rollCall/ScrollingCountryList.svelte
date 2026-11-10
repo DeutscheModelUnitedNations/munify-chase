@@ -1,9 +1,15 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import { representationName, rollCallMark, type RollCallMark } from './rollCallRow';
 	import Flag from '../Flag.svelte';
 	import { scale } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
+
+	interface Icon {
+		id: string;
+		icon: string;
+		color?: 'info' | 'success' | 'error';
+	}
 
 	interface Props {
 		currentIndex: number;
@@ -19,11 +25,7 @@
 			} | null;
 		}>;
 		height?: string;
-		icons?: {
-			id: string;
-			icon: string;
-			color?: 'info' | 'success' | 'error';
-		}[];
+		icons?: Icon[];
 		/** Member IDs whose presence change is still saving — shown as a spinner. */
 		pendingIds?: string[];
 	}
@@ -56,6 +58,52 @@
 	});
 </script>
 
+{#snippet markIcon(mark: RollCallMark, icon: Icon | undefined)}
+	{#if mark === 'pending'}
+		<span
+			class="loading loading-spinner loading-md text-info absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+			transition:scale={{
+				duration: 500,
+				easing: cubicOut,
+				opacity: 0
+			}}
+		></span>
+	{:else if mark === 'icon'}
+		<i
+			aria-hidden="true"
+			class="ph-fill ph-{icon?.icon} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-2xl text-{icon?.color}"
+			transition:scale={{
+				delay: 200,
+				duration: 500,
+				easing: cubicOut,
+				opacity: 0
+			}}
+		></i>
+	{:else if mark === 'absent'}
+		<i
+			aria-hidden="true"
+			class="ph-fill ph-x-circle text-error absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
+			transition:scale={{
+				delay: 200,
+				duration: 500,
+				easing: cubicOut,
+				opacity: 0
+			}}
+		></i>
+	{:else if mark === 'present'}
+		<i
+			aria-hidden="true"
+			class="ph-fill ph-check icon-beat-fade text-success absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
+			in:scale={{
+				delay: 200,
+				duration: 500,
+				easing: cubicOut,
+				opacity: 0
+			}}
+		></i>
+	{/if}
+{/snippet}
+
 <div class="relative flex h-full w-full flex-col gap-2 overflow-hidden pr-6 pl-6">
 	<div class="absolute top-0 bottom-0 left-0 z-40 flex items-center justify-center">
 		<i aria-hidden="true" class="ph-fill ph-caret-right text-4xl"></i>
@@ -77,68 +125,27 @@
 			bind:this={containerRef}
 		>
 			{#each members as member, index (member.id)}
-				{@const rep = member.representation}
-				{@const icon = icons?.find((x) => x.id === member.id)}
 				{@const pending = pendingIds.includes(member.id)}
-				{@const present = member.present && index < currentIndex && !pending}
-				{@const notPresent = !member.present && index < currentIndex && !pending}
+				{@const icon = icons?.find((x) => x.id === member.id)}
+				{@const mark = rollCallMark({
+					present: member.present,
+					pending,
+					hasIcon: !!icon,
+					called: index < currentIndex
+				})}
 				<div
-					class="flex w-full flex-shrink-0 flex-row items-center gap-4 p-2 {currentIndex === index
-						? 'card-active'
-						: ''}"
+					class="flex w-full flex-shrink-0 flex-row items-center gap-4 p-2"
+					class:card-active={currentIndex === index}
 				>
 					<Flag representation={member.representation} size="md" />
-					<h3 class="flex-1 text-2xl {notPresent ? 'opacity-40' : ''} transition-all duration-500">
-						{#if rep && (rep.name || rep.alpha3Code)}
-							{rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code!)}
-						{:else}
-							{m.unknown()}
-						{/if}
+					<h3
+						class="flex-1 text-2xl transition-all duration-500"
+						class:opacity-40={mark === 'absent'}
+					>
+						{representationName(member.representation) ?? m.unknown()}
 					</h3>
 					<div class="relative w-12">
-						{#if pending}
-							<span
-								class="loading loading-spinner loading-md text-info absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-								transition:scale={{
-									duration: 500,
-									easing: cubicOut,
-									opacity: 0
-								}}
-							></span>
-						{:else if icon && index < currentIndex}
-							<i
-								aria-hidden="true"
-								class="ph-fill ph-{icon.icon} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-2xl text-{icon.color}"
-								transition:scale={{
-									delay: 200,
-									duration: 500,
-									easing: cubicOut,
-									opacity: 0
-								}}
-							></i>
-						{:else if notPresent}
-							<i
-								aria-hidden="true"
-								class="ph-fill ph-x-circle text-error absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
-								transition:scale={{
-									delay: 200,
-									duration: 500,
-									easing: cubicOut,
-									opacity: 0
-								}}
-							></i>
-						{:else if present}
-							<i
-								aria-hidden="true"
-								class="ph-fill ph-check icon-beat-fade text-success absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-3xl"
-								in:scale={{
-									delay: 200,
-									duration: 500,
-									easing: cubicOut,
-									opacity: 0
-								}}
-							></i>
-						{/if}
+						{@render markIcon(mark, icon)}
 					</div>
 				</div>
 			{/each}

@@ -2,9 +2,9 @@
 	import type { RemotePresence } from '#lib/api/yjs/createPaperYjs.svelte';
 	import type { ResolutionViewer } from './paperContext';
 	import { isTeam } from './paperContext';
+	import { presenceIdentity, uniqueByUser, type PresenceIdentity } from './presenceDisplay';
 	import Flag from '#lib/components/Flag.svelte';
 	import { m } from '#lib/paraglide/messages';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 
 	interface Props {
 		remotePresences: RemotePresence[];
@@ -13,52 +13,20 @@
 
 	let { remotePresences, viewer }: Props = $props();
 
-	function getDisplay(presence: RemotePresence): {
-		name: string;
-		representation: {
-			alpha2Code?: string | null;
-			alpha3Code?: string | null;
-			name?: string | null;
-			type: string;
-		} | null;
-	} {
-		const meta = presence.userMeta;
-
-		if (!meta) {
-			return { name: presence.user.name || '?', representation: null };
-		}
-
-		const isParticipant =
-			meta.conferenceUserType === 'DELEGATE' || meta.conferenceUserType === 'NON_STATE_ACTOR';
-
-		if (isParticipant) {
-			const name =
-				(meta.alpha3Code ? getTranslatedCountryNameFromAlpha3Code(meta.alpha3Code) : null) ??
-				meta.nationName ??
-				'?';
-			const representation =
-				meta.alpha2Code || meta.alpha3Code
-					? {
-							alpha2Code: meta.alpha2Code,
-							alpha3Code: meta.alpha3Code,
-							name: meta.nationName,
-							type: 'DELEGATION'
-						}
-					: null;
-			return { name, representation };
-		}
-
-		if (isTeam(viewer)) {
-			return { name: presence.user.name || '?', representation: null };
-		}
-
-		return { name: m.roleTeam(), representation: null };
+	function flagOf(identity: PresenceIdentity) {
+		if (identity.kind !== 'participant') return null;
+		const { alpha2Code, alpha3Code, nationName } = identity.meta;
+		if (!alpha2Code && !alpha3Code) return null;
+		return { alpha2Code, alpha3Code, name: nationName, type: 'DELEGATION' };
 	}
 
-	// De-duplicate by user id (same user in multiple tabs appears once).
-	const unique = $derived(
-		remotePresences.filter((p, i, arr) => arr.findIndex((q) => q.user.id === p.user.id) === i)
-	);
+	function getDisplay(presence: RemotePresence) {
+		const identity = presenceIdentity({ presence, viewerIsTeam: isTeam(viewer) });
+		const name = identity.kind === 'team' ? m.roleTeam() : identity.name;
+		return { name, representation: flagOf(identity) };
+	}
+
+	const unique = $derived(uniqueByUser(remotePresences));
 </script>
 
 <ul class="space-y-2">

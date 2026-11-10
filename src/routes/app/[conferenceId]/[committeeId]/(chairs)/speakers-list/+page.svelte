@@ -9,9 +9,9 @@
 	import ChairControls from '#lib/components/speakersList/chairControls/ChairControls.svelte';
 	import CurrentSpeaker from '#lib/components/speakersList/CurrentSpeaker.svelte';
 	import SpeakersQueuePresentation from '#lib/components/speakersList/ChairSpeakersQueue.svelte';
-	import StatusWidget from '../StatusWidget.svelte';
-	import Majorities from '#lib/components/Majorities.svelte';
+	import CommitteeOverviewCards from '../CommitteeOverviewCards.svelte';
 	import { latchWhileDisconnected } from '#lib/state/connection.svelte';
+	import { editableSpeakersListSelection } from '../../../selections';
 
 	const committee = await client.liveQuery.committee({
 		__args: { id: page.params.committeeId! },
@@ -26,51 +26,7 @@
 		activeAgendaItem: {
 			id: true,
 			title: true,
-			speakersList: {
-				id: true,
-				type: true,
-				isClosed: true,
-				speakingTime: true,
-				startTimestamp: true,
-				timeLeft: true,
-				phase: true,
-				agendaItem: {
-					id: true,
-					committee: {
-						id: true,
-						allowDelegationsToAddThemselvesToSpeakersList: true,
-						conferenceId: true
-					}
-				},
-				speakers: {
-					id: true,
-					position: true,
-					speakersListId: true,
-					overwriteName: true,
-					committeeMember: {
-						id: true,
-						representation: {
-							id: true,
-							name: true,
-							alpha2Code: true,
-							alpha3Code: true,
-							icon: true,
-							type: true
-						}
-					},
-					conferenceMember: {
-						id: true,
-						representation: {
-							id: true,
-							name: true,
-							alpha2Code: true,
-							alpha3Code: true,
-							icon: true,
-							type: true
-						}
-					}
-				}
-			}
+			speakersList: editableSpeakersListSelection
 		},
 		members: {
 			id: true,
@@ -99,8 +55,6 @@
 		}
 	});
 
-	const minAmendmentSponsors = $derived(Math.ceil((committee?.totalPresent ?? 0) * 0.1));
-
 	// Freeze the last-known agenda item while the WS is confirmed disconnected, so a
 	// transient network blip doesn't flash "no agenda item selected" over the page —
 	// only a genuine agenda item change (selected/cleared) does.
@@ -128,17 +82,7 @@
 		class="flex w-full flex-col items-center justify-center gap-6 p-6 lg:flex-row lg:items-start"
 	>
 		<div class="top-22 hidden h-full w-lg flex-col gap-4 2xl:sticky 2xl:flex">
-			<BasicCard>
-				<StatusWidget {committee} />
-			</BasicCard>
-			<BasicCard>
-				<Majorities
-					totalPresent={committee.totalPresent}
-					simpleMajority={committee.simpleMajority}
-					twoThirdsMajority={committee.twoThirdsMajority}
-					{minAmendmentSponsors}
-				/>
-			</BasicCard>
+			<CommitteeOverviewCards {committee} />
 		</div>
 		<BasicCard title={m.speakersList()} className="min-h-[calc(100vh-8rem)] max-w-xl w-full">
 			<div class="flex flex-col gap-8">

@@ -148,7 +148,7 @@ export function speakerLabel(
 	);
 }
 
-export function currentSpeakerFor(committee: InsightCommittee) {
+function currentSpeakerFor(committee: InsightCommittee) {
 	for (const list of committee.activeAgendaItem?.speakersList ?? []) {
 		if (list.isClosed || !list.startTimestamp) continue;
 		const speaker = list.speakers.toSorted(compareSpeakers).at(0);
@@ -164,7 +164,7 @@ export function currentSpeakerFor(committee: InsightCommittee) {
 // The open (running) speakers/comment list with at least one speaker queued —
 // "something is going on" here, worth spotlighting the whole queue rather
 // than just the current speaker.
-export function openSpeakersListFor(committee: InsightCommittee) {
+function openSpeakersListFor(committee: InsightCommittee) {
 	for (const list of committee.activeAgendaItem?.speakersList ?? []) {
 		if (list.isClosed || !list.startTimestamp) continue;
 		const speakers = list.speakers.toSorted(compareSpeakers);
@@ -211,12 +211,17 @@ export type InsightTile =
 	| { kind: 'papersAwaitingVote'; key: string; count: number }
 	| { kind: 'papersPerCommittee'; key: string; entries: InsightPulse['papersPerCommittee'] };
 
-// Per-committee status/topic is shown once, in the unified committee grid — this
-// pool only covers conference-wide facts that don't belong to a single committee.
-export function buildInsightTiles(
-	committees: InsightCommittee[],
-	pulse: InsightPulse | null
-): InsightTile[] {
+function committeeAttendance(committees: InsightCommittee[]) {
+	let present = 0;
+	let total = 0;
+	for (const c of committees) {
+		present += c.totalPresent ?? 0;
+		total += (c.members ?? []).filter((m) => m.representation?.type === 'DELEGATION').length;
+	}
+	return { present, total };
+}
+
+function committeeTiles(committees: InsightCommittee[]): InsightTile[] {
 	const tiles: InsightTile[] = [];
 
 	const activeVotes = committees.filter((c) => (c.votingSessions?.length ?? 0) > 0);
@@ -231,128 +236,168 @@ export function buildInsightTiles(
 
 	// One spotlight tile per committee with an open, non-empty speakers list —
 	// the shuffle/rotation already handles "randomly occasionally show" for us.
-	for (const committee of committees) {
-		const open = openSpeakersListFor(committee);
-		if (open) {
-			tiles.push({
-				kind: 'speakersListSpotlight',
-				key: `speakersList-${committee.id}`,
-				committee: open.committee,
-				speakers: open.speakers
-			});
-		}
-	}
-
-	if (committees.length > 0) {
-		let present = 0;
-		let total = 0;
-		for (const c of committees) {
-			present += c.totalPresent ?? 0;
-			total += (c.members ?? []).filter((m) => m.representation?.type === 'DELEGATION').length;
-		}
-		// A conference with no delegation members yet has nothing to report —
-		// "0 of 0 delegates present" isn't meaningful data.
-		if (total > 0) {
-			tiles.push({
-				kind: 'attendance',
-				key: 'attendance',
-				present,
-				total,
-				committeeCount: committees.length
-			});
-		}
-	}
-
-	if (pulse) {
-		const { speechesToday, votesHeldToday, resolutionsAdoptedToday, debateSecondsToday } =
-			pulse.heartbeat;
-		// Nothing happened today yet — an all-zero heartbeat isn't worth a tile.
-		if (
-			speechesToday > 0 ||
-			votesHeldToday > 0 ||
-			resolutionsAdoptedToday > 0 ||
-			debateSecondsToday > 0
-		) {
-			tiles.push({ kind: 'heartbeat', key: 'heartbeat', pulse });
-		}
-		if (pulse.recentAdoptions.length > 0) {
-			tiles.push({ kind: 'adoptions', key: 'adoptions', pulse });
-		}
-		if (pulse.busiestCommittee) {
-			tiles.push({ kind: 'busiestCommittee', key: 'busiest', ...pulse.busiestCommittee });
-		}
-		if (pulse.closestVote) {
-			tiles.push({ kind: 'closestVote', key: 'closest', ...pulse.closestVote });
-		}
-		if (pulse.committeeActivityLeaderboard.length > 0) {
-			tiles.push({
-				kind: 'committeeActivity',
-				key: 'committeeActivity',
-				entries: pulse.committeeActivityLeaderboard
-			});
-		}
-		if (pulse.speakingByRegion.length > 0) {
-			tiles.push({
-				kind: 'speakingByRegion',
-				key: 'speakingByRegion',
-				entries: pulse.speakingByRegion
-			});
-		}
-		if (pulse.amendmentActivity.length > 0) {
-			tiles.push({
-				kind: 'amendmentActivity',
-				key: 'amendmentActivity',
-				entries: pulse.amendmentActivity
-			});
-		}
-		if (pulse.voteOutcomesToday.length > 0) {
-			tiles.push({
-				kind: 'voteOutcomesToday',
-				key: 'voteOutcomesToday',
-				entries: pulse.voteOutcomesToday
-			});
-		}
-		if (pulse.papersAwaitingVote > 0) {
-			tiles.push({
-				kind: 'papersAwaitingVote',
-				key: 'papersAwaitingVote',
-				count: pulse.papersAwaitingVote
-			});
-		}
-		if (pulse.papersPerCommittee.length > 0) {
-			tiles.push({
-				kind: 'papersPerCommittee',
-				key: 'papersPerCommittee',
-				entries: pulse.papersPerCommittee
-			});
-		}
+	for (const open of committees.map(openSpeakersListFor)) {
+		if (!open) continue;
 		tiles.push({
-			kind: 'conferenceOverview',
-			key: 'conferenceOverview',
-			overview: pulse.conferenceOverview
+			kind: 'speakersListSpotlight',
+			key: `speakersList-${open.committee.id}`,
+			committee: open.committee,
+			speakers: open.speakers
 		});
-		if (pulse.resolutionFunnel.length > 0) {
-			tiles.push({
-				kind: 'resolutionFunnel',
-				key: 'resolutionFunnel',
-				entries: pulse.resolutionFunnel
-			});
-		}
-		if (pulse.speakingByRepresentationType.length > 0) {
-			tiles.push({
-				kind: 'speakingByRepresentationType',
-				key: 'speakingByRepresentationType',
-				entries: pulse.speakingByRepresentationType
-			});
-		}
-		if (pulse.longestSpeechToday) {
-			tiles.push({
-				kind: 'longestSpeechToday',
-				key: 'longestSpeechToday',
-				...pulse.longestSpeechToday
-			});
-		}
+	}
+
+	const { present, total } = committeeAttendance(committees);
+	// A conference with no delegation members yet has nothing to report —
+	// "0 of 0 delegates present" isn't meaningful data.
+	if (total > 0) {
+		tiles.push({
+			kind: 'attendance',
+			key: 'attendance',
+			present,
+			total,
+			committeeCount: committees.length
+		});
 	}
 
 	return tiles;
 }
+
+function hasHeartbeat({ heartbeat }: InsightPulse) {
+	// Nothing happened today yet — an all-zero heartbeat isn't worth a tile.
+	return (
+		heartbeat.speechesToday > 0 ||
+		heartbeat.votesHeldToday > 0 ||
+		heartbeat.resolutionsAdoptedToday > 0 ||
+		heartbeat.debateSecondsToday > 0
+	);
+}
+
+/** The tile while `shown`, else none. */
+function tileIf(shown: boolean, tile: () => InsightTile): InsightTile[] {
+	return shown ? [tile()] : [];
+}
+
+/** The tile built from `value` while there is one, else none. */
+function tileOf<T>(value: T | null, tile: (value: T) => InsightTile): InsightTile[] {
+	return value ? [tile(value)] : [];
+}
+
+/** A tile listing `entries`, or none while there is nothing to list. */
+function listTile(tile: InsightTile & { entries: readonly unknown[] }): InsightTile[] {
+	return tile.entries.length > 0 ? [tile] : [];
+}
+
+/** The pulse's tiles, in the order the grid shows them. */
+function pulseTiles(pulse: InsightPulse): InsightTile[] {
+	const { busiestCommittee, closestVote, longestSpeechToday } = pulse;
+	return [
+		...tileIf(hasHeartbeat(pulse), () => ({ kind: 'heartbeat', key: 'heartbeat', pulse })),
+		...tileIf(pulse.recentAdoptions.length > 0, () => ({
+			kind: 'adoptions',
+			key: 'adoptions',
+			pulse
+		})),
+		...tileOf(busiestCommittee, (busiest) => ({
+			kind: 'busiestCommittee',
+			key: 'busiest',
+			...busiest
+		})),
+		...tileOf(closestVote, (closest) => ({ kind: 'closestVote', key: 'closest', ...closest })),
+		...listTile({
+			kind: 'committeeActivity',
+			key: 'committeeActivity',
+			entries: pulse.committeeActivityLeaderboard
+		}),
+		...listTile({
+			kind: 'speakingByRegion',
+			key: 'speakingByRegion',
+			entries: pulse.speakingByRegion
+		}),
+		...listTile({
+			kind: 'amendmentActivity',
+			key: 'amendmentActivity',
+			entries: pulse.amendmentActivity
+		}),
+		...listTile({
+			kind: 'voteOutcomesToday',
+			key: 'voteOutcomesToday',
+			entries: pulse.voteOutcomesToday
+		}),
+		...tileIf(pulse.papersAwaitingVote > 0, () => ({
+			kind: 'papersAwaitingVote',
+			key: 'papersAwaitingVote',
+			count: pulse.papersAwaitingVote
+		})),
+		...listTile({
+			kind: 'papersPerCommittee',
+			key: 'papersPerCommittee',
+			entries: pulse.papersPerCommittee
+		}),
+		{ kind: 'conferenceOverview', key: 'conferenceOverview', overview: pulse.conferenceOverview },
+		...listTile({
+			kind: 'resolutionFunnel',
+			key: 'resolutionFunnel',
+			entries: pulse.resolutionFunnel
+		}),
+		...listTile({
+			kind: 'speakingByRepresentationType',
+			key: 'speakingByRepresentationType',
+			entries: pulse.speakingByRepresentationType
+		}),
+		...tileOf(longestSpeechToday, (longest) => ({
+			kind: 'longestSpeechToday',
+			key: 'longestSpeechToday',
+			...longest
+		}))
+	];
+}
+
+// Per-committee status/topic is shown once, in the unified committee grid — this
+// pool only covers conference-wide facts that don't belong to a single committee.
+export function buildInsightTiles(
+	committees: InsightCommittee[],
+	pulse: InsightPulse | null
+): InsightTile[] {
+	return [...committeeTiles(committees), ...(pulse ? pulseTiles(pulse) : [])];
+}
+
+export type TileOf<K extends InsightTile['kind']> = Extract<InsightTile, { kind: K }>;
+
+function tileGroup<const K extends InsightTile['kind']>(kinds: readonly K[]) {
+	return (tile: InsightTile): tile is TileOf<K> => kinds.some((kind) => kind === tile.kind);
+}
+
+const LIST_KINDS = [
+	'votingSessions',
+	'speakingPulse',
+	'adoptions',
+	'speakersListSpotlight',
+	'committeeActivity',
+	'papersPerCommittee'
+] as const;
+const CHART_KINDS = [
+	'speakingByRegion',
+	'resolutionFunnel',
+	'speakingByRepresentationType',
+	'amendmentActivity',
+	'voteOutcomesToday'
+] as const;
+const STAT_KINDS = [
+	'attendance',
+	'heartbeat',
+	'busiestCommittee',
+	'closestVote',
+	'conferenceOverview',
+	'longestSpeechToday',
+	'papersAwaitingVote'
+] as const;
+
+/** Tiles listing a few rows each */
+export const isListTile = tileGroup(LIST_KINDS);
+export type ListTile = TileOf<(typeof LIST_KINDS)[number]>;
+/** Tiles drawing a chart or a proportion bar */
+export const isChartTile = tileGroup(CHART_KINDS);
+export type ChartTile = TileOf<(typeof CHART_KINDS)[number]>;
+/** Tiles showing one or a few big numbers */
+export const isStatTile = tileGroup(STAT_KINDS);
+export type StatTile = TileOf<(typeof STAT_KINDS)[number]>;

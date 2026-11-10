@@ -2,7 +2,7 @@ import { m } from '#lib/paraglide/messages';
 import type { Tour } from '#lib/tours/types';
 
 /** Participant committee dashboard. Anchors live in the page. */
-export const tour: Tour = {
+export const participantCommitteeTour: Tour = {
 	id: 'participant.committee',
 	steps: [
 		{

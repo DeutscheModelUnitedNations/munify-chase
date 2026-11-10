@@ -6,57 +6,16 @@
 	import AiSpinner from '#lib/components/AiSpinner.svelte';
 	import ObsolescenceStep from './ObsolescenceStep.svelte';
 	import RewriteStep from './RewriteStep.svelte';
-	import Flag from '#lib/components/Flag.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
+	import ReviewTriggerSummary from './ReviewTriggerSummary.svelte';
 	import {
-		OperativeParagraphPreview,
-		serializeClause
-	} from '@deutschemodelunitednations/munify-resolution-editor';
-	import { englishLabels } from '@deutschemodelunitednations/munify-resolution-editor/i18n';
-
-	interface Representation {
-		name: string | null | undefined;
-		alpha2Code: string | null | undefined;
-		alpha3Code: string | null | undefined;
-		icon: string | null | undefined;
-		type: string | null | undefined;
-	}
-
-	interface ReviewItem {
-		id: string;
-		phase: string | null | undefined;
-		aiObsolete: boolean | null | undefined;
-		aiRewriteSuggestion: string | null | undefined;
-		triggerAmendment:
-			| {
-					id: string;
-					documentNumber: string | null | undefined;
-					type: string | null | undefined;
-					newContent: string | null | undefined;
-					oldContent: string | null | undefined;
-					targetOperativeIndex: number | null | undefined;
-					proposer:
-						{ id: string; representation: Representation | null | undefined } | null | undefined;
-					sponsors: Array<{ id: string }> | null | undefined;
-			  }
-			| null
-			| undefined;
-		subjectAmendment:
-			| {
-					id: string;
-					documentNumber: string | null | undefined;
-					type: string | null | undefined;
-					status: string | null | undefined;
-					newContent: string | null | undefined;
-					oldContent: string | null | undefined;
-					targetOperativeIndex: number | null | undefined;
-					proposer:
-						{ id: string; representation: Representation | null | undefined } | null | undefined;
-					sponsors: Array<{ id: string }> | null | undefined;
-			  }
-			| null
-			| undefined;
-	}
+		newAiTasks,
+		parseOldMarkup,
+		subjectInput,
+		triggerInput,
+		type AiTask,
+		type ReviewAmendment,
+		type ReviewItem
+	} from './amendmentReview';
 
 	interface Props {
 		items: ReviewItem[];
@@ -82,16 +41,14 @@
 	let currentlyProcessingId = $state<string | null>(null);
 
 	// Plain (non-reactive) FIFO queue — drained one task at a time.
-	type AiTask = { type: 'obsolescence' | 'rewrite'; item: ReviewItem };
 	const aiQueue: AiTask[] = [];
 	let draining = false;
 
-	async function drainAiQueue(trig: NonNullable<typeof trigger>) {
+	async function drainAiQueue(trig: ReviewAmendment) {
 		if (draining) return;
 		draining = true;
 		aiRunning = true;
-		while (aiQueue.length > 0) {
-			const task = aiQueue.shift()!;
+		for (let task = aiQueue.shift(); task; task = aiQueue.shift()) {
 			if (task.type === 'obsolescence') await processObsolescence(task.item, trig);
 			else await processRewrite(task.item, trig);
 		}
@@ -99,51 +56,39 @@
 		draining = false;
 	}
 
+	function markStarted(task: AiTask) {
+		(task.type === 'obsolescence' ? aiStartedObs : aiStartedRew).add(task.item.id);
+	}
+
 	// Single effect watches item lists; new items are enqueued in display order.
 	// aiStarted is a plain Set so mutations to it do not re-trigger this effect —
 	// only changes to the item lists do.
 	$effect(() => {
 		if (!trigger) return;
-		const trig = trigger;
-
-		const newObs = obsolescenceItems.filter((i) => i.aiObsolete == null && !aiStartedObs.has(i.id));
-		const newRew = rewriteItems.filter(
-			(i) => i.aiRewriteSuggestion === null && !aiStartedRew.has(i.id)
-		);
-		const newTasks: AiTask[] = [
-			...newObs.map((i) => ({ type: 'obsolescence' as const, item: i })),
-			...newRew.map((i) => ({ type: 'rewrite' as const, item: i }))
-		];
+		const newTasks = newAiTasks({
+			obsolescenceItems,
+			rewriteItems,
+			startedObsolescence: aiStartedObs,
+			startedRewrite: aiStartedRew
+		});
 		if (newTasks.length === 0) return;
-		for (const t of newTasks) {
-			if (t.type === 'obsolescence') aiStartedObs.add(t.item.id);
-			else aiStartedRew.add(t.item.id);
-		}
-
+		newTasks.forEach(markStarted);
 		aiQueue.push(...newTasks);
-		drainAiQueue(trig);
+		drainAiQueue(trigger);
 	});
 
-	async function processObsolescence(item: ReviewItem, trig: NonNullable<typeof trigger>) {
+	function doneProcessing(itemId: string) {
+		if (currentlyProcessingId === itemId) currentlyProcessingId = null;
+	}
+
+	async function processObsolescence(item: ReviewItem, trig: ReviewAmendment) {
 		const pref = getAiPreference();
 		if (pref === 'off') return;
 		currentlyProcessingId = item.id;
 		try {
 			const result = await classifyObsolescence(
-				{
-					id: trig.id,
-					documentNumber: trig.documentNumber,
-					newContent: trig.newContent,
-					targetOperativeIndex: trig.targetOperativeIndex,
-					oldContent: item.triggerAmendment?.oldContent
-				},
-				{
-					id: item.id,
-					documentNumber: item.subjectAmendment?.documentNumber,
-					newContent: item.subjectAmendment?.newContent,
-					oldContent: item.subjectAmendment?.oldContent,
-					targetOperativeIndex: item.subjectAmendment?.targetOperativeIndex
-				},
+				triggerInput({ trigger: trig, item }),
+				subjectInput({ item, withOldContent: true }),
 				preferenceToMode(pref)
 			);
 			if (!result) return;
@@ -157,29 +102,18 @@
 		} catch (err) {
 			console.error('[AI] Obsolescence classification failed:', err);
 		} finally {
-			if (currentlyProcessingId === item.id) currentlyProcessingId = null;
+			doneProcessing(item.id);
 		}
 	}
 
-	async function processRewrite(item: ReviewItem, trig: NonNullable<typeof trigger>) {
+	async function processRewrite(item: ReviewItem, trig: ReviewAmendment) {
 		const pref = getAiPreference();
 		if (pref === 'off') return;
 		currentlyProcessingId = item.id;
 		try {
 			const suggestion = await evaluateAndSuggestRewrite(
-				{
-					id: trig.id,
-					documentNumber: trig.documentNumber,
-					newContent: trig.newContent,
-					targetOperativeIndex: trig.targetOperativeIndex,
-					oldContent: item.triggerAmendment?.oldContent
-				},
-				{
-					id: item.id,
-					documentNumber: item.subjectAmendment?.documentNumber,
-					newContent: item.subjectAmendment?.newContent,
-					targetOperativeIndex: item.subjectAmendment?.targetOperativeIndex
-				},
+				triggerInput({ trigger: trig, item }),
+				subjectInput({ item, withOldContent: false }),
 				preferenceToMode(pref)
 			);
 			await client.mutate.updateAmendmentReviewItem({
@@ -192,7 +126,7 @@
 		} catch (err) {
 			console.error('[AI] Rewrite evaluation failed:', err);
 		} finally {
-			if (currentlyProcessingId === item.id) currentlyProcessingId = null;
+			doneProcessing(item.id);
 		}
 	}
 
@@ -214,15 +148,6 @@
 			__args: { reviewItemId: itemId, aiRewriteSuggestion: null, aiRewriteReason: null }
 		});
 		// subscription delivers null → $effect re-queues automatically
-	}
-
-	function parseOldMarkup(raw: string | null | undefined): string | undefined {
-		if (!raw) return undefined;
-		try {
-			return serializeClause(JSON.parse(raw));
-		} catch {
-			return undefined;
-		}
 	}
 
 	// Old clause text from any review item (all share the same trigger clause snapshot).
@@ -254,44 +179,8 @@
 			<li class="step" class:step-primary={currentStep >= 2}>Text adjustments</li>
 		</ul>
 
-		<!-- Diff view — no wrapper boxes; OperativeParagraphPreview supplies its own card -->
 		{#if trigger && (triggerOldMarkup || trigger.newContent)}
-			<div class="flex flex-col gap-3">
-				<div class="flex items-center gap-2 text-xs text-base-content/50">
-					{#if trigger.type === 'ALTER_TEXT'}
-						<i aria-hidden="true" class="ph-fill ph-pen opacity-60"></i>
-					{/if}
-					{#if trigger.documentNumber}
-						<span class="font-mono font-semibold">{trigger.documentNumber}</span>
-					{/if}
-					{#if trigger.targetOperativeIndex != null}
-						<span>· Clause {trigger.targetOperativeIndex + 1}</span>
-					{/if}
-					{#if trigger.proposer?.representation}
-						<span class="ml-auto flex items-center gap-1">
-							<Flag representation={trigger.proposer.representation} size="xs" />
-							{getTranslatedCountryNameFromAlpha3Code(trigger.proposer.representation.alpha3Code) ??
-								trigger.proposer.representation.name}
-						</span>
-					{/if}
-				</div>
-				{#if trigger.newContent}
-					<div>
-						<p class="text-base-content/40 mb-1 text-xs uppercase tracking-wide">
-							{triggerOldMarkup ? 'Accepted change' : 'New text'}
-						</p>
-						<div class="rounded-lg bg-white p-3">
-							<OperativeParagraphPreview
-								markup={trigger.newContent}
-								oldMarkup={triggerOldMarkup}
-								showDiff={!!triggerOldMarkup}
-								operativeNumber={(trigger.targetOperativeIndex ?? 0) + 1}
-								labels={englishLabels}
-							/>
-						</div>
-					</div>
-				{/if}
-			</div>
+			<ReviewTriggerSummary {trigger} oldMarkup={triggerOldMarkup} />
 			<div class="border-base-300 border-t"></div>
 		{/if}
 

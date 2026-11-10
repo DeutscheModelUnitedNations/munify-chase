@@ -38,6 +38,67 @@ function hasRouteSegment(value: string | null | undefined, segmentPath: string):
 	return false;
 }
 
+type ActiveRoute = Pick<BuildArgs, 'activeRouteId' | 'activePathname'>;
+
+function isOn(route: ActiveRoute, segmentPath: string) {
+	return (
+		hasRouteSegment(route.activeRouteId, segmentPath) ||
+		hasRouteSegment(route.activePathname, segmentPath)
+	);
+}
+
+function statisticsItem(conferenceId: string, route: ActiveRoute): NavItem {
+	return {
+		key: 'statistics',
+		icon: 'chart-bar',
+		title: m.statistics(),
+		href: `/app/${conferenceId}/statistics`,
+		active: isOn(route, 'statistics')
+	};
+}
+
+function teamItems({
+	conferenceId,
+	route,
+	isLocalDemo
+}: {
+	conferenceId: string;
+	route: ActiveRoute;
+	isLocalDemo: boolean;
+}): NavItem[] {
+	const items: NavItem[] = [
+		{
+			key: 'mission-control',
+			icon: 'rocket-launch',
+			title: m.missionControl(),
+			href: `/app/${conferenceId}/mission-control`,
+			active: !isOn(route, 'mission-control/config') && isOn(route, 'mission-control')
+		}
+	];
+	if (isLocalDemo) return items;
+	return [
+		...items,
+		{
+			key: 'attendance',
+			icon: 'identification-badge',
+			title: m.attendance(),
+			href: `/app/${conferenceId}/attendance`,
+			active: isOn(route, 'attendance')
+		},
+		statisticsItem(conferenceId, route)
+	];
+}
+
+function configurationItem(conferenceId: string, route: ActiveRoute): NavItem {
+	return {
+		key: 'configuration',
+		icon: 'gear',
+		title: m.configuration(),
+		href: `/app/${conferenceId}/mission-control/config`,
+		active: isOn(route, 'mission-control/config')
+	};
+}
+
 export function buildConferenceNavItems({
 	role,
 	conferenceId,
@@ -45,80 +106,18 @@ export function buildConferenceNavItems({
 	activePathname,
 	isGlobalAdmin
 }: BuildArgs): NavItem[] {
+	const route = { activeRouteId, activePathname };
 	const isAdmin = role === 'ADMIN' || !!isGlobalAdmin;
-	const isTeamOrAdmin = isAdmin || role === 'TEAM';
 	const isParticipant = role === 'DELEGATE' || role === 'NON_STATE_ACTOR';
 	// Attendance (roll-call/check-in tracking) and statistics both aggregate data across
 	// real devices/sessions that don't exist in the offline demo conference.
 	const isLocalDemo = isLocalConferenceActive();
 
-	const items: NavItem[] = [];
-
-	if (isTeamOrAdmin) {
-		const onConfig =
-			hasRouteSegment(activeRouteId, 'mission-control/config') ||
-			hasRouteSegment(activePathname, 'mission-control/config');
-		const onMissionControl =
-			!onConfig &&
-			(hasRouteSegment(activeRouteId, 'mission-control') ||
-				hasRouteSegment(activePathname, 'mission-control'));
-
-		items.push({
-			key: 'mission-control',
-			icon: 'rocket-launch',
-			title: m.missionControl(),
-			href: `/app/${conferenceId}/mission-control`,
-			active: onMissionControl
-		});
-
-		if (!isLocalDemo) {
-			items.push({
-				key: 'attendance',
-				icon: 'identification-badge',
-				title: m.attendance(),
-				href: `/app/${conferenceId}/attendance`,
-				active:
-					hasRouteSegment(activeRouteId, 'attendance') ||
-					hasRouteSegment(activePathname, 'attendance')
-			});
-
-			items.push({
-				key: 'statistics',
-				icon: 'chart-bar',
-				title: m.statistics(),
-				href: `/app/${conferenceId}/statistics`,
-				active:
-					hasRouteSegment(activeRouteId, 'statistics') ||
-					hasRouteSegment(activePathname, 'statistics')
-			});
-		}
-	}
-
-	if (isParticipant && !isLocalDemo) {
-		items.push({
-			key: 'statistics',
-			icon: 'chart-bar',
-			title: m.statistics(),
-			href: `/app/${conferenceId}/statistics`,
-			active:
-				hasRouteSegment(activeRouteId, 'statistics') ||
-				hasRouteSegment(activePathname, 'statistics')
-		});
-	}
-
-	if (isAdmin) {
-		items.push({
-			key: 'configuration',
-			icon: 'gear',
-			title: m.configuration(),
-			href: `/app/${conferenceId}/mission-control/config`,
-			active:
-				hasRouteSegment(activeRouteId, 'mission-control/config') ||
-				hasRouteSegment(activePathname, 'mission-control/config')
-		});
-	}
-
-	return items;
+	return [
+		...(isAdmin || role === 'TEAM' ? teamItems({ conferenceId, route, isLocalDemo }) : []),
+		...(isParticipant && !isLocalDemo ? [statisticsItem(conferenceId, route)] : []),
+		...(isAdmin ? [configurationItem(conferenceId, route)] : [])
+	];
 }
 
 export function roleLabelFor(role: ConferenceUserRole): string | undefined {

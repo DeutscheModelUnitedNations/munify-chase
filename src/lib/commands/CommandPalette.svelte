@@ -4,7 +4,8 @@
 	import type { Attachment } from 'svelte/attachments';
 	import Kbd from '#lib/components/Kbd.svelte';
 	import { m } from '#lib/paraglide/messages';
-	import { bindCommandShortcuts, getCommands, isEnabled } from './registry.svelte';
+	import { bindCommandShortcuts, getCommands } from './registry.svelte';
+	import { isEnabled, togglesPalette } from './shortcuts';
 	import { commandPalette, recentCommandIds, rememberCommand } from './palette.svelte';
 	import { COMMAND_GROUPS, type Command as AppCommand, type CommandGroup } from './types';
 
@@ -37,10 +38,11 @@
 
 	// Opens and closes the native dialog whenever the palette state changes
 	const syncOpen: Attachment<HTMLDialogElement> = (dialog) => {
-		if (commandPalette.open && !dialog.open) {
+		if (commandPalette.open === dialog.open) return;
+		if (commandPalette.open) {
 			dialog.showModal();
 			dialog.querySelector('input')?.focus();
-		} else if (!commandPalette.open && dialog.open) dialog.close();
+		} else dialog.close();
 	};
 
 	function onClose(event: Event) {
@@ -54,21 +56,10 @@
 		}
 	}
 
-	function isEditable(target: EventTarget | null) {
-		return (
-			target instanceof HTMLElement &&
-			(target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
-		);
-	}
-
 	function onKeydown(event: KeyboardEvent) {
-		const modK = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
-		const slash =
-			event.key === '/' && !event.ctrlKey && !event.metaKey && !isEditable(event.target);
-		if (modK || (slash && !commandPalette.open)) {
-			event.preventDefault();
-			commandPalette.open = !commandPalette.open;
-		}
+		if (!togglesPalette({ event, open: commandPalette.open })) return;
+		event.preventDefault();
+		commandPalette.open = !commandPalette.open;
 	}
 
 	async function run(command: AppCommand) {

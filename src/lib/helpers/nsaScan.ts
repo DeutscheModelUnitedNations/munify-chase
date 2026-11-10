@@ -24,7 +24,8 @@ export interface IdentityKeys {
 
 export interface NsaCandidate {
 	id: string;
-	delegatorUserId: string | null;
+	/** The person's account id: what DELEGATOR's codes name, the same in both instances. */
+	userId: string | null;
 	cardNumber: number;
 }
 
@@ -128,7 +129,7 @@ export async function identifyNsa<T extends NsaCandidate>({
 	const { claims } = signed;
 	const nsa = nsas.find((candidate) =>
 		signed.signedBy === 'delegator'
-			? candidate.delegatorUserId === claims.userId
+			? candidate.userId === claims.userId
 			: candidate.id === claims.userId
 	);
 	if (!nsa) return { found: false, reason: 'notNsa' };

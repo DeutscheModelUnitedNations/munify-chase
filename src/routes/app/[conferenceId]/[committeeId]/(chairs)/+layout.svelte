@@ -13,8 +13,11 @@
 	import { getCommitteeStatusText } from '#lib/utils/committeeStatus';
 	import BellIcon from '#lib/components/toast/BellIcon.svelte';
 	import RequestNotificationToast from '#lib/components/requests/RequestNotificationToast.svelte';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
-	import { requestRepresentation } from '#lib/helpers/requests';
+	import { notificationRequesterLabel } from './requesters';
+	import { alertTick, type AlertState, type ChairAlert } from './chairAlerts';
+	import { syncRequestToasts } from './requestToasts';
+	import ChairDock from './ChairDock.svelte';
+	import { speakersListSelection } from '../../selections';
 	import { getServerTime } from '#lib/state/serverTime.svelte';
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import VotingModal from '#lib/components/voting/VotingModal.svelte';
@@ -51,45 +54,7 @@
 		activeAgendaItem: {
 			id: true,
 			title: true,
-			speakersList: {
-				id: true,
-				type: true,
-				isClosed: true,
-				speakingTime: true,
-				startTimestamp: true,
-				timeLeft: true,
-				phase: true,
-				speakers: {
-					id: true,
-					position: true,
-					overwriteName: true,
-					committeeMember: {
-						id: true,
-						representation: {
-							id: true,
-							type: true,
-							name: true,
-							regionalGroup: true,
-							alpha2Code: true,
-							alpha3Code: true,
-							icon: true
-						},
-						present: true
-					},
-					conferenceMember: {
-						id: true,
-						representation: {
-							id: true,
-							type: true,
-							name: true,
-							regionalGroup: true,
-							alpha2Code: true,
-							alpha3Code: true,
-							icon: true
-						}
-					}
-				}
-			}
+			speakersList: { ...speakersListSelection, phase: true }
 		},
 		agendaItems: {
 			id: true,
@@ -276,57 +241,38 @@
 		committee?.activeAgendaItem?.speakersList.find((item) => item.type === 'COMMENT_LIST')
 	);
 
-	let committeeStatusExpiredAlerted = $state(false);
-	let speakersListOvertimeAlerted = $state(false);
-	let commentListOvertimeAlerted = $state(false);
+	let alertState: AlertState = { status: false, speakersList: false, commentList: false };
+
+	const alertToasts: Record<ChairAlert, () => void> = {
+		statusExpired: () =>
+			toast.error(
+				m.committeeStatusExpired({
+					status: getCommitteeStatusText(committee!.status, committee!.statusHeadline)
+				}),
+				{ icon: BellIcon, duration: 10000 }
+			),
+		listOvertime: () => toast.error(m.speakersListOvertime(), { icon: BellIcon })
+	};
+
+	function checkTimers(c: NonNullable<typeof committee>) {
+		const now = getServerTime();
+		const tick = alertTick({
+			state: alertState,
+			statusExpired: dayjs(c.statusUntil).diff(now) < 0,
+			lists: (c.activeAgendaItem?.speakersList ?? []).map((list) => ({
+				type: list.type,
+				overtime: dayjs(list.startTimestamp).diff(now, 'seconds') + list.timeLeft < 0
+			}))
+		});
+		alertState = tick.state;
+		for (const alert of tick.alerts) alertToasts[alert]();
+	}
 
 	$effect(() => {
 		// Toast Effect
 		if (!committee) return;
-
-		const interval = setInterval(() => {
-			if (dayjs(committee.statusUntil).diff(getServerTime()) < 0) {
-				if (!committeeStatusExpiredAlerted) {
-					toast.error(
-						m.committeeStatusExpired({
-							status: getCommitteeStatusText(committee.status, committee.statusHeadline)
-						}),
-						{
-							icon: BellIcon,
-							duration: 10000
-						}
-					);
-					committeeStatusExpiredAlerted = true;
-				}
-			} else {
-				committeeStatusExpiredAlerted = false;
-			}
-
-			for (const speakersList of committee.activeAgendaItem?.speakersList ?? []) {
-				const overtime =
-					dayjs(speakersList.startTimestamp).diff(getServerTime(), 'seconds') +
-						speakersList.timeLeft <
-					0;
-
-				//	XAND only fire if both are false. Both true can be ignored, case should not happen.
-				if (overtime && speakersListOvertimeAlerted === commentListOvertimeAlerted) {
-					toast.error(m.speakersListOvertime(), {
-						icon: BellIcon
-					});
-					if (speakersList.type === 'SPEAKERS_LIST') {
-						speakersListOvertimeAlerted = true;
-					} else if (speakersList.type === 'COMMENT_LIST') {
-						commentListOvertimeAlerted = true;
-					}
-				} else if (!overtime) {
-					if (speakersList.type === 'SPEAKERS_LIST') {
-						speakersListOvertimeAlerted = false;
-					} else if (speakersList.type === 'COMMENT_LIST') {
-						commentListOvertimeAlerted = false;
-					}
-				}
-			}
-		}, 1000);
+		const c = committee;
+		const interval = setInterval(() => checkTimers(c), 1000);
 		return () => clearInterval(interval);
 	});
 
@@ -339,51 +285,35 @@
 	const openRequestToastIds = new SvelteMap<string, string>();
 	let requestNotificationsInitialized = false;
 
-	function requesterLabelForNotification(
-		req: NonNullable<typeof pendingRequestsForNotifications>[number]
-	) {
-		const rep = requestRepresentation(req);
-		const seatName = rep && (rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code));
-		return req.conferenceUser?.name ?? seatName ?? req.conferenceUser?.userEmail ?? m.unknown();
+	type PendingRequest = NonNullable<typeof pendingRequestsForNotifications>[number];
+
+	function showRequestToast(req: PendingRequest) {
+		notifiedRequestIds.add(req.id);
+		// svelte-french-toast's `Renderable` type still expects a Svelte 4 class
+		// component; it renders Svelte 5 components (like this one) fine at runtime.
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const toastId = toast(RequestNotificationToast as any, {
+			icon: BellIcon,
+			duration: Infinity,
+			props: {
+				requestTypeName: req.requestType?.name ?? '',
+				requesterLabel: notificationRequesterLabel(req),
+				conferenceId,
+				committeeId
+			}
+		});
+		openRequestToastIds.set(req.id, toastId);
 	}
 
 	$effect(() => {
-		const list = pendingRequestsForNotifications ?? [];
-		const currentIds = new Set(list.map((req) => req.id));
-
-		if (!requestNotificationsInitialized) {
-			// Don't retroactively toast for requests that were already pending
-			// before this chair opened the committee.
-			for (const id of currentIds) notifiedRequestIds.add(id);
-			requestNotificationsInitialized = true;
-			return;
-		}
-
-		for (const req of list) {
-			if (notifiedRequestIds.has(req.id)) continue;
-			notifiedRequestIds.add(req.id);
-			// svelte-french-toast's `Renderable` type still expects a Svelte 4 class
-			// component; it renders Svelte 5 components (like this one) fine at runtime.
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			const toastId = toast(RequestNotificationToast as any, {
-				icon: BellIcon,
-				duration: Infinity,
-				props: {
-					requestTypeName: req.requestType?.name ?? '',
-					requesterLabel: requesterLabelForNotification(req),
-					conferenceId,
-					committeeId
-				}
-			});
-			openRequestToastIds.set(req.id, toastId);
-		}
-
-		for (const [id, toastId] of openRequestToastIds) {
-			if (!currentIds.has(id)) {
-				toast.dismiss(toastId);
-				openRequestToastIds.delete(id);
-			}
-		}
+		requestNotificationsInitialized = syncRequestToasts({
+			pending: pendingRequestsForNotifications ?? [],
+			notified: notifiedRequestIds,
+			open: openRequestToastIds,
+			initialized: requestNotificationsInitialized,
+			show: showRequestToast,
+			dismiss: (toastId) => toast.dismiss(toastId)
+		});
 	});
 </script>
 
@@ -420,52 +350,10 @@
 	confettiDurationSec={45}
 />
 
-<!-- Bottom dock -->
-<div class="dock dock-md lg:dock-lg md:justify-center md:gap-4">
-	{#each dockItems as item, i (item.key)}
-		<a
-			href={item.href}
-			class="group relative {isActive(item.key) &&
-			!(
-				item.key === 'resolutions' &&
-				committee?.activeDraftResolutionId &&
-				page.url.pathname.includes(committee.activeDraftResolutionId)
-			)
-				? 'dock-active'
-				: ''}"
-		>
-			<span class="relative inline-flex">
-				<!-- fallow-ignore-next-line css-token-drift -- daisyUI's dock icon size, relative to the label -->
-				<i aria-hidden="true" class="ph-duotone ph-{item.icon} size-[1.2em]"></i>
-				{#if item.key === 'requests' && (pendingRequestsForNotifications?.length ?? 0) > 0}
-					<span class="absolute -top-1 -right-1 flex size-2.5">
-						<span
-							class="absolute inline-flex h-full w-full animate-ping rounded-full bg-error opacity-75"
-						></span>
-						<span class="relative inline-flex size-2.5 rounded-full bg-error"></span>
-					</span>
-				{/if}
-			</span>
-			<span class="dock-label">{item.label()}</span>
-			<kbd
-				class="kbd kbd-sm absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm bg-base-100/80 px-2 py-1 z-10"
-				>⌥{i + 1}</kbd
-			>
-		</a>
-	{/each}
-	{#if committee?.activeDraftResolutionId && !isLocalConferenceActive()}
-		<a
-			href={resolve('/app/[conferenceId]/[committeeId]/(chairs)/resolutions/[paperId]', {
-				conferenceId,
-				committeeId,
-				paperId: committee.activeDraftResolutionId
-			})}
-			class="group relative {page.url.pathname.includes(committee.activeDraftResolutionId)
-				? 'dock-active'
-				: ''}"
-		>
-			<i aria-hidden="true" class="ph-duotone ph-note-pencil size-[1.2em]"></i>
-			<span class="dock-label">{m.activeDraftResolution()}</span>
-		</a>
-	{/if}
-</div>
+<ChairDock
+	items={dockItems}
+	{conferenceId}
+	{committeeId}
+	activeDraftResolutionId={isLocalConferenceActive() ? null : committee?.activeDraftResolutionId}
+	pendingRequests={pendingRequestsForNotifications?.length ?? 0}
+/>

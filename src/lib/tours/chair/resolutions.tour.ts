@@ -2,7 +2,7 @@ import { m } from '#lib/paraglide/messages';
 import type { Tour } from '#lib/tours/types';
 
 /** Chair resolutions list. Promote is skipped when no paper is submitted. */
-export const tour: Tour = {
+export const chairResolutionsTour: Tour = {
 	id: 'chair.resolutions',
 	steps: [
 		{

@@ -51,34 +51,45 @@ function queryFor(fieldName: string): DocumentNode {
 	return parse(`query { ${fieldName} ${selection} }`);
 }
 
-/** Every field selectionFor selected (same `depth`) must be present, non-null ones non-null,
- * lists arrays — i.e. what graphcache needs to not treat the answer as a cache miss. */
-function violations(typeRef: TypeRef, value: unknown, depth: number, path: string, out: string[]) {
-	if (typeRef.kind === 'NON_NULL') {
-		if (value === null || value === undefined) out.push(`${path} is ${value} but non-null`);
-		else violations(typeRef.ofType!, value, depth, path, out);
-		return;
-	}
-	if (value === undefined) {
-		out.push(`${path} is missing`);
-		return;
-	}
-	if (value === null) return;
-	if (typeRef.kind === 'LIST') {
-		if (!Array.isArray(value)) out.push(`${path} is not a list`);
-		else value.forEach((item, i) => violations(typeRef.ofType!, item, depth, `${path}.${i}`, out));
-		return;
-	}
-	if (typeRef.kind !== 'OBJECT') return;
+type Check = { value: unknown; depth: number; path: string; out: string[] };
+
+function listViolations(itemRef: TypeRef, { value, depth, path, out }: Check) {
+	if (!Array.isArray(value)) out.push(`${path} is not a list`);
+	else
+		value.forEach((item, i) =>
+			violations(itemRef, { value: item, depth, path: `${path}.${i}`, out })
+		);
+}
+
+function objectViolations(typename: string | undefined, { value, depth, path, out }: Check) {
 	const object = value as Record<string, unknown>;
-	const type = schema.__schema.types.find((t) => t.name === typeRef.name);
+	const type = schema.__schema.types.find((t) => t.name === typename);
 	for (const field of (type && 'fields' in type && type.fields) || []) {
 		const inner = namedType(field.type as TypeRef);
 		const isObject = !!inner && objectTypes.has(inner);
 		if (isObject && depth === 0) continue;
-		const fieldPath = `${path}.${field.name}`;
-		violations(field.type as TypeRef, object[field.name], isObject ? depth - 1 : 0, fieldPath, out);
+		violations(field.type as TypeRef, {
+			value: object[field.name],
+			depth: isObject ? depth - 1 : 0,
+			path: `${path}.${field.name}`,
+			out
+		});
 	}
+}
+
+/** Every field selectionFor selected (same `depth`) must be present, non-null ones non-null,
+ * lists arrays — i.e. what graphcache needs to not treat the answer as a cache miss. */
+function violations(typeRef: TypeRef, check: Check) {
+	const { value, path, out } = check;
+	if (typeRef.kind === 'NON_NULL') {
+		if (value === null || value === undefined) out.push(`${path} is ${value} but non-null`);
+		else violations(typeRef.ofType!, check);
+		return;
+	}
+	if (value === undefined) out.push(`${path} is missing`);
+	else if (value === null) return;
+	else if (typeRef.kind === 'LIST') listViolations(typeRef.ofType!, check);
+	else if (typeRef.kind === 'OBJECT') objectViolations(typeRef.name, check);
 }
 
 describe('local demo conference queries', () => {
@@ -92,13 +103,12 @@ describe('local demo conference queries', () => {
 		expect(data).toHaveProperty(fieldName);
 
 		const out: string[] = [];
-		violations(
-			getLocalDemoField('Query', fieldName)!.type as TypeRef,
-			data![fieldName],
-			3,
-			fieldName,
+		violations(getLocalDemoField('Query', fieldName)!.type as TypeRef, {
+			value: data![fieldName],
+			depth: 3,
+			path: fieldName,
 			out
-		);
+		});
 		expect(out).toEqual([]);
 	});
 

@@ -2,13 +2,7 @@
 	import { m } from '#lib/paraglide/messages';
 	import Modal from './Modal.svelte';
 	import CountryBadge from './CountryBadge.svelte';
-	import WorldCountries from 'world-countries';
-
-	interface ParsedCountry {
-		alpha2Code: string;
-		alpha3Code: string;
-		name: string;
-	}
+	import { parseCountryCodes, type ParsedCountry } from './parseCountryCodes';
 
 	interface Props {
 		open: boolean;
@@ -36,51 +30,7 @@
 	});
 
 	function parseInput(text: string) {
-		// Split by various delimiters: newline, comma, semicolon, space, tab
-		const tokens = text
-			.split(/[\n\r,;\s\t]+/)
-			.map((t) => t.trim())
-			.filter((t) => t.length > 0);
-
-		const countries: ParsedCountry[] = [];
-		const unrecognized: string[] = [];
-		const addedCodes: string[] = [];
-
-		for (const token of tokens) {
-			const normalized = token.toLowerCase();
-
-			// Skip if we've already added this country
-			if (addedCodes.includes(normalized)) {
-				continue;
-			}
-
-			let country: (typeof WorldCountries)[0] | undefined;
-
-			// Try to match as Alpha-2 code (2 characters)
-			if (token.length === 2) {
-				country = WorldCountries.find((c) => c.cca2.toLowerCase() === normalized);
-			}
-			// Try to match as Alpha-3 code (3 characters)
-			else if (token.length === 3) {
-				country = WorldCountries.find((c) => c.cca3.toLowerCase() === normalized);
-			}
-
-			if (country) {
-				countries.push({
-					alpha2Code: country.cca2.toLowerCase(),
-					alpha3Code: country.cca3.toLowerCase(),
-					name: country.name.common
-				});
-				addedCodes.push(country.cca2.toLowerCase());
-				addedCodes.push(country.cca3.toLowerCase());
-			} else if (token.length >= 2 && token.length <= 3) {
-				// Only mark as unrecognized if it looks like a country code (2-3 chars)
-				unrecognized.push(token.toUpperCase());
-			}
-		}
-
-		parsedCountries = countries;
-		unrecognizedStrings = [...new Set(unrecognized)]; // Remove duplicates
+		({ countries: parsedCountries, unrecognized: unrecognizedStrings } = parseCountryCodes(text));
 	}
 
 	function handleSubmit() {

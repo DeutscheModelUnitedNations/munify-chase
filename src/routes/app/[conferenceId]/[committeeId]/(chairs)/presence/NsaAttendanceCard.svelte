@@ -4,7 +4,7 @@
 	import { registerCommands } from '#lib/commands/registry.svelte';
 	import BasicCard from '#lib/components/BasicCard.svelte';
 	import NsaScannerDrawer from './NsaScannerDrawer.svelte';
-	import { SvelteSet } from 'svelte/reactivity';
+	import { presentInCommittee } from './nsaAttendance';
 
 	interface Props {
 		conferenceId: string;
@@ -37,25 +37,7 @@
 		}
 	});
 
-	type PresenceEvent = NonNullable<typeof allEvents>[number];
-
-	let presentHere = $derived.by(() => {
-		const seen = new SvelteSet<string>();
-		const out: PresenceEvent[] = [];
-		for (const e of allEvents ?? []) {
-			const uid = e.conferenceUser?.id;
-			if (!uid || seen.has(uid)) continue;
-			seen.add(uid);
-			if (e.present && e.committeeId === committeeId) out.push(e);
-		}
-		return out.sort((a, b) => {
-			const aName =
-				a.conferenceUser?.name ?? a.conferenceUser?.conferenceMember?.representation?.name ?? '';
-			const bName =
-				b.conferenceUser?.name ?? b.conferenceUser?.conferenceMember?.representation?.name ?? '';
-			return aName.localeCompare(bName);
-		});
-	});
+	let presentHere = $derived(presentInCommittee(allEvents ?? [], committeeId));
 
 	function openScanner() {
 		drawerOpen = true;

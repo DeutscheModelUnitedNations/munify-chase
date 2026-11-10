@@ -25,8 +25,8 @@ const own = await keyPair();
 const keys: IdentityKeys = { delegator: delegator.keys, own: own.keys };
 
 const nsas = [
-	{ id: 'cu-anna', delegatorUserId: 'anna', cardNumber: 2 },
-	{ id: 'cu-local', delegatorUserId: null, cardNumber: 1 }
+	{ id: 'cu-anna', userId: 'anna', cardNumber: 2 },
+	{ id: 'cu-local', userId: null, cardNumber: 1 }
 ];
 
 const nametag = (userId: string) =>

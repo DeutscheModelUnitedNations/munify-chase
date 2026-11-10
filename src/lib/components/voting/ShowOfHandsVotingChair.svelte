@@ -9,7 +9,20 @@
 	import { type VotingMajority, type VotingStage } from './votingModal';
 	import VoteClicker from './VoteClicker.svelte';
 	import ResultChart from './ResultChart.svelte';
-	import { calculateMajority } from '#lib/utils/majorities';
+	import CloseCornerButton from './CloseCornerButton.svelte';
+	import HandsCountProgress from './HandsCountProgress.svelte';
+	import { completeVotingSession } from './votingSession';
+	import {
+		finishVote,
+		handsCountState,
+		handsProgress,
+		nextShowOfHandsStage,
+		previousShowOfHandsStage,
+		resumedShowOfHands,
+		showOfHandsForwardAction,
+		showOfHandsMajority,
+		showOfHandsTotal
+	} from './votingMath';
 	import type { VotingResult } from './votingModal';
 
 	interface Props {
@@ -41,34 +54,15 @@
 	let votesAbstain = $state(0);
 	let sessionId = $state<string | null>(null);
 
-	let votesTotal = $derived.by(() => {
-		switch (majority) {
-			case 'SIMPLE':
-			case 'TWO_THIRDS':
-				return votesPro + votesCon;
-			case 'ABSOLUTE':
-				return votesPro + votesCon + votesAbstain;
-			default:
-				return 0;
-		}
-	});
-	let majorityAmount = $derived.by(() => {
-		switch (majority) {
-			case 'SIMPLE':
-			case 'ABSOLUTE':
-				return calculateMajority(votesTotal, 'simple');
-			case 'TWO_THIRDS':
-				return calculateMajority(votesTotal, 'twoThirds');
-			default:
-				return 0;
-		}
-	});
+	let votesTotal = $derived(
+		showOfHandsTotal({ majority, pro: votesPro, con: votesCon, abstain: votesAbstain })
+	);
+	let majorityAmount = $derived(showOfHandsMajority({ majority, total: votesTotal }));
 	let presentDelegations = $derived(committee?.totalPresent ?? 0);
 	let votesCast = $derived(votesPro + votesCon + votesAbstain);
-	let votesProgress = $derived(
-		presentDelegations > 0 ? Math.min((votesCast / presentDelegations) * 100, 100) : 0
-	);
-	let votesOvershot = $derived(presentDelegations > 0 && votesCast > presentDelegations);
+	let votesProgress = $derived(handsProgress({ votesCast, presentDelegations }));
+	let countState = $derived(handsCountState({ votesCast, votesTotal, presentDelegations }));
+	let forwardAction = $derived(showOfHandsForwardAction({ stage: currentState, withAbstentions }));
 
 	const syncToServer = () => {
 		if (!sessionId) return;
@@ -88,58 +82,39 @@
 			.catch(() => {});
 	};
 
-	const exit = (completed: boolean = false) => {
-		const outcome: 'ADOPTED' | 'REJECTED' | null = completed
-			? votesPro >= majorityAmount
-				? 'ADOPTED'
-				: 'REJECTED'
-			: null;
-
-		if (sessionId) {
-			const id = sessionId;
-			sessionId = null;
-			client.mutate.completeVotingSession({ __args: { id } }).catch(() => {});
-		}
-
-		if (oncomplete) {
-			if (completed) {
-				oncomplete({
-					outcome: outcome!,
-					votesFor: votesPro,
-					votesAgainst: votesCon,
-					votesAbstain: votesAbstain,
-					cancelled: false
-				});
-			} else {
-				oncomplete({ votesFor: 0, votesAgainst: 0, votesAbstain: 0, cancelled: true });
-			}
-		}
+	const reset = () => {
 		votesPro = 0;
 		votesCon = 0;
 		votesAbstain = 0;
 		currentState = 'PRO';
+	};
+
+	const closeSession = (outcome: 'ADOPTED' | 'REJECTED' | null) => {
+		completeVotingSession({ id: sessionId, outcome });
+		sessionId = null;
+	};
+
+	const exit = (completed: boolean = false) => {
+		const { outcome, result } = finishVote({
+			completed,
+			majorityAmount,
+			votesFor: votesPro,
+			votesAgainst: votesCon,
+			votesAbstain
+		});
+		closeSession(outcome);
+		oncomplete?.(result);
+		reset();
 		active = false;
 	};
 
 	const nextState = () => {
-		switch (currentState) {
-			case 'PRO':
-				currentState = 'CON';
-				break;
-			case 'CON':
-				if (withAbstentions) {
-					currentState = 'ABSTAIN';
-				} else {
-					currentState = 'EVALUATION';
-				}
-				break;
-			case 'ABSTAIN':
-				currentState = 'EVALUATION';
-				break;
-			case 'EVALUATION':
-				exit(true);
-				return;
+		const next = nextShowOfHandsStage({ stage: currentState, withAbstentions });
+		if (next === 'DONE') {
+			exit(true);
+			return;
 		}
+		currentState = next;
 		syncToServer();
 	};
 
@@ -158,22 +133,62 @@
 	};
 
 	const previousState = () => {
-		switch (currentState) {
-			case 'CON':
-				currentState = 'PRO';
-				break;
-			case 'ABSTAIN':
-				currentState = 'CON';
-				break;
-			case 'EVALUATION':
-				if (withAbstentions) {
-					currentState = 'ABSTAIN';
-				} else {
-					currentState = 'CON';
-				}
-				break;
-		}
+		currentState = previousShowOfHandsStage({ stage: currentState, withAbstentions });
 		syncToServer();
+	};
+
+	const hotkeyActions: Record<string, () => void> = {
+		enter: nextState,
+		esc: () => exit(),
+		backspace: previousState,
+		up: () => adjustCurrentVote(1),
+		space: () => adjustCurrentVote(1),
+		down: () => adjustCurrentVote(-1)
+	};
+
+	const startSession = () => {
+		if (!committee) return;
+		// Mint the session id client-side and adopt it synchronously so the chair can
+		// drive (and later complete) the vote without waiting for a server response —
+		// offline the mutation promise never resolves, so relying on `.then()` to set
+		// `sessionId` would leave every follow-up mutation a no-op. Passing the id
+		// through also keeps the optimistic entity key identical in the chair and the
+		// presentation popup (same broadcast variables), so the committee's
+		// activeVotingSession FK resolves to one shared row. Mirrors the roll-call chair.
+		const id = nanoid();
+		sessionId = id;
+		client.mutate
+			.startVotingSession({
+				__args: {
+					id,
+					committeeId: committee.id,
+					mode: 'SHOW_OF_HANDS',
+					majority,
+					majorityAmount: 0,
+					withAbstentions,
+					voteName: voteName ?? null,
+					currentStage: 'PRO'
+				},
+				id: true,
+				currentStage: true,
+				votesPro: true,
+				votesCon: true,
+				votesAbstain: true
+			})
+			.then((result) => {
+				if (!active) {
+					completeVotingSession({ id: result.id });
+					return;
+				}
+				// Server may resume an existing session under a different id; adopt it.
+				sessionId = result.id;
+				const resumed = resumedShowOfHands(result);
+				if (resumed.stage) currentState = resumed.stage;
+				votesPro = resumed.pro;
+				votesCon = resumed.con;
+				votesAbstain = resumed.abstain;
+			})
+			.catch(() => {});
 	};
 
 	$effect(() => {
@@ -181,89 +196,50 @@
 			(document.activeElement as HTMLElement | null)?.blur();
 			hotkeys('enter, esc, backspace, up, down, space', 'showOfHandsVote', (event, handler) => {
 				event.preventDefault();
-				switch (handler.key) {
-					case 'enter':
-						nextState();
-						break;
-					case 'esc':
-						exit();
-						break;
-					case 'backspace':
-						previousState();
-						break;
-					case 'up':
-					case 'space':
-						adjustCurrentVote(1);
-						break;
-					case 'down':
-						adjustCurrentVote(-1);
-						break;
-				}
+				hotkeyActions[handler.key]?.();
 			});
 			hotkeys.setScope('showOfHandsVote');
 
-			untrack(() => {
-				if (!committee) return;
-				// Mint the session id client-side and adopt it synchronously so the chair can
-				// drive (and later complete) the vote without waiting for a server response —
-				// offline the mutation promise never resolves, so relying on `.then()` to set
-				// `sessionId` would leave every follow-up mutation a no-op. Passing the id
-				// through also keeps the optimistic entity key identical in the chair and the
-				// presentation popup (same broadcast variables), so the committee's
-				// activeVotingSession FK resolves to one shared row. Mirrors the roll-call chair.
-				const id = nanoid();
-				sessionId = id;
-				client.mutate
-					.startVotingSession({
-						__args: {
-							id,
-							committeeId: committee.id,
-							mode: 'SHOW_OF_HANDS',
-							majority,
-							majorityAmount: 0,
-							withAbstentions,
-							voteName: voteName ?? null,
-							currentStage: 'PRO'
-						},
-						id: true,
-						currentStage: true,
-						votesPro: true,
-						votesCon: true,
-						votesAbstain: true
-					})
-					.then((result) => {
-						if (!active) {
-							client.mutate.completeVotingSession({ __args: { id: sessionId! } }).catch(() => {});
-							return;
-						}
-						// Server may resume an existing session under a different id; adopt it.
-						sessionId = result.id;
-						if (result.currentStage) currentState = result.currentStage as VotingStage;
-						votesPro = result.votesPro ?? 0;
-						votesCon = result.votesCon ?? 0;
-						votesAbstain = result.votesAbstain ?? 0;
-					})
-					.catch(() => {});
-			});
+			untrack(startSession);
 
 			return () => {
 				hotkeys.deleteScope('showOfHandsVote');
 			};
 		} else {
 			untrack(() => {
-				if (sessionId) {
-					const id = sessionId;
-					sessionId = null;
-					client.mutate.completeVotingSession({ __args: { id } }).catch(() => {});
-				}
-				votesPro = 0;
-				votesCon = 0;
-				votesAbstain = 0;
-				currentState = 'PRO';
+				closeSession(null);
+				reset();
 			});
 		}
 	});
 </script>
+
+{#snippet stageCard({
+	stage,
+	label,
+	activeClasses,
+	idleClasses
+}: {
+	stage: VotingStage;
+	label: string;
+	activeClasses: string;
+	idleClasses: string;
+})}
+	<div
+		class="{currentState === stage
+			? activeClasses
+			: idleClasses} card border-base-100 mb-4 w-full items-center justify-center gap-4 border-3 p-4 shadow-sm"
+	>
+		<h3 class="text-lg font-bold">{label}</h3>
+		{#if stage === 'PRO'}
+			<VoteClicker active={currentState === stage} bind:value={votesPro} />
+		{:else if stage === 'CON'}
+			<VoteClicker active={currentState === stage} bind:value={votesCon} />
+		{:else}
+			<VoteClicker active={currentState === stage} bind:value={votesAbstain} />
+		{/if}
+	</div>
+{/snippet}
 
 <Modal bind:open={active} closeOnEsc={false}>
 	<h1 class="mb-2 text-2xl font-bold">{voteName || m.voting()}</h1>
@@ -274,62 +250,29 @@
 	<ResultChart total={votesTotal} {votesPro} {votesCon} {majorityAmount} />
 
 	{#if presentDelegations > 0}
-		<div class="mt-3 flex flex-col gap-1">
-			<progress
-				class="progress w-full {votesOvershot
-					? 'progress-error'
-					: votesTotal === presentDelegations
-						? 'progress-success'
-						: 'progress-warning'}"
-				value={votesProgress}
-				max="100"
-			></progress>
-			<div class="flex justify-between text-sm">
-				<span class={votesOvershot ? 'text-error font-semibold' : 'text-base-content/60'}>
-					{votesCast} / {presentDelegations}
-				</span>
-				{#if votesOvershot}
-					<span class="text-error font-semibold">
-						<i aria-hidden="true" class="ph-fill ph-warning"></i>
-						+{votesCast - presentDelegations}
-						{m.over()}
-					</span>
-				{:else if votesTotal === presentDelegations}
-					<span class="text-success font-semibold">
-						<i aria-hidden="true" class="ph-fill ph-check-circle"></i>
-						{m.matching()}
-					</span>
-				{/if}
-			</div>
-		</div>
+		<HandsCountProgress {countState} {votesCast} {votesProgress} {presentDelegations} />
 	{/if}
 
 	<div class="mt-6 flex gap-4">
-		<div
-			class="{currentState === 'PRO'
-				? 'bg-success text-success-content border-black'
-				: 'bg-success/20'} card border-base-100 mb-4 w-full items-center justify-center gap-4 border-3 p-4 shadow-sm"
-		>
-			<h3 class="text-lg font-bold">{m.pro()}</h3>
-			<VoteClicker active={currentState === 'PRO'} bind:value={votesPro} />
-		</div>
-		<div
-			class="{currentState === 'CON'
-				? 'bg-error text-error-content border-black'
-				: 'bg-error/20'} card border-base-100 mb-4 w-full items-center justify-center gap-4 border-3 p-4 shadow-sm"
-		>
-			<h3 class="text-lg font-bold">{m.con()}</h3>
-			<VoteClicker active={currentState === 'CON'} bind:value={votesCon} />
-		</div>
+		{@render stageCard({
+			stage: 'PRO',
+			label: m.pro(),
+			activeClasses: 'bg-success text-success-content border-black',
+			idleClasses: 'bg-success/20'
+		})}
+		{@render stageCard({
+			stage: 'CON',
+			label: m.con(),
+			activeClasses: 'bg-error text-error-content border-black',
+			idleClasses: 'bg-error/20'
+		})}
 		{#if withAbstentions}
-			<div
-				class="{currentState === 'ABSTAIN'
-					? 'bg-info text-info-content border-black'
-					: 'bg-info/20'} card border-base-100 mb-4 w-full items-center justify-center gap-4 border-3 p-4 shadow-sm"
-			>
-				<h3 class="text-lg font-bold">{m.abstain()}</h3>
-				<VoteClicker active={currentState === 'ABSTAIN'} bind:value={votesAbstain} />
-			</div>
+			{@render stageCard({
+				stage: 'ABSTAIN',
+				label: m.abstain(),
+				activeClasses: 'bg-info text-info-content border-black',
+				idleClasses: 'bg-info/20'
+			})}
 		{/if}
 	</div>
 
@@ -340,15 +283,13 @@
 			<Kbd hotkey="backspace" />
 		</button>
 		<button
-			class="btn {currentState === 'EVALUATION' ? 'btn-error' : 'btn-success'} btn-lg flex gap-2"
-			onclick={() => {
-				nextState();
-			}}
+			class="btn {forwardAction === 'close' ? 'btn-error' : 'btn-success'} btn-lg flex gap-2"
+			onclick={nextState}
 		>
-			{#if currentState === 'EVALUATION'}
+			{#if forwardAction === 'close'}
 				<i aria-hidden="true" class="ph-fill ph-x"></i>
 				{m.close()}
-			{:else if currentState === 'ABSTAIN' || (!withAbstentions && currentState === 'CON')}
+			{:else if forwardAction === 'publish'}
 				<i aria-hidden="true" class="ph-fill ph-paper-plane-tilt"></i>
 				{m.publish()}
 			{:else}
@@ -358,14 +299,6 @@
 			<Kbd hotkey="enter" />
 		</button>
 
-		<div class="absolute top-3 right-3">
-			<button
-				aria-label="Close modal"
-				class="btn btn-ghost btn-circle btn-sm"
-				onclick={() => exit()}
-			>
-				<i aria-hidden="true" class="ph-duotone ph-x"></i>
-			</button>
-		</div>
+		<CloseCornerButton onclick={() => exit()} />
 	</div>
 </Modal>

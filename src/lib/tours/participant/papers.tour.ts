@@ -2,7 +2,7 @@ import { m } from '#lib/paraglide/messages';
 import type { Tour } from '#lib/tours/types';
 
 /** Participant papers list. Anchors live in the page. */
-export const tour: Tour = {
+export const participantPapersTour: Tour = {
 	id: 'participant.papers',
 	steps: [
 		{

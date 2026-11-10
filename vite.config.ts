@@ -71,7 +71,20 @@ export default defineConfig({
 	},
 	// Unit tests live next to the code; e2e/ holds the Playwright specs (`bun run test:e2e`)
 	test: {
-		include: ['src/**/*.{test,spec}.{js,ts}']
+		include: ['src/**/*.{test,spec}.{js,ts}'],
+		// `bun run coverage`, which fallow scores complexity against (its CRAP scores) instead of
+		// estimating coverage
+		coverage: {
+			provider: 'v8',
+			reportsDirectory: 'coverage',
+			// generated code, which .fallowrc.jsonc leaves out too
+			exclude: [
+				'src/lib/paraglide/**',
+				'src/lib/api/rumbleClient/**',
+				'src/api/services/link/delegatorClient/**'
+			],
+			reporter: ['text-summary', 'json']
+		}
 	},
 	server: {
 		port: 1420,

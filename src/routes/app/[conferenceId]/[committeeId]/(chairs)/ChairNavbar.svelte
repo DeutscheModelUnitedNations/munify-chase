@@ -1,54 +1,14 @@
 <script lang="ts">
+	import type { ComponentProps } from 'svelte';
 	import { page } from '$app/state';
 	import { client } from '#lib/api/rumbleClient/client';
 	import CurrentTime from '#lib/components/CurrentTime.svelte';
-	import NavbarBurgerMenu from '#lib/components/NavbarBurgerMenu.svelte';
+	import ConferenceMenu from '../../ConferenceMenu.svelte';
 	import NavbarSpeakersWidget from '#lib/components/speakersList/NavbarSpeakersWidget.svelte';
-	import {
-		buildConferenceNavItems,
-		roleBadgeClassFor,
-		roleLabelFor
-	} from '#lib/components/navbar/conferenceNavItems';
 
 	import { getCurrentUser, getIsGlobalAdmin } from '#lib/state/currentUser.svelte';
-	import { displayNameOf } from '#lib/helpers/displayName';
 
-	type SpeakersList =
-		| {
-				id: string;
-				type: string;
-				speakingTime: number;
-				startTimestamp?: Date | null;
-				timeLeft: number;
-				phase?: string | null;
-				speakers: Array<{
-					id: string;
-					position: number;
-					overwriteName?: string | null;
-					committeeMember?: {
-						id: string;
-						representation?: {
-							name?: string | null;
-							alpha2Code?: string | null;
-							alpha3Code?: string | null;
-							icon?: string | null;
-							type?: string | null;
-						} | null;
-					} | null;
-					conferenceMember?: {
-						id: string;
-						representation?: {
-							name?: string | null;
-							alpha2Code?: string | null;
-							alpha3Code?: string | null;
-							icon?: string | null;
-							type?: string | null;
-						} | null;
-					} | null;
-				}>;
-		  }
-		| null
-		| undefined;
+	type SpeakersList = ComponentProps<typeof NavbarSpeakersWidget>['speakersList'];
 
 	interface Props {
 		title?: string;
@@ -64,7 +24,6 @@
 
 	const currentUser = await getCurrentUser();
 	const userId = currentUser.id ?? '';
-	const userDisplayName = displayNameOf(currentUser);
 
 	const conferenceUsers = await client.liveQuery.conferenceUsers({
 		__args: {
@@ -90,16 +49,6 @@
 	});
 
 	const isGlobalAdmin = await getIsGlobalAdmin();
-
-	let menubarItems = $derived(
-		buildConferenceNavItems({
-			role,
-			conferenceId,
-			activeRouteId: page.route.id,
-			activePathname: page.url.pathname,
-			isGlobalAdmin: !!isGlobalAdmin
-		})
-	);
 </script>
 
 <!-- Slim top bar -->
@@ -121,21 +70,13 @@
 	</div>
 
 	<div class="flex-none">
-		<NavbarBurgerMenu
-			items={menubarItems}
-			user={{
-				name: userDisplayName,
-				email: currentUser.email ?? undefined,
-				givenName: currentUser.givenName ?? undefined,
-				familyName: currentUser.familyName ?? undefined
-			}}
-			roleLabel={roleLabelFor(role)}
-			roleBadgeClass={roleBadgeClassFor(role)}
-			{conferenceTitle}
+		<ConferenceMenu
+			{role}
 			{conferenceId}
-			committees={role === 'ADMIN' || role === 'TEAM' ? (conference?.committees ?? []) : []}
-			dashboardHref="/app"
-			signOutHref="/logout"
+			{conferenceTitle}
+			committees={conference?.committees}
+			isGlobalAdmin={!!isGlobalAdmin}
+			user={currentUser}
 		/>
 	</div>
 </div>

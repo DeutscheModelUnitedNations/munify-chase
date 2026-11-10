@@ -9,28 +9,8 @@
 	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import AddCountriesModal from '#lib/components/AddCountriesModal.svelte';
 	import EditDelegationModal from './EditDelegationModal.svelte';
-
-	interface Representation {
-		id: string;
-		name: string | null;
-		alpha2Code: string | null;
-		alpha3Code: string | null;
-		type: string;
-		icon: string | null;
-	}
-
-	interface Committee {
-		id: string;
-		name: string;
-		abbreviation: string;
-		members: {
-			id: string;
-			representation: {
-				id: string;
-				type: string;
-			};
-		}[];
-	}
+	import RowActions from './RowActions.svelte';
+	import { committeesSeating, type Committee, type Representation } from './delegations';
 
 	interface Props {
 		conferenceId: string;
@@ -51,8 +31,7 @@
 	}
 
 	function getCommitteesForDelegation(representationId: string): string {
-		return committees
-			.filter((c) => c.members.some((cm) => cm.representation.id === representationId))
+		return committeesSeating({ committees, representationId })
 			.map((c) => c.abbreviation)
 			.join(', ');
 	}
@@ -122,22 +101,11 @@
 								{getCommitteesForDelegation(delegation.id) || '—'}
 							</td>
 							<td>
-								<div class="flex gap-1">
-									<button
-										class="btn btn-ghost btn-sm"
-										onclick={() => openEditModal(delegation)}
-										aria-label={m.edit()}
-									>
-										<i aria-hidden="true" class="ph-fill ph-pen text-sm"></i>
-									</button>
-									<button
-										class="btn btn-ghost btn-sm text-error"
-										onclick={() => deleteDelegation(delegation.id)}
-										aria-label={m.deleteRepresentation()}
-									>
-										<i aria-hidden="true" class="ph-fill ph-trash text-sm"></i>
-									</button>
-								</div>
+								<RowActions
+									onEdit={() => openEditModal(delegation)}
+									onDelete={() => deleteDelegation(delegation.id)}
+									deleteLabel={m.deleteRepresentation()}
+								/>
 							</td>
 						</tr>
 					{/each}

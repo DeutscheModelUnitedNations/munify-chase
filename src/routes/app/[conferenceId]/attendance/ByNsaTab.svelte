@@ -4,7 +4,14 @@
 	import { resolve } from '$app/paths';
 	import BasicCard from '#lib/components/BasicCard.svelte';
 	import NsaQrCardModal from './NsaQrCardModal.svelte';
-	import { SvelteMap } from 'svelte/reactivity';
+	import NsaUserRow from './NsaUserRow.svelte';
+	import {
+		groupNsaUsersByOrg,
+		latestEventByUser,
+		nsaSheetFileName,
+		nsaSheetRows,
+		toCsv
+	} from './attendance';
 
 	interface Props {
 		conferenceId: string;
@@ -49,36 +56,14 @@
 	type NsaUser = NonNullable<typeof nsaUsers>[number];
 
 	let committeesById = $derived(new Map((conference?.committees ?? []).map((c) => [c.id, c])));
+	let latestByUser = $derived(latestEventByUser(allEvents));
+	let groupedByOrg = $derived(groupNsaUsersByOrg({ users: nsaUsers, unknownName: m.unknown() }));
 
-	// allEvents is ordered timestamp DESC, so the first event per user is the latest.
-	let latestByUser = $derived.by(() => {
-		const map = new SvelteMap<string, NonNullable<typeof allEvents>[number]>();
-		for (const e of allEvents ?? []) {
-			const uid = e.conferenceUser?.id;
-			if (uid && !map.has(uid)) map.set(uid, e);
-		}
-		return map;
-	});
-
-	let groupedByOrg = $derived.by(() => {
-		const map = new SvelteMap<
-			string,
-			{ orgId: string; name: string; icon: string | null; users: NsaUser[] }
-		>();
-		for (const u of nsaUsers ?? []) {
-			const rep = u.conferenceMember?.representation;
-			const orgId = rep?.id ?? '__unknown__';
-			const entry = map.get(orgId) ?? {
-				orgId,
-				name: rep?.name ?? m.unknown(),
-				icon: rep?.icon ?? null,
-				users: []
-			};
-			entry.users.push(u);
-			map.set(orgId, entry);
-		}
-		return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
-	});
+	/** The committee the user is checked in to right now, if any. */
+	function checkedInCommittee(userId: string) {
+		const latest = latestByUser.get(userId);
+		return latest?.present ? committeesById.get(latest.committeeId) : undefined;
+	}
 
 	let qrModalOpen = $state(false);
 	let qrCard = $state<{
@@ -104,31 +89,17 @@
 		qrModalOpen = true;
 	}
 
-	// CSV export — semicolon-separated for Excel-DE default; \r\n for Windows.
 	function exportCsv() {
-		const header = ['id', 'name', 'email', 'organization', 'currently_in_committee'];
-		const rows: string[][] = [];
-		for (const org of groupedByOrg) {
-			for (const user of org.users) {
-				const latest = latestByUser.get(user.id);
-				const inCommittee = latest?.present
-					? (committeesById.get(latest.committeeId)?.name ?? '')
-					: '';
-				rows.push([user.id, user.name ?? '', user.userEmail, org.name, inCommittee]);
-			}
-		}
-		const escape = (v: string) => {
-			if (/[";\r\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
-			return v;
-		};
-		const csv = [header, ...rows].map((row) => row.map(escape).join(';')).join('\r\n') + '\r\n';
-		const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+		const rows = nsaSheetRows({
+			orgs: groupedByOrg,
+			latestByUser,
+			committeeNames: new Map([...committeesById].map(([id, c]) => [id, c.name]))
+		});
+		const blob = new Blob(['\uFEFF' + toCsv(rows)], { type: 'text/csv;charset=utf-8' });
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
-		const date = new Date().toISOString().slice(0, 10);
-		const slug = (conference?.title ?? 'conference').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-		a.download = `nsa-laufzettel-${slug}-${date}.csv`;
+		a.download = nsaSheetFileName({ title: conference?.title, date: new Date() });
 		a.click();
 		URL.revokeObjectURL(url);
 	}
@@ -161,35 +132,12 @@
 		<BasicCard title={org.name}>
 			<ul class="flex flex-col gap-1">
 				{#each org.users as user (user.id)}
-					{@const latest = latestByUser.get(user.id)}
-					{@const checkedIn = latest?.present}
-					{@const committee = checkedIn ? committeesById.get(latest.committeeId) : null}
-					<li class="card hover:bg-base-200 flex flex-row items-center gap-3 p-2">
-						{#if org.icon}
-							<i aria-hidden="true" class="ph-fill ph-{org.icon} text-lg"></i>
-						{:else}
-							<i aria-hidden="true" class="ph-fill ph-identification-badge text-lg"></i>
-						{/if}
-						<span class="flex-1">{user.name ?? user.userEmail}</span>
-						{#if checkedIn && committee}
-							<span class="badge badge-success">
-								<i aria-hidden="true" class="ph-fill ph-sign-in mr-1"></i>
-								{committee.abbreviation ?? committee.name}
-							</span>
-						{:else}
-							<span class="badge badge-ghost">{m.notCheckedIn()}</span>
-						{/if}
-						{#if !conference?.managedByDelegator}
-							<button
-								class="btn btn-ghost btn-sm"
-								onclick={() => openQrFor(user)}
-								aria-label={m.qrCard()}
-								title={m.qrCard()}
-							>
-								<i aria-hidden="true" class="ph-fill ph-qr-code"></i>
-							</button>
-						{/if}
-					</li>
+					<NsaUserRow
+						icon={org.icon}
+						name={user.name ?? user.userEmail}
+						committee={checkedInCommittee(user.id)}
+						onQr={conference?.managedByDelegator ? undefined : () => openQrFor(user)}
+					/>
 				{/each}
 			</ul>
 		</BasicCard>

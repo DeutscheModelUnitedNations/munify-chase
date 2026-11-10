@@ -4,18 +4,15 @@
 	import { page } from '$app/state';
 	import { client } from '#lib/api/rumbleClient/client';
 	import BasicCard from '#lib/components/BasicCard.svelte';
-	import Flag from '#lib/components/Flag.svelte';
 	import UndrawError from '#lib/components/UndrawError.svelte';
 	import emptyStreet from '#assets/undraw/empty_street.svg';
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '#lib/utils/toast';
-	import { getTranslatedCountryNameFromAlpha3Code } from '#lib/utils/nationTranslationHelper.svelte';
 	import AddManualRequest from '#lib/components/requests/AddManualRequest.svelte';
-	import {
-		compareRequests,
-		requestRepresentation,
-		toPendingSeatRequest
-	} from '#lib/helpers/requests';
+	import { compareRequests, toPendingSeatRequest } from '#lib/helpers/requests';
+	import { requesterLabel } from '../requesters';
+	import PendingRequestItem from './PendingRequestItem.svelte';
+	import RequestHistory from './RequestHistory.svelte';
 
 	const committeeId = page.params.committeeId!;
 	const conferenceId = page.params.conferenceId!;
@@ -92,29 +89,13 @@
 		resolvedBy: { id: true, name: true, userEmail: true }
 	});
 
-	type Request = NonNullable<typeof pendingRequests>[number];
-	type Requester = Pick<Request, 'conferenceUser' | 'committeeMember' | 'conferenceMember'>;
-
-	// The delegation/NSA name is the primary label; the person's own name (when
-	// set) is shown alongside it for context, but only if it adds information.
-	function requesterLabel(req: Requester) {
-		const rep = requestRepresentation(req);
-		const personName = req.conferenceUser?.name;
-		const primary = rep
-			? (rep.name ?? getTranslatedCountryNameFromAlpha3Code(rep.alpha3Code))
-			: (personName ?? req.conferenceUser?.userEmail ?? m.unknown());
-		const secondary = personName && personName !== primary ? personName : null;
-		return { primary, secondary };
-	}
-
 	const pendingSeats = $derived((pendingRequests ?? []).map(toPendingSeatRequest));
+	const recentHistory = $derived(history ?? []);
+	const committeeMembers = $derived(committee?.members ?? []);
+	const conferenceMembers = $derived(committee?.conference?.uniqueConferenceMembers ?? []);
+	const enabledRequestTypes = $derived(requestTypes ?? []);
 
 	let sortedPending = $derived([...(pendingRequests ?? [])].sort(compareRequests));
-
-	function formatTime(ts: string | Date) {
-		const d = ts instanceof Date ? ts : new Date(ts);
-		return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-	}
 
 	async function resolve(id: string) {
 		await toast.promise(
@@ -165,14 +146,14 @@
 			<p class="mb-4 text-sm opacity-70">{m.addRequestDescription()}</p>
 			<AddManualRequest
 				{committeeId}
-				committeeMembers={committee?.members ?? []}
-				conferenceMembers={committee?.conference?.uniqueConferenceMembers ?? []}
-				requestTypes={requestTypes ?? []}
+				{committeeMembers}
+				{conferenceMembers}
+				requestTypes={enabledRequestTypes}
 				pending={pendingSeats}
 			/>
 		</BasicCard>
 
-		{#if sortedPending.length === 0 && (history?.length ?? 0) === 0}
+		{#if sortedPending.length === 0 && recentHistory.length === 0}
 			<UndrawError
 				undrawImage={emptyStreet}
 				title={m.noPendingRequests()}
@@ -183,55 +164,11 @@
 				{#if sortedPending.length > 0}
 					<ul class="flex flex-col gap-2">
 						{#each sortedPending as req (req.id)}
-							{@const label = requesterLabel(req)}
-							<li
-								class="bg-base-200 flex flex-wrap items-center gap-3 rounded-lg px-4 py-3 sm:flex-nowrap"
-								data-tour="requests.request"
-							>
-								<i aria-hidden="true" class="ph-fill ph-{req.requestType?.icon ?? 'flag'} text-xl"
-								></i>
-								<div class="flex min-w-0 flex-1 items-center gap-2">
-									<Flag representation={requestRepresentation(req)} size="xs" />
-									<div class="flex min-w-0 flex-col">
-										<span class="font-medium">
-											{req.requestType?.name}
-											{#if !req.conferenceUser}
-												<i
-													aria-hidden="true"
-													class="ph-fill ph-pencil-simple-line text-base-content/40 ml-1 text-xs"
-													title={m.requestAddedByChairs()}
-													aria-label={m.requestAddedByChairs()}
-												></i>
-											{/if}
-										</span>
-										<span class="text-base-content/60 truncate text-sm">
-											{label.primary}
-											{#if label.secondary}
-												<span class="text-base-content/40">({label.secondary})</span>
-											{/if}
-										</span>
-									</div>
-								</div>
-								<span class="text-base-content/50 text-xs">{formatTime(req.createdAt)}</span>
-								<button
-									type="button"
-									class="btn btn-ghost btn-sm text-error"
-									data-tour="requests.withdraw"
-									onclick={() => withdraw(req.id)}
-								>
-									<i aria-hidden="true" class="ph-fill ph-x"></i>
-									{m.withdrawRequestAction()}
-								</button>
-								<button
-									type="button"
-									class="btn btn-success btn-sm"
-									data-tour="requests.resolve"
-									onclick={() => resolve(req.id)}
-								>
-									<i aria-hidden="true" class="ph-fill ph-check"></i>
-									{m.resolveRequestAction()}
-								</button>
-							</li>
+							<PendingRequestItem
+								{req}
+								onWithdraw={() => withdraw(req.id)}
+								onResolve={() => resolve(req.id)}
+							/>
 						{/each}
 					</ul>
 				{:else}
@@ -239,44 +176,8 @@
 				{/if}
 			</BasicCard>
 
-			{#if history && history.length > 0}
-				<details class="group" data-tour="requests.history">
-					<summary
-						class="text-base-content/60 hover:text-base-content flex cursor-pointer select-none list-none items-center gap-1 text-sm transition-colors"
-					>
-						<i
-							aria-hidden="true"
-							class="ph-fill ph-caret-right text-xs transition-transform group-open:rotate-90"
-						></i>
-						{m.recentRequestHistory({ count: history.length })}
-					</summary>
-					<ul class="mt-2 flex flex-col gap-1">
-						{#each history as req (req.id)}
-							{@const label = requesterLabel(req)}
-							<li class="bg-base-200 flex items-center gap-3 rounded-lg px-4 py-2 text-sm">
-								<i aria-hidden="true" class="ph-fill ph-{req.requestType?.icon ?? 'flag'}"></i>
-								<span class="flex-1">{req.requestType?.name}</span>
-								<Flag representation={requestRepresentation(req)} size="xs" />
-								<span class="text-base-content/60">
-									{label.primary}
-									{#if label.secondary}
-										<span class="text-base-content/40">({label.secondary})</span>
-									{/if}
-								</span>
-								<span
-									class="badge badge-sm {req.status === 'WITHDRAWN'
-										? 'badge-ghost'
-										: 'badge-success'}"
-								>
-									{req.status === 'WITHDRAWN' ? m.withdrawn() : m.resolved()}
-								</span>
-								{#if req.updatedAt}
-									<span class="text-base-content/50 text-xs">{formatTime(req.updatedAt)}</span>
-								{/if}
-							</li>
-						{/each}
-					</ul>
-				</details>
+			{#if recentHistory.length > 0}
+				<RequestHistory history={recentHistory} />
 			{/if}
 		{/if}
 	</div>

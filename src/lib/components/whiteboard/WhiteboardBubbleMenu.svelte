@@ -1,4 +1,5 @@
 <script lang="ts">
+	import WhiteboardButtonGroups, { type WhiteboardButton } from './WhiteboardButtonGroups.svelte';
 	import { m } from '#lib/paraglide/messages';
 	import type { Editor } from 'svelte-tiptap';
 
@@ -8,12 +9,7 @@
 
 	let { editor }: Props = $props();
 
-	let buttonGroups: {
-		label: string;
-		icon: string;
-		command: () => void;
-		active?: () => boolean;
-	}[][] = [
+	let buttonGroups: WhiteboardButton[][] = [
 		[
 			{
 				label: m.bold(),
@@ -76,20 +72,4 @@
 	];
 </script>
 
-<div class="card bg-base-300 flex flex-row flex-nowrap gap-2 p-2 shadow-sm">
-	{#each buttonGroups as group, groupIdx (groupIdx)}
-		<div class="join">
-			{#each group as button (button.label)}
-				<div class="tooltip" data-tip={button.label}>
-					<button
-						class="btn btn-sm join-item {button.active && button.active() ? 'btn-active' : ''}"
-						aria-label={button.label}
-						onclick={() => button.command()}
-					>
-						<i aria-hidden="true" class={`ph-duotone ph-${button.icon}`}></i>
-					</button>
-				</div>
-			{/each}
-		</div>
-	{/each}
-</div>
+<WhiteboardButtonGroups {buttonGroups} />

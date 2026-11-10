@@ -1,5 +1,5 @@
 import { getEngine, loadedModelSupportsThinking, resetIdleTimer } from './model';
-import { client } from '#lib/api/rumbleClient/client';
+import type { client } from '#lib/api/rumbleClient/client';
 import { urqlClient } from '#lib/api/client';
 
 const AI_CALL_QUERY = `
@@ -31,41 +31,50 @@ type CallAIArgs = Omit<ServerArgs, 'responseType'> & {
 	enableThinking?: boolean;
 };
 
-/**
- * Sends a chat completion request to either the local WebLLM engine or the remote GraphQL
- * endpoint, depending on the `mode` parameter. Returns the raw text output from the model.
- */
-export async function callAI({
+const BOOLEAN_GRAMMAR = 'root ::= "true" | "false"';
+
+/** WebLLM's response format for a response type; JSON is constrained by its schema */
+export function localResponseFormat({
+	responseType,
+	responseJSONSchema
+}: Pick<CallAIArgs, 'responseType' | 'responseJSONSchema'>) {
+	if (responseType === 'json') {
+		return { type: 'json_object' as const, schema: responseJSONSchema ?? '{}' };
+	}
+	if (responseType === 'boolean') return { type: 'grammar' as const, grammar: BOOLEAN_GRAMMAR };
+	return { type: 'text' as const };
+}
+
+async function callLocal({
+	messages,
+	maxTokens,
+	temperature,
+	enableThinking,
+	...format
+}: Omit<CallAIArgs, 'mode'>): Promise<string> {
+	const engine = await getEngine();
+	if (!engine) throw new Error('WebLLM engine not available');
+
+	const useThinking = enableThinking && loadedModelSupportsThinking();
+	const response = await engine.chat.completions.create({
+		messages,
+		temperature: temperature,
+		max_tokens: maxTokens,
+		response_format: localResponseFormat(format),
+		...(useThinking ? { extra_body: { enable_thinking: true } } : {})
+	});
+
+	resetIdleTimer();
+	return response.choices[0]?.message?.content ?? '';
+}
+
+async function callServer({
 	messages,
 	maxTokens,
 	responseJSONSchema,
 	responseType,
-	temperature,
-	mode,
-	enableThinking = false
-}: CallAIArgs): Promise<string> {
-	if (mode === 'offline') {
-		const engine = await getEngine();
-		if (!engine) throw new Error('WebLLM engine not available');
-
-		const useThinking = enableThinking && loadedModelSupportsThinking();
-		const response = await engine.chat.completions.create({
-			messages,
-			temperature: temperature,
-			max_tokens: maxTokens,
-			response_format:
-				responseType === 'json'
-					? { type: 'json_object', schema: responseJSONSchema ?? '{}' }
-					: responseType === 'boolean'
-						? { type: 'grammar', grammar: 'root ::= "true" | "false"' }
-						: { type: 'text' },
-			...(useThinking ? { extra_body: { enable_thinking: true } } : {})
-		});
-
-		resetIdleTimer();
-		return response.choices[0]?.message?.content ?? '';
-	}
-
+	temperature
+}: Omit<CallAIArgs, 'mode' | 'enableThinking'>): Promise<string> {
 	// TODO: this needs no cache set. Make this suppoerted in rumble client
 	const { data, error } = await urqlClient
 		.query(
@@ -84,4 +93,13 @@ export async function callAI({
 	if (error) throw error;
 
 	return (data?.aiCall as string | null) ?? '';
+}
+
+/**
+ * Sends a chat completion request to either the local WebLLM engine or the remote GraphQL
+ * endpoint, depending on the `mode` parameter. Returns the raw text output from the model.
+ */
+export function callAI({ mode, enableThinking = false, ...args }: CallAIArgs): Promise<string> {
+	if (mode === 'offline') return callLocal({ ...args, enableThinking });
+	return callServer(args);
 }

@@ -5,7 +5,7 @@ import type { Tour } from '#lib/tours/types';
  * Chair voting page. Anchors live in VotingSetup and VotingSetupForm. While a vote
  * is running only the resume step shows, otherwise only the setup form steps.
  */
-export const tour: Tour = {
+export const chairVotingTour: Tour = {
 	id: 'chair.voting',
 	steps: [
 		{

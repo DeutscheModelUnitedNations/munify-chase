@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { errorMessage } from '#lib/helpers/errorMessage';
 	import { m } from '#lib/paraglide/messages';
 	import { client } from '#lib/api/rumbleClient/client';
 	import toast from 'svelte-french-toast';
@@ -49,7 +50,7 @@
 			});
 			toast.success(m.voteStarted());
 		} catch (err) {
-			toast.error(err instanceof Error ? err.message : 'Failed to start vote');
+			toast.error(errorMessage(err, 'Failed to start vote'));
 		} finally {
 			starting = false;
 		}
@@ -60,33 +61,7 @@
 	{#if !selectedClauseId}
 		<p class="text-base-content/50 py-6 text-center text-sm">{m.selectClauseForVote()}</p>
 	{:else if current?.vote}
-		{@const v = current.vote}
-		<div class="bg-base-100 rounded-lg p-3">
-			<div class="mb-2 flex items-center justify-between">
-				<span class="text-sm font-semibold">{v.voteName || clauseLabel}</span>
-				{#if v.outcome}
-					<span class="badge {v.outcome === 'ADOPTED' ? 'badge-success' : 'badge-error'}">
-						{v.outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
-					</span>
-				{:else}
-					<span class="badge badge-warning">{m.voteInProgress()}</span>
-				{/if}
-			</div>
-			<div class="grid grid-cols-3 gap-2 text-center">
-				<div>
-					<div class="text-success text-lg font-bold">{v.votesPro}</div>
-					<div class="text-base-content/60 text-xs">{m.votesFor()}</div>
-				</div>
-				<div>
-					<div class="text-error text-lg font-bold">{v.votesCon}</div>
-					<div class="text-base-content/60 text-xs">{m.votesAgainst()}</div>
-				</div>
-				<div>
-					<div class="text-lg font-bold">{v.votesAbstain}</div>
-					<div class="text-base-content/60 text-xs">{m.votesAbstain()}</div>
-				</div>
-			</div>
-		</div>
+		{@render voteResult(current.vote)}
 	{:else}
 		<p class="text-base-content/50 text-sm">{m.noVoteForClause()}</p>
 	{/if}
@@ -101,3 +76,32 @@
 		</button>
 	{/if}
 </div>
+
+{#snippet voteResult(v: NonNullable<NonNullable<typeof current>['vote']>)}
+	<div class="bg-base-100 rounded-lg p-3">
+		<div class="mb-2 flex items-center justify-between">
+			<span class="text-sm font-semibold">{v.voteName || clauseLabel}</span>
+			{#if v.outcome}
+				<span class="badge {v.outcome === 'ADOPTED' ? 'badge-success' : 'badge-error'}">
+					{v.outcome === 'ADOPTED' ? m.adopted() : m.rejected()}
+				</span>
+			{:else}
+				<span class="badge badge-warning">{m.voteInProgress()}</span>
+			{/if}
+		</div>
+		<div class="grid grid-cols-3 gap-2 text-center">
+			<div>
+				<div class="text-success text-lg font-bold">{v.votesPro}</div>
+				<div class="text-base-content/60 text-xs">{m.votesFor()}</div>
+			</div>
+			<div>
+				<div class="text-error text-lg font-bold">{v.votesCon}</div>
+				<div class="text-base-content/60 text-xs">{m.votesAgainst()}</div>
+			</div>
+			<div>
+				<div class="text-lg font-bold">{v.votesAbstain}</div>
+				<div class="text-base-content/60 text-xs">{m.votesAbstain()}</div>
+			</div>
+		</div>
+	</div>
+{/snippet}

@@ -19,9 +19,6 @@ type Member = {
 };
 
 type DefaultRepresentation = Pick<Representation, 'id' | 'createdAt' | 'updatedAt' | 'type'>;
-type NSARepresentation = Pick<Representation, 'icon' | 'name' | 'conferenceId'> & {
-	type: 'NSA';
-} & DefaultRepresentation;
 type DelegationRepresentation = Pick<Representation, 'icon' | 'name' | 'conferenceId'> & {
 	type: 'DELEGATION';
 } & DefaultRepresentation;
@@ -31,12 +28,6 @@ type UNRepresentation = Pick<
 > & {
 	type: 'UN';
 } & DefaultRepresentation;
-
-export function isNSAMember<
-	T extends Partial<Member> & { representation: Partial<Representation> }
->(input: T): input is T & { representation: NSARepresentation } {
-	return input.representation.type === 'NSA';
-}
 
 export function isDelegationMember<
 	T extends Partial<Member> & { representation: Partial<Representation> }

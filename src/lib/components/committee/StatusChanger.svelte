@@ -7,6 +7,7 @@
 	import toast from 'svelte-french-toast';
 	import { promiseToastStrings } from '#lib/utils/toast';
 	import { getServerTime } from '#lib/state/serverTime.svelte';
+	import ChangerActions from './ChangerActions.svelte';
 
 	type Props = {
 		committeeId: string;
@@ -187,31 +188,10 @@
 			placeholder={m.customName()}
 		/>
 	{/if}
-	<div class="flex w-full gap-2">
-		{#if abort}
-			<button
-				class="btn btn-error btn-lg"
-				onclick={() => {
-					abort();
-				}}
-			>
-				<i aria-hidden="true" class="ph-fill ph-x mr-2"></i>
-				{m.abort()}
-			</button>
-		{/if}
-		<button
-			class="btn btn-primary btn-lg w-full flex-1 {until.isBefore(getServerTime())
-				? 'btn-disabled'
-				: ''}"
-			onclick={() => {
-				submitStatus();
-				if (abort) {
-					abort();
-				}
-			}}
-		>
-			<i aria-hidden="true" class="ph-fill ph-floppy-disk mr-2"></i>
-			{m.submitStatus()}
-		</button>
-	</div>
+	<ChangerActions
+		{abort}
+		onsubmit={submitStatus}
+		submitLabel={m.submitStatus()}
+		submitDisabled={until.isBefore(getServerTime())}
+	/>
 </div>

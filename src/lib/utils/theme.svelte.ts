@@ -11,7 +11,7 @@ export function initialSetTheme() {
 /** base-100 of the DMUN themes, which the navbars use; mirrored in `app.html` */
 const THEME_COLORS = { light: '#FFFFFF', dark: '#1B1837' } as const;
 
-export function setThemeInHTML(newTheme: Theme) {
+function setThemeInHTML(newTheme: Theme) {
 	const resolved =
 		newTheme === 'system'
 			? window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -25,14 +25,14 @@ export function setThemeInHTML(newTheme: Theme) {
 		?.setAttribute('content', THEME_COLORS[resolved]);
 }
 
-export function setTheme(newTheme: Theme) {
+function setTheme(newTheme: Theme) {
 	if (!browser) return;
 	localStorage.setItem('theme', newTheme);
 	theme = newTheme;
 	setThemeInHTML(newTheme);
 }
 
-export function updateTheme() {
+function updateTheme() {
 	if (!browser) return;
 	const storedTheme = localStorage.getItem('theme') as Theme | 'undefined';
 	if (storedTheme === 'undefined' || !storedTheme) {

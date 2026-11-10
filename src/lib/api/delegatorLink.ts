@@ -21,3 +21,20 @@ export function delegatorUrl({
 }) {
 	return `${remoteUrl.replace(/\/+$/, '')}/dashboard/${conferenceId}${path}`;
 }
+
+/**
+ * "Sync now", both ways (`docs/plans/delegator-link.md`): this instance's link worker asks DELEGATOR
+ * for everything again, and DELEGATOR's reads this instance again (asked by this server with its
+ * link token, which never reaches the browser). The two are independent: DELEGATOR failing to
+ * answer leaves this side's sync running, and is reported on its own.
+ */
+export async function syncLinkBothWays({
+	requestLocal,
+	requestRemote
+}: {
+	requestLocal: () => PromiseLike<boolean>;
+	requestRemote: () => PromiseLike<boolean>;
+}) {
+	const [local, remote] = await Promise.allSettled([requestLocal(), requestRemote()]);
+	return { local, remote };
+}

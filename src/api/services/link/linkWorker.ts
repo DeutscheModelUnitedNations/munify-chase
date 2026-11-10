@@ -2,6 +2,8 @@ import { db, schema } from '#api/db/db';
 import { and, eq, sql } from 'drizzle-orm';
 import {
 	conferenceChange,
+	leftOutNotes,
+	leftOutWarning,
 	openConferences,
 	tablesToAskAgain,
 	type ConferenceRow
@@ -10,6 +12,8 @@ import { watchConferenceTables, type ConferenceTables } from './conferenceTables
 import { createDelegatorClient, type DelegatorClient } from './delegatorRemote';
 import { joinTables } from './joinTables';
 import { instanceLinkPubsub } from './linkPubsub';
+import { followSyncRequests } from './linkSync';
+import { instanceSignals } from '#api/rumble';
 import { linkAccessToken, linkConfig } from './linkAuth';
 import { syncLinkRow } from './linkState';
 import { createGate, handled } from './liveTable';
@@ -24,7 +28,8 @@ import { syncWorkingPapers } from './workingPaperSync';
  * answers with the rows of the table it touched, the mirror is worked out from memory, and only the
  * rows that differ from CHASE's are written. The stream's (re)connect asks every table again,
  * since changes may have been missed while it was down. There is no timer: a dead stream is
- * noticed by the transport, and the reconnect catches up.
+ * noticed by the transport, and the reconnect catches up. "Sync now" (`linkSync.ts`) does the same
+ * on request.
  */
 
 /** pg advisory lock key for the worker, any constant no other lock uses. */
@@ -121,21 +126,29 @@ function runWorker() {
 			askedAgain.set(conferenceId, stillMissing);
 			if (stale.length > 0) return watch.refresh(stale);
 
-			await writeMirror({ conferenceId, source, papers });
+			await writeMirror({ conferenceId, source, papers, missing });
 		};
 
+		const leftOut = leftOutNotes();
 		const writeMirror = async ({
 			conferenceId,
 			source,
-			papers
-		}: { conferenceId: string } & Pick<ReturnType<typeof joinTables>, 'source' | 'papers'>) => {
+			papers,
+			missing
+		}: { conferenceId: string } & Pick<
+			ReturnType<typeof joinTables>,
+			'source' | 'papers' | 'missing'
+		>) => {
 			try {
 				await reconcileConference(mirrorConference(source));
 				// after the mirror: a draft needs its committee, agenda item and seat in place
 				await syncWorkingPapers({ remote, conferenceId, papers });
+				const warning = leftOutWarning({ title: source.conference.title, missing });
+				if (warning) console.warn('[link]', warning);
+				leftOut.note({ conferenceId, warning });
 				await db
 					.update(schema.instanceLink)
-					.set({ lastEventAt: new Date(), lastReconcileAt: new Date(), lastError: null })
+					.set({ lastEventAt: new Date(), lastReconcileAt: new Date(), lastError: leftOut.text() })
 					.where(eq(schema.instanceLink.id, link.id));
 				instanceLinkPubsub.updated(link.id);
 			} catch (error) {
@@ -217,12 +230,24 @@ function runWorker() {
 			});
 		};
 		// A stream that broke takes the subscriptions on it along, so every table is asked again
-		reconnected = () => {
+		const readAll = () => {
+			// rows still missing get their one more ask (`tablesToAskAgain`) again
+			askedAgain.clear();
 			for (const tables of watches.values()) tables.refresh();
 			watchConferences();
 		};
+		reconnected = readAll;
 		watchConferences();
 		cleanups.push(() => unwatchConferences?.());
+		// "Sync now", asked on whichever instance (`requestLinkSync`), reaches this one as a signal
+		cleanups.push(
+			followSyncRequests({
+				requests: instanceSignals.subscribe('linkSyncRequested'),
+				sync: () => {
+					if (!stopped) readAll();
+				}
+			})
+		);
 	})().catch((error) => {
 		console.error('[link] the link worker stopped', error);
 		stop();

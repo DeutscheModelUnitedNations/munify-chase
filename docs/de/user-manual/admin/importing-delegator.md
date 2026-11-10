@@ -56,6 +56,7 @@ Statt Dateien hin- und herzuschieben, lässt sich CHASE mit einer MUNify-DELEGAT
 - Jede DELEGATOR-Konferenz erscheint hier von selbst, mit Gremien, Tagesordnungspunkten, Rollen, Team und, sobald die Zuteilung veröffentlicht ist, den Teilnehmenden. Der Launcher legt dann keine Konferenzen mehr an und importiert keine.
 - Was aus DELEGATOR kommt, wird dort geändert: Namen, Kürzel, Daten und Personen lassen sich hier weder bearbeiten noch löschen. Sitzungsstand, Präsentationseinstellungen und alles, was du hier ergänzt, bleiben bei dir.
 - DELEGATOR liest die Anwesenheit und die angenommenen Resolutionen zurück, und angenommene Arbeitspapiere kommen hier als Entwürfe an (markiert mit **Aus DELEGATOR, Version n**), bis sie hier jemand ändert.
+- Änderungen kommen von selbst an. Fehlt doch etwas, klicken Global Admins auf **Jetzt synchronisieren**, auf der Verbindungskarte im Launcher oder über den Personen einer Konferenz in der Konfiguration: CHASE fragt alles erneut bei DELEGATOR ab, und DELEGATOR liest CHASE erneut.
 - Wird die Verbindung aus der Einrichtung entfernt, endet all das. Die Einträge bleiben als gewöhnliche lokale erhalten.
 
 Der Dateiimport und der Anwesenheitsexport bleiben unter „Erweitert“ für den Fall ohne Verbindung erhalten.

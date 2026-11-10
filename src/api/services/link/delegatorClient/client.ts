@@ -49,11 +49,18 @@ export type AgendaItemPaperGroup = {
 	papers: () => Paper[];
 };
 
-export type AssignmentSplitPartInput = {
-	memberIds?: ID[] | undefined;
+export type ApplicationBlocker = {
+	ageIssue: AgeIssue | null;
+	invalidFields: ProfileField[];
+	user: () => User | null;
+	userId: ID;
 };
 
 export type ID = string;
+
+export type AssignmentSplitPartInput = {
+	memberIds?: ID[] | undefined;
+};
 
 export type AssignmentexperienceeffectEnum = 'SEATING_ONLY' | 'WISHES_AND_SEATING';
 
@@ -1586,6 +1593,7 @@ export type ConferencestateEnum =
 	'ACTIVE' | 'PARTICIPANT_REGISTRATION' | 'POST' | 'PRE' | 'PREPARATION';
 
 export type Conferencesupervisor = {
+	applicationBlockers: () => ApplicationBlocker[];
 	conference: (p?: {
 		orderBy?: ConferenceOrderInputArgument | null | undefined;
 		where?: ConferenceWhereInputArgument | null | undefined;
@@ -1742,6 +1750,7 @@ export type DateWhereInputArgument = {
 };
 
 export type Delegation = {
+	applicationBlockers: () => ApplicationBlocker[];
 	applied: Boolean;
 	appliedForRoles: (p?: {
 		limit?: Int | null | undefined;
@@ -2544,6 +2553,8 @@ export type Mutation = {
 		mimeType: String;
 		size: Int;
 	}) => Storedfile;
+	requestLinkSync: Boolean;
+	requestRemoteLinkSync: Boolean;
 	resetAssignmentSize: (p: { conferenceId: ID; seats: Int }) => Boolean;
 	revertSingleParticipantConversion: (p: { singleParticipantId: ID }) => Boolean;
 	revokeTeamMemberInvitation: (p: { invitationId: ID }) => Boolean;
@@ -3399,6 +3410,24 @@ export type PreviewConferenceSupervisor = {
 	school_name: String | null;
 };
 
+export type ProfileField =
+	| 'apartment'
+	| 'birthday'
+	| 'city'
+	| 'country'
+	| 'emergencyContacts'
+	| 'family_name'
+	| 'foodPreference'
+	| 'gender'
+	| 'given_name'
+	| 'phone'
+	| 'pronouns'
+	| 'region'
+	| 'street'
+	| 'wantsJoinTeamInformation'
+	| 'wantsToReceiveGeneralInformation'
+	| 'zip';
+
 export type Query = {
 	assignmentReview: (p: { id: ID }) => Assignmentreview;
 	assignmentReviews: (p?: {
@@ -3639,6 +3668,7 @@ export type Query = {
 	myOIDCRoles: OIDCRolesEnum[];
 	myReviewStats: (p: { conferenceId: ID }) => MyReviewStats | null;
 	myReviewerSnippets: () => Reviewersnippet[];
+	mySupervisorSignupBlockers: (p: { conferenceId: ID }) => ApplicationBlocker[];
 	nametagBinGroups: (p: { binCount: Int; conferenceId: ID; index: Int }) => NametagBinGroup[];
 	nametagBins: (p: { binCount?: Int | null | undefined; conferenceId: ID }) => NametagBin[];
 	nation: (p: { id: ID }) => Nation;
@@ -4340,6 +4370,7 @@ export type SignedCodeKey = {
 };
 
 export type Singleparticipant = {
+	applicationBlockers: () => ApplicationBlocker[];
 	applied: Boolean;
 	appliedForRoles: (p?: {
 		limit?: Int | null | undefined;

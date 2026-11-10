@@ -171,6 +171,46 @@ export const schema = {
 				interfaces: []
 			},
 			{
+				kind: 'OBJECT',
+				name: 'ApplicationBlocker',
+				fields: [
+					{
+						name: 'ageIssue',
+						type: { kind: 'ENUM', name: 'AgeIssue', ofType: null, __proto__: null },
+						args: []
+					},
+					{
+						name: 'invalidFields',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: { name: 'ProfileField', kind: 'ENUM', ofType: null, __proto__: null }
+								}
+							}
+						},
+						args: []
+					},
+					{
+						name: 'user',
+						type: { kind: 'OBJECT', name: 'User', ofType: null, __proto__: null },
+						args: []
+					},
+					{
+						name: 'userId',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { name: 'ID', kind: 'SCALAR', ofType: null, __proto__: null }
+						},
+						args: []
+					}
+				],
+				interfaces: []
+			},
+			{ kind: 'SCALAR', name: 'ID' },
+			{
 				kind: 'INPUT_OBJECT',
 				name: 'AssignmentSplitPartInput',
 				isOneOf: void 0,
@@ -191,7 +231,6 @@ export const schema = {
 					}
 				]
 			},
-			{ kind: 'SCALAR', name: 'ID' },
 			{
 				kind: 'ENUM',
 				name: 'AssignmentexperienceeffectEnum',
@@ -10604,6 +10643,25 @@ export const schema = {
 				name: 'Conferencesupervisor',
 				fields: [
 					{
+						name: 'applicationBlockers',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: {
+										name: 'ApplicationBlocker',
+										kind: 'OBJECT',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
+						},
+						args: []
+					},
+					{
 						name: 'conference',
 						type: {
 							kind: 'NON_NULL',
@@ -11660,6 +11718,25 @@ export const schema = {
 				kind: 'OBJECT',
 				name: 'Delegation',
 				fields: [
+					{
+						name: 'applicationBlockers',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: {
+										name: 'ApplicationBlocker',
+										kind: 'OBJECT',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
+						},
+						args: []
+					},
 					{
 						name: 'applied',
 						type: {
@@ -17202,6 +17279,22 @@ export const schema = {
 						]
 					},
 					{
+						name: 'requestLinkSync',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { name: 'Boolean', kind: 'SCALAR', ofType: null, __proto__: null }
+						},
+						args: []
+					},
+					{
+						name: 'requestRemoteLinkSync',
+						type: {
+							kind: 'NON_NULL',
+							ofType: { name: 'Boolean', kind: 'SCALAR', ofType: null, __proto__: null }
+						},
+						args: []
+					},
+					{
 						name: 'resetAssignmentSize',
 						type: {
 							kind: 'NON_NULL',
@@ -22645,6 +22738,28 @@ export const schema = {
 				interfaces: []
 			},
 			{
+				kind: 'ENUM',
+				name: 'ProfileField',
+				enumValues: [
+					{ name: 'apartment' },
+					{ name: 'birthday' },
+					{ name: 'city' },
+					{ name: 'country' },
+					{ name: 'emergencyContacts' },
+					{ name: 'family_name' },
+					{ name: 'foodPreference' },
+					{ name: 'gender' },
+					{ name: 'given_name' },
+					{ name: 'phone' },
+					{ name: 'pronouns' },
+					{ name: 'region' },
+					{ name: 'street' },
+					{ name: 'wantsJoinTeamInformation' },
+					{ name: 'wantsToReceiveGeneralInformation' },
+					{ name: 'zip' }
+				]
+			},
+			{
 				kind: 'OBJECT',
 				name: 'Query',
 				fields: [
@@ -24700,6 +24815,33 @@ export const schema = {
 							}
 						},
 						args: []
+					},
+					{
+						name: 'mySupervisorSignupBlockers',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: {
+										name: 'ApplicationBlocker',
+										kind: 'OBJECT',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
+						},
+						args: [
+							{
+								name: 'conferenceId',
+								type: {
+									kind: 'NON_NULL',
+									ofType: { name: 'ID', kind: 'SCALAR', ofType: null, __proto__: null }
+								}
+							}
+						]
 					},
 					{
 						name: 'nametagBinGroups',
@@ -29658,6 +29800,25 @@ export const schema = {
 				kind: 'OBJECT',
 				name: 'Singleparticipant',
 				fields: [
+					{
+						name: 'applicationBlockers',
+						type: {
+							kind: 'NON_NULL',
+							ofType: {
+								kind: 'LIST',
+								ofType: {
+									kind: 'NON_NULL',
+									ofType: {
+										name: 'ApplicationBlocker',
+										kind: 'OBJECT',
+										ofType: null,
+										__proto__: null
+									}
+								}
+							}
+						},
+						args: []
+					},
 					{
 						name: 'applied',
 						type: {

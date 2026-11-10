@@ -1235,6 +1235,16 @@ type Mutation {
   A new card for a lost one: raises the NSA's card number, so the earlier cards stop scanning (admins).
   """
   reprintNsaCard(conferenceId: ID!, conferenceUserId: ID!): NsaCard!
+
+  """
+  Makes the link worker ask the linked DELEGATOR for everything again now, as on a reconnect (global admins and the linked DELEGATOR). False while no DELEGATOR is linked.
+  """
+  requestLinkSync: Boolean!
+
+  """
+  Asks the linked DELEGATOR to read everything of this instance again now, through DELEGATOR's own requestLinkSync (global admins). False while no DELEGATOR is linked; CONFLICT when DELEGATOR cannot be reached.
+  """
+  requestRemoteLinkSync: Boolean!
   resolveRequest(id: ID!): Request!
   restorePaperFromSnapshot(snapshotId: ID!): Papercontentsnapshot!
   selfAddToSpeakersList(id: ID, speakersListId: ID!): Speakeronlist!

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
 	conferenceChange,
+	leftOutNotes,
+	leftOutWarning,
 	openConferences,
 	sameConference,
 	tablesToAskAgain,
@@ -101,5 +103,37 @@ describe('tablesToAskAgain', () => {
 		});
 		expect(stale).toEqual([]);
 		expect([...stillMissing]).toEqual(['p1']);
+	});
+});
+
+describe('leftOutWarning', () => {
+	const none = { users: [], participants: [], delegations: [] };
+
+	it('says nothing when every row the tables name arrived', () => {
+		expect(leftOutWarning({ title: 'MUNBW 2027', missing: none })).toBeUndefined();
+	});
+
+	it('names what stayed missing, so a team left out is not silent', () => {
+		const warning = leftOutWarning({
+			title: 'MUNBW 2027',
+			missing: { ...none, users: ['u1', 'u2', 'u3', 'u4'] }
+		});
+		expect(warning).toContain('MUNBW 2027');
+		expect(warning).toContain('4 users (u1, u2, u3, …)');
+		expect(warning).not.toContain('participants');
+	});
+});
+
+describe('leftOutNotes', () => {
+	it("keeps each conference's warning until that conference is written without one", () => {
+		const notes = leftOutNotes();
+		expect(notes.text()).toBeNull();
+		notes.note({ conferenceId: 'a', warning: 'a misses people' });
+		notes.note({ conferenceId: 'b', warning: undefined });
+		expect(notes.text()).toBe('a misses people');
+		notes.note({ conferenceId: 'b', warning: 'b misses people' });
+		expect(notes.text()).toBe('a misses people\nb misses people');
+		notes.note({ conferenceId: 'a', warning: undefined });
+		expect(notes.text()).toBe('b misses people');
 	});
 });

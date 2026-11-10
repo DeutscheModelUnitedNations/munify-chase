@@ -81,3 +81,43 @@ export function tablesToAskAgain({
 	const stillMissing = new Set(MISSING_TABLES.flatMap((name) => missing[name]));
 	return { stale, stillMissing };
 }
+
+/** Ids named in the warning at most, per table: enough to look them up in DELEGATOR. */
+const NAMED_IDS = 3;
+
+/**
+ * What the link notes (`lastError`) when rows stay missing after being asked for again: the people
+ * behind them are left out of the mirror, which would otherwise go unnoticed. Undefined when
+ * nothing is missing.
+ */
+export function leftOutWarning({
+	title,
+	missing
+}: {
+	title: string;
+	missing: Record<MissingTable, readonly string[]>;
+}) {
+	const parts = MISSING_TABLES.filter((name) => missing[name].length > 0).map((name) => {
+		const ids = missing[name];
+		const named = ids.slice(0, NAMED_IDS).join(', ');
+		return `${ids.length} ${name} (${named}${ids.length > NAMED_IDS ? ', …' : ''})`;
+	});
+	if (parts.length === 0) return undefined;
+	return `${title}: DELEGATOR names rows the link may not read, so the people behind them are left out: ${parts.join('; ')}`;
+}
+
+/**
+ * Per conference, why people were left out of its last mirror (`leftOutWarning`). The link has one
+ * `lastError`, so a conference written fine afterwards must not clear another's warning.
+ */
+export function leftOutNotes() {
+	const notes = new Map<string, string>();
+	return {
+		note({ conferenceId, warning }: { conferenceId: string; warning: string | undefined }) {
+			if (warning) notes.set(conferenceId, warning);
+			else notes.delete(conferenceId);
+		},
+		/** What the link shows, null when no conference leaves anybody out. */
+		text: () => (notes.size > 0 ? [...notes.values()].join('\n') : null)
+	};
+}

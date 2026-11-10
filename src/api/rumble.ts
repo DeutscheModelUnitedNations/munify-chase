@@ -3,6 +3,7 @@ import { db, schema } from './db/db';
 import { context } from './context';
 import { Redis } from 'ioredis';
 import { createRedisEventTarget } from '@graphql-yoga/redis-event-target';
+import { createPubSub } from 'graphql-yoga';
 import {
 	OTEL_ENDPOINT_URL,
 	OTEL_SERVICE_NAME,
@@ -25,6 +26,15 @@ if (REDIS_URL) {
 		subscribeClient
 	});
 }
+
+/**
+ * Signals between this app's instances, over Redis when there is more than one (the same event
+ * target the subscriptions use), in memory otherwise. "Sync now" reaches the instance running the
+ * link worker this way (`#api/services/link/linkSync`).
+ */
+export const instanceSignals = createPubSub<{ linkSyncRequested: [request: { at: string }] }>(
+	eventTarget ? { eventTarget } : {}
+);
 
 export const {
 	abilityBuilder,

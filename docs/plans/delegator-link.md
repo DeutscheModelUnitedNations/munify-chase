@@ -91,6 +91,14 @@ stored about the link but its state: it is configuration, the same variables on 
 - **Every (re)connect asks every table again.** There is no timer: a subscription that has gone
   quiet is noticed by the transport's keep-alive (graphql-ws pings, graphql-sse's stream), which
   drops the connection, and the reconnect catches up.
+- **"Sync now"** (both apps, the same contract): `requestLinkSync: Boolean!` makes the link worker
+  ask the other side for every table again, as on a reconnect (global/system admins and the linked
+  instance's link token; false while unlinked). It may land on any instance, so it is published as
+  an instance signal (`instanceSignals`, over Redis when set) that the worker's holder follows, at
+  most once per 10 s. `requestRemoteLinkSync: Boolean!` (admins only, never the link) asks the
+  other side's `requestLinkSync` server-side with the link token; the button calls both, and a
+  failure of the second (CONFLICT) leaves the first alone. In chase, rows still missing after the
+  one more ask are noted on the link's `lastError` instead of being dropped silently.
 - It reconnects with backoff. The state (`lastEventAt`, `lastReconcileAt`, `lastError`) is
   written to `instanceLink` and shown on both status cards.
 - Clients: delegator → chase over `graphql-ws`; chase → delegator over `graphql-sse` in distinct

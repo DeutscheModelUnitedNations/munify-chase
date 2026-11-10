@@ -180,9 +180,23 @@ export async function isRemoteInstanceToken({
 	try {
 		const { issuer, keys } = await oidcProvider();
 		const { payload } = await jwtVerify(token, keys, { issuer, audience: config.resource });
-		return isMachineToken(payload) && rolesOfToken(payload).includes(LINK_ROLE);
+		const machine = isMachineToken(payload);
+		const roles = rolesOfToken(payload);
+		if (machine && roles.includes(LINK_ROLE)) return true;
+		// what was missing, never the token: so a link that does not connect says why
+		logger.warn('A link token was refused', {
+			reason: machine ? 'it grants no link role' : 'it is not a machine token',
+			scope: typeof payload.scope === 'string' ? payload.scope : null,
+			roles,
+			hasClientId: typeof payload.client_id === 'string',
+			subjectIsClient: payload.sub === payload.client_id
+		});
+		return false;
 	} catch (error) {
-		logger.info('A link token was refused', { reason: String(error) });
+		logger.warn('A link token was refused', {
+			reason: String(error),
+			expectedAudience: config.resource
+		});
 		return false;
 	}
 }

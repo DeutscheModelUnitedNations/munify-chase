@@ -1,0 +1,13 @@
+diff --git a/src/core/utils.js b/src/core/utils.js
+index 24d70a6af4811e194ef9f66d031581afb1b354f1..f44820f8402bcdbf2dfb2a322ff8a4a2330ec43a 100644
+--- a/src/core/utils.js
++++ b/src/core/utils.js
+@@ -48,7 +48,7 @@ export function logger({ verbose } = { verbose: true }) {
+ 	log.success = (msg) => log(styleText('green', `✔ ${msg}`));
+ 	log.error = (msg) => err(styleText(['bold', 'red'], msg));
+ 	log.warn = (msg) => console.warn(styleText(['bold', 'yellow'], msg));
+-	log.minor = verbose ? (msg) => log(styleText('grey', msg)) : noop;
++	log.minor = verbose ? (msg) => log(styleText('gray', msg)) : noop;
+ 	log.info = verbose ? log : noop;
+ 	log.err = err;
+ 

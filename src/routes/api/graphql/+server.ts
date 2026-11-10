@@ -24,7 +24,6 @@ const yogaInstance = createYoga({
 		Blob,
 		// File doesn't seem to exist
 		// File,
-		crypto,
 		btoa,
 		TextEncoder,
 		TextDecoder,

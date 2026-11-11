@@ -41,6 +41,7 @@ function source(overrides: Partial<MirrorSource> = {}): MirrorSource {
 		teamMembers: [
 			{ id: 'tm-pm', role: 'PROJECT_MANAGEMENT', user: person('pm') },
 			{ id: 'tm-coord', role: 'TEAM_COORDINATOR', user: person('coord') },
+			{ id: 'tm-care', role: 'PARTICIPANT_CARE', user: person('care') },
 			{ id: 'tm-member', role: 'MEMBER', user: person('member') }
 		],
 		supervisors: [{ id: 'sup', user: person('teacher') }],
@@ -133,6 +134,7 @@ describe('mirrorConference', () => {
 		);
 		expect(types['tm-pm']).toBe('ADMIN');
 		expect(types['tm-coord']).toBe('ADMIN');
+		expect(types['tm-care']).toBe('ADMIN');
 		expect(types['tm-member']).toBe('TEAM');
 		expect(types['sup']).toBe('SPECTATOR');
 	});
@@ -167,7 +169,12 @@ describe('mirrorConference', () => {
 		const mirror = mirrorConference(
 			source({ delegationMembers: [], singleParticipants: [], supervisors: [] })
 		);
-		expect(mirror.conferenceUsers.map((u) => u.id)).toEqual(['tm-pm', 'tm-coord', 'tm-member']);
+		expect(mirror.conferenceUsers.map((u) => u.id)).toEqual([
+			'tm-pm',
+			'tm-coord',
+			'tm-care',
+			'tm-member'
+		]);
 		expect(mirror.committeeMembers).toHaveLength(1);
 	});
 });

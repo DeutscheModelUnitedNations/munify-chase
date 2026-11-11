@@ -57,7 +57,7 @@ export interface MirrorSource {
 }
 
 /** The DELEGATOR team roles that run a conference in CHASE; the rest of the team is `TEAM`. */
-const ADMIN_TEAM_ROLES = new Set(['PROJECT_MANAGEMENT', 'TEAM_COORDINATOR']);
+const ADMIN_TEAM_ROLES = new Set(['PROJECT_MANAGEMENT', 'TEAM_COORDINATOR', 'PARTICIPANT_CARE']);
 
 /** A nation's seat in a committee: one CHASE committee member, shared by its delegates there. */
 export function committeeMemberId({

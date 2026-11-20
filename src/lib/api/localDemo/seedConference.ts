@@ -7,7 +7,7 @@ import type {
 	UpdatesConfig,
 	Variables
 } from '@urql/exchange-graphcache';
-import worldCountries from 'world-countries';
+import worldCountries from '@deutschemodelunitednations/world-countries';
 import { calculateMajority } from '#lib/utils/majorities';
 import { LOCAL_CONFERENCE_ID, isLocalConferenceActive } from '#lib/state/localDemo.svelte';
 import { densifySpeakers } from '../optimisticUpdateHandlers';

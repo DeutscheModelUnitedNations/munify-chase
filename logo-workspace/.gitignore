@@ -1,0 +1,7 @@
+# Scratch output. Everything here regenerates:
+#   python3 build.py && python3 products.py && python3 depth.py && python3 tiles.py
+renders/
+board-slides/
+board.html
+*.html
+__pycache__/

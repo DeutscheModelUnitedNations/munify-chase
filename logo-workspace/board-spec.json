@@ -1,0 +1,38 @@
+{
+	"adjectives": ["calm", "structured", "fair"],
+	"brand": "MUNify",
+	"brand_color": "#01548F",
+	"brief": "MUNify is the open-source initiative of Deutsche Model United Nations e.V. and the parent of CHASE (chairing software) and DELEGATOR (conference management). The mark has to sit inside the existing DMUN corporate identity, work as a favicon and app icon, and carry sub-brands without being redrawn for each one.",
+	"concepts": [
+		{
+			"idea": "The assembly seen from above: four equal benches around the table, the ring left open at the floor.",
+			"lockup": "kit/munify-horizontal-blue.svg",
+			"lockup_on_dark": "kit/munify-horizontal-white.svg",
+			"name": "Chamber",
+			"rationale": [
+				"Every bench is identical and the mark is mirror-symmetric, so fair and structured are in the geometry rather than in a tagline.",
+				"Specific to Model UN without reaching for a gavel, a globe or an olive branch. Blue buys no distinction in this category (productivity software is 26% blue, education 43%), so the form has to carry it.",
+				"The opening at the bottom is the floor: the one place the circle is deliberately incomplete, which is what a debate is.",
+				"No letter in the symbol, so there is no M-then-MUNify redundancy in the lockup and sub-brands attach cleanly after a rule.",
+				"Flat, zero corner radius and one colour, matching the DMUN guidelines' --depth: 0 and --radius-box: 0."
+			],
+			"symbol": "kit/munify-symbol-blue.svg",
+			"symbol_on_tile": "kit/munify-symbol-blue.svg",
+			"tile_color": "#FFFFFF"
+		}
+	],
+	"criteria": "Success: distinct from the blue, globe-and-gavel conventions of civic and education software; legible at 16 px; works in one colour; derives a sub-brand lockup without redrawing.",
+	"designer": "DMUN",
+	"greyscale": false,
+	"industry": "software",
+	"next_steps": [
+		"Trademark clearance: a professional search against trademark databases and reverse image search. Not done.",
+		"Confirm the Outfit licence permits logo use. The wordmark is outlined, so no font is shipped, but the letterforms are derived from it.",
+		"Replace static/favicon.* in the CHASE repo, which currently uses a borrowed Phosphor Icons lectern glyph in non-CI colours.",
+		"Decide whether the accent turquoise #6D9392 ever appears in the identity, or stays out of the mark entirely."
+	],
+	"recommendation": "Chamber, built out as the MUNify parent mark. CHASE and DELEGATOR take the same symbol and wordmark with their name set in Outfit Light after a hairline rule, so a third tool costs one line of type rather than a new identity.",
+	"round": 1,
+	"tagline": "Open-source software for Model United Nations conferences",
+	"tile_color": "#FFFFFF"
+}

@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000"><!-- Phosphor Icons "lectern" (duotone), MIT License, https://phosphoricons.com --><rect width="1000" height="1000" rx="200" ry="200" fill="#ffffff"/><g transform="translate(150 150) scale(2.734375)"><path d="M232,136H24a8,8,0,0,1-7.16-11.58l40-80A8,8,0,0,1,64,40H192a8,8,0,0,1,7.16,4.42l40,80A8,8,0,0,1,232,136Z" fill="#3c7dd2"/><path d="M246.3,120.84l-40-80A15.92,15.92,0,0,0,192,32H64A15.92,15.92,0,0,0,49.7,40.84l-40,80A16,16,0,0,0,24,144h96v64H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V144h96a16,16,0,0,0,14.31-23.16ZM24,128,64,48H192l40,80Zm168-24a8,8,0,0,1-8,8H72a8,8,0,0,1,0-16H184A8,8,0,0,1,192,104Z" fill="#1e3050"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t">
+  <title id="t">MUNify CHASE</title>
+  <path fill="#FFFFFF" d="M0 0 H256 V256 H0 Z"/>
+  <path fill="#01548F" d="M20 143 A108 108 0 0 1 45.27 73.58 L86.63 108.29 A54 54 0 0 0 74 143 Z M91.06 41.51 A108 108 0 0 1 164.94 41.51 L146.47 92.26 A54 54 0 0 0 109.53 92.26 Z M210.73 73.58 A108 108 0 0 1 236 143 L182 143 A54 54 0 0 0 169.37 108.29 Z M68 165 H188 V217 H68 Z"/>
+</svg>

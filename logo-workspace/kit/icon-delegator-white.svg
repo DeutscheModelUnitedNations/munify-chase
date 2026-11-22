@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t">
+  <title id="t">MUNify DELEGATOR symbol</title>
+  <path fill="#FFFFFF" d="M26 26 H82 V82 H26 Z M100 26 H156 V82 H100 Z M174 26 H230 V82 H174 Z M174 100 H230 V156 H174 Z M26 174 H82 V230 H26 Z M100 174 H156 V230 H100 Z"/>
+  <path fill="#FFFFFF" fill-rule="evenodd" d="M26 100 H82 V156 H26 Z M38 112 H70 V144 H38 Z M174 174 H230 V230 H174 Z M186 186 H218 V218 H186 Z"/>
+</svg>

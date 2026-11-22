@@ -18,7 +18,7 @@
 	import OfflineBanner from '#lib/components/OfflineBanner.svelte';
 	import CookieBanner from '#lib/components/CookieBanner.svelte';
 	import Inspect from 'svelte-inspect-value';
-	import { SPLASH_SCREENS } from '#lib/pwa/splashScreens';
+	import { BrandHead } from '@deutschemodelunitednations/munify-brand';
 	import { m } from '#lib/paraglide/messages';
 
 	dayjs.extend(duration);
@@ -50,10 +50,10 @@
 
 <svelte:head>
 	<title>MUNify CHASE</title>
-	{#each SPLASH_SCREENS as screen (screen.file)}
-		<link rel="apple-touch-startup-image" href="/{screen.file}" media={screen.media} />
-	{/each}
 </svelte:head>
+
+<!-- theme-color stays in app.html: the theme switch rewrites it (setThemeInHTML) -->
+<BrandHead product="chase" themeColor={false} />
 
 <!-- The first thing Tab reaches: past the navigation, to the layout's <main> -->
 <a

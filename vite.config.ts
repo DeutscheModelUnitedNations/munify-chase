@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig, type ViteDevServer } from 'vite';
 import { oidcMock } from 'oidc-mock/vite';
+import { munifyBrand } from '@deutschemodelunitednations/munify-brand/vite';
 import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
 
@@ -97,6 +98,49 @@ export default defineConfig({
 		// Local OIDC provider for development, users are configured in oidc-mock.yaml
 		// another port next to a DELEGATOR dev server, whose provider holds 8090 (`dev:linked`)
 		oidcMock({ port: process.env.OIDC_MOCK_PORT ? Number(process.env.OIDC_MOCK_PORT) : undefined }),
+		// Favicons, app icons, the web app manifest, iOS launch images and the social card come from
+		// the MUNify brand package: `/favicon.ico`, `/apple-touch-icon.png` and `/brand/*`, linked by
+		// `BrandHead` in the root layout. Name, colours and icons are the package's; the rest is ours.
+		munifyBrand({
+			product: 'chase',
+			manifest: {
+				description: 'Committee management for Model United Nations conferences',
+				id: '/',
+				lang: 'en',
+				scope: '/',
+				screenshots: [
+					{
+						form_factor: 'narrow',
+						label: 'Your committee at a glance',
+						sizes: '390x844',
+						src: '/pwa/screenshots/en/light/phone-committee.jpg',
+						type: 'image/jpeg'
+					},
+					{
+						form_factor: 'narrow',
+						label: 'Working papers and resolutions',
+						sizes: '390x844',
+						src: '/pwa/screenshots/en/light/phone-papers.jpg',
+						type: 'image/jpeg'
+					},
+					{
+						form_factor: 'wide',
+						label: "Running the speakers' list",
+						sizes: '1600x900',
+						src: '/pwa/screenshots/en/light/desktop-speakers-list.jpg',
+						type: 'image/jpeg'
+					},
+					{
+						form_factor: 'wide',
+						label: 'Mission control across all committees',
+						sizes: '1280x800',
+						src: '/pwa/screenshots/en/light/desktop-mission-control.jpg',
+						type: 'image/jpeg'
+					}
+				],
+				start_url: '/'
+			}
+		}),
 		tailwindcss(),
 		paraglideVitePlugin({
 			project: './project.inlang',

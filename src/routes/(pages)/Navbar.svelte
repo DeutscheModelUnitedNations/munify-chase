@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { Logo } from '@deutschemodelunitednations/munify-brand';
 	import * as m from '#lib/paraglide/messages';
 	import { LOCAL_CONFERENCE_ID } from '#lib/state/localDemo.svelte';
 </script>
@@ -7,8 +8,8 @@
 <header
 	class="enter-fade mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-x-8 gap-y-4 px-4 py-7 md:px-12"
 >
-	<a class="text-xl leading-none" href={resolve('/(pages)')}>
-		<span class="font-light">MUNify</span> <span class="font-bold">CHASE</span>
+	<a href={resolve('/(pages)')} aria-label="MUNify CHASE">
+		<Logo product="chase" class="h-7 w-auto" decorative />
 	</a>
 	<nav class="flex flex-wrap items-center gap-x-7 gap-y-3 text-[15px]">
 		<a

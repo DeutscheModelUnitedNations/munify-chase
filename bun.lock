@@ -45,6 +45,7 @@
         "@ai-sdk/xai": "^5.0.46",
         "@axe-core/playwright": "^4.14.0",
         "@deutschemodelunitednations/corporate-identity": "^2.1.0",
+        "@deutschemodelunitednations/munify-brand": "^0.1.0",
         "@deutschemodelunitednations/munify-resolution-editor": "^0.7.0",
         "@eslint/compat": "^2.1.1",
         "@eslint/js": "^10.0.1",
@@ -249,6 +250,8 @@
     "@cto.af/wtf8": ["@cto.af/wtf8@1.0.1", "", {}, "sha512-kl6pH/D6SOCqArCVBcx7E45urbzBAPNr4xkMMaRAjrFSeI3y/s2+x78x5H0/UNr6F4GCgdxooTutPCNRymVzMg=="],
 
     "@deutschemodelunitednations/corporate-identity": ["@deutschemodelunitednations/corporate-identity@2.1.0", "", { "dependencies": { "@fontsource/outfit": "^5.2.8", "@fontsource/roboto-mono": "^5.2.8", "@fontsource/vollkorn": "^5.2.10", "esbuild": "^0.25.10", "js-yaml": "^4.1.0", "tailwind-shades": "^1.1.2" } }, "sha512-i9Oxl5d267lVMCHwx0lqKK1lQoZQEwsEPQSvqqGb3jKNDBPQaH2sSItyck4GmT3Vbl8w54Be0OOsEv5YHNPT1A=="],
+
+    "@deutschemodelunitednations/munify-brand": ["@deutschemodelunitednations/munify-brand@0.1.0", "", { "peerDependencies": { "svelte": "^5.50.0", "vite": ">=6.0.0" }, "optionalPeers": ["vite"] }, "sha512-Nsk1/lNTc0lk5NHVDVZ5QknoqDSP87Giv4VBPNA4+6kKqoeUCisxewyjVtAQS2GhSBQwQDCT0YmvZ9g6h59L2g=="],
 
     "@deutschemodelunitednations/munify-resolution-editor": ["@deutschemodelunitednations/munify-resolution-editor@0.7.0", "", { "dependencies": { "diff": "^9.0.0", "pagedjs": "^0.4.3", "typst": "^0.10.0-8", "zod": "^3.24.1" }, "peerDependencies": { "@phosphor-icons/web": "^2.1.2", "svelte": "^5.0.0", "y-protocols": "^1.0.0", "yjs": "^13.6.0" }, "optionalPeers": ["y-protocols", "yjs"] }, "sha512-C2RcrkvHV1QglXp/wWRILqqe5q+o5n5SLo2aRJz2Vv5LpR3H+K9R1ORJSWsStNHGqk7wkycZx4/ha0+Cy7nXhQ=="],
 

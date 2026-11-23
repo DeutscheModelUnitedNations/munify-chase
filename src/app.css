@@ -11,6 +11,12 @@
 }
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* The MUNify logos (`Logo` from the brand package) are white on the dark ground: DMUN-Blau never
+   goes on navy. data-theme is always set (app.html), so it alone decides. */
+[data-theme='dark'] {
+	--munify-logo: #fff;
+}
 @plugin '@tailwindcss/typography';
 @plugin 'daisyui/index.js' {
 	themes: false;

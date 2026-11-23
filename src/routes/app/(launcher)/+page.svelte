@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '#lib/paraglide/messages';
 	import { resolve } from '$app/paths';
+	import { Logo } from '@deutschemodelunitednations/munify-brand';
 	import Footer from '#lib/components/Footer.svelte';
 	import DeleteConferenceModal from '#lib/components/DeleteConferenceModal.svelte';
 	import AvatarMenu from '#lib/components/launcher/AvatarMenu.svelte';
@@ -121,8 +122,8 @@
 	<header
 		class="mx-auto flex w-full max-w-[1200px] items-center justify-between gap-x-8 px-4 py-7 md:px-12"
 	>
-		<a class="text-xl leading-none" href={resolve('/(pages)')}>
-			<span class="font-light">MUNify</span> <span class="font-bold">CHASE</span>
+		<a href={resolve('/(pages)')} aria-label="MUNify CHASE">
+			<Logo product="chase" class="h-7 w-auto" decorative />
 		</a>
 		<AvatarMenu givenName={user.givenName} familyName={user.familyName} email={user.email} />
 	</header>

@@ -45,12 +45,14 @@
 	<meta property="og:title" content={m.seoTitle()} />
 	<meta property="og:description" content={m.seoDescription()} />
 	<meta property="og:site_name" content="MUNify CHASE" />
-	<meta property="og:image" content="https://chase.munify.cloud/favicon-96x96.png" />
+	<meta property="og:image" content="https://chase.munify.cloud/brand/og-card.png" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
 
-	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={m.seoTitle()} />
 	<meta name="twitter:description" content={m.seoDescription()} />
-	<meta name="twitter:image" content="https://chase.munify.cloud/favicon-96x96.png" />
+	<meta name="twitter:image" content="https://chase.munify.cloud/brand/og-card.png" />
 
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html `<${'script'} type="application/ld+json">${jsonLd}</${'script'}>`}

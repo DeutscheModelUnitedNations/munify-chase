@@ -111,6 +111,37 @@ jobs:
           path: test-results/
           retention-days: 7
 
+  # A release's migrations must apply to the data the release before left behind, not only to an
+  # empty database: scripts/migrationUpgrade.sh migrates and seeds (dev.yaml) a database with the
+  # previous release tag, then migrates it with this commit. Runs on release tags, which
+  # docker-build waits for, and on PRs that change migrations, as an early warning. Elsewhere the
+  # steps skip, so the job still passes for docker-build's `needs`.
+  migration-upgrade:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The previous release tag and its tree
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: dorny/paths-filter@v4
+        id: changes
+        if: github.event_name == 'pull_request'
+        with:
+          filters: |
+            migrations:
+              - 'drizzle/**'
+      - id: decide
+        run: echo "run=${{ github.ref_type == 'tag' || steps.changes.outputs.migrations == 'true' }}" >> "$GITHUB_OUTPUT"
+      - if: steps.decide.outputs.run == 'true'
+        uses: ./.github/actions/setup-bun
+      - if: steps.decide.outputs.run == 'true'
+        run: docker compose -f dev.docker-compose.yml up -d --wait postgres
+      - if: steps.decide.outputs.run == 'true'
+        run: bash scripts/migrationUpgrade.sh
+
   # Codebase intelligence (dead code, duplication, complexity) — https://fallow.tools
   #
   # Advisory only: findings never fail this job and it is deliberately left out of
@@ -222,7 +253,7 @@ jobs:
 
   docker-build:
     if: github.event_name == 'push'
-    needs: [format, lint, test, i18n, security, typecheck, e2e]
+    needs: [format, lint, test, i18n, security, typecheck, e2e, migration-upgrade]
     runs-on: ubuntu-latest
     env:
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}

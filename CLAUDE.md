@@ -42,6 +42,7 @@ bun run db:seed:dev      # Seed test data from dev.yaml (seedConference.ts)
 bun run db:studio        # Open Drizzle Studio GUI
 bun run db:reset         # Reset database
 bun run db:nuke          # Tear down docker volume, recreate, and migrate from scratch
+bash scripts/migrationUpgrade.sh [ref] # Migrate + seed the last release, then migrate this checkout (wipes the DB)
 
 # Build
 bun run build            # Production build
@@ -157,6 +158,10 @@ the high contrast variant, plus the keyboard paths. It needs no database rows or
 - **Tracing is off unless `OTEL_ENDPOINT_URL` is set** (the full `…/v1/traces` URL). `src/instrumentation.server.ts`, which SvelteKit loads before the app, starts the tracer provider (`#lib/tracing`) and the pg, ioredis and http instrumentations. SvelteKit emits spans for handle, loads and remote functions (`tracing.server` in `vite.config.ts`), rumble one per GraphQL operation over HTTP and WebSocket. Variables stay out of spans and log lines (`includeVariables: false`). `OTEL_TRACES_SAMPLER_ARG` is the share of traces kept.
 - **The instrumentations need the import hook** (`import-in-the-middle`, Node 22.22.3+/24.11.1+/26) and the module they wrap loaded at runtime, not bundled: keep `pg`, `drizzle-orm`, `ioredis` and the `@opentelemetry/*` packages the server loads in `dependencies`. The release image only installs `dependencies`, so anything else the server imports at runtime would be missing there.
 - Hocuspocus (Yjs) traffic has no spans of its own; its Redis commands run outside a request and are left out.
+
+## Migrations and releases
+
+Before a release tag publishes its image, the `migration-upgrade` CI job (also on PRs changing `drizzle/`) applies the release's migrations to a database seeded (`db:seed:dev`) by the previous release tag, so a migration that works only on empty tables (NOT NULL without default, unique index, trigger) stops the release: backfill or default new required columns in the migration itself. The seed exits non-zero when any step fails, so a half-seeded database cannot pass the check.
 
 ## Codebase Intelligence (fallow)
 

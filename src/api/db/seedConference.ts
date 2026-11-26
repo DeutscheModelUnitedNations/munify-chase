@@ -30,6 +30,49 @@ console.info('########################');
 console.info('### Seeding database ###');
 console.info('########################\n');
 
+// Declared before the seeding below runs: a `const` further down is not yet initialised then.
+const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i);
+
+/** The id of operative clause `i` of `res`, wrapping around */
+const op = (res: Resolution, i: number) => res.operative[i % res.operative.length].id;
+
+/**
+ * How every agenda item's lists are populated: how many speakers (from which delegate on)
+ * and the phase the list is in.
+ */
+const SEEDED_LISTS: Record<
+	'active' | 'inactive',
+	Record<
+		ListType,
+		{ count: number; offset: number; state: () => Partial<typeof schema.speakersList.$inferInsert> }
+	>
+> = {
+	active: {
+		// first one currently speaking
+		SPEAKERS_LIST: {
+			count: 5,
+			offset: 0,
+			state: () => ({ phase: 'SPEECH', timeLeft: 95, startTimestamp: new Date() })
+		},
+		// floor open for a question
+		COMMENT_LIST: { count: 3, offset: 5, state: () => ({ phase: 'QUESTION', timeLeft: 20 }) }
+	},
+	inactive: {
+		// past speakers, list closed, last speaker done
+		SPEAKERS_LIST: {
+			count: 4,
+			offset: 10,
+			state: () => ({ isClosed: true, phase: 'SPEECH_DONE', timeLeft: 0 })
+		},
+		// delegate currently answering
+		COMMENT_LIST: {
+			count: 2,
+			offset: 15,
+			state: () => ({ phase: 'ANSWER', timeLeft: 12, startTimestamp: new Date() })
+		}
+	}
+};
+
 try {
 	// Load the YAML file
 	const filePath = './src/api/db/seed-data/' + process.argv[2];
@@ -204,6 +247,8 @@ try {
 	console.info('####################\n');
 } catch (e) {
 	console.error(e);
+	// A half-seeded database must not pass for a seeded one (scripts/migrationUpgrade.sh relies on it)
+	process.exit(1);
 }
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -445,11 +490,6 @@ type ItemSeed = CommitteeSeed & {
 	/** The topic's operative clause `i` (wrapping around) with its `;` replaced by `ending` */
 	amended: (i: number, ending: string) => string;
 };
-
-const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i);
-
-/** The id of operative clause `i` of `res`, wrapping around */
-const op = (res: Resolution, i: number) => res.operative[i % res.operative.length].id;
 
 async function loadCommitteeSeed(committee: CommitteeRow): Promise<CommitteeSeed | undefined> {
 	const members = await committeeMembersWithRepresentation(db, committee.id);
@@ -1591,43 +1631,6 @@ async function seedFinalPaper(s: ItemSeed) {
 // ── speakers lists ────────────────────────────────────────────────────────
 
 type ListType = (typeof schema.speakersList.$inferSelect)['type'];
-
-/**
- * How every agenda item's lists are populated: how many speakers (from which delegate on)
- * and the phase the list is in.
- */
-const SEEDED_LISTS: Record<
-	'active' | 'inactive',
-	Record<
-		ListType,
-		{ count: number; offset: number; state: () => Partial<typeof schema.speakersList.$inferInsert> }
-	>
-> = {
-	active: {
-		// first one currently speaking
-		SPEAKERS_LIST: {
-			count: 5,
-			offset: 0,
-			state: () => ({ phase: 'SPEECH', timeLeft: 95, startTimestamp: new Date() })
-		},
-		// floor open for a question
-		COMMENT_LIST: { count: 3, offset: 5, state: () => ({ phase: 'QUESTION', timeLeft: 20 }) }
-	},
-	inactive: {
-		// past speakers, list closed, last speaker done
-		SPEAKERS_LIST: {
-			count: 4,
-			offset: 10,
-			state: () => ({ isClosed: true, phase: 'SPEECH_DONE', timeLeft: 0 })
-		},
-		// delegate currently answering
-		COMMENT_LIST: {
-			count: 2,
-			offset: 15,
-			state: () => ({ phase: 'ANSWER', timeLeft: 12, startTimestamp: new Date() })
-		}
-	}
-};
 
 async function seedItemSpeakersLists(s: ItemSeed) {
 	const lists = await db

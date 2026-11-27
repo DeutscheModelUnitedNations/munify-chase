@@ -20,6 +20,7 @@
 		"@deutschemodelunitednations/corporate-identity": "^2.1.0",
 		"@deutschemodelunitednations/munify-brand": "^0.1.1",
 		"@deutschemodelunitednations/munify-resolution-editor": "^0.7.0",
+		"@deutschemodelunitednations/world-countries": "^0.1.0",
 		"@eslint/compat": "^2.1.1",
 		"@eslint/js": "^10.0.1",
 		"@floating-ui/dom": "^1.8.0",

@@ -26,6 +26,11 @@ describe('getCountryNameFromCode', () => {
 		expect(getCountryNameFromCode('DEU')).toBe('Alemanha');
 	});
 
+	it('uses the corrected German name of Eswatini, not "Swasiland"', () => {
+		locale.current = 'de';
+		expect(getCountryNameFromCode('SWZ')).toBe('Eswatini');
+	});
+
 	it('is null for an unknown or missing code', () => {
 		expect(getCountryNameFromCode('XXX')).toBeNull();
 		expect(getCountryNameFromCode(null)).toBeNull();

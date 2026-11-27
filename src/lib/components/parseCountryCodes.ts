@@ -1,4 +1,4 @@
-import WorldCountries from 'world-countries';
+import WorldCountries from '@deutschemodelunitednations/world-countries';
 
 export interface ParsedCountry {
 	alpha2Code: string;

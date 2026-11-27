@@ -1,5 +1,5 @@
 import type { z } from 'zod/v4';
-import WorldCountries from 'world-countries';
+import WorldCountries from '@deutschemodelunitednations/world-countries';
 import type { importDataSchema } from '#lib/utils/import';
 import { getDefaultRequestTypes } from '#lib/data/defaultRequestTypes';
 

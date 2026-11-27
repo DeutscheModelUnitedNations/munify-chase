@@ -1,5 +1,5 @@
 import type { RegionalgroupEnum, RepresentationtypeEnum } from '#lib/api/rumbleClient/client';
-import worldCountries from 'world-countries';
+import worldCountries from '@deutschemodelunitednations/world-countries';
 
 const regionalGroupMapping: Record<
 	(typeof worldCountries)[0]['unRegionalGroup'],

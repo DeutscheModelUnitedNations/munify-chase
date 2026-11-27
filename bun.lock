@@ -47,6 +47,7 @@
         "@deutschemodelunitednations/corporate-identity": "^2.1.0",
         "@deutschemodelunitednations/munify-brand": "^0.1.1",
         "@deutschemodelunitednations/munify-resolution-editor": "^0.7.0",
+        "@deutschemodelunitednations/world-countries": "^0.1.0",
         "@eslint/compat": "^2.1.1",
         "@eslint/js": "^10.0.1",
         "@floating-ui/dom": "^1.8.0",
@@ -254,6 +255,8 @@
     "@deutschemodelunitednations/munify-brand": ["@deutschemodelunitednations/munify-brand@0.1.1", "", { "peerDependencies": { "svelte": "^5.50.0", "vite": ">=6.0.0" }, "optionalPeers": ["vite"] }, "sha512-KzY4Yrr6Gcpco3A+K9u+88FzDJ1t6nwlNednOTVMOHs3xioC2+lk71oqeDJC14De3QYn7GenPjqDn9gAo2Dj5Q=="],
 
     "@deutschemodelunitednations/munify-resolution-editor": ["@deutschemodelunitednations/munify-resolution-editor@0.7.0", "", { "dependencies": { "diff": "^9.0.0", "pagedjs": "^0.4.3", "typst": "^0.10.0-8", "zod": "^3.24.1" }, "peerDependencies": { "@phosphor-icons/web": "^2.1.2", "svelte": "^5.0.0", "y-protocols": "^1.0.0", "yjs": "^13.6.0" }, "optionalPeers": ["y-protocols", "yjs"] }, "sha512-C2RcrkvHV1QglXp/wWRILqqe5q+o5n5SLo2aRJz2Vv5LpR3H+K9R1ORJSWsStNHGqk7wkycZx4/ha0+Cy7nXhQ=="],
+
+    "@deutschemodelunitednations/world-countries": ["@deutschemodelunitednations/world-countries@0.1.0", "", { "peerDependencies": { "world-countries": ">=5" } }, "sha512-IzrWCiczFg5ujzR0JuAZf33fdy9q+7cwrCMYX3qL55O4KdJOnbrPAOcnJ7tulAXBajkZ29XT0Cdix53JvVbf5w=="],
 
     "@emnapi/core": ["@emnapi/core@2.0.0-beta.2", "", { "dependencies": { "@emnapi/wasi-threads": "2.2.0", "tslib": "^2.4.0" } }, "sha512-MzCVoWtcg4Pm2B3je5mMvYMvj3MmBKw+fU7vbsJc9/iT8ip6/eYIHo/Dsm/mr+wsHB6SEyJDuxB09Yy6r/8+4A=="],
 

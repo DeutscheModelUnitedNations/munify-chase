@@ -1,7 +1,7 @@
 // world-countries
 
 import { getLocale, locales } from '#lib/paraglide/runtime';
-import allNations from 'world-countries';
+import allNations from '@deutschemodelunitednations/world-countries';
 
 type Nation = (typeof allNations)[number];
 
